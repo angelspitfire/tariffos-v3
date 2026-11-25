@@ -1,0 +1,1832 @@
+{
+  "schemaVersion": "portable-1.0",
+  "country": "VE",
+  "source": "Consolidado Arancel 2026 Venezuela (Decreto N°4.944)",
+  "chapter": "51",
+  "totalRecords": 35,
+  "products": [
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5101",
+        "subheading": "5101.11",
+        "description": "- - - Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5101.11.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 8
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5101",
+        "subheading": "5101.19",
+        "description": "- - Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5101.19.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 8
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5101",
+        "subheading": "5101.21",
+        "description": "- - Lana esquilada"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5101.21.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 8
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5101",
+        "subheading": "5101.29",
+        "description": "- - Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5101.29.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 8
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5102",
+        "subheading": "5102.11",
+        "description": "- - De cabra de Cachemira"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5102.11.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 8
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5102",
+        "subheading": "5102.19",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5102.19.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 8
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5103",
+        "subheading": "5103.10",
+        "description": "- Borras del peinado de lana o pelo fino"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5103.10.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 6
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5103",
+        "subheading": "5103.20",
+        "description": "- Los demás desperdicios de lana o pelo fino"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5103.20.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 6
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5103",
+        "subheading": "5103.30",
+        "description": "- Desperdicios de pelo ordinario"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5103.30.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 6
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5104",
+        "subheading": "5104.00",
+        "description": "HILACHAS DE LANA O DE PELO FINO U ORDINARIO."
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5104.00.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 6
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5105",
+        "subheading": "5105.10",
+        "description": "- Lana cardada"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5105.10.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 10
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5105",
+        "subheading": "5105.21",
+        "description": "- - «Lana peinada a granel»"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5105.21.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 10
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5105",
+        "subheading": "5105.29",
+        "description": "- - - «Tops»"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5105.29.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 10
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5105",
+        "subheading": "5105.29",
+        "description": "- - - - Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5105.29.99.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 10
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5105",
+        "subheading": "5105.31",
+        "description": "- - De cabra de Cachemira"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5105.31.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 10
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5105",
+        "subheading": "5105.39",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5105.39.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 10
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5105",
+        "subheading": "5105.40",
+        "description": "- Pelo ordinario cardado o peinado"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5105.40.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 10
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5106",
+        "subheading": "5106.10",
+        "description": "- Con un contenido de lana superior o igual al 85% en peso"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5106.10.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5107",
+        "subheading": "5107.10",
+        "description": "- - - De dos cabos, de título inferior o igual a 184,58 decitex por cabo"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5107.10.11.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5107",
+        "subheading": "5107.10",
+        "description": "- - - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5107.10.19.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5107",
+        "subheading": "5107.10",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5107.10.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5107",
+        "subheading": "5107.20",
+        "description": "- Con un contenido de lana inferior al 85% en peso"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5107.20.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5108",
+        "subheading": "5108.10",
+        "description": "- Cardado"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5108.10.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5108",
+        "subheading": "5108.20",
+        "description": "- Peinado"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5108.20.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5109",
+        "subheading": "5109.10",
+        "description": "- Con un contenido de lana o pelo fino superior o igual al 85% en peso"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5109.10.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5111",
+        "subheading": "5111.11",
+        "description": "- - - De lana"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5111.11.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5111",
+        "subheading": "5111.30",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5111.30.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5112",
+        "subheading": "5112.11",
+        "description": "- - De peso inferior o igual a 200 g/m²"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5112.11.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5112",
+        "subheading": "5112.19",
+        "description": "- - - De lana"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5112.19.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5112",
+        "subheading": "5112.19",
+        "description": "- - - De pelo fino"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5112.19.20.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5112",
+        "subheading": "5112.20",
+        "description": "- - De lana"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5112.20.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5112",
+        "subheading": "5112.20",
+        "description": "- - De pelo fino"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5112.20.20.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5112",
+        "subheading": "5112.30",
+        "description": "- - De lana"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5112.30.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5112",
+        "subheading": "5112.90",
+        "description": "- Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5112.90.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "51",
+        "heading": "5113",
+        "subheading": "5113.00",
+        "description": "- - De crin CAPÍTULO 52 ALGODÓN"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5113.00.20.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    }
+  ]
+}

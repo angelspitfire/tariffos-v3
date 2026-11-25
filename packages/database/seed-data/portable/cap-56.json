@@ -1,0 +1,3195 @@
+{
+  "schemaVersion": "portable-1.0",
+  "country": "VE",
+  "source": "Consolidado Arancel 2026 Venezuela (Decreto N°4.944)",
+  "chapter": "56",
+  "totalRecords": 63,
+  "products": [
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5601",
+        "subheading": "5601.21",
+        "description": "- - - Guata"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5601.21.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5601",
+        "subheading": "5601.21",
+        "description": "- - - Los demás articulos de guata"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5601.21.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5601",
+        "subheading": "5601.22",
+        "description": "- - - - De aramidas"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5601.22.11.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 2
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5601",
+        "subheading": "5601.22",
+        "description": "- - - - Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5601.22.19.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5601",
+        "subheading": "5601.22",
+        "description": "- - - - Cilindros para filtros de cigarrillos"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5601.22.91.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5601",
+        "subheading": "5601.22",
+        "description": "- - - - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5601.22.99.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5601",
+        "subheading": "5601.29",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5601.29.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5601",
+        "subheading": "5601.30",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5601.30.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5602",
+        "subheading": "5602.10",
+        "description": "- Fieltro punzonado y productos obtenidos mediante costura por cadeneta"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5602.10.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5602",
+        "subheading": "5602.21",
+        "description": "- - De lana o pelo fino"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5602.21.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5602",
+        "subheading": "5602.90",
+        "description": "- Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5602.90.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.11",
+        "description": "- - - De aramidas"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.11.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 2,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 15,
+                "code": "E"
+              },
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.11",
+        "description": "- - - De poliéster"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.11.20.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.11",
+        "description": "- - - De polipropileno"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.11.30.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.11",
+        "description": "- - - De rayón viscosa"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.11.40.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.11",
+        "description": "- - - Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.11.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.12",
+        "description": "- - - De aramidas"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.12.20.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 2,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 15,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.12",
+        "description": "- - - De poliéster"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.12.30.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.12",
+        "description": "- - - De rayón viscosa"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.12.50.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.12",
+        "description": "- - - Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.12.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.13",
+        "description": "- - - De polietileno de alta densidad"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.13.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.13",
+        "description": "- - - De poliéster"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.13.30.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.13",
+        "description": "- - - De polipropileno"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.13.40.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 35,
+                "code": "E"
+              },
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.13",
+        "description": "- - - De rayón viscosa"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.13.50.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.13",
+        "description": "- - - Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.13.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.14",
+        "description": "- - - De aramidas"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.14.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 2,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 0,
+                "code": "E"
+              },
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.14",
+        "description": "- - - De poliéster"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.14.20.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.14",
+        "description": "- - - De polipropileno"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.14.30.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.14",
+        "description": "- - - De rayón viscosa"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.14.40.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.14",
+        "description": "- - - Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.14.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.91",
+        "description": "- - - De polipropileno"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.91.20.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.91",
+        "description": "- - - De rayón viscosa"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.91.30.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.92",
+        "description": "- - - De polietileno de alta densidad"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.92.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.92",
+        "description": "- - - De poliéster"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.92.20.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.92",
+        "description": "- - - De polipropileno"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.92.30.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.92",
+        "description": "- - - De rayón viscosa"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.92.40.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.92",
+        "description": "- - - Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.92.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.93",
+        "description": "- - - De poliéster"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.93.20.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.93",
+        "description": "- - - De rayón viscosa"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.93.40.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.93",
+        "description": "- - - Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.93.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.94",
+        "description": "- - - De poliéster"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.94.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.94",
+        "description": "- - - De polipropileno"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.94.20.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.94",
+        "description": "- - - De rayón viscosa"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.94.30.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5603",
+        "subheading": "5603.94",
+        "description": "- - - Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5603.94.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 26
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "m²",
+            "name": "metro cuadrado"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5604",
+        "subheading": "5604.90",
+        "description": "- - Imitaciones de catgut construidas por hilos de seda"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5604.90.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 2
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "3",
+              "description": "Permiso del Ministerio con competencia en materia de salud",
+              "legalRef": "Decreto N°4.944 Art.21.3"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.3"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5604",
+        "subheading": "5604.90",
+        "description": "- - - Con caucho"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5604.90.21.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5604",
+        "subheading": "5604.90",
+        "description": "- - - Con plástico"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5604.90.22.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5604",
+        "subheading": "5604.90",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5604.90.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5605",
+        "subheading": "5605.00",
+        "description": "- Con metal precioso"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5605.00.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5605",
+        "subheading": "5605.00",
+        "description": "- Entorchados, excepto con metal precioso"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5605.00.20.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5607",
+        "subheading": "5607.21",
+        "description": "- - Cordeles para atar o engavillar"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5607.21.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5607",
+        "subheading": "5607.29",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5607.29.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5607",
+        "subheading": "5607.41",
+        "description": "- - Cordeles para atar o engavillar (2)"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5607.41.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5607",
+        "subheading": "5607.49",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5607.49.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5607",
+        "subheading": "5607.50",
+        "description": "- - - De nailon"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5607.50.11.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5607",
+        "subheading": "5607.50",
+        "description": "- - - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5607.50.19.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5607",
+        "subheading": "5607.50",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5607.50.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5607",
+        "subheading": "5607.90",
+        "description": "- - De algodón"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5607.90.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5607",
+        "subheading": "5607.90",
+        "description": "- - De yute, inferior al número métrico 0,75 por hilo sencillo"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5607.90.20.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 2,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5607",
+        "subheading": "5607.90",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5607.90.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5608",
+        "subheading": "5608.11",
+        "description": "- - Redes confeccionadas para la pesca"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5608.11.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5608",
+        "subheading": "5608.90",
+        "description": "- Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5608.90.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "56",
+        "heading": "5609",
+        "subheading": "5609.00",
+        "description": "- Los demás CAPÍTULO 57 ALFOMBRAS Y DEMÁS REVESTIMIENTOS PARA EL SUELO,"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "5609.00.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    }
+  ]
+}

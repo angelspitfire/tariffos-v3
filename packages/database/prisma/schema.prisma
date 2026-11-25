@@ -1,0 +1,1011 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+  binaryTargets   = ["native"]
+  output          = "../src/generated/client"
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [vector]
+  schemas    = ["public", "filings"]
+}
+
+model Tenant {
+  id                        String                     @id @default(cuid())
+  name                      String
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+  billingLimit              Int                        @default(100)
+  billingStatus             BillingStatus              @default(ACTIVE)
+  fileSearchStoreName       String?
+  isOnboarded               Boolean                    @default(false)
+  region                    String?
+  contact                   String?
+  onboardedAt               DateTime?
+  planId                    String?
+  allowOverage              Boolean                    @default(false)
+  ownerEmail                String?
+  ownerName                 String?
+  taxId                     String?                    @map("tax_id")
+  /** Classification country — the tenant's customs jurisdiction (settings, not code). */
+  countryCode               String                     @default("VE")
+  country                   Country                    @relation(fields: [countryCode], references: [code])
+  /** Broker-selectable customs offices for new filings (array of labels).
+   *  Empty array = fall back to the app defaults. */
+  customsOffices            Json                       @default("[]")
+  batchJobs                 BatchJob[]
+  batchJobItems             BatchJobItem[]
+  billingPeriods            BillingPeriod[]
+  chatMessages              ChatMessage[]
+  classificationSessions    ClassificationSession[]
+  classificationRules       CustomClassificationRule[]
+  files                     FileMetadata[]
+  langGraphCheckpoints      LangGraphCheckpoint[]
+  langGraphCheckpointWrites LangGraphCheckpointWrite[]
+  memberships               Membership[]
+  invitations               Invitation[]
+  productMaster             ProductMaster[]
+  plan                      Plan?                      @relation(fields: [planId], references: [id])
+  usageRecords              UsageRecord[]
+  clients                   Client[]
+  filings                   Filing[]
+  filingLines             FilingLine[]
+  filingStatusEvents        FilingStatusEvent[]
+  payments                  Payment[]
+  decisionArtifacts         DecisionArtifact[]
+
+  @@index([planId], map: "idx_Tenant_planId")
+  @@schema("public")
+}
+
+/// Country master: every country-specific fact (legislation, nomenclature
+/// shape, dataset provenance) lives here keyed by ISO-2 code — never in code.
+model Country {
+  code                   String   @id
+  name                   String
+  /// Controlling instrument, e.g. "Decreto 4.944 (Gaceta Oficial Extraordinaria N° 6.804)".
+  legislation            String
+  /// Depth of the national nomenclature (VE: 10, MX: 8, ...).
+  nomenclatureDigits     Int
+  /// Dot-grouping of a formatted code, e.g. "4.2.2.2" for 8517.62.91.00.
+  codeGrouping           String
+  /// Which national dataset is loaded (source + extract date), e.g. GAP-04 audit stamp.
+  datasetVersion         String?
+  isActive               Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  tenants                Tenant[]
+  legalKnowledgeParents  LegalKnowledgeParent[]
+
+  @@schema("public")
+}
+
+model Membership {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  tenantId  String   @map("tenant_id")
+  role      String   @default("MEMBER")
+  /// Denormalized identity + personal profile, stored on the membership so it
+  /// renders without a cross-schema join and works under RLS (the `profiles`
+  /// table is keyed on `auth.uid()`, which the app client never sets).
+  email     String?
+  name      String?
+  position  String?
+  idNumber  String?  @map("id_number")
+  /// Broker-facing language for *generated* text ('en' | 'es'): the
+  /// clarification questions the classifier writes, and the copilot's replies.
+  /// Null means "not chosen" — callers fall back to Accept-Language, then 'en'
+  /// (§1: English is the UI source). Stored per-user by updating every
+  /// membership, exactly like `name`/`position` above.
+  language  String?
+  /// UI appearance theme ('light' | 'dark' | 'system'). Null means "not chosen"
+  /// — falls back to localStorage, then OS preference, then 'dark'.
+  theme     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@unique([userId, tenantId])
+  @@index([tenantId])
+  @@schema("public")
+}
+
+/// A pending invitation to join a tenant. One live row per (tenant, email);
+/// accepting creates a Membership with the invited role.
+model Invitation {
+  id            String           @id @default(cuid())
+  tenantId      String           @map("tenant_id")
+  email         String
+  role          String           @default("MEMBER")
+  status        InvitationStatus @default(PENDING)
+  token         String           @unique
+  invitedById   String?          @map("invited_by_id")
+  invitedByName String?          @map("invited_by_name")
+  expiresAt     DateTime         @map("expires_at")
+  acceptedAt    DateTime?        @map("accepted_at")
+  acceptedById  String?          @map("accepted_by_id")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  tenant        Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([email])
+  @@schema("public")
+}
+
+model Plan {
+  id                  String   @id @default(cuid())
+  name                String   @unique
+  description         String?
+  maxClassifications  Int      @default(100)
+  maxTokens           Int      @default(1000000)
+  features            Json     @default("{}")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  basePrice           Float    @default(0)
+  classificationLimit Int      @default(100)
+  overagePrice        Float    @default(0)
+  allowOverage        Boolean  @default(false)
+  tenants             Tenant[]
+
+  @@schema("public")
+}
+
+model ClassificationSession {
+  id                        String                 @id @default(cuid())
+  title                     String
+  description               String?
+  status                    WorkspaceSessionStatus @default(ACTIVE)
+  totalClassificationTokens Int?                   @default(0)
+  totalOcrTokens            Int?                   @default(0)
+  createdAt                 DateTime               @default(now())
+  updatedAt                 DateTime               @updatedAt
+  tenantId                  String                 @map("tenant_id")
+  jobs                      BatchJob[]
+  messages                  ChatMessage[]
+  tenant                    Tenant                 @relation(fields: [tenantId], references: [id])
+  files                     FileMetadata[]
+  filingId                  String?                @map("filing_id")
+  filing                    Filing?                @relation(fields: [filingId], references: [id])
+
+  @@index([tenantId], map: "idx_ClassificationSession_tenant_id")
+  @@index([filingId])
+  @@index([tenantId])
+  @@schema("public")
+}
+
+model ChatMessage {
+  id        String                @id @default(cuid())
+  role      String
+  content   String
+  createdAt DateTime              @default(now())
+  sessionId String                @map("session_id")
+  tenantId  String                @map("tenant_id")
+  session   ClassificationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  tenant    Tenant                @relation(fields: [tenantId], references: [id])
+
+  @@index([sessionId], map: "idx_ChatMessage_session_id")
+  @@index([tenantId], map: "idx_ChatMessage_tenant_id")
+  @@index([sessionId])
+  @@index([tenantId])
+  @@schema("public")
+}
+
+model ProductMaster {
+  id          String                 @id @default(cuid())
+  tenantId    String                 @map("tenant_id")
+  description String
+  hsCode      String
+  confidence  Float?
+  reasoning   String?
+  metadata    Json?
+  embedding   Unsupported("vector")?
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  tenant      Tenant                 @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, description])
+  @@index([tenantId], map: "idx_ProductMaster_tenant_id")
+  @@index([tenantId])
+  @@schema("public")
+}
+
+model CustomClassificationRule {
+  id               String   @id @default(cuid())
+  inputDescription String
+  targetHsCode     String
+  confidence       Float    @default(1.0)
+  reasoning        String?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  tenantId         String   @default("GLOBAL") @map("tenant_id")
+  tenant           Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@unique([inputDescription, tenantId])
+  @@index([tenantId, isActive, updatedAt(sort: Desc)])
+  @@schema("public")
+}
+
+model KnowledgeCollection {
+  id                  String                    @id @default(cuid())
+  name                String
+  countryCode         String
+  description         String?
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  fileSearchStoreName String?
+  status              KnowledgeCollectionStatus @default(PROVISIONING)
+  files               KnowledgeFile[]
+
+  @@schema("public")
+}
+
+model KnowledgeFile {
+  id            String              @id @default(cuid())
+  fileName      String
+  geminiUri     String?
+  storageUrl    String              @unique
+  provider      String              @default("insforge")
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  indexingError String?
+  isIndexed     Boolean             @default(false)
+  collectionId  String
+  collection    KnowledgeCollection @relation(fields: [collectionId], references: [id])
+
+  @@index([collectionId], map: "idx_KnowledgeFile_collectionId")
+  @@index([isIndexed])
+  @@schema("public")
+}
+
+model UsageRecord {
+  id           String   @id @default(cuid())
+  tenantId     String
+  month        Int
+  year         Int
+  count        Int      @default(0)
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, month, year])
+  @@index([tenantId], map: "idx_UsageRecord_tenantId")
+  @@index([tenantId])
+  @@schema("public")
+}
+
+model DecisionArtifact {
+  id               String   @id @default(cuid())
+  classificationId String   @map("classification_id")
+  tenantId         String   @map("tenant_id")
+  filingId         String?  @map("filing_id")
+  lineId           String?  @map("line_id")
+  retrievalTrace   Json     @map("retrieval_trace")
+  promptSnapshot   Json     @map("prompt_snapshot")
+  modelMetadata    Json     @map("model_metadata")
+  rerankingScores  Json     @map("reranking_scores")
+  sustento         Json?    @map("sustento")
+  finalDecision    Json     @map("final_decision")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([classificationId])
+  @@index([tenantId, classificationId])
+  @@index([filingId])
+  @@index([lineId])
+  @@schema("public")
+}
+
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  REFUNDED
+
+  @@schema("public")
+}
+
+model FileMetadata {
+  id                      String                 @id @default(cuid())
+  fileName                String
+  geminiUri               String?
+  cacheUri                String?
+  cacheExpiry             DateTime?
+  storageUrl              String?                @unique
+  provider                String                 @default("insforge")
+  parsedText              String?
+  ocrTokens               Int?                   @default(0)
+  expiresAt               DateTime?
+  lastUploadedAt          DateTime               @default(now())
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
+  tenantId                String                 @map("tenant_id")
+  indexingError           String?
+  isIndexed               Boolean                @default(false)
+  classificationSessionId String?
+  filingId                String?                @map("filing_id")
+  contentHash             String?                @map("content_hash")
+  docType                 String?                @map("doc_type")
+  pageCount               Int?                   @map("page_count")
+  storageKey              String?                @map("storage_key")
+  session                 ClassificationSession? @relation(fields: [classificationSessionId], references: [id])
+  filing                  Filing?                @relation(fields: [filingId], references: [id], onDelete: SetNull)
+  tenant                  Tenant                 @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId], map: "idx_FileMetadata_tenant_id")
+  @@index([geminiUri])
+  @@index([cacheUri])
+  @@index([expiresAt])
+  @@index([isIndexed])
+  @@index([classificationSessionId], map: "idx_FileMetadata_classificationSessionId")
+  @@index([filingId], map: "idx_FileMetadata_filingId")
+  @@index([classificationSessionId])
+  @@schema("public")
+}
+
+model BatchJob {
+  id                      String                 @id @default(cuid())
+  type                    String
+  status                  JobStatus              @default(PENDING)
+  description             String?
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
+  tenantId                String                 @map("tenant_id")
+  targetCountry           String?
+  classificationSessionId String?
+  session                 ClassificationSession? @relation(fields: [classificationSessionId], references: [id])
+  tenant                  Tenant                 @relation(fields: [tenantId], references: [id])
+  items                   BatchJobItem[]
+
+  @@index([tenantId], map: "idx_BatchJob_tenant_id")
+  @@index([classificationSessionId], map: "idx_BatchJob_classificationSessionId")
+  @@index([classificationSessionId])
+  @@index([tenantId])
+  @@schema("public")
+}
+
+model BatchJobItem {
+  id               String    @id @default(cuid())
+  jobId            String
+  status           JobStatus @default(PENDING)
+  content          String
+  result           Json?
+  error            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  overriddenHsCode String?
+  reviewedAt       DateTime?
+  reviewedBy       String?
+  tenantId         String    @map("tenant_id")
+  job              BatchJob  @relation(fields: [jobId], references: [id])
+  tenant           Tenant    @relation(fields: [tenantId], references: [id])
+
+  @@index([jobId], map: "idx_BatchJobItem_jobId")
+  @@index([tenantId], map: "idx_BatchJobItem_tenant_id")
+  @@index([jobId])
+  @@index([tenantId])
+  @@schema("public")
+}
+
+model WaitlistLead {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  country     String?  @default("VE")
+  volume      String?
+  source      String?
+  clickId     String?
+  referrer    String?
+  landingPath String?
+  status      String   @default("PENDING")
+  approvedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([clickId])
+  @@schema("public")
+}
+
+model AgentSession {
+  id             String @id
+  appName        String
+  userId         String
+  state          Json   @default("{}")
+  events         Json   @default("[]")
+  lastUpdateTime BigInt
+  tenantId       String
+
+  @@unique([appName, userId, id])
+  @@index([tenantId])
+  @@schema("public")
+}
+
+model GlobalLegalResource {
+  id             String    @id @default(cuid())
+  name           String    @unique
+  description    String?
+  geminiUri      String?
+  fileName       String
+  mimeType       String
+  expiresAt      DateTime?
+  lastUploadedAt DateTime  @default(now())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  chunks         LegalDocumentChunk[]
+
+  @@index([geminiUri])
+  @@schema("public")
+}
+
+model LegalDocumentChunk {
+  id         String                 @id @default(cuid())
+  content    String
+  metadata   Json?
+  embedding  Unsupported("vector")?
+  resourceId String
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
+  resource   GlobalLegalResource    @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@index([resourceId])
+  @@schema("public")
+}
+
+model NationalTariff {
+  id                    String                 @id @default(cuid())
+  countryCode           String
+  hsCode                String
+  description           String
+  adValorem             Float
+  iva                   Float
+  customsFee            Float?                 @default(1.0)
+  legalNotes            String?
+  requirements          Json?
+  isActive              Boolean                @default(true)
+  validFromDate         DateTime?
+  validToDate           DateTime?
+  isBK                  Boolean                @default(false)
+  isBIT                 Boolean                @default(false)
+  isDerogated           Boolean                @default(false)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  @@unique([countryCode, hsCode])
+  @@index([hsCode])
+  @@schema("public")
+}
+
+// Vector index over the *arancel tree itself*: one row per tariff node
+// (heading, grouping node or national leaf), keyed by (countryCode, hsCode).
+// `document` is the ancestry-composed text that was embedded — the same string
+// the decision ballot shows, so what the vector matches is what Laya reads.
+// The HNSW index ("TariffNodeEmbedding_embedding_idx") is created out of band
+// (DDL is applied via the InsForge CLI, never `prisma migrate`), exactly like
+// "LegalKnowledgeChunk_embedding_idx"; Prisma has no HNSW syntax.
+model TariffNodeEmbedding {
+  id          String                 @id
+  countryCode String
+  hsCode      String
+  model       String
+  dims        Int                    @default(768)
+  document    String
+  embedding   Unsupported("vector")
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  @@unique([countryCode, hsCode])
+  @@index([countryCode, hsCode])
+  @@schema("public")
+}
+
+model LangGraphCheckpoint {
+  id                 String   @id @default(cuid())
+  threadId           String   @map("thread_id")
+  checkpointId       String   @map("checkpoint_id")
+  parentCheckpointId String?  @map("parent_checkpoint_id")
+  checkpoint         Json
+  metadata           Json
+  createdAt          DateTime @default(now())
+  tenantId           String   @map("tenant_id")
+  tenant             Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, threadId, checkpointId])
+  @@index([tenantId, threadId])
+  @@index([tenantId], map: "idx_LangGraphCheckpoint_tenant_id")
+  @@schema("public")
+}
+
+model LangGraphCheckpointWrite {
+  id           String   @id @default(cuid())
+  threadId     String   @map("thread_id")
+  checkpointId String   @map("checkpoint_id")
+  taskId       String   @map("task_id")
+  idx          Int
+  channel      String
+  value        Json
+  createdAt    DateTime @default(now())
+  tenantId     String   @map("tenant_id")
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, threadId, checkpointId, taskId, idx])
+  @@index([tenantId, threadId])
+  @@index([tenantId], map: "idx_LangGraphCheckpointWrite_tenant_id")
+  @@schema("public")
+}
+
+model BillingPeriod {
+  id                   String              @id @default(cuid())
+  tenantId             String
+  startDate            DateTime
+  endDate              DateTime
+  status               BillingPeriodStatus @default(OPEN)
+  totalClassifications Int                 @default(0)
+  totalInputTokens     Int                 @default(0)
+  totalOutputTokens    Int                 @default(0)
+  baseFee              Float               @default(0)
+  overageFee           Float               @default(0)
+  totalAmount          Float               @default(0)
+  currency             String              @default("USD")
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  tenant               Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, startDate, endDate])
+  @@index([tenantId], map: "idx_BillingPeriod_tenantId")
+  @@index([tenantId])
+  @@schema("public")
+}
+
+enum WorkspaceSessionStatus {
+  ACTIVE
+  ARCHIVED
+  COMPLETED
+
+  @@schema("public")
+}
+
+enum KnowledgeCollectionStatus {
+  PROVISIONING
+  ACTIVE
+  DEPRECATED
+
+  @@schema("public")
+}
+
+enum BillingStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+
+  @@schema("public")
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  NEEDS_REVIEW
+  NEEDS_INFO
+
+  @@schema("public")
+}
+
+enum BillingPeriodStatus {
+  OPEN
+  CLOSED
+
+  @@schema("public")
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+
+  @@schema("public")
+}
+
+/// Central USD→Bs. reference rate (BCV official). One row per (pair, value
+/// date); global data — every tenant reads the same latest value, written only
+/// by the sync-bcv-rate cron through the unscoped system client.
+model ExchangeRate {
+  id        String   @id @default(cuid())
+  pair      String
+  rate      Float
+  valueDate DateTime
+  source    String
+  createdAt DateTime @default(now())
+
+  @@unique([pair, valueDate])
+  @@index([pair, valueDate])
+  @@schema("public")
+}
+
+model UserProfile {
+  id                   String   @id
+  fullName             String?  @map("full_name")
+  position             String?
+  idNumber             String?  @map("id_number")
+  defaultExchangeRate  Float?   @default(36.5) @map("default_exchange_rate")
+  defaultCustomsOffice String?  @default("5001 - LA GUAIRA") @map("default_customs_office")
+  role                 String?  @default("user")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@map("profiles")
+  @@schema("public")
+}
+
+model Client {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("organization_id")
+  name          String
+  taxId         String   @map("tax_id")
+  address       String?
+  email         String?
+  phone         String?
+  contactPerson String?  @map("contact_person")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  filings       Filing[]
+
+  @@unique([tenantId, taxId])
+  @@map("clients")
+  @@schema("public")
+}
+
+model Filing {
+  id                     String                  @id @default(cuid())
+  tenantId               String                  @map("organization_id")
+  userId                 String?                 @map("user_id")
+  clientId               String?                 @map("client_id")
+  referenceId            String                  @map("reference_id")
+  masterId               String?                 @map("master_id")
+  filingDate             DateTime?               @map("filing_date")
+  customsOffice          String?                 @map("customs_office")
+  declarationType        String?                 @map("declaration_type")
+  consignee              Json?
+  supplier               Json?
+  transactionDetails     Json?                   @map("transaction_details")
+  logistics              Json?
+  globalValues           Json?                   @map("global_values")
+  items                  Json?                   @default("[]")
+  valuationConditions    Json?                   @default("{}") @map("valuation_conditions")
+  declarant              Json?
+  status                 String?                 @default("Draft")
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @updatedAt @map("updated_at")
+  tenant                 Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  client                 Client?                 @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  classificationSessions ClassificationSession[]
+  lines                  FilingLine[]
+  files                  FileMetadata[]
+  statusEvents           FilingStatusEvent[]
+
+  @@unique([tenantId, referenceId])
+  @@index([clientId])
+  @@index([tenantId])
+  @@map("filings")
+  @@schema("public")
+}
+
+/**
+ * Append-only audit trail for filing status changes. A status only moves
+ * through `POST /api/filings/[id]/status`, which writes this row in the same
+ * transaction as the `Filing.status` update — so an unattributed jump cannot
+ * happen. `fromStatus` keeps the raw stored label ("Draft", "In progress"),
+ * `toStatus` is the canonical status the machine moved to.
+ */
+model FilingStatusEvent {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  filingId   String   @map("filing_id")
+  fromStatus String?  @map("from_status")
+  toStatus   String   @map("to_status")
+  userId     String?  @map("user_id")
+  notes      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  filing     Filing   @relation(fields: [filingId], references: [id], onDelete: Cascade)
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([filingId, createdAt])
+  @@index([tenantId])
+  @@map("filing_status_events")
+  @@schema("public")
+}
+
+enum FilingLineStatus {
+  DRAFT
+  AUTO
+  CONFIRM
+  BLOCKED
+  NEEDS_INFO
+
+  @@schema("public")
+}
+
+model FilingLine {
+  id            String           @id @default(cuid())
+  tenantId      String           @map("tenant_id")
+  filingId      String           @map("filing_id")
+  lineNumber    Int              @map("line_number")
+  description   String
+  hsCode        String?          @map("hs_code")
+  omaCode       String?          @map("oma_code")
+  confidence    Float?
+  candidates    Json?            @default("[]")
+  status        FilingLineStatus @default(DRAFT)
+  cifValue      Float?           @map("cif_value")
+  taxBreakdown  Json?            @map("tax_breakdown")
+  permits       Json?            @default("[]")
+  rgiSteps      Json?            @map("rgi_steps") @default("[]")
+  justification Json?            @default("{}")
+  rawResult     Json?            @map("raw_result")
+  engineName    String?          @map("engine_name")
+  engineVersion String?          @map("engine_version")
+  corpusVersion String?          @map("corpus_version")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  filing        Filing           @relation(fields: [filingId], references: [id], onDelete: Cascade)
+  tenant        Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([filingId, lineNumber])
+  @@index([filingId])
+  @@index([tenantId])
+  @@index([status])
+  @@schema("public")
+}
+
+model TradeAgreement {
+  id                 String   @id @default(cuid())
+  countryCode        String
+  discountPercentage Float
+  description        String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@schema("public")
+}
+
+// -----------------------------------------
+// Relational GraphRAG Knowledge base
+// -----------------------------------------
+
+model LegalKnowledgeParent {
+  id                     String  @id @default(cuid())
+  countryCode            String
+  country                Country @relation(fields: [countryCode], references: [code])
+  /**
+   * The kind of instrument this block belongs to, and the level it sits at:
+   *   SECTION    "SEC-XV"   — a WCO section's notes
+   *   CHAPTER    "24"       — a chapter's notes (the retrieval key)
+   *   SUBHEADING "24/24.12" — notes that name a subheading
+   *   LEGAL_NOTE "loa"      — a law, decree, resolution or agreement
+   *   EXEMPTION  "loa/ex"   — an exemption or régimen-legal regime
+   *
+   * The chapter number is the retrieval key: the pipeline knows the chapter
+   * from the candidate codes before it needs any note, so legal retrieval is a
+   * hard filter on this field, never a similarity search.
+   */
+  legalType              String
+  hierarchyPath          String
+  /**
+   * The instrument's own heading text ("Tabaco y manufacturas de tabaco").
+   * Kept separate from `content` so a rule's text stays clean and diffable,
+   * while the reader still gets the context it needs to cite it.
+   */
+  title                  String  @default("")
+  content                String // The full markdown block
+  sourceFile             String?
+  officialDocumentNumber String? // The Official Document number (formerly gacetaNumber)
+  decreeNumber           String? // The specific decree or resolution number
+
+  // Temporal Validity
+  validFromDate DateTime
+  validToDate   DateTime?
+  isDerogated   Boolean        @default(false)
+  status        DocumentStatus @default(DRAFT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chunks LegalKnowledgeChunk[]
+
+  @@unique([countryCode, legalType, hierarchyPath, validFromDate])
+  @@index([countryCode, hierarchyPath])
+  @@index([validFromDate, validToDate])
+  @@schema("public")
+}
+
+model LegalKnowledgeChunk {
+  id         String               @id @default(cuid())
+  parentId   String
+  parent     LegalKnowledgeParent @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  /**
+   * One citable rule. The arancel's notes are numbered ("1.", "2.") with
+   * lettered sub-items ("a)", "b)") beneath them, so a chunk is a numbered
+   * item *including* its sub-items: splitting them breaks the citation, and
+   * merging two rules lets the gate cite the wrong one.
+   */
+  content    String
+  /** The heading the rule belongs to, so the reader gets its subject. */
+  heading    String  @default("")
+  /** The rule's own number ("2."), for a precise citation. */
+  ruleNumber String?
+  /**
+   * The codes the rule speaks about — the subheading it governs, when the rule
+   * says so ("En la subpartida 1602.10, …"). Stored dotted as printed
+   * ("1602.10"). This is what lets a note be found at subheading level
+   * without inventing a hierarchy level the arancel does not have.
+   */
+  scope      String[] @default([])
+  chunkIndex Int
+
+  // Chunk rows are immutable: the ingestion replaces a parent's whole chunk
+  // set rather than editing rows, so there is no updatedAt here — and the
+  // live table has never had one.
+  createdAt DateTime @default(now())
+
+  /**
+   * The vector column is kept for the instruments corpus, where a semantic
+   * search over long heterogeneous documents is the right tool. The legal
+   * notes do not use it: their retrieval is a hard chapter filter plus a
+   * keyword rank, which costs nothing and is auditable.
+   */
+  embedding Unsupported("vector")?
+  /**
+   * Full-text search column for the keyword ranker (Postgres `spanish`
+   * configuration). Populated by the ingestion script; indexed out of band
+   * with GIN, like the vector index.
+   */
+  search Unsupported("tsvector")?
+
+  @@index([parentId])
+  @@index([scope])
+  @@schema("public")
+}
+
+// -----------------------------------------
+// Gemini Context Caching
+// -----------------------------------------
+
+enum CacheType {
+  GLOBAL_LEGAL
+  USER_SESSION
+
+  @@schema("public")
+}
+
+model GeminiCache {
+  id         String    @id @default(cuid())
+  cacheName  String    @unique
+  model      String
+  type       CacheType
+  ttlSeconds Int       @default(1800)
+  expiresAt  DateTime
+  userId     String?
+  metadata   Json?
+  createdAt  DateTime  @default(now())
+
+  @@index([expiresAt])
+  @@index([userId])
+  @@schema("public")
+}
+
+enum DocumentStatus {
+  DRAFT
+  PUBLISHED
+  DEROGATED
+
+  @@schema("public")
+}
+
+/// Platform-wide settings (key-value, editable by platform admins)
+model Payment {
+  id          String   @id @default(cuid())
+  status      PaymentStatus @default(PENDING)
+  amount      Float?
+  currency    String?   @default("USD")
+  tenantId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@schema("public")
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  type        String   @default("string") // string, number, boolean, json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@schema("public")
+}
+
+/// Catálogo maestro de tipos de permiso (SENIAT, CONATEL, etc.)
+model PermitType {
+  id                   String   @id @default(cuid())
+  code                 String   @unique
+  name                 String
+  agency               String
+  countryCode          String   @default("VE")
+  validityMonths       Int
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  filingLines          HsPermitRequirement[]
+  @@index([code])
+  @@schema("public")
+}
+
+/// Requisitos por código HS: qué permiso(s) exige cada código arancelario de 10 dígitos
+model HsPermitRequirement {
+  id                   String   @id @default(cuid())
+  hsCode               String   // Código de 10 dígitos (ej. 8504.40.10.00)
+  permitTypeId         String
+  isRequired           Boolean
+  notes                String?  // Comentarios específicos
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  permitType           PermitType @relation(fields: [permitTypeId], references: [id])
+  @@unique([hsCode, permitTypeId])
+  @@index([hsCode])
+  @@schema("public")
+}
+
+/// AI-generated dashboard indicators from agent evaluation.
+/// Tracks which alerts are active, satisfied (resolved), or dismissed,
+/// so re-runs don't resurface already-handled items.
+model DashboardIndicator {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  type          String   // permit_expiring, cif_zero, needs_info, blocked, canal_verde_ready, permit_blocked
+  severity      String   // high, medium, low
+  targetFiling  String   @map("target_filing")
+  targetLine    Int?     @map("target_line")
+  message       String
+  evidence      Json?    @default("{}")
+  actionHref    String?  @map("action_href")
+  status        String   @default("new") // new, acknowledged, dismissed, resolved
+  aiGenerated   Boolean  @default(true) @map("ai_generated")
+  createdAt     DateTime @default(now()) @map("created_at")
+  resolvedAt    DateTime? @map("resolved_at")
+  dismissedAt   DateTime? @map("dismissed_at")
+
+  @@index([tenantId, status])
+  @@index([targetFiling])
+  @@map("dashboard_indicators")
+  @@schema("public")
+}
+
+/// Webhook endpoints for external integrations
+model Webhook {
+  id            String   @id @default(cuid())
+  name          String
+  url           String
+  events        String[] // e.g., ["filing.created", "classification.completed", "payment.confirmed"]
+  secret        String   // HMAC secret for signature verification
+  isActive      Boolean  @default(true)
+  retryCount    Int      @default(3)
+  lastTriggered DateTime?
+  lastStatus    Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isActive])
+  @@schema("public")
+}

@@ -1,0 +1,26 @@
+{
+  "name": "tariffos-v3",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@12.18.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "bootstrap": "pnpm --filter @tariffos/database... build",
+    "build": "pnpm bootstrap && pnpm -r --filter=!@tariffos/database build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "oxlint apps packages",
+    "test": "pnpm -r --if-present test"
+  },
+  "devDependencies": {
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "oxlint": "^1.94.0",
+    "oxlint-tsgolint": "^7.0.2007",
+    "tsx": "^4.23.15",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "vitest": "^5.1.0"
+  }
+}

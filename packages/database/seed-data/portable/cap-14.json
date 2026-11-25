@@ -1,0 +1,364 @@
+{
+  "schemaVersion": "portable-1.0",
+  "country": "VE",
+  "source": "Consolidado Arancel 2026 Venezuela (Decreto N°4.944)",
+  "chapter": "14",
+  "totalRecords": 5,
+  "products": [
+    {
+      "hs": {
+        "chapter": "14",
+        "heading": "1401",
+        "subheading": "1401.20",
+        "description": "- Roten (ratán)*"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "1401.20.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 6,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 30,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "14",
+        "heading": "1401",
+        "subheading": "1401.90",
+        "description": "- Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "1401.90.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 6,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 30,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "14",
+        "heading": "1404",
+        "subheading": "1404.20",
+        "description": "- - En bruto"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "1404.20.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 6,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 30,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "14",
+        "heading": "1404",
+        "subheading": "1404.20",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "1404.20.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 6,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 30,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "14",
+        "heading": "1404",
+        "subheading": "1404.90",
+        "description": "- - Los demás SECCIÓN III ANIMALES, VEGETALES O DE ORIGEN MICROBIANO, Y PRODUCTOS ELABORADAS; CERAS DE ORIGEN ANIMAL O CAPÍTULO 15 ANIMALES, VEGETALES O DE ORIGEN MICROBIANO, Y PRODUCTOS ELABORADAS; CERAS DE ORIGEN ANIMAL O"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "1404.90.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 6,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 30,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    }
+  ]
+}

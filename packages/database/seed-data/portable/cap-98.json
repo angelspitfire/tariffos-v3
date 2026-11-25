@@ -1,0 +1,6675 @@
+{
+  "schemaVersion": "portable-1.0",
+  "country": "VE",
+  "source": "Consolidado Arancel 2026 Venezuela (Decreto N°4.944)",
+  "chapter": "98",
+  "totalRecords": 114,
+  "products": [
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9801",
+        "subheading": "9801.00",
+        "description": "- - De los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9801.00.00.19",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9801",
+        "subheading": "9801.00",
+        "description": "- - Superior a 18 kW pero inferior o igual a 37 kW"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9801.00.00.92",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9801",
+        "subheading": "9801.00",
+        "description": "- - Superior a 75 kW pero inferior o igual a 130 Kw"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9801.00.00.94",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9801",
+        "subheading": "9801.00",
+        "description": "- - Superior a 130 kW"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9801.00.00.95",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9802",
+        "subheading": "9802.00",
+        "description": "- - De los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9802.00.00.19",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 8,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9802",
+        "subheading": "9802.00",
+        "description": "- - De los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9802.00.00.29",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9802",
+        "subheading": "9802.00",
+        "description": "- Únicamente propulsados con motor eléctrico"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9802.00.00.40",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9802",
+        "subheading": "9802.00",
+        "description": "- - De los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9802.00.00.99",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9803",
+        "subheading": "9803.00",
+        "description": "- - De cilindrada superior a 1.000 cm³ pero inferior o igual a 1.300 cm³"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9803.00.00.12",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9803",
+        "subheading": "9803.00",
+        "description": "- - De cilindrada superior a 1.500 cm³ pero inferior o igual a 1.700 cm³"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9803.00.00.14",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9803",
+        "subheading": "9803.00",
+        "description": "- - De cilindrada superior a 2.100 cm³ pero inferior o igual a 2.500 cm³"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9803.00.00.17",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9803",
+        "subheading": "9803.00",
+        "description": "- - De los demás vehículos"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9803.00.00.19",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9803",
+        "subheading": "9803.00",
+        "description": "- - De cilindrada superior a 1.300 cm³ pero inferior o igual a 1.500 cm³"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9803.00.00.23",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9803",
+        "subheading": "9803.00",
+        "description": "- - De cilindrada superior a 1.700 cm³ pero inferior o igual a 1.900 cm³"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9803.00.00.25",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9803",
+        "subheading": "9803.00",
+        "description": "- - De cilindrada superior a 2.100 cm³ pero inferior o igual a 2.500 cm³"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9803.00.00.27",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9803",
+        "subheading": "9803.00",
+        "description": "- - De los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9803.00.00.29",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9803",
+        "subheading": "9803.00",
+        "description": "- De los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9803.00.00.90",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9804",
+        "subheading": "9804.00",
+        "description": "- - De peso total con carga máxima superior a 20 t"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9804.00.00.14",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 8,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9804",
+        "subheading": "9804.00",
+        "description": "- - De peso total con carga máxima superior a 4,537 t pero inferior o"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9804.00.00.22",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9804",
+        "subheading": "9804.00",
+        "description": "- - De peso total con carga máxima superior a 20 t"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9804.00.00.34",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9804",
+        "subheading": "9804.00",
+        "description": "- - De peso total con carga máxima inferior o igual a 4,537 t"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9804.00.00.41",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9804",
+        "subheading": "9804.00",
+        "description": "- - De peso total con carga máxima superior a 20 t"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9804.00.00.54",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9805",
+        "subheading": "9805.00",
+        "description": "- Propulsados con motor eléctrico"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9805.00.00.60",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9805",
+        "subheading": "9805.00",
+        "description": "- De los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9805.00.00.90",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9806",
+        "subheading": "9806.00",
+        "description": "- De vehículos de las subpartidas 8704.21 y 8704.31"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9806.00.00.20",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9807",
+        "subheading": "9807.00",
+        "description": "- De remolques y semirremolques, autocargadores o autodescargadores, para uso agrícola"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9807.00.00.10",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9807",
+        "subheading": "9807.00",
+        "description": "- - De cisternas"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9807.00.00.21",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9807",
+        "subheading": "9807.00",
+        "description": "- - De los demás (2)"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9807.00.00.29",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9807",
+        "subheading": "9807.00",
+        "description": "- De los demás remolques y semirremolques SUBCAPÍTULO II MERCANCÍAS SOMETIDAS A RÉGIMEN DE CONTINGENTE"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9807.00.00.30",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 3,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 16,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "9",
+              "description": "Permiso de la Comisión Presidencial COMITÉ DE COMERCIO EXTERIOR (COMEX)",
+              "legalRef": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.9"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9821",
+        "subheading": "9821.00",
+        "description": "- - Harina de trigo, excepto acondicionado para la venta al por menor"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9821.00.00.61",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9821",
+        "subheading": "9821.00",
+        "description": "- - Harina de maíz, excepto acondicionado para la venta al por menor"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9821.00.00.62",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9821",
+        "subheading": "9821.00",
+        "description": "- - Conos de lúpulo, frescos o secos, triturados, molidos o en «pellets»"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9821.00.00.72",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 8
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9821",
+        "subheading": "9821.00",
+        "description": "- - Habas (porotos, frijoles, fréjoles) de soja (soya), incluso quebrantadas"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9821.00.00.73",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 8
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "6",
+              "description": "Permiso Sanitario del Ministerio con competencia en materia de agricultura productiva y tierras",
+              "legalRef": "Decreto N°4.944 Art.21.6"
+            },
+            {
+              "type": "import",
+              "code": "8",
+              "description": "Licencia de Importación administrada por el Ministerio con competencia en materia de alimentación",
+              "legalRef": "Decreto N°4.944 Art.21.8"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.6"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.8"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9821",
+        "subheading": "9821.00",
+        "description": "- - Jugos y extractos de lúpulo"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9821.00.00.81",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 8
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9823",
+        "subheading": "9823.00",
+        "description": "- - Preparaciones y conservas de atún, entero, en trozos o picado"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9823.00.00.11",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "12",
+              "description": "Constancia de Registro Sanitario - Ministerio de Salud",
+              "legalRef": "Decreto N°4.944 Art.21.12"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.12"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9823",
+        "subheading": "9823.00",
+        "description": "- - Pastas alimenticias cocidas, pero sin rellenar ni preparar de otra forma"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9823.00.00.42",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "12",
+              "description": "Constancia de Registro Sanitario - Ministerio de Salud",
+              "legalRef": "Decreto N°4.944 Art.21.12"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.12"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9823",
+        "subheading": "9823.00",
+        "description": "- - Levaduras vivas (Saccharomyces spp.)"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9823.00.00.61",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 15
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "5",
+              "description": "Certificado Sanitario del País de Origen",
+              "legalRef": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "type": "import",
+              "code": "12",
+              "description": "Constancia de Registro Sanitario - Ministerio de Salud",
+              "legalRef": "Decreto N°4.944 Art.21.12"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.5"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.12"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9825",
+        "subheading": "9825.00",
+        "description": "- - Carbonato de disodio anhidro"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9825.00.00.11",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 10
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "4",
+              "description": "Permiso del Ministerio con competencia en materia de industrias y producción nacional",
+              "legalRef": "Decreto N°4.944 Art.21.4"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.4"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9826",
+        "subheading": "9826.00",
+        "description": "- - Poli(tereftalato de etileno) «PET»"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9826.00.00.11",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 14
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9826",
+        "subheading": "9826.00",
+        "description": "- - Tapones, tapas, cápsulas y demás dispositivos de cierre, de plástico"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9826.00.00.14",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 18
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9826",
+        "subheading": "9826.00",
+        "description": "- - Polimeros de etileno en formas primarias"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9826.00.00.15",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 14
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9826",
+        "subheading": "9826.00",
+        "description": "- - Polímeros acrílicos en forma primaria"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9826.00.00.17",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 14
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9829",
+        "subheading": "9829.00",
+        "description": "- - Cajas y cartonajes, incluso plegables, de papel o cartón"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9829.00.00.23",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 16
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9834",
+        "subheading": "9834.00",
+        "description": "- - Barriles, tambores y bidones de aluminio"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9834.00.00.53",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 16
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9836",
+        "subheading": "9836.00",
+        "description": "- - Locomotoras y locotractores; ténderes"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9836.00.00.11",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 14
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9836",
+        "subheading": "9836.00",
+        "description": "- - Partes, piezas y componentes de vehículos del Capítulo 87"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9836.00.00.23",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 16
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9841",
+        "subheading": "9841.00",
+        "description": "- - Calandrias, laminadores y cilindros para estas máquinas, de la partida 84.20"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9841.00.00.51",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9842",
+        "subheading": "9842.00",
+        "description": "- - Máquinas y aparatos para encuadernación, de la partida 84.40"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9842.00.00.52",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9842",
+        "subheading": "9842.00",
+        "description": "- - Telares de la partida 84.46"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9842.00.00.62",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9844",
+        "subheading": "9844.00",
+        "description": "- Máquinas y aparatos eléctricos con función propia de la partida 85.43"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9844.00.00.80",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9848",
+        "subheading": "9848.00",
+        "description": "- Invernaderos"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9848.00.00.10",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9871",
+        "subheading": "9871.00",
+        "description": "- MERCANCÍAS IMPORTADAS POR EL PODER ELECTORAL"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9871.00.00.00",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Arancel de Aduanas Consolidado 2026"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9880",
+        "subheading": "9880.00",
+        "description": "- Cloruro de sodio"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9880.00.00.10",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9881",
+        "subheading": "9881.00",
+        "description": "- - Benzol (benceno), toluol (tolueno), xilol (xilenos), naftaleno"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9881.00.00.31",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9881",
+        "subheading": "9881.00",
+        "description": "- - Concentrados aromáticos"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9881.00.00.33",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9881",
+        "subheading": "9881.00",
+        "description": "- - Aceites crudos de petróleo"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9881.00.00.51",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9881",
+        "subheading": "9881.00",
+        "description": "- - Gasolina, incluso con tetraetilo de plomo"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9881.00.00.62",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "m³",
+            "name": "m³"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9881",
+        "subheading": "9881.00",
+        "description": "- - Mezclas de n-parafinas y mezclas de n-olefinas"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9881.00.00.65",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "m³",
+            "name": "m³"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9881",
+        "subheading": "9881.00",
+        "description": "- - Aceites para aislación eléctrica"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9881.00.00.68",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "m³",
+            "name": "m³"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9881",
+        "subheading": "9881.00",
+        "description": "- - Metano"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9881.00.00.71",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "m³",
+            "name": "m³"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9881",
+        "subheading": "9881.00",
+        "description": "- - Gas natural, incluso comprimido (GNC)"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9881.00.00.74",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "m³",
+            "name": "m³"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9881",
+        "subheading": "9881.00",
+        "description": "- - Las demás parafinas y ceras"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9881.00.00.89",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9881",
+        "subheading": "9881.00",
+        "description": "- - Coque de petróleo, betún de petróleo y demás residuos de los aceites de petróleo o de mineral bituminoso"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9881.00.00.91",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9882",
+        "subheading": "9882.00",
+        "description": "- - Hidrógeno"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9882.00.00.11",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9882",
+        "subheading": "9882.00",
+        "description": "- - Silicio"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9882.00.00.12",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9882",
+        "subheading": "9882.00",
+        "description": "- - Cloruro de litio"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9882.00.00.41",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9882",
+        "subheading": "9882.00",
+        "description": "- - Cloruros de los demás metales de las tierras raras"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9882.00.00.51",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9883",
+        "subheading": "9883.00",
+        "description": "- - o-Xileno"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9883.00.00.12",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9883",
+        "subheading": "9883.00",
+        "description": "- - Metiloxirano (óxido de propileno)"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9883.00.00.33",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9883",
+        "subheading": "9883.00",
+        "description": "- - Metanal (formaldehído)"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9883.00.00.41",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9883",
+        "subheading": "9883.00",
+        "description": "- - Sales y ésteres del ácido trimelítico (sales y ésteres del ácido 1,2,4- bencenotricarboxílico)"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9883.00.00.52",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9883",
+        "subheading": "9883.00",
+        "description": "- - Tetrakis(3-(3,5-di-ter-butil-4-hidroxifenil)propionato) de pentaeritritilo"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9883.00.00.53",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9883",
+        "subheading": "9883.00",
+        "description": "- - Acetanilida y sus derivados; sales de estos productos"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9883.00.00.72",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9883",
+        "subheading": "9883.00",
+        "description": "- - Disulfuro de dimetilo"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9883.00.00.81",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9883",
+        "subheading": "9883.00",
+        "description": "- - Morfolina y sus sales"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9883.00.00.84",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9885",
+        "subheading": "9885.00",
+        "description": "- Agentes de superficie orgánicos y preparaciones tensoactivas"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9885.00.00.10",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9885",
+        "subheading": "9885.00",
+        "description": "- - Preparaciones lubricantes y aceites sin aditivos"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9885.00.00.22",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9887",
+        "subheading": "9887.00",
+        "description": "- - Las demás preparaciones antidetonantes"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9887.00.00.12",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9887",
+        "subheading": "9887.00",
+        "description": "- - Dispersantes"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9887.00.00.15",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9887",
+        "subheading": "9887.00",
+        "description": "- - Mezclas de aditivos"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9887.00.00.17",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9887",
+        "subheading": "9887.00",
+        "description": "- - Catalizadores sobre soporte con níquel o sus compuestos como sustancia activa"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9887.00.00.21",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9887",
+        "subheading": "9887.00",
+        "description": "- - Catalizadores sobre soporte con mercurio o sus compuestos como sustancia activa"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9887.00.00.24",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9887",
+        "subheading": "9887.00",
+        "description": "- - Los demás catalizadores para craqueo de petróleo"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9887.00.00.26",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9887",
+        "subheading": "9887.00",
+        "description": "- - Los demás catalizadores"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9887.00.00.29",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9887",
+        "subheading": "9887.00",
+        "description": "- - Mezclas y preparaciones desincrustantes, anticorrosivas o antioxidantes; fluidos para transferencia de calor"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9887.00.00.31",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9887",
+        "subheading": "9887.00",
+        "description": "- - Polipropilenglicol líquido"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9887.00.00.34",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9887",
+        "subheading": "9887.00",
+        "description": "- - Sulfonatos de petróleo"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9887.00.00.36",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9887",
+        "subheading": "9887.00",
+        "description": "- - Preparaciones para fluidos de perforación de pozos («lodos»)"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9887.00.00.37",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9888",
+        "subheading": "9888.00",
+        "description": "- - De copolímeros de estireno-divinilbenceno, sulfonados"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9888.00.00.71",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9889",
+        "subheading": "9889.00",
+        "description": "- Abrigos, chaquetones, capas, anoraks, cazadoras y artículos similares"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9889.00.00.10",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9889",
+        "subheading": "9889.00",
+        "description": "- Camisas, blusas y blusas camiseras; «t-shirts» y camisetas, de punto"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9889.00.00.30",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9889",
+        "subheading": "9889.00",
+        "description": "- Arneses y eslingas de protección"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9889.00.00.60",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9889",
+        "subheading": "9889.00",
+        "description": "- Cascos de seguridad"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9889.00.00.80",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9890",
+        "subheading": "9890.00",
+        "description": "- Tubos de entubación («casing») o de producción («tubing») y tubos de perforación, de los tipos utilizados para la extracción de petróleo o gas"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9890.00.00.20",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9890",
+        "subheading": "9890.00",
+        "description": "- Tornillos, pernos, tuercas, tirafondos, escarpias roscadas, remaches, pasadores, chavetas, arandelas (incluidas las arandelas de muelle (resorte)) y artículos"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9890.00.00.50",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9891",
+        "subheading": "9891.00",
+        "description": "- - Barrenas"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9891.00.00.12",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9891",
+        "subheading": "9891.00",
+        "description": "- - Los demás útiles de perforación o sondeo"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9891.00.00.15",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9891",
+        "subheading": "9891.00",
+        "description": "- - Tubos flexibles de los tipos utilizados en la explotación submarina de petróleo o gas, constituidos por capas flexibles de acero y capas de plástico, de diámetro"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9891.00.00.21",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "Kg",
+            "name": "Kg"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9892",
+        "subheading": "9892.00",
+        "description": "- - Calderas de vapor (generadores de vapor), excepto las de calefacción central diseñadas para producir agua caliente y también vapor a baja presión; calderas"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9892.00.00.11",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9892",
+        "subheading": "9892.00",
+        "description": "- - Turbinas hidráulicas, ruedas hidráulicas y sus reguladores; turborreactores, turbopropulsores y demás turbinas de gas; los demás motores y máquinas"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9892.00.00.14",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9892",
+        "subheading": "9892.00",
+        "description": "- - Quemadores para la alimentación de hogares, de combustibles líquidos o sólidos pulverizados o de gases; alimentadores mecánicos de hogares, parrillas"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9892.00.00.16",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9892",
+        "subheading": "9892.00",
+        "description": "- - Las demás máquinas y aparatos de elevación, carga, descarga o manipulación (por ejemplo: ascensores, escaleras mecánicas, transportadores, teleféricos);"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9892.00.00.22",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9892",
+        "subheading": "9892.00",
+        "description": "- - Artículos de grifería y órganos similares para tuberías, calderas, depósitos, cubas o continentes similares, incluidas las válvulas reductoras de presión y las válvulas"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9892.00.00.25",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9893",
+        "subheading": "9893.00",
+        "description": "- Grupos electrógenos y convertidores rotativos eléctricos;partes"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9893.00.00.20",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9893",
+        "subheading": "9893.00",
+        "description": "- Condensadores eléctricos fijos, variables o ajustables"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9893.00.00.40",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9893",
+        "subheading": "9893.00",
+        "description": "- Aparatos para corte, seccionamiento, protección, derivación, empalme o conexión de circuitos eléctricos (por ejemplo: interruptores, conmutadores, reles,"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9893.00.00.50",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9893",
+        "subheading": "9893.00",
+        "description": "- Hilos, cables (incluidos los coaxiales) y demás conductores aislados para electricidad, aunque estén laqueados, anodizados o provistos de piezas de"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9893.00.00.70",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9894",
+        "subheading": "9894.00",
+        "description": "- - Tractores de carretera para semirremolques"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9894.00.00.21",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9894",
+        "subheading": "9894.00",
+        "description": "- - Automóviles de turismo y demás vehículos automóviles diseñados principalmente para transporte de personas (excepto los de la partida 87.02), incluidos los del"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9894.00.00.23",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9894",
+        "subheading": "9894.00",
+        "description": "- - Vehículos automóviles para transporte de mercancías"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9894.00.00.24",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9894",
+        "subheading": "9894.00",
+        "description": "- - Remolques y semirremolques cisternas"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9894.00.00.26",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9895",
+        "subheading": "9895.00",
+        "description": "- Densímetros, areómetros, pesalíquidos e instrumentos flotantes similares, termómetros, pirómetros, barómetros, higrómetros y sicrómetros, aunque sean"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9895.00.00.20",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9895",
+        "subheading": "9895.00",
+        "description": "- Instrumentos y aparatos para análisis físicos o químicos (por ejemplo: polarímetros, refractómetros, espectrómetros, analizadores de gases o humos); instrumentos y"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9895.00.00.40",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "98",
+        "heading": "9895",
+        "subheading": "9895.00",
+        "description": "- Instrumentos, aparatos y máquinas de medida o control, no expresados ni comprendidos en otra parte de este capítulo; proyectores de perfiles"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "9895.00.00.70",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 20
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "u",
+            "name": "unidad"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    }
+  ]
+}

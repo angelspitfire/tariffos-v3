@@ -1,0 +1,7 @@
+{
+  "appRoot": "/Users/afernandez/projects/tariffos-v3/apps/web",
+  "kind": "eve-dev-runtime-artifacts-pointer",
+  "runtimeAppRoot": "/Users/afernandez/projects/tariffos-v3/apps/web/.eve/dev-runtime/snapshots/mwvmefvf-c79155a0-0d8e-415f-a3c6-909854535f0c/source/apps/web",
+  "snapshotRoot": "/Users/afernandez/projects/tariffos-v3/apps/web/.eve/dev-runtime/snapshots/mwvmefvf-c79155a0-0d8e-415f-a3c6-909854535f0c",
+  "version": 2
+}

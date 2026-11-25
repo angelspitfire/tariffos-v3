@@ -1,0 +1,1187 @@
+{
+  "schemaVersion": "portable-1.0",
+  "country": "VE",
+  "source": "Consolidado Arancel 2026 Venezuela (Decreto N°4.944)",
+  "chapter": "31",
+  "totalRecords": 18,
+  "products": [
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3102",
+        "subheading": "3102.10",
+        "description": "- - Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3102.10.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 6,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 0,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "export",
+              "code": "21",
+              "description": "Permiso del Registro Nacional Único de Operadores de Sustancias Químicas Controladas",
+              "legalRef": "Decreto N°4.944 Art.21.21"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.21"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3102",
+        "subheading": "3102.21",
+        "description": "- - Sulfato de amonio"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3102.21.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 4
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3102",
+        "subheading": "3102.29",
+        "description": "- - - Las demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3102.29.90.00",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3102",
+        "subheading": "3102.30",
+        "description": "- Nitrato de amonio, incluso en disolución acuosa"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3102.30.00.00",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3102",
+        "subheading": "3102.50",
+        "description": "- - - Con un contenido de nitrógeno inferior o igual al 16,3 % en peso"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3102.50.11.00",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3102",
+        "subheading": "3102.50",
+        "description": "- - - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3102.50.19.00",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3102",
+        "subheading": "3102.50",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3102.50.90.00",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3102",
+        "subheading": "3102.90",
+        "description": "- - Nitrato de calcio y mezclas de nitrato de calcio con magnesio"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3102.90.00.10",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3102",
+        "subheading": "3102.90",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3102.90.00.90",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3103",
+        "subheading": "3103.90",
+        "description": "- - - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3103.90.19.00",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3103",
+        "subheading": "3103.90",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3103.90.90.00",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            },
+            {
+              "type": "export",
+              "code": "4",
+              "description": "Permiso del Ministerio con competencia en materia de industrias y producción nacional",
+              "legalRef": "Decreto N°4.944 Art.21.4"
+            },
+            {
+              "type": "export",
+              "code": "11",
+              "description": "Permiso del Ministerio con competencia en materia de hidrocarburos",
+              "legalRef": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.4"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.11"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3104",
+        "subheading": "3104.20",
+        "description": "- - Con un contenido de óxido de potasio (K 2 O) inferior o igual al 60 % en peso"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3104.20.10.00",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3104",
+        "subheading": "3104.20",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3104.20.90.00",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3104",
+        "subheading": "3104.30",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3104.30.90.00",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3104",
+        "subheading": "3104.90",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3104.90.90.00",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3105",
+        "subheading": "3105.51",
+        "description": "- - Que contengan nitratos y fosfatos"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3105.51.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 4,
+            "exceptions": [
+              {
+                "type": "ad_valorem",
+                "rate": 2,
+                "code": "E"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3105",
+        "subheading": "3105.59",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3105.59.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 4
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "31",
+        "heading": "3105",
+        "subheading": "3105.90",
+        "description": "- - - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3105.90.19.00",
+          "baseDuty": {
+            "type": "exempt"
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "import",
+              "code": "13",
+              "description": "Constancia de Registro Sanitario - Ministerio de Agricultura",
+              "legalRef": "Decreto N°4.944 Art.21.13"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.13"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    }
+  ]
+}

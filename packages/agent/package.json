@@ -1,0 +1,37 @@
+{
+  "name": "@tariffos/agent",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tariffos/ai-client": "workspace:*",
+    "@tariffos/database": "workspace:*",
+    "@tariffos/env": "workspace:*",
+    "@tariffos/logger": "workspace:*",
+    "@tariffos/shared-types": "workspace:*",
+    "@typesafe-ai/sdk": "^0.7.0",
+    "ai": "^7.0.171",
+    "pdfjs-dist": "^6.5.438",
+    "unpdf": "^2.2.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "vitest": "^5.1.0"
+  }
+}

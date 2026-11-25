@@ -1,0 +1,637 @@
+{
+  "schemaVersion": "portable-1.0",
+  "country": "VE",
+  "source": "Consolidado Arancel 2026 Venezuela (Decreto N°4.944)",
+  "chapter": "36",
+  "totalRecords": 10,
+  "products": [
+    {
+      "hs": {
+        "chapter": "36",
+        "heading": "3601",
+        "subheading": "3601.00",
+        "description": "PÓLVORA."
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3601.00.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 12
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "36",
+        "heading": "3602",
+        "subheading": "3602.00",
+        "description": "- A base de derivados nitrados orgánicos"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3602.00.00.10",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 12
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "36",
+        "heading": "3602",
+        "subheading": "3602.00",
+        "description": "- A base de nitrato de amonio"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3602.00.00.20",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 12
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "36",
+        "heading": "3602",
+        "subheading": "3602.00",
+        "description": "- Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3602.00.00.90",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 12
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "36",
+        "heading": "3603",
+        "subheading": "3603.10",
+        "description": "- Mechas de seguridad"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3603.10.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 12,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "36",
+        "heading": "3603",
+        "subheading": "3603.30",
+        "description": "- Cebos fulminantes"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3603.30.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 12,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "36",
+        "heading": "3603",
+        "subheading": "3603.40",
+        "description": "- Cápsulas fulminantes"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3603.40.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 12,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "36",
+        "heading": "3603",
+        "subheading": "3603.60",
+        "description": "- Detonadores eléctricos"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3603.60.00.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 12,
+            "exceptions": [
+              {
+                "type": "aeronautic",
+                "rate": 0,
+                "code": "A"
+              }
+            ]
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "36",
+        "heading": "3604",
+        "subheading": "3604.90",
+        "description": "- - Cohetes y cartuchos antigranizo y similares"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3604.90.10.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 4
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    },
+    {
+      "hs": {
+        "chapter": "36",
+        "heading": "3604",
+        "subheading": "3604.90",
+        "description": "- - Los demás"
+      },
+      "tariffs": [
+        {
+          "country": "VE",
+          "code": "3604.90.90.00",
+          "baseDuty": {
+            "type": "ad_valorem",
+            "rate": 14
+          },
+          "taxes": [
+            {
+              "code": "IVA",
+              "name": "Impuesto al Valor Agregado",
+              "rate": 16,
+              "base": "cif+duty",
+              "exempt": false
+            }
+          ],
+          "regimes": [
+            {
+              "type": "import",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            },
+            {
+              "type": "export",
+              "code": "7",
+              "description": "Permiso del Ministerio con competencia en materia de defensa",
+              "legalRef": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "restrictions": [],
+          "legalRefs": [
+            {
+              "document": "Decreto N°4.944",
+              "article": "Decreto N°4.944 Art.21.7"
+            }
+          ],
+          "unit": {
+            "code": "kg",
+            "name": "kilogramo"
+          },
+          "updatedAt": "2026-04-24"
+        }
+      ],
+      "classification": {
+        "rgiApplied": [],
+        "rgiReasoning": "",
+        "confidence": "high",
+        "classifiedAt": "2026-06-16T23:30:00Z",
+        "classifiedBy": "migrate:v1"
+      }
+    }
+  ]
+}

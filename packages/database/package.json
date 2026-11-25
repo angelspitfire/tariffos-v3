@@ -1,0 +1,47 @@
+{
+  "name": "@tariffos/database",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "private": true,
+  "scripts": {
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "npx tsx prisma/seed.ts",
+    "prisma:seed:portable": "npx tsx src/scripts/seed_from_portable.ts",
+    "laws:seniat": "npx tsx src/scripts/fetch_seniat_normativa.ts",
+    "build": "prisma generate && tsc && rm -rf dist/generated && cp -R src/generated dist/generated",
+    "test": "vitest run",
+    "clean": "rimraf dist .turbo",
+    "laws:ncm": "npx tsx src/scripts/fetch_ncm_table.ts",
+    "laws:notes": "npx tsx src/scripts/extract_arancel_notes.ts",
+    "laws:tradex": "npx tsx src/scripts/fetch_tradex_normativa.ts",
+    "laws:diff-arancel": "npx tsx src/scripts/diff_aranceles.ts",
+    "verify:index": "npx tsx src/scripts/verify_tariff_index.ts"
+  },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "@prisma/client-runtime-utils": "^7.10.1",
+    "@tariffos/ai-client": "workspace:^",
+    "@tariffos/shared-types": "workspace:*",
+    "pg": "^8.23.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@prisma/config": "^7.10.1",
+    "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1",
+    "dotenv": "^18.0.10",
+    "pdfjs-dist": "^6.5.438",
+    "prisma": "^7.10.1",
+    "rimraf": "^6.1.4",
+    "tsx": "^4.23.15",
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
+  }
+}

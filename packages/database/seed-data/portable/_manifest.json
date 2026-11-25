@@ -1,0 +1,883 @@
+{
+  "schemaVersion": "portable-1.0",
+  "country": "VE",
+  "source": "Consolidado Arancel 2026 Venezuela (Decreto N°4.944)",
+  "splitAt": "2026-06-16T23:30:00Z",
+  "totalChapters": 97,
+  "totalRecords": 8638,
+  "chapters": [
+    {
+      "chapter": "01",
+      "file": "cap-01.json",
+      "records": 43,
+      "codeRange": [
+        "0101.21.00.10",
+        "0106.49.00.00"
+      ]
+    },
+    {
+      "chapter": "02",
+      "file": "cap-02.json",
+      "records": 66,
+      "codeRange": [
+        "0201.10.00.00",
+        "0210.99.90.00"
+      ]
+    },
+    {
+      "chapter": "03",
+      "file": "cap-03.json",
+      "records": 245,
+      "codeRange": [
+        "0301.11.10.00",
+        "0309.90.00.10"
+      ]
+    },
+    {
+      "chapter": "04",
+      "file": "cap-04.json",
+      "records": 57,
+      "codeRange": [
+        "0401.10.90.00",
+        "0410.10.00.00"
+      ]
+    },
+    {
+      "chapter": "05",
+      "file": "cap-05.json",
+      "records": 19,
+      "codeRange": [
+        "0502.10.11.00",
+        "0511.99.99.20"
+      ]
+    },
+    {
+      "chapter": "06",
+      "file": "cap-06.json",
+      "records": 18,
+      "codeRange": [
+        "0602.10.00.00",
+        "0604.90.00.00"
+      ]
+    },
+    {
+      "chapter": "07",
+      "file": "cap-07.json",
+      "records": 82,
+      "codeRange": [
+        "0701.10.00.00",
+        "0714.90.00.00"
+      ]
+    },
+    {
+      "chapter": "08",
+      "file": "cap-08.json",
+      "records": 67,
+      "codeRange": [
+        "0801.11.00.00",
+        "0813.40.90.00"
+      ]
+    },
+    {
+      "chapter": "09",
+      "file": "cap-09.json",
+      "records": 39,
+      "codeRange": [
+        "0901.11.10.10",
+        "0910.99.00.00"
+      ]
+    },
+    {
+      "chapter": "10",
+      "file": "cap-10.json",
+      "records": 38,
+      "codeRange": [
+        "1001.19.00.00",
+        "1008.90.90.00"
+      ]
+    },
+    {
+      "chapter": "11",
+      "file": "cap-11.json",
+      "records": 33,
+      "codeRange": [
+        "1101.00.10.11",
+        "1109.00.00.00"
+      ]
+    },
+    {
+      "chapter": "12",
+      "file": "cap-12.json",
+      "records": 62,
+      "codeRange": [
+        "1201.10.00.00",
+        "1214.10.00.00"
+      ]
+    },
+    {
+      "chapter": "13",
+      "file": "cap-13.json",
+      "records": 24,
+      "codeRange": [
+        "1301.20.00.00",
+        "1302.39.90.00"
+      ]
+    },
+    {
+      "chapter": "14",
+      "file": "cap-14.json",
+      "records": 5,
+      "codeRange": [
+        "1401.20.00.00",
+        "1404.90.90.00"
+      ]
+    },
+    {
+      "chapter": "15",
+      "file": "cap-15.json",
+      "records": 71,
+      "codeRange": [
+        "1501.10.00.00",
+        "1521.90.90.00"
+      ]
+    },
+    {
+      "chapter": "16",
+      "file": "cap-16.json",
+      "records": 47,
+      "codeRange": [
+        "1601.00.00.10",
+        "1605.69.00.00"
+      ]
+    },
+    {
+      "chapter": "17",
+      "file": "cap-17.json",
+      "records": 38,
+      "codeRange": [
+        "1701.12.00.00",
+        "1704.90.90.00"
+      ]
+    },
+    {
+      "chapter": "18",
+      "file": "cap-18.json",
+      "records": 16,
+      "codeRange": [
+        "1801.00.00.31",
+        "1806.90.00.00"
+      ]
+    },
+    {
+      "chapter": "19",
+      "file": "cap-19.json",
+      "records": 21,
+      "codeRange": [
+        "1901.10.10.00",
+        "1905.90.90.00"
+      ]
+    },
+    {
+      "chapter": "20",
+      "file": "cap-20.json",
+      "records": 72,
+      "codeRange": [
+        "2001.10.00.00",
+        "2009.90.00.00"
+      ]
+    },
+    {
+      "chapter": "21",
+      "file": "cap-21.json",
+      "records": 45,
+      "codeRange": [
+        "2101.11.10.00",
+        "2106.90.90.90"
+      ]
+    },
+    {
+      "chapter": "22",
+      "file": "cap-22.json",
+      "records": 28,
+      "codeRange": [
+        "2201.10.00.00",
+        "2208.90.00.90"
+      ]
+    },
+    {
+      "chapter": "23",
+      "file": "cap-23.json",
+      "records": 27,
+      "codeRange": [
+        "2301.10.10.00",
+        "2309.90.90.90"
+      ]
+    },
+    {
+      "chapter": "24",
+      "file": "cap-24.json",
+      "records": 22,
+      "codeRange": [
+        "2401.10.10.00",
+        "2404.99.00.00"
+      ]
+    },
+    {
+      "chapter": "25",
+      "file": "cap-25.json",
+      "records": 65,
+      "codeRange": [
+        "2501.00.11.00",
+        "2530.90.40.00"
+      ]
+    },
+    {
+      "chapter": "26",
+      "file": "cap-26.json",
+      "records": 35,
+      "codeRange": [
+        "2601.11.00.00",
+        "2621.90.90.00"
+      ]
+    },
+    {
+      "chapter": "27",
+      "file": "cap-27.json",
+      "records": 69,
+      "codeRange": [
+        "2701.11.00.00",
+        "2716.00.00.00"
+      ]
+    },
+    {
+      "chapter": "28",
+      "file": "cap-28.json",
+      "records": 349,
+      "codeRange": [
+        "2801.10.00.00",
+        "2853.90.90.90"
+      ]
+    },
+    {
+      "chapter": "29",
+      "file": "cap-29.json",
+      "records": 1402,
+      "codeRange": [
+        "2901.10.00.10",
+        "2941.90.99.00"
+      ]
+    },
+    {
+      "chapter": "30",
+      "file": "cap-30.json",
+      "records": 504,
+      "codeRange": [
+        "3001.20.10.00",
+        "3006.92.00.00"
+      ]
+    },
+    {
+      "chapter": "31",
+      "file": "cap-31.json",
+      "records": 18,
+      "codeRange": [
+        "3102.10.90.00",
+        "3105.90.19.00"
+      ]
+    },
+    {
+      "chapter": "32",
+      "file": "cap-32.json",
+      "records": 71,
+      "codeRange": [
+        "3201.10.00.00",
+        "3215.90.00.10"
+      ]
+    },
+    {
+      "chapter": "33",
+      "file": "cap-33.json",
+      "records": 51,
+      "codeRange": [
+        "3301.12.10.00",
+        "3307.90.00.90"
+      ]
+    },
+    {
+      "chapter": "34",
+      "file": "cap-34.json",
+      "records": 50,
+      "codeRange": [
+        "3401.11.10.00",
+        "3407.00.90.00"
+      ]
+    },
+    {
+      "chapter": "35",
+      "file": "cap-35.json",
+      "records": 30,
+      "codeRange": [
+        "3501.10.00.00",
+        "3507.90.49.00"
+      ]
+    },
+    {
+      "chapter": "36",
+      "file": "cap-36.json",
+      "records": 10,
+      "codeRange": [
+        "3601.00.00.00",
+        "3604.90.90.00"
+      ]
+    },
+    {
+      "chapter": "37",
+      "file": "cap-37.json",
+      "records": 43,
+      "codeRange": [
+        "3701.10.10.00",
+        "3707.90.90.00"
+      ]
+    },
+    {
+      "chapter": "38",
+      "file": "cap-38.json",
+      "records": 191,
+      "codeRange": [
+        "3801.20.10.00",
+        "3827.90.00.00"
+      ]
+    },
+    {
+      "chapter": "39",
+      "file": "cap-39.json",
+      "records": 241,
+      "codeRange": [
+        "3901.10.20.90",
+        "3926.90.90.92"
+      ]
+    },
+    {
+      "chapter": "40",
+      "file": "cap-40.json",
+      "records": 91,
+      "codeRange": [
+        "4001.21.00.00",
+        "4016.99.90.00"
+      ]
+    },
+    {
+      "chapter": "41",
+      "file": "cap-41.json",
+      "records": 48,
+      "codeRange": [
+        "4101.50.10.00",
+        "4114.20.10.00"
+      ]
+    },
+    {
+      "chapter": "42",
+      "file": "cap-42.json",
+      "records": 19,
+      "codeRange": [
+        "4201.00.90.00",
+        "4205.00.00.90"
+      ]
+    },
+    {
+      "chapter": "43",
+      "file": "cap-43.json",
+      "records": 9,
+      "codeRange": [
+        "4301.10.00.00",
+        "4303.10.00.00"
+      ]
+    },
+    {
+      "chapter": "44",
+      "file": "cap-44.json",
+      "records": 127,
+      "codeRange": [
+        "4401.11.00.00",
+        "4421.99.00.00"
+      ]
+    },
+    {
+      "chapter": "45",
+      "file": "cap-45.json",
+      "records": 6,
+      "codeRange": [
+        "4501.10.00.00",
+        "4504.90.00.20"
+      ]
+    },
+    {
+      "chapter": "46",
+      "file": "cap-46.json",
+      "records": 8,
+      "codeRange": [
+        "4601.21.00.00",
+        "4602.19.00.00"
+      ]
+    },
+    {
+      "chapter": "47",
+      "file": "cap-47.json",
+      "records": 16,
+      "codeRange": [
+        "4701.00.00.00",
+        "4707.90.00.00"
+      ]
+    },
+    {
+      "chapter": "48",
+      "file": "cap-48.json",
+      "records": 157,
+      "codeRange": [
+        "4801.00.90.00",
+        "4823.90.99.90"
+      ]
+    },
+    {
+      "chapter": "49",
+      "file": "cap-49.json",
+      "records": 15,
+      "codeRange": [
+        "4901.10.00.00",
+        "4911.99.00.00"
+      ]
+    },
+    {
+      "chapter": "50",
+      "file": "cap-50.json",
+      "records": 9,
+      "codeRange": [
+        "5001.00.00.00",
+        "5007.90.00.00"
+      ]
+    },
+    {
+      "chapter": "51",
+      "file": "cap-51.json",
+      "records": 35,
+      "codeRange": [
+        "5101.11.90.00",
+        "5113.00.20.00"
+      ]
+    },
+    {
+      "chapter": "52",
+      "file": "cap-52.json",
+      "records": 84,
+      "codeRange": [
+        "5201.00.10.00",
+        "5212.25.00.00"
+      ]
+    },
+    {
+      "chapter": "53",
+      "file": "cap-53.json",
+      "records": 27,
+      "codeRange": [
+        "5301.10.00.00",
+        "5310.90.00.00"
+      ]
+    },
+    {
+      "chapter": "54",
+      "file": "cap-54.json",
+      "records": 78,
+      "codeRange": [
+        "5401.10.11.00",
+        "5408.34.00.00"
+      ]
+    },
+    {
+      "chapter": "55",
+      "file": "cap-55.json",
+      "records": 112,
+      "codeRange": [
+        "5501.11.00.00",
+        "5516.94.00.00"
+      ]
+    },
+    {
+      "chapter": "56",
+      "file": "cap-56.json",
+      "records": 63,
+      "codeRange": [
+        "5601.21.10.00",
+        "5609.00.90.00"
+      ]
+    },
+    {
+      "chapter": "57",
+      "file": "cap-57.json",
+      "records": 21,
+      "codeRange": [
+        "5701.10.11.00",
+        "5704.90.00.00"
+      ]
+    },
+    {
+      "chapter": "58",
+      "file": "cap-58.json",
+      "records": 26,
+      "codeRange": [
+        "5801.10.00.00",
+        "5810.99.00.00"
+      ]
+    },
+    {
+      "chapter": "59",
+      "file": "cap-59.json",
+      "records": 17,
+      "codeRange": [
+        "5901.90.00.00",
+        "5911.90.00.00"
+      ]
+    },
+    {
+      "chapter": "60",
+      "file": "cap-60.json",
+      "records": 70,
+      "codeRange": [
+        "6001.10.20.00",
+        "6006.90.00.00"
+      ]
+    },
+    {
+      "chapter": "61",
+      "file": "cap-61.json",
+      "records": 111,
+      "codeRange": [
+        "6101.20.00.00",
+        "6117.90.00.00"
+      ]
+    },
+    {
+      "chapter": "62",
+      "file": "cap-62.json",
+      "records": 100,
+      "codeRange": [
+        "6201.20.00.00",
+        "6217.90.00.00"
+      ]
+    },
+    {
+      "chapter": "63",
+      "file": "cap-63.json",
+      "records": 57,
+      "codeRange": [
+        "6301.10.00.00",
+        "6310.90.00.00"
+      ]
+    },
+    {
+      "chapter": "64",
+      "file": "cap-64.json",
+      "records": 33,
+      "codeRange": [
+        "6401.10.00.00",
+        "6406.90.90.90"
+      ]
+    },
+    {
+      "chapter": "65",
+      "file": "cap-65.json",
+      "records": 16,
+      "codeRange": [
+        "6502.00.10.00",
+        "6506.99.00.00"
+      ]
+    },
+    {
+      "chapter": "66",
+      "file": "cap-66.json",
+      "records": 3,
+      "codeRange": [
+        "6601.10.00.00",
+        "6601.99.00.00"
+      ]
+    },
+    {
+      "chapter": "67",
+      "file": "cap-67.json",
+      "records": 4,
+      "codeRange": [
+        "6702.10.00.00",
+        "6704.20.00.00"
+      ]
+    },
+    {
+      "chapter": "68",
+      "file": "cap-68.json",
+      "records": 56,
+      "codeRange": [
+        "6802.21.00.00",
+        "6815.99.90.00"
+      ]
+    },
+    {
+      "chapter": "69",
+      "file": "cap-69.json",
+      "records": 47,
+      "codeRange": [
+        "6902.10.18.00",
+        "6914.90.00.00"
+      ]
+    },
+    {
+      "chapter": "70",
+      "file": "cap-70.json",
+      "records": 73,
+      "codeRange": [
+        "7001.00.00.30",
+        "7020.00.90.00"
+      ]
+    },
+    {
+      "chapter": "71",
+      "file": "cap-71.json",
+      "records": 52,
+      "codeRange": [
+        "7101.10.00.00",
+        "7118.90.00.00"
+      ]
+    },
+    {
+      "chapter": "72",
+      "file": "cap-72.json",
+      "records": 204,
+      "codeRange": [
+        "7201.50.00.00",
+        "7229.90.00.00"
+      ]
+    },
+    {
+      "chapter": "73",
+      "file": "cap-73.json",
+      "records": 131,
+      "codeRange": [
+        "7301.10.00.00",
+        "7326.90.90.10"
+      ]
+    },
+    {
+      "chapter": "74",
+      "file": "cap-74.json",
+      "records": 52,
+      "codeRange": [
+        "7401.00.00.00",
+        "7419.80.90.00"
+      ]
+    },
+    {
+      "chapter": "75",
+      "file": "cap-75.json",
+      "records": 21,
+      "codeRange": [
+        "7501.10.00.00",
+        "7508.90.90.00"
+      ]
+    },
+    {
+      "chapter": "76",
+      "file": "cap-76.json",
+      "records": 42,
+      "codeRange": [
+        "7601.20.00.00",
+        "7616.99.00.99"
+      ]
+    },
+    {
+      "chapter": "78",
+      "file": "cap-78.json",
+      "records": 10,
+      "codeRange": [
+        "7801.10.11.00",
+        "7806.00.90.00"
+      ]
+    },
+    {
+      "chapter": "79",
+      "file": "cap-79.json",
+      "records": 14,
+      "codeRange": [
+        "7901.11.11.00",
+        "7907.00.90.00"
+      ]
+    },
+    {
+      "chapter": "80",
+      "file": "cap-80.json",
+      "records": 7,
+      "codeRange": [
+        "8001.10.00.00",
+        "8007.00.90.00"
+      ]
+    },
+    {
+      "chapter": "81",
+      "file": "cap-81.json",
+      "records": 58,
+      "codeRange": [
+        "8101.10.00.00",
+        "8113.00.90.90"
+      ]
+    },
+    {
+      "chapter": "82",
+      "file": "cap-82.json",
+      "records": 63,
+      "codeRange": [
+        "8201.10.00.00",
+        "8215.99.90.00"
+      ]
+    },
+    {
+      "chapter": "83",
+      "file": "cap-83.json",
+      "records": 28,
+      "codeRange": [
+        "8301.10.00.00",
+        "8311.90.00.00"
+      ]
+    },
+    {
+      "chapter": "84",
+      "file": "cap-84.json",
+      "records": 819,
+      "codeRange": [
+        "8401.10.00.00",
+        "8487.90.00.00"
+      ]
+    },
+    {
+      "chapter": "85",
+      "file": "cap-85.json",
+      "records": 485,
+      "codeRange": [
+        "8501.10.11.00",
+        "8549.99.00.00"
+      ]
+    },
+    {
+      "chapter": "86",
+      "file": "cap-86.json",
+      "records": 20,
+      "codeRange": [
+        "8601.10.00.00",
+        "8608.00.12.00"
+      ]
+    },
+    {
+      "chapter": "87",
+      "file": "cap-87.json",
+      "records": 143,
+      "codeRange": [
+        "8701.10.00.10",
+        "8716.90.90.00"
+      ]
+    },
+    {
+      "chapter": "88",
+      "file": "cap-88.json",
+      "records": 24,
+      "codeRange": [
+        "8802.11.00.00",
+        "8807.90.00.00"
+      ]
+    },
+    {
+      "chapter": "89",
+      "file": "cap-89.json",
+      "records": 18,
+      "codeRange": [
+        "8901.20.00.00",
+        "8908.00.00.00"
+      ]
+    },
+    {
+      "chapter": "90",
+      "file": "cap-90.json",
+      "records": 264,
+      "codeRange": [
+        "9001.10.19.00",
+        "9032.90.99.00"
+      ]
+    },
+    {
+      "chapter": "91",
+      "file": "cap-91.json",
+      "records": 46,
+      "codeRange": [
+        "9101.11.00.00",
+        "9114.90.00.00"
+      ]
+    },
+    {
+      "chapter": "92",
+      "file": "cap-92.json",
+      "records": 16,
+      "codeRange": [
+        "9201.10.00.00",
+        "9209.99.00.00"
+      ]
+    },
+    {
+      "chapter": "93",
+      "file": "cap-93.json",
+      "records": 12,
+      "codeRange": [
+        "9303.10.00.00",
+        "9306.90.90.00"
+      ]
+    },
+    {
+      "chapter": "94",
+      "file": "cap-94.json",
+      "records": 47,
+      "codeRange": [
+        "9401.10.10.00",
+        "9406.90.90.00"
+      ]
+    },
+    {
+      "chapter": "95",
+      "file": "cap-95.json",
+      "records": 45,
+      "codeRange": [
+        "9503.00.22.00",
+        "9508.40.00.00"
+      ]
+    },
+    {
+      "chapter": "96",
+      "file": "cap-96.json",
+      "records": 36,
+      "codeRange": [
+        "9601.90.00.00",
+        "9620.00.00.00"
+      ]
+    },
+    {
+      "chapter": "97",
+      "file": "cap-97.json",
+      "records": 15,
+      "codeRange": [
+        "9701.21.00.00",
+        "9706.90.00.00"
+      ]
+    },
+    {
+      "chapter": "98",
+      "file": "cap-98.json",
+      "records": 114,
+      "codeRange": [
+        "9801.00.00.19",
+        "9895.00.00.70"
+      ]
+    }
+  ]
+}

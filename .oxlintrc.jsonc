@@ -1,0 +1,57 @@
+{
+  // Repository-wide lint policy, executed with the native TypeScript 7
+  // compiler through oxlint + tsgolint (see scripts/check-guardrails.sh).
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+
+  "plugins": [
+    "react",
+    "typescript",
+    "oxc",
+    "import",
+    "jsx-a11y",
+    "nextjs",
+    "vitest",
+    "promise",
+    "node"
+  ],
+
+  "options": {
+    "typeAware": true
+  },
+
+  "categories": {
+    "correctness": "warn"
+  },
+
+  "rules": {
+    // AGENTS.md rule 1: `any` is banned; use `unknown` + narrowing or Zod.
+    "typescript/no-explicit-any": "error",
+
+    // AGENTS.md rule 1: unused identifiers escape with a leading `_`.
+    "eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+    ],
+
+    // Deliberately off — carried over from apps/filings/eslint.config.mjs.
+    "react/display-name": "off",
+    "react/no-direct-mutation-state": "off",
+    "react/no-render-return-value": "off",
+    "react/require-render-return": "off",
+    "react/no-string-refs": "off",
+    "react-hooks/set-state-in-effect": "off",
+    "react-hooks/immutability": "off",
+    "react-hooks/refs": "off",
+    "typescript/no-empty-object-type": "off",
+    "typescript/no-require-imports": "off",
+    "typescript/ban-ts-comment": "off"
+  },
+
+  "ignorePatterns": [
+    ".next/**",
+    "out/**",
+    "build/**",
+    "dist/**",
+    "**/*.tsbuildinfo"
+  ]
+}
