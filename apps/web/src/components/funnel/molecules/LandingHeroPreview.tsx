@@ -190,7 +190,7 @@ export function LandingHeroPreview({
                 />
                 <div>
                   <div className="font-semibold text-ink-primary">
-                    Ficha Merceológica HITL validada
+                    Validación pericial completada
                   </div>
                   <p className="text-ink-muted mt-0.5">{activeCase.hitlNote}</p>
                 </div>

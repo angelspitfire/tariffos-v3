@@ -26,7 +26,7 @@ describe('LandingLoopHero', () => {
     render(<LandingLoopHero />);
 
     expect(screen.getByText('INGESTA')).toBeInTheDocument();
-    expect(screen.getByText('FICHA HITL')).toBeInTheDocument();
+    expect(screen.getByText('VALIDACIÓN')).toBeInTheDocument();
     expect(screen.getByText('MOTOR RGI')).toBeInTheDocument();
     expect(screen.getByText('DICTAMEN PDF')).toBeInTheDocument();
 
@@ -41,7 +41,7 @@ describe('LandingShowcaseCarousel', () => {
     const user = userEvent.setup();
     render(<LandingShowcaseCarousel />);
 
-    expect(screen.getByText(/Ficha Merceológica HITL/i)).toBeInTheDocument();
+    expect(screen.getByText(/Validación Pericial Asistida/i)).toBeInTheDocument();
     const nextBtn = screen.getByRole('button', { name: /Siguiente módulo/i });
     await user.click(nextBtn);
 

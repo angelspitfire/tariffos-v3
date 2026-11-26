@@ -17,16 +17,18 @@ describe('PricingSection', () => {
     mockPush.mockReset();
   });
 
-  it('renders all 5 SAAS_PLANS with Corporate locked to annual ($5,900/año)', () => {
+  it('renders all 6 SAAS_PLANS including intermediate Profesional ($139/mes) and Corporate ($5,900/año)', () => {
     render(<PricingSection plans={SAAS_PLANS} />);
 
     expect(screen.getByText(/Trial \/ Piloto/i)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Básico' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Profesional' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Pro' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Enterprise' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Corporate' })).toBeInTheDocument();
 
     expect(screen.getByText('$49')).toBeInTheDocument();
+    expect(screen.getByText('$139')).toBeInTheDocument();
     expect(screen.getByText('$299')).toBeInTheDocument();
     expect(screen.getByText('$449')).toBeInTheDocument();
     expect(screen.getByText('$5,900')).toBeInTheDocument();

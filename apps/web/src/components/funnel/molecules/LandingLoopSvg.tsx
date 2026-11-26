@@ -40,7 +40,7 @@ export const LOOP_STAGES: readonly LoopStage[] = [
   {
     id: 'hitl',
     labelTop: 'VALIDA',
-    labelBottom: 'FICHA HITL',
+    labelBottom: 'VALIDACIÓN',
     x: 560,
     y: 174,
     dotX: 590,
@@ -93,7 +93,7 @@ export function LandingLoopSvg({
     <svg
       viewBox="0 0 1200 360"
       role="img"
-      aria-label="Ciclo continuo de TariffOS: Ingesta de expediente, Validación HITL, Motor RGI y Dictamen PDF"
+      aria-label="Ciclo continuo de TariffOS: Ingesta de expediente, Validación pericial, Motor RGI y Dictamen PDF"
       className="relative z-10 w-full h-auto overflow-visible"
     >
       <defs>

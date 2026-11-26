@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, FileDown } from 'lucide-react';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 import { readMockSession, savePendingQuery } from '@/lib/funnel/funnel-storage';
 import { LandingHeroPreview } from '../molecules/LandingHeroPreview';
@@ -56,20 +56,16 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
     router.push('/onboarding?plan=trial&cycle=monthly');
   };
 
-  const scrollToDemo = () => {
-    document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   return (
     <>
       <section className="pt-10 sm:pt-14 pb-12 sm:pb-20 overflow-x-clip">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-8 text-center space-y-6">
           <p className="font-mono text-xs tracking-[0.12em] text-ink-secondary uppercase">
-            CLASIFICACIÓN ARANCELARIA AUDITABLE
+            CLASIFICACIÓN ARANCELARIA PARA AGENCIAS DE ADUANAS · VENEZUELA
           </p>
 
-          <h1 className="text-[clamp(2.6rem,5.4vw+0.8rem,4.75rem)] font-medium tracking-[-0.035em] text-ink-primary leading-[1.02] max-w-[18ch] mx-auto [text-wrap:balance]">
-            Clasifica con precisión pericial
+          <h1 className="text-[clamp(2.4rem,4.8vw+0.8rem,4.35rem)] font-medium tracking-[-0.035em] text-ink-primary leading-[1.04] max-w-[20ch] mx-auto [text-wrap:balance]">
+            Clasificación arancelaria auditable con respaldo RGI
           </h1>
 
           <div className="pt-2 flex flex-col items-center justify-center gap-3">
@@ -86,13 +82,12 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
                 />
               </button>
 
-              <button
-                type="button"
-                onClick={scrollToDemo}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-ink-secondary hover:text-ink-primary underline-offset-4 hover:underline transition-colors cursor-pointer"
+              <a
+                href="#demo"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-ink-secondary hover:text-ink-primary underline-offset-4 hover:underline transition-colors"
               >
-                Probar con una mercancía
-              </button>
+                Ver demo en vivo
+              </a>
             </div>
 
             <p className="font-mono text-xs text-ink-muted">
@@ -127,6 +122,17 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
             onSubmitPrompt={handleHeroSubmit}
             isAuthenticated={isAuthenticated}
           />
+
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <a
+              href="/samples/dictamen-ejemplo-tariffos.pdf"
+              download="Dictamen-TariffOS-EXP-2026-0842.pdf"
+              className="inline-flex items-center gap-2 px-5 min-h-[44px] rounded-full border border-black/[0.1] dark:border-white/[0.12] bg-white/80 dark:bg-white/[0.06] hover:bg-white dark:hover:bg-white/[0.1] text-xs sm:text-sm font-semibold text-ink-primary transition-colors"
+            >
+              <FileDown className="w-4 h-4 text-accent-ink" aria-hidden="true" />
+              <span>Descargar Dictamen PDF de ejemplo</span>
+            </a>
+          </div>
         </div>
       </section>
     </>

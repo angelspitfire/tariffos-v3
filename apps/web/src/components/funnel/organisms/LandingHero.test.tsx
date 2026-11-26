@@ -49,10 +49,16 @@ describe('LandingHero', () => {
     expect(screen.getByText(/Decreto 4\.944/i)).toBeInTheDocument();
   });
 
-  it('displays risk-reversal and starting price microcopy below the primary CTA', () => {
+  it('displays risk-reversal, starting price microcopy, and sample PDF download link', () => {
     render(<LandingHero requiresAuth={false} />);
+    expect(
+      screen.getByRole('heading', { level: 1, name: /Clasificación arancelaria auditable con respaldo RGI/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Sin tarjeta/i)).toBeInTheDocument();
     expect(screen.getByText(/Activación inmediata/i)).toBeInTheDocument();
     expect(screen.getByText(/\$49\/mes/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /Descargar Dictamen PDF de ejemplo/i }),
+    ).toHaveAttribute('href', '/samples/dictamen-ejemplo-tariffos.pdf');
   });
 });

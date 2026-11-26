@@ -38,7 +38,7 @@ export function PlanCard({
       }`}
     >
       <div className="space-y-3">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2 min-h-[24px]">
           <h3 className="text-sm font-bold text-ink-primary">{plan.name}</h3>
           {isRecommended ? (
             <FunnelBadge variant="accent">Recomendado</FunnelBadge>

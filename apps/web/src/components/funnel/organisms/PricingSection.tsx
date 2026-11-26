@@ -9,7 +9,8 @@ import {
   type SubscriptionPlanConfig,
 } from '@tariffos/shared-types';
 import { saveSelectedPlan } from '@/lib/funnel/funnel-storage';
-import { isPlanFree, type PlanRecommendation } from '@/lib/funnel/plan-recommender';
+import { isPlanAnnualOnly, isPlanFree, type PlanRecommendation } from '@/lib/funnel/plan-recommender';
+import { CorporatePlanBanner } from '../molecules/CorporatePlanBanner';
 import { PlanCard } from '../molecules/PlanCard';
 import { TrialPlanBanner } from '../molecules/TrialPlanBanner';
 import { PlanRecommender } from './PlanRecommender';
@@ -32,7 +33,20 @@ export function PricingSection({
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
   const trialPlan = visiblePlans.find((p) => isPlanFree(p));
-  const paidPlans = visiblePlans.filter((p) => !isPlanFree(p));
+  const allPaidPlans = visiblePlans.filter((p) => !isPlanFree(p));
+  const shouldSplitCorporate = allPaidPlans.length > 4;
+  const corporatePlan = shouldSplitCorporate
+    ? allPaidPlans.find((p) => isPlanAnnualOnly(p))
+    : undefined;
+  const gridPlans = corporatePlan
+    ? allPaidPlans.filter((p) => p.planId !== corporatePlan.planId)
+    : allPaidPlans;
+  const gridColsClass =
+    gridPlans.length <= 2
+      ? 'grid-cols-1 sm:grid-cols-2'
+      : gridPlans.length === 3
+        ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+        : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4';
 
   const handleSelectPlan = (planId: string, cycle: SubscriptionBillingCycle) => {
     saveSelectedPlan(planId, cycle);
@@ -103,8 +117,8 @@ export function PricingSection({
           />
         ) : null}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {paidPlans.map((plan) => (
+        <div className={`grid ${gridColsClass} gap-5`}>
+          {gridPlans.map((plan) => (
             <PlanCard
               key={plan.planId}
               plan={plan}
@@ -114,6 +128,14 @@ export function PricingSection({
             />
           ))}
         </div>
+
+        {corporatePlan ? (
+          <CorporatePlanBanner
+            plan={corporatePlan}
+            isRecommended={recommendedPlanId === corporatePlan.planId}
+            onSelect={() => handleSelectPlan(corporatePlan.planId, 'annual')}
+          />
+        ) : null}
 
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-xs text-ink-muted pt-2">
           <span className="inline-flex items-center gap-1.5">

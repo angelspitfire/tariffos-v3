@@ -85,7 +85,7 @@ export const SAAS_PLANS: readonly SubscriptionPlanConfig[] = [
     planId: 'trial',
     name: 'Trial / Piloto',
     description:
-      'Prueba guiada del motor de clasificación arancelaria RGI con ficha merceológica HITL y dictamen PDF.',
+      'Prueba guiada del motor de clasificación arancelaria RGI con validación merceológica y dictamen PDF.',
     monthlyPriceUsd: 0,
     annualPriceUsd: 0,
     maxUsers: 1,
@@ -93,7 +93,7 @@ export const SAAS_PLANS: readonly SubscriptionPlanConfig[] = [
     monthlyQuota: 5,
     features: [
       'Hasta 5 clasificaciones completas de prueba',
-      'Ficha merceológica con validación HITL guiada',
+      'Ficha merceológica con validación pericial guiada',
       'Dictamen técnico PDF con desglose tributario',
     ],
     paymentInstructions: 'Plan gratuito de evaluación inicial (5 clasificaciones).',
@@ -121,6 +121,26 @@ export const SAAS_PLANS: readonly SubscriptionPlanConfig[] = [
     sortOrder: 2,
   },
   {
+    planId: 'profesional',
+    name: 'Profesional',
+    description:
+      'Para corredores y pequeñas agencias con flujo semanal constante que necesitan lotes y precedentes SKU.',
+    monthlyPriceUsd: 139,
+    annualPriceUsd: 1390,
+    maxUsers: 2,
+    currency: 'USD',
+    monthlyQuota: 150,
+    features: [
+      'Hasta 150 clasificaciones arancelarias por mes',
+      'Hasta 2 operadores con firma digital y patente',
+      'Carga por lotes (Excel/CSV) y catálogo SKU inicial',
+      'Dictámenes PDF firmables y cálculo tributario completo',
+    ],
+    paymentInstructions: DEFAULT_PAYMENT_INSTRUCTIONS,
+    published: true,
+    sortOrder: 3,
+  },
+  {
     planId: 'pro',
     name: 'Pro',
     description:
@@ -138,7 +158,7 @@ export const SAAS_PLANS: readonly SubscriptionPlanConfig[] = [
     ],
     paymentInstructions: DEFAULT_PAYMENT_INSTRUCTIONS,
     published: true,
-    sortOrder: 3,
+    sortOrder: 4,
   },
   {
     planId: 'enterprise',
@@ -158,7 +178,7 @@ export const SAAS_PLANS: readonly SubscriptionPlanConfig[] = [
     ],
     paymentInstructions: DEFAULT_PAYMENT_INSTRUCTIONS,
     published: true,
-    sortOrder: 4,
+    sortOrder: 5,
   },
   {
     planId: 'corporate',
@@ -179,6 +199,6 @@ export const SAAS_PLANS: readonly SubscriptionPlanConfig[] = [
     ],
     paymentInstructions: DEFAULT_PAYMENT_INSTRUCTIONS,
     published: true,
-    sortOrder: 5,
+    sortOrder: 6,
   },
 ] as const;

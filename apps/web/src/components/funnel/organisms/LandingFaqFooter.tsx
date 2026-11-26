@@ -3,20 +3,28 @@ import { ArrowRight } from 'lucide-react';
 
 const FAQ_ITEMS = [
   {
+    q: '¿Quién asume la responsabilidad legal de la clasificación sugerida?',
+    a: 'TariffOS es una herramienta de soporte técnico y documental. El sistema fundamenta cada sugerencia con RGI 1–6 y Notas Legales, pero el Agente de Aduanas revisa, valida y suscribe el dictamen final con su patente.',
+  },
+  {
+    q: '¿Con qué frecuencia actualizan el Decreto 4.944, reformas y exoneraciones?',
+    a: 'Mantenemos indexado el arancel nacional vigente (VE-SENIAT) y actualizamos modificaciones arancelarias, alícuotas y regímenes legales conforme se publican en Gaceta Oficial.',
+  },
+  {
+    q: '¿Qué pasa con la confidencialidad de las facturas y clientes de mi agencia?',
+    a: 'Tus facturas, precios CIF y catálogos SKU están aislados por espacio de trabajo con cifrado en tránsito y en reposo. Nunca usamos los documentos de nuestros clientes para entrenar modelos públicos.',
+  },
+  {
     q: '¿En qué se diferencia TariffOS de un chat genérico con IA?',
-    a: 'TariffOS ejecuta un flujo estructurado de clasificación aduanera: valida atributos merceológicos (HITL), aplica las Reglas Generales de Interpretación (RGI), cruza decretos oficiales y entrega cálculo tributario más dictamen técnico firmable.',
+    a: 'Un chat genérico improvisa códigos sin verificar. TariffOS exige validación pericial de atributos merceológicos, aplica RGI 1–6 contra el arancel real, calcula impuestos CIF y genera un dictamen PDF firmable.',
   },
   {
-    q: '¿Cómo funciona la facturación manual?',
-    a: 'Puedes empezar con el Trial gratuito al instante. Al elegir un plan comercial, realizas el pago por Zelle, transferencia, Binance Pay o Pago Móvil, reportas la referencia desde la plataforma y activamos tu cuenta en menos de 24 horas hábiles.',
+    q: '¿Cómo funciona el Trial inmediato y la activación de planes pagos?',
+    a: 'El Trial de 5 clasificaciones se activa al instante y sin tarjeta. Al elegir un plan comercial, pagas por Zelle, Transferencia USD/EUR, Binance Pay o Pago Móvil, reportas la referencia y activamos tu cuenta en menos de 24 horas hábiles.',
   },
   {
-    q: '¿Puedo trabajar con lotes grandes de productos?',
-    a: 'Sí. Desde el plan Pro puedes cargar archivos Excel/CSV con múltiples mercancías, obtener triage de confianza automático y exportar el manifiesto clasificado.',
-  },
-  {
-    q: '¿Sirve para varias jurisdicciones o solo un país?',
-    a: 'TariffOS está diseñado con adaptador multi-legislación para operar decretos, alícuotas y regímenes legales por país según la jurisdicción configurada en tu espacio de trabajo.',
+    q: '¿Puedo trabajar con lotes grandes y múltiples jurisdicciones?',
+    a: 'Sí. Desde el plan Profesional puedes cargar archivos Excel/CSV con múltiples mercancías, y nuestra arquitectura soporta configuración multi-país bajo demanda.',
   },
 ] as const;
 
@@ -89,7 +97,7 @@ export function LandingFaqFooter() {
                   TariffOS
                 </span>
                 <span className="px-2.5 py-1 rounded-md border border-black/[0.14] dark:border-white/[0.16] font-mono text-xs text-ink-muted whitespace-nowrap shrink-0">
-                  RGI + HITL
+                  RGI 1–6 · VE
                 </span>
               </div>
               <p className="text-xs text-ink-secondary">

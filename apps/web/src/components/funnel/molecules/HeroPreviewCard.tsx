@@ -85,7 +85,7 @@ export function HeroPreviewCard() {
             <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
             <div>
               <div className="font-semibold text-ink-primary">
-                Ficha Merceológica HITL validada
+                Validación pericial completada
               </div>
               <p className="text-ink-muted mt-0.5">
                 7/7 atributos técnicos verificados sin brechas críticas.

@@ -12,8 +12,8 @@ const WORKFLOW_PANELS = [
     category: 'VALIDACIÓN MERCEOLÓGICA',
     title: 'Valida criterios merceológicos',
     detail:
-      'Confirma composición, uso o especificaciones clave en la ficha HITL con trazabilidad RGI 1 a 6.',
-    items: ['Ficha HITL', 'RGI 1 a 6', 'Notas Legales', 'Decreto vigente', 'Regímenes legales'],
+      'Confirma composición, uso o especificaciones clave en la ficha pericial asistida con trazabilidad RGI 1 a 6.',
+    items: ['Validación pericial', 'RGI 1 a 6', 'Notas Legales', 'Decreto vigente', 'Regímenes legales'],
   },
   {
     step: '03',

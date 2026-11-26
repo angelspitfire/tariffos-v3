@@ -119,8 +119,9 @@ export function LandingLeadCaptureSection() {
                 <span className="font-semibold text-ink-secondary">Volumen mensual estimado</span>
                 <select value={volume} onChange={(e) => setVolume(e.target.value)} className={inputCls}>
                   <option value="1-40/mes">1 a 40 clasificaciones / mes</option>
-                  <option value="100-400/mes">100 a 400 clasificaciones / mes</option>
-                  <option value="400-1500/mes">400 a 1,500 clasificaciones / mes</option>
+                  <option value="41-150/mes">41 a 150 clasificaciones / mes</option>
+                  <option value="151-400/mes">151 a 400 clasificaciones / mes</option>
+                  <option value="401-1500/mes">401 a 1,500 clasificaciones / mes</option>
                   <option value="1500+/mes">Más de 1,500 clasificaciones / mes</option>
                 </select>
               </label>

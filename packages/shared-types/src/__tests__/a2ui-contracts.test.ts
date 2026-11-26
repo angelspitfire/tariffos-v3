@@ -68,10 +68,11 @@ describe('A2UI & ApprovalWorkflowMode contracts', () => {
     expect(envelope.canvasComponents[0]?.type).toBe('dossier');
   });
 
-  it('exposes the 5 commercial SaaS plans with Corporate as annual-only', () => {
+  it('exposes the 6 commercial SaaS plans with Corporate as annual-only', () => {
     expect(SAAS_PLANS.map((p) => p.planId)).toEqual([
       'trial',
       'basico',
+      'profesional',
       'pro',
       'enterprise',
       'corporate',
