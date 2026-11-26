@@ -283,3 +283,55 @@ Todos los archivos `<= 200` LOC, tokens de [tokens.css](file:///Users/afernandez
 2. **Onboarding asistido:** Dar de alta una agencia desde `/admin/onboarding`, verificar creación de `Tenant` + `Membership` + invitación enviada y registro en `/admin/audit`.
 3. **Aprobar pago:** Reportar un pago en `/activate-plan` (o registrarlo desde `/admin/billing`), aprobarlo en 1 clic y comprobar que el tenant pasa a `ACTIVE` con el nuevo `planId` y `billingLimit`.
 4. **Dar de baja:** Ejecutar baja sobre el tenant de prueba en `/admin/tenants/[id]` con motivo; comprobar que el usuario cliente ya no puede clasificar en `/app` y que sus registros históricos siguen intactos.
+
+---
+
+## Implementación Complementaria Ya Operativa
+
+### 1. Control de Administradores por Consola (`platform_admins` + `pnpm admin:users`)
+
+Por seguridad, **no existe ningún endpoint web** para crear, promover o revocar administradores de plataforma. El alta y revocación de accesos a `/admin` se ejecuta exclusivamente por consola con acceso directo a la base de datos.
+
+#### Tabla y Precedencia de Resolución
+- **Tabla:** `public.platform_admins` (`PlatformAdmin` en `packages/database/prisma/schema.prisma`, migración `20261126010000_add_platform_admins` con RLS habilitado).
+- **Campos principales:** `email` (único, en minúsculas), `role` (`super_admin` por defecto, `ops_billing` o `support`), `isActive` (`is_active`), `notes` y `createdBy`.
+- **Orden de precedencia en [`resolvePlatformAdminContext()`](file:///Users/afernandez/projects/tariffos-v3/apps/web/src/lib/admin/admin-session.ts):**
+  1. `public.platform_admins` (`isActive = true`, coincidencia por correo en minúsculas).
+  2. `public.profiles.role` (`UserProfile.role`).
+  3. `PLATFORM_ADMIN_EMAILS` (variable de entorno como respaldo de bootstrap).
+
+#### CLI de Consola (`pnpm admin:users`)
+Script ubicado en [`platform-admin.ts`](file:///Users/afernandez/projects/tariffos-v3/packages/database/src/scripts/platform-admin.ts) (lógica reutilizable en [`platform-admins.ts`](file:///Users/afernandez/projects/tariffos-v3/packages/database/src/platform-admins.ts)) que carga `.env.local` y registra auditoría en `admin_audit_logs`:
+
+```bash
+# Listar administradores registrados (activos y revocados)
+pnpm admin:users list
+
+# Autorizar o promover un administrador (roles: super_admin | ops_billing | support)
+pnpm admin:users grant usuario@dominio.com --role super_admin --notes "Motivo o cargo"
+
+# Autorizar y además enviar invitación por Supabase Auth (si aún no tiene cuenta)
+pnpm admin:users grant usuario@dominio.com --role ops_billing --notes "Operaciones" --invite
+
+# Revocar acceso administrativo de un correo (auditable con motivo)
+pnpm admin:users revoke usuario@dominio.com --reason "Cambio de funciones"
+```
+
+---
+
+### 2. Sincronización de Tasas BCV (`ExchangeRate`)
+
+Motor backend para mantener actualizada la tasa oficial del Banco Central de Venezuela (`USD/VES` y `EUR/VES`) para cálculos aduaneros e internos, desacoplado de su exposición visual en la UI hasta que decidas mostrarlo al usuario final.
+
+#### Arquitectura y Módulos
+- **Parser y guardrail:** [`parser.ts`](file:///Users/afernandez/projects/tariffos-v3/apps/web/src/lib/bcv/parser.ts) — `parseVenezuelanDecimal`, `parseBcvHtml` y `validateRateDelta` con protección ante variaciones anómalas (`MAX_RATE_DELTA_RATIO = 0.25`, configurable para override manual o `force: true`).
+- **Cliente HTTP con fallback:** [`client.ts`](file:///Users/afernandez/projects/tariffos-v3/apps/web/src/lib/bcv/client.ts) — `fetchBcvRates()` consulta `https://www.bcv.org.ve/` como fuente primaria y usa `BCV_FALLBACK_BASE_URL` (por defecto `https://ve.dolarapi.com/v1`) como respaldo ante caídas o bloqueos.
+- **Servicio de persistencia:** [`sync-service.ts`](file:///Users/afernandez/projects/tariffos-v3/apps/web/src/lib/bcv/sync-service.ts) — `persistBcvRates`, `getLatestExchangeRates` y `listRecentExchangeRates` sobre `ExchangeRate`.
+- **Cron durable Inngest v4:** [`bcv-sync.ts`](file:///Users/afernandez/projects/tariffos-v3/apps/web/src/lib/inngest/bcv-sync.ts) (`syncBcvRatesFn`, `id: 'sync-bcv-rates'`, `retries: 4`), registrado en [`route.ts`](file:///Users/afernandez/projects/tariffos-v3/apps/web/src/app/api/inngest/route.ts):
+  - Horario automático: `TZ=America/Caracas 0 8,17,19 * * 1-5` (lunes a viernes a las 8:00 AM, 5:00 PM y 7:00 PM VET).
+  - Evento bajo demanda: `'system/bcv-rate.sync'`.
+
+#### Endpoints Disponibles
+- **`GET /api/exchange-rates/latest`** ([`route.ts`](file:///Users/afernandez/projects/tariffos-v3/apps/web/src/app/api/exchange-rates/latest/route.ts)): devuelve `{ rates, fetchedAt }` con las tasas vigentes más recientes para consumo en cálculos.
+- **`GET /api/admin/exchange-rates/sync`** ([`route.ts`](file:///Users/afernandez/projects/tariffos-v3/apps/web/src/app/api/admin/exchange-rates/sync/route.ts), permiso `admin:read`): lista tasas recientes almacenadas para auditoría administrativa.
+- **`POST /api/admin/exchange-rates/sync`** ([`route.ts`](file:///Users/afernandez/projects/tariffos-v3/apps/web/src/app/api/admin/exchange-rates/sync/route.ts), permiso `tenants:manage`): permite disparar una sincronización en vivo o registrar una tasa manual (`{ manual: { pair, rate, valueDate?, reason } }`) dejando registro en `AdminAuditLog`.
