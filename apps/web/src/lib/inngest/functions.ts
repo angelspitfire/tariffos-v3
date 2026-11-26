@@ -176,6 +176,11 @@ export const classifyInvoiceBatchFn = inngest.createFunction(
           await billingService.incrementTokenUsage(data.tenantId, totalInput, totalOutput);
         }
       }
+      await prisma.filing.updateMany({
+        where: { id: data.filingId, tenantId: data.tenantId },
+        data: { status: 'Completed' },
+      });
+
       return { persisted: allLines.length };
     });
 

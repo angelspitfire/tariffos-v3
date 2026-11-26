@@ -22,6 +22,12 @@ import requestDossierReviewTool, {
   executeRequestDossierReview,
   RequestDossierReviewInputSchema,
 } from '../../../../../agent/tools/request_dossier_review';
+import eveAgent from '../../../../../agent/agent';
+import {
+  ClassifyItemInputSchema,
+  resolveToolTenantId,
+} from '../../../../../agent/tools/classify_item';
+import calculateDutiesTool from '../../../../../agent/tools/calculate_duties';
 
 describe('Eve swap-ready model resolver', () => {
   const originalEveModel = process.env.EVE_MODEL;
@@ -219,5 +225,53 @@ describe('Eve request_dossier_review tool', () => {
     const validatedTrigger = AgentReviewTriggerSchema.parse(result);
     expect(validatedTrigger.invokedBySkill).toBe('venezuela-tariff-classification');
     expect(validatedTrigger.missingFields).toEqual(['potencia_nominal_kw', 'numero_fases']);
+  });
+});
+
+describe('Eve hardened root agent and duty tool', () => {
+  const mockMembershipFindFirst = vi.fn();
+
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.unstubAllEnvs();
+  });
+
+  it('disables built-in defaultTools and excludes tenantId from classify_item schema', () => {
+    expect((eveAgent as unknown as { defaultTools?: boolean }).defaultTools).toBe(false);
+    expect('tenantId' in ClassifyItemInputSchema.shape).toBe(false);
+  });
+
+  it('resolves tenantId server-side from session auth and calculates deterministic duties in calculate_duties tool', async () => {
+    await expect(
+      resolveToolTenantId({
+        current: { principalId: 'local', authenticator: 'local-dev' },
+      }),
+    ).resolves.toBe('eve-local-dev');
+
+    vi.stubEnv('NODE_ENV', 'production');
+    await expect(resolveToolTenantId({ current: null })).rejects.toThrow(/Unauthorized/);
+
+    expect(mockMembershipFindFirst).not.toHaveBeenCalled();
+    const dutyOut = await (
+      calculateDutiesTool as unknown as { execute: (input: Record<string, unknown>) => Promise<Record<string, unknown>> }
+    ).execute({
+      jurisdictionId: 've-seniat',
+      hsCode: '8471.30.90.90',
+      originCode: 'CN',
+      incoterm: 'FOB',
+      invoiceAmount: 1000,
+      originChargesAmount: 0,
+      freightAmount: 100,
+      insuranceAmount: 50,
+      baseAdValoremPercent: 16,
+      vatPercent: 16,
+      customsFeePercent: 1,
+      exchangeRate: 40,
+      applyExemption: false,
+      hasCertificateOfOrigin: false,
+      applyAntidumping: false,
+      antidumpingPercent: 0,
+    });
+    expect(dutyOut.customsValue).toBe(1150);
   });
 });

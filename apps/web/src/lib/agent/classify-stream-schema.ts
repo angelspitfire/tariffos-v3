@@ -23,6 +23,7 @@ const RawClassifyStreamRequestSchema = z.object({
   originCountry: z.string().trim().min(2).max(3).default('CN'),
   hitlAnswers: z.record(z.string(), z.string()).optional(),
   attachmentsText: z.string().trim().max(20_000).optional(),
+  imageDataUrls: z.array(z.string().max(4_000_000)).max(2).optional(),
   isBatchHint: z.boolean().default(false),
   deepMode: z.boolean().default(false),
   sku: z.string().trim().optional(),

@@ -34,6 +34,9 @@ export interface TariffCandidateRecord {
   prohibited?: boolean;
   permits?: string[];
   score?: number;
+  customsFeeRate?: number;
+  isBK?: boolean;
+  isBIT?: boolean;
 }
 
 export interface LegalNoteRecord {
@@ -72,6 +75,10 @@ export interface PipelinePorts {
   findSkuPrecedent: (tenantId: string, skuOrDesc: string) => Promise<SkuPrecedentRecord | null>;
   searchTariffCandidates: (countryCode: string, query: string) => Promise<TariffCandidateRecord[]>;
   searchVectorCandidates?: (countryCode: string, query: string) => Promise<TariffCandidateRecord[]>;
+  expandSiblingSubheadings?: (
+    countryCode: string,
+    hsPrefixes: string[],
+  ) => Promise<TariffCandidateRecord[]>;
   getLegalNotes: (countryCode: string, hsPrefix: string) => Promise<LegalNoteRecord[]>;
   verifyHsCode: (countryCode: string, hsCode: string) => Promise<TariffCandidateRecord | null>;
   runRgiReasoning: (input: {

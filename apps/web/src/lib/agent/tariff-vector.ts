@@ -14,6 +14,9 @@ interface VectorRow {
   adValorem: number | null;
   iva: number | null;
   legalNotes: string | null;
+  customsFee: number | null;
+  isBK: boolean;
+  isBIT: boolean;
   similarity: number;
 }
 
@@ -64,25 +67,52 @@ export async function searchTariffCandidatesVector(
   const vecLiteral = `[${vec.join(',')}]`;
 
   try {
-    const rows = await prisma.$queryRaw<VectorRow[]>(Prisma.sql`
-      SELECT e."hsCode",
-             e."document",
-             nt."description",
-             nt."adValorem",
-             nt."iva",
-             nt."legalNotes",
-             (1 - (e."embedding" <=> ${vecLiteral}::vector))::float8 AS similarity
-      FROM "TariffNodeEmbedding" e
-      JOIN "NationalTariff" nt
-        ON nt."countryCode" = e."countryCode"
-       AND nt."hsCode" = e."hsCode"
-      WHERE e."countryCode" = ${countryCode}
-        AND e."dims" = ${dims}
-        AND nt."isActive" = true
-        AND nt."isDerogated" = false
-      ORDER BY e."embedding" <=> ${vecLiteral}::vector ASC
-      LIMIT ${limit}
-    `);
+    const rows =
+      dims === DEFAULT_DIMS
+        ? await prisma.$queryRaw<VectorRow[]>(Prisma.sql`
+            SELECT e."hsCode",
+                   e."document",
+                   nt."description",
+                   nt."adValorem",
+                   nt."iva",
+                   nt."legalNotes",
+                   nt."customsFee",
+                   nt."isBK",
+                   nt."isBIT",
+                   (1 - ((e."embedding")::vector(768) <=> ${vecLiteral}::vector(768)))::float8 AS similarity
+            FROM "TariffNodeEmbedding" e
+            JOIN "NationalTariff" nt
+              ON nt."countryCode" = e."countryCode"
+             AND nt."hsCode" = e."hsCode"
+            WHERE e."countryCode" = ${countryCode}
+              AND e."dims" = 768
+              AND nt."isActive" = true
+              AND nt."isDerogated" = false
+            ORDER BY (e."embedding")::vector(768) <=> ${vecLiteral}::vector(768) ASC
+            LIMIT ${limit}
+          `)
+        : await prisma.$queryRaw<VectorRow[]>(Prisma.sql`
+            SELECT e."hsCode",
+                   e."document",
+                   nt."description",
+                   nt."adValorem",
+                   nt."iva",
+                   nt."legalNotes",
+                   nt."customsFee",
+                   nt."isBK",
+                   nt."isBIT",
+                   (1 - (e."embedding" <=> ${vecLiteral}::vector))::float8 AS similarity
+            FROM "TariffNodeEmbedding" e
+            JOIN "NationalTariff" nt
+              ON nt."countryCode" = e."countryCode"
+             AND nt."hsCode" = e."hsCode"
+            WHERE e."countryCode" = ${countryCode}
+              AND e."dims" = ${dims}
+              AND nt."isActive" = true
+              AND nt."isDerogated" = false
+            ORDER BY e."embedding" <=> ${vecLiteral}::vector ASC
+            LIMIT ${limit}
+          `);
 
     return rows.map((row) => ({
       hsCode:
@@ -97,6 +127,9 @@ export async function searchTariffCandidatesVector(
       prohibited: false,
       permits: [],
       score: Number(Math.max(0.05, Math.min(0.99, row.similarity)).toFixed(4)),
+      customsFeeRate: row.customsFee ?? undefined,
+      isBK: row.isBK,
+      isBIT: row.isBIT,
     }));
   } catch {
     return [];

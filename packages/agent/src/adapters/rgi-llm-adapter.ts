@@ -30,7 +30,7 @@ const RgiResponseSchema = z.object({
 const RGI_TIMEOUT_MS = 90_000;
 export const MAX_OUTPUT_TOKENS_STANDARD = 1_500;
 export const MAX_OUTPUT_TOKENS_DEEP = 3_500;
-export const MAX_CANDIDATES_FOR_LLM = 10;
+export const MAX_CANDIDATES_FOR_LLM = 16;
 export const MAX_NOTES_CHARS_STANDARD = 8_000;
 export const MAX_NOTES_CHARS_DEEP = 16_000;
 

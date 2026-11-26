@@ -1,4 +1,5 @@
 import { formatHsCode, type ClassificationLinePayload } from '@tariffos/shared-types';
+import { digits } from '../util/code.js';
 import { calculateDeterministicDuties } from './duties.js';
 import { deduplicateInvoiceItems } from './dedup.js';
 import { filterLegalNotesByChapter, retrieveHybridCandidates } from './hybrid-retrieval.js';
@@ -77,9 +78,31 @@ async function classifyUniqueItem(
     webContext = (await ports.fetchWebSpecs(item.description)) ?? undefined;
   }
 
-  // 5. Tier 2: RGI 1 -> 6 Reasoning + Chapter-Filtered Legal Notes + Official Audit
+  // 5. Tier 2: Expand sibling 6-digit subheadings, RGI 1 -> 6 Reasoning, Legal Notes & Audit
   options.onProgress?.({ stage: 'rgi_reasoning', label: 'Aplicando recorrido RGI 1 → 6', progressPct: 72 });
-  const topCandidates = candidates.slice(0, MAX_CANDIDATES_FOR_NOTES);
+  let rgiCandidates = candidates;
+  if (ports.expandSiblingSubheadings && candidates.length > 0) {
+    const siblingPrefixes = Array.from(
+      new Set(candidates.map((c) => digits(c.hsCode).slice(0, 6)).filter((p) => p.length === 6)),
+    ).slice(0, 3);
+    if (siblingPrefixes.length > 0) {
+      const siblings = await ports
+        .expandSiblingSubheadings(options.countryCode, siblingPrefixes)
+        .catch(() => [] as typeof candidates);
+      const seen = new Set(candidates.map((c) => digits(c.hsCode)));
+      const extra = siblings.filter((s) => {
+        const key = digits(s.hsCode);
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      if (extra.length > 0) {
+        rgiCandidates = [...candidates, ...extra];
+      }
+    }
+  }
+
+  const topCandidates = rgiCandidates.slice(0, MAX_CANDIDATES_FOR_NOTES);
   const prefixes = [...new Set(topCandidates.map((c) => c.hsCode.slice(0, 4)))];
   const noteBatches = await Promise.all(prefixes.map((p) => ports.getLegalNotes(options.countryCode, p)));
   const notes = filterLegalNotesByChapter(
@@ -89,7 +112,7 @@ async function classifyUniqueItem(
 
   const rgi = await ports.runRgiReasoning({
     item,
-    candidates,
+    candidates: rgiCandidates,
     notes,
     webContext,
     deepMode: Boolean(options.deepMode),
@@ -107,7 +130,10 @@ async function classifyUniqueItem(
   };
 
   const formattedHsCode = formatHsCode(fallbackRecord.hsCode);
-  const flags = mergeTariffFlags(rgi.flags, fallbackRecord, audit);
+  const flags = mergeTariffFlags(rgi.flags, fallbackRecord, audit, {
+    countryCode: options.countryCode,
+    originCountry: item.originCountry,
+  });
   const unresolved = appendAuditUnresolved(rgi.unresolved, formattedHsCode, audit);
   const isVerified = Boolean(verified && audit.codeDigitsMatch);
   const confidencePct = isVerified

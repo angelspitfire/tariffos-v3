@@ -41,6 +41,12 @@ export const DeterministicDutiesSchema = z.object({
   ivaRate: z.number().nonnegative(),
   ivaAmount: z.number().nonnegative(),
   unit: z.string(),
+  customsFeeRate: z.number().nonnegative().optional(),
+  customsFeeAmount: z.number().nonnegative().optional(),
+  totalTaxes: z.number().nonnegative().optional(),
+  landedCost: z.number().nonnegative().optional(),
+  isBK: z.boolean().optional(),
+  isBIT: z.boolean().optional(),
 });
 
 export const ClassificationLinePayloadSchema = z.object({

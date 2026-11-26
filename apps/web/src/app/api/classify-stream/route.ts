@@ -17,6 +17,10 @@ import {
   resolveCloudTenantContext,
 } from '@/lib/agent/cloud-session';
 import {
+  buildFullClassificationDescription,
+  evaluateDynamicHitl,
+} from '@/lib/agent/dynamic-hitl';
+import {
   buildA2UIEnvelopeFromLine,
   buildHitlEnvelope,
 } from '@/lib/agent/envelope-builder';
@@ -31,36 +35,18 @@ import {
   encodeResultEvent,
 } from '@/lib/agent/sse-encoder';
 
-function buildFullDescription(input: ClassifyStreamRequest): string {
-  const parts = [input.query];
-  if (input.attachmentsText) {
-    parts.push(`Contexto adjunto: ${input.attachmentsText}`);
-  }
-  if (input.hitlAnswers) {
-    const answerSummary = Object.entries(input.hitlAnswers)
-      .filter(([, val]) => val.trim().length > 0)
-      .map(([key, val]) => `${key}: ${val.trim()}`)
-      .join('; ');
-    if (answerSummary) {
-      parts.push(`Especificaciones confirmadas: ${answerSummary}`);
-    }
-  }
-  return parts.join('\n');
-}
-
 async function runLiveClassificationLine(
   input: ClassifyStreamRequest,
   tenantId: string,
-  runtimeLlm: RgiLlmRuntimeOverride | undefined,
+  ports: ReturnType<typeof createPrismaPipelinePorts>,
   onProgress: (event: StreamProgressEvent) => void,
 ) {
-  const ports = createPrismaPipelinePorts(runtimeLlm);
   const batch = await classifyInvoiceBatch(
     [
       {
         lineId: 'interactive-1',
         sku: input.sku,
-        description: buildFullDescription(input),
+        description: buildFullClassificationDescription(input),
         originCountry: input.originCountry,
         cifValue: input.cifValue,
       },
@@ -74,9 +60,7 @@ async function runLiveClassificationLine(
     },
   );
   const line = batch.lines[0];
-  if (!line) {
-    throw new Error('Live classification pipeline returned no result line.');
-  }
+  if (!line) throw new Error('Live classification pipeline returned no result line.');
   return line;
 }
 
@@ -102,9 +86,7 @@ export async function POST(request: Request): Promise<Response> {
 
   if (cloudMode) {
     const auth = await resolveCloudTenantContext();
-    if (!auth.ok) {
-      return Response.json({ error: auth.error }, { status: auth.status });
-    }
+    if (!auth.ok) return Response.json({ error: auth.error }, { status: auth.status });
     tenantId = auth.context.tenantId;
 
     const quota = await checkTenantQuota(tenantId);
@@ -152,8 +134,37 @@ export async function POST(request: Request): Promise<Response> {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       const push = (frame: string) => controller.enqueue(encoder.encode(frame));
-
       try {
+        if (canRunLivePipeline) {
+          const ports = createPrismaPipelinePorts(llmOverride);
+          push(encodeProgressEvent({ stage: 'hybrid_retrieval', label: 'Recuperando candidatas NCM oficiales', progressPct: 40 }));
+          const candidates = await ports.searchTariffCandidates(
+            input.countryCode,
+            buildFullClassificationDescription(input),
+          );
+          const dynamicHitl = evaluateDynamicHitl({
+            query: input.query,
+            attachmentsText: input.attachmentsText,
+            hitlAnswers: input.hitlAnswers,
+            candidates,
+            deepMode: input.deepMode,
+          });
+          if (dynamicHitl) {
+            push(encodeProgressEvent({ stage: 'complete', label: 'Requiere validación técnica HITL', progressPct: 100 }));
+            push(encodeResultEvent(dynamicHitl));
+            return;
+          }
+
+          const line = await runLiveClassificationLine(input, tenantId, ports, (event) =>
+            push(encodeProgressEvent(event)),
+          );
+          const envelope = buildA2UIEnvelopeFromLine(line, input);
+          await persistClassificationOutcome(tenantId, line, input.query, runtimeLlm?.provider);
+          push(encodeProgressEvent({ stage: 'complete', label: 'Dictamen arancelario listo', progressPct: 100 }));
+          push(encodeResultEvent(envelope));
+          return;
+        }
+
         const hitl = detectMissingCriticalInfo(input.query, input.hitlAnswers);
         if (hitl.needsHitl) {
           push(encodeProgressEvent({ stage: 'pre_gate', label: 'Validación Compliance Pre-Gate', progressPct: 15 }));
@@ -163,25 +174,16 @@ export async function POST(request: Request): Promise<Response> {
           return;
         }
 
-        const line = canRunLivePipeline
-          ? await runLiveClassificationLine(input, tenantId, llmOverride, (event) =>
-              push(encodeProgressEvent(event)),
-            )
-          : (() => {
-              push(encodeProgressEvent({ stage: 'pre_gate', label: 'Validación Compliance Pre-Gate', progressPct: 15 }));
-              push(encodeProgressEvent({ stage: 'sku_lookup', label: 'Consultando precedentes SKU', progressPct: 30 }));
-              push(encodeProgressEvent({ stage: 'hybrid_retrieval', label: 'Recuperando candidatas NCM oficiales', progressPct: 50 }));
-              push(encodeProgressEvent({ stage: 'rgi_reasoning', label: 'Aplicando recorrido RGI 1 → 6', progressPct: 70 }));
-              push(encodeProgressEvent({ stage: 'verifying_tariff', label: 'Verificando código en Decreto 4.944 y tributos', progressPct: 88 }));
-              return classifyRequestOffline(input);
-            })();
-
+        push(encodeProgressEvent({ stage: 'pre_gate', label: 'Validación Compliance Pre-Gate', progressPct: 15 }));
+        push(encodeProgressEvent({ stage: 'sku_lookup', label: 'Consultando precedentes SKU', progressPct: 30 }));
+        push(encodeProgressEvent({ stage: 'hybrid_retrieval', label: 'Recuperando candidatas NCM oficiales', progressPct: 50 }));
+        push(encodeProgressEvent({ stage: 'rgi_reasoning', label: 'Aplicando recorrido RGI 1 → 6', progressPct: 70 }));
+        push(encodeProgressEvent({ stage: 'verifying_tariff', label: 'Verificando código en Decreto 4.944 y tributos', progressPct: 88 }));
+        const line = classifyRequestOffline(input);
         const envelope = buildA2UIEnvelopeFromLine(line, input);
-
         if (cloudMode) {
           await persistClassificationOutcome(tenantId, line, input.query, runtimeLlm?.provider);
         }
-
         push(encodeProgressEvent({ stage: 'complete', label: 'Dictamen arancelario listo', progressPct: 100 }));
         push(encodeResultEvent(envelope));
       } catch (err) {

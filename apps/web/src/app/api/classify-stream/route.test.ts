@@ -28,14 +28,19 @@ vi.mock('@/lib/supabase/server', () => ({
 }));
 
 vi.mock('@tariffos/database', () => ({
+  Prisma: {
+    sql: vi.fn(() => ({})),
+  },
   billingService: {
     checkBillingLimit: mocks.checkBillingLimit,
     incrementUsage: mocks.incrementUsage,
   },
   prisma: {
+    $queryRaw: vi.fn().mockResolvedValue([]),
     membership: { findFirst: mocks.membershipFindFirst },
     decisionArtifact: { create: mocks.decisionArtifactCreate },
     productMaster: { findFirst: vi.fn().mockResolvedValue(null) },
+    customClassificationRule: { findMany: vi.fn().mockResolvedValue([]) },
     nationalTariff: { findMany: vi.fn().mockResolvedValue([]), findFirst: vi.fn().mockResolvedValue(null) },
     legalKnowledgeChunk: { findMany: vi.fn().mockResolvedValue([]) },
     hsPermitRequirement: { findMany: vi.fn().mockResolvedValue([]) },

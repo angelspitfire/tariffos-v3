@@ -1,6 +1,7 @@
 import { formatHsCode, type ClassificationLinePayload, type ComplianceFlag, type UnresolvedItem } from '@tariffos/shared-types';
 import { calculateDeterministicDuties } from './duties.js';
 import type { TariffAuditResult } from './tariff-validator.js';
+import { evaluateTradeRemedies } from './trade-remedies.js';
 import {
   SHORT_DESCRIPTION_WORD_THRESHOLD,
   type InvoiceItemInput,
@@ -59,6 +60,7 @@ export function mergeTariffFlags(
   baseFlags: ComplianceFlag[],
   verified: TariffCandidateRecord,
   audit?: TariffAuditResult,
+  tradeContext?: { countryCode?: string; originCountry?: string },
 ): ComplianceFlag[] {
   const formattedCode = formatHsCode(verified.hsCode);
   const flags = [...baseFlags];
@@ -75,6 +77,33 @@ export function mergeTariffFlags(
       title: `OGA Permit: ${permit}`,
       text: `Required regulatory clearance (${permit}) for ${formattedCode}.`,
     });
+  }
+  if (verified.isBK) {
+    flags.push({
+      type: 'info',
+      title: 'Bien de Capital (BK)',
+      text: 'Subpartida marcada como Bien de Capital (BK) en el Arancel de Aduanas (posible beneficio arancelario según Decreto vigente).',
+    });
+  }
+  if (verified.isBIT) {
+    flags.push({
+      type: 'info',
+      title: 'Bien de Informática y Telecomunicaciones (BIT)',
+      text: 'Subpartida marcada como BIT en el Arancel de Aduanas.',
+    });
+  }
+  if (tradeContext?.originCountry) {
+    const jurisdictionId =
+      tradeContext.countryCode === 'VE' || !tradeContext.countryCode
+        ? 've-seniat'
+        : tradeContext.countryCode.toLowerCase();
+    for (const remedy of evaluateTradeRemedies({
+      jurisdictionId,
+      originCode: tradeContext.originCountry,
+      hsCode: formattedCode,
+    })) {
+      flags.push({ type: 'warn', title: remedy.title, text: remedy.description });
+    }
   }
   if (audit && !audit.matched) {
     flags.push({ type: 'warn', title: 'Auditoría Arancel Oficial', text: audit.summary });
@@ -154,7 +183,10 @@ export function appendAuditUnresolved(
 export function projectToLine(
   template: ClassificationLinePayload,
   member: InvoiceItemInput,
-  verifiedTariff: Pick<TariffCandidateRecord, 'adValoremRate' | 'ivaRate' | 'unit'>,
+  verifiedTariff: Pick<
+    TariffCandidateRecord,
+    'adValoremRate' | 'ivaRate' | 'unit' | 'customsFeeRate' | 'isBK' | 'isBIT'
+  >,
 ): ClassificationLinePayload {
   if (member.lineId === template.lineId) return template;
   return { ...template, lineId: member.lineId, duties: calculateDeterministicDuties(member.cifValue, verifiedTariff) };

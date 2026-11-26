@@ -68,7 +68,10 @@ export function mapPayloadToA2UIEnvelope(
       description: payload.officialDescription,
       adValoremPercent: payload.duties.adValoremRate,
       vatPercent: payload.duties.ivaRate,
-      customsFeePercent: options.customsFeePercent ?? DEFAULT_CUSTOMS_FEE_PERCENT,
+      customsFeePercent:
+        options.customsFeePercent ??
+        payload.duties.customsFeeRate ??
+        DEFAULT_CUSTOMS_FEE_PERCENT,
       legalRegimeCode: options.legalRegimeCode ?? (permits[0]?.code ?? 'General'),
       legalRegimeSummary:
         options.legalRegimeSummary ??

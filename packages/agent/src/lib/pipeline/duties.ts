@@ -38,12 +38,23 @@ function clampNonNegative(value: number): number {
  */
 export function calculateDeterministicDuties(
   cifValue: number,
-  tariff: Pick<TariffCandidateRecord, 'adValoremRate' | 'ivaRate' | 'unit'>,
+  tariff: Pick<
+    TariffCandidateRecord,
+    'adValoremRate' | 'ivaRate' | 'unit' | 'customsFeeRate' | 'isBK' | 'isBIT'
+  >,
 ): DeterministicDuties {
   const safeCif = clampNonNegative(cifValue);
   const arancelAmount = roundNumber(safeCif * (tariff.adValoremRate / PERCENT_DIVISOR), CURRENCY_DECIMALS);
-  const ivaBase = safeCif + arancelAmount;
+  const hasCustomsFee = typeof tariff.customsFeeRate === 'number';
+  const customsFeeRate = hasCustomsFee ? clampNonNegative(tariff.customsFeeRate!) : undefined;
+  const customsFeeAmount =
+    customsFeeRate !== undefined
+      ? roundNumber(safeCif * (customsFeeRate / PERCENT_DIVISOR), CURRENCY_DECIMALS)
+      : 0;
+  const ivaBase = safeCif + arancelAmount + customsFeeAmount;
   const ivaAmount = roundNumber(ivaBase * (tariff.ivaRate / PERCENT_DIVISOR), CURRENCY_DECIMALS);
+  const totalTaxes = roundNumber(arancelAmount + customsFeeAmount + ivaAmount, CURRENCY_DECIMALS);
+  const landedCost = roundNumber(safeCif + totalTaxes, CURRENCY_DECIMALS);
 
   return {
     cif: roundNumber(safeCif, CURRENCY_DECIMALS),
@@ -52,6 +63,16 @@ export function calculateDeterministicDuties(
     ivaRate: tariff.ivaRate,
     ivaAmount,
     unit: tariff.unit,
+    ...(customsFeeRate !== undefined
+      ? {
+          customsFeeRate,
+          customsFeeAmount,
+          totalTaxes,
+          landedCost,
+        }
+      : {}),
+    ...(typeof tariff.isBK === 'boolean' ? { isBK: tariff.isBK } : {}),
+    ...(typeof tariff.isBIT === 'boolean' ? { isBIT: tariff.isBIT } : {}),
   };
 }
 

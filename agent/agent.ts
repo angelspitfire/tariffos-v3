@@ -4,6 +4,7 @@ import { readSystemLlmRuntimeOverride, resolveEveModelFromOverride } from './mod
 const DEFAULT_CONTEXT_WINDOW_TOKENS = 200_000;
 
 export default defineAgent({
+  defaultTools: false,
   model: defineDynamic(async (ctx) => {
     const override = await ctx.memo(
       ['ai.runtime_config', ctx.turn?.id ?? null],

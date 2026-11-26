@@ -1,120 +1,75 @@
 import type { SkuPrecedent, UserProfileSettings } from '@tariffos/shared-types';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { IPersistence } from './persistence';
 import type { WorkspaceThread } from './types';
 
-function tryCreateClient() {
+async function safeFetchJson<T>(url: string, init?: RequestInit): Promise<T | null> {
+  if (typeof fetch === 'undefined') return null;
   try {
-    return createSupabaseBrowserClient();
+    const res = await fetch(url, init);
+    if (!res.ok) return null;
+    return (await res.json()) as T;
   } catch {
     return null;
   }
 }
 
+/**
+ * Cloud persistence adapter backed by authenticated Next.js API routes
+ * (`ClassificationSession` + `ChatMessage`, `ProductMaster`, `UserProfile`).
+ */
 export class SupabaseCloudAdapter implements IPersistence {
-  private async getUserId(): Promise<string | null> {
-    const client = tryCreateClient();
-    if (!client) return null;
-    try {
-      const { data } = await client.auth.getUser();
-      return data.user?.id ?? null;
-    } catch {
-      return null;
-    }
-  }
-
   async loadThreads(): Promise<WorkspaceThread[]> {
-    const client = tryCreateClient();
-    const userId = await this.getUserId();
-    if (!client || !userId) return [];
-    const { data, error } = await client
-      .from('workspace_threads')
-      .select('payload')
-      .eq('user_id', userId)
-      .order('updated_at', { ascending: false })
-      .limit(50);
-    if (error || !data) return [];
-    return data
-      .map((row) => row.payload as WorkspaceThread)
-      .filter((item): item is WorkspaceThread => Boolean(item && item.id));
+    const data = await safeFetchJson<{ threads?: WorkspaceThread[] }>('/api/workspace/threads');
+    return Array.isArray(data?.threads) ? data.threads : [];
   }
 
   async saveThread(thread: WorkspaceThread): Promise<void> {
-    const client = tryCreateClient();
-    const userId = await this.getUserId();
-    if (!client || !userId) return;
-    await client.from('workspace_threads').upsert({
-      id: thread.id,
-      user_id: userId,
-      title: thread.title,
-      payload: thread,
-      updated_at: thread.updatedAt,
+    await safeFetchJson('/api/workspace/threads', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(thread),
     });
   }
 
   async deleteThread(threadId: string): Promise<void> {
-    const client = tryCreateClient();
-    const userId = await this.getUserId();
-    if (!client || !userId) return;
-    await client.from('workspace_threads').delete().eq('id', threadId).eq('user_id', userId);
+    await safeFetchJson(`/api/workspace/threads?id=${encodeURIComponent(threadId)}`, {
+      method: 'DELETE',
+    });
   }
 
   async loadSkuPrecedents(): Promise<SkuPrecedent[]> {
-    const client = tryCreateClient();
-    const userId = await this.getUserId();
-    if (!client || !userId) return [];
-    const { data, error } = await client
-      .from('sku_precedents')
-      .select('payload')
-      .eq('user_id', userId)
-      .limit(200);
-    if (error || !data) return [];
-    return data
-      .map((row) => row.payload as SkuPrecedent)
-      .filter((item): item is SkuPrecedent => Boolean(item && item.id));
+    const data = await safeFetchJson<{ precedents?: SkuPrecedent[] }>(
+      '/api/workspace/precedents',
+    );
+    return Array.isArray(data?.precedents) ? data.precedents : [];
   }
 
   async saveSkuPrecedent(precedent: SkuPrecedent): Promise<void> {
-    const client = tryCreateClient();
-    const userId = await this.getUserId();
-    if (!client || !userId) return;
-    await client.from('sku_precedents').upsert({
-      id: precedent.id,
-      user_id: userId,
-      sku: precedent.sku,
-      payload: precedent,
-      updated_at: precedent.updatedAt,
+    await safeFetchJson('/api/workspace/precedents', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(precedent),
     });
   }
 
   async deleteSkuPrecedent(id: string): Promise<void> {
-    const client = tryCreateClient();
-    const userId = await this.getUserId();
-    if (!client || !userId) return;
-    await client.from('sku_precedents').delete().eq('id', id).eq('user_id', userId);
+    await safeFetchJson(`/api/workspace/precedents?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
   }
 
   async loadUserProfile(): Promise<UserProfileSettings | null> {
-    const client = tryCreateClient();
-    const userId = await this.getUserId();
-    if (!client || !userId) return null;
-    const { data, error } = await client
-      .from('workspace_profiles')
-      .select('payload')
-      .eq('user_id', userId)
-      .maybeSingle();
-    if (error || !data?.payload) return null;
-    return data.payload as UserProfileSettings;
+    const data = await safeFetchJson<{ profile?: UserProfileSettings | null }>(
+      '/api/workspace/profile',
+    );
+    return data?.profile ?? null;
   }
 
   async saveUserProfile(profile: UserProfileSettings): Promise<void> {
-    const client = tryCreateClient();
-    const userId = await this.getUserId();
-    if (!client || !userId) return;
-    await client.from('workspace_profiles').upsert({
-      user_id: userId,
-      payload: profile,
-      updated_at: profile.updatedAt,
+    await safeFetchJson('/api/workspace/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(profile),
     });
   }
 }

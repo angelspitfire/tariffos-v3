@@ -164,11 +164,33 @@ export function useWorkspaceClassification({
     const added: WorkspaceAttachment[] = [];
     for (const file of Array.from(files)) {
       let extractedText: string | undefined;
-      if (/text|csv|json/i.test(file.type) || /\.(txt|csv)$/i.test(file.name)) {
+      let imageDataUrl: string | undefined;
+      const isText = /text|csv|json/i.test(file.type) || /\.(txt|csv)$/i.test(file.name);
+      const isPdfOrImage =
+        /pdf|image\/(png|jpeg|webp)/i.test(file.type) || /\.(pdf|png|jpe?g|webp)$/i.test(file.name);
+
+      if (isText) {
         try {
-          extractedText = (await file.text()).slice(0, 4000);
+          extractedText = (await file.text()).slice(0, 8000);
         } catch {
           extractedText = undefined;
+        }
+      } else if (isPdfOrImage && typeof fetch !== 'undefined') {
+        try {
+          const form = new FormData();
+          form.append('file', file);
+          const res = await fetch('/api/attachments/extract', { method: 'POST', body: form });
+          if (res.ok) {
+            const payload = (await res.json()) as {
+              kind?: string;
+              text?: string;
+              dataUrl?: string;
+            };
+            if (payload.text) extractedText = payload.text;
+            if (payload.dataUrl) imageDataUrl = payload.dataUrl;
+          }
+        } catch {
+          // Graceful fallback to filename attachment
         }
       }
       added.push({
@@ -176,7 +198,8 @@ export function useWorkspaceClassification({
         name: file.name,
         mimeType: file.type || 'application/octet-stream',
         sizeBytes: file.size,
-        extractedText,
+        ...(extractedText ? { extractedText } : {}),
+        ...(imageDataUrl ? { imageDataUrl } : {}),
       });
     }
     setPendingAttachments((prev) => [...prev, ...added]);

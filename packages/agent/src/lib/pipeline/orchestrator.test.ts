@@ -292,4 +292,71 @@ describe('classifyInvoiceBatch', () => {
     expect(result.lines[0]?.alternatives[0]?.code).toBe('8471.30.19.90');
     expect(result.lines[0]?.rejected[0]?.code).toBe('8517.62.41.00');
   });
+
+  it('expands sibling subheadings and propagates customsFee, BK/BIT flags, and trade remedies', async () => {
+    const runRgiReasoning = vi.fn().mockResolvedValue({
+      hsCode: '7318.15.00.20',
+      confidenceLevel: 'Alto',
+      confidencePct: 91,
+      confidenceReason: 'Tornillo hexagonal roscado acero',
+      rgiSteps: [],
+      alternatives: [],
+      rejected: [],
+      flags: [],
+      unresolved: [],
+      modelUsed: 'test-model',
+    });
+    const expandSiblingSubheadings = vi.fn().mockResolvedValue([
+      {
+        hsCode: '7318.15.00.20',
+        description: 'Pernos hexagonales de acero',
+        adValoremRate: 14,
+        ivaRate: 16,
+        unit: 'kg',
+        customsFeeRate: 1,
+        isBK: true,
+        isBIT: false,
+      },
+    ]);
+    const ports = createBasePorts({
+      searchTariffCandidates: vi.fn().mockResolvedValue([
+        {
+          hsCode: '7318.15.00.90',
+          description: 'Los demás tornillos',
+          adValoremRate: 14,
+          ivaRate: 16,
+          unit: 'kg',
+          score: 0.72,
+        },
+      ]),
+      expandSiblingSubheadings,
+      verifyHsCode: vi.fn().mockResolvedValue({
+        hsCode: '7318.15.00.20',
+        description: 'Pernos hexagonales de acero',
+        adValoremRate: 14,
+        ivaRate: 16,
+        unit: 'kg',
+        customsFeeRate: 1,
+        isBK: true,
+        isBIT: false,
+      }),
+      runRgiReasoning,
+    });
+
+    const result = await classifyInvoiceBatch(
+      [{ lineId: 'L1', description: 'Pernos hexagonales acero inoxidable M10', originCountry: 'CN', cifValue: 1000 }],
+      ports,
+      { tenantId: 't1', countryCode: 'VE' },
+    );
+
+    expect(expandSiblingSubheadings).toHaveBeenCalledWith('VE', ['731815']);
+    const passed = runRgiReasoning.mock.calls[0]?.[0] as { candidates: TariffCandidateRecord[] };
+    expect(passed.candidates.map((c) => c.hsCode)).toEqual(['7318.15.00.90', '7318.15.00.20']);
+    const line = result.lines[0]!;
+    expect(line.duties.customsFeeRate).toBe(1);
+    expect(line.duties.customsFeeAmount).toBe(10);
+    expect(line.duties.isBK).toBe(true);
+    expect(line.flags.some((f) => f.title.includes('Bien de Capital (BK)'))).toBe(true);
+    expect(line.flags.some((f) => f.title.includes('antidumping'))).toBe(true);
+  });
 });

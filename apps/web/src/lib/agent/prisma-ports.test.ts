@@ -7,11 +7,11 @@ const mocks = vi.hoisted(() => ({
   legalKnowledgeChunkFindMany: vi.fn(),
   ftsSearch: vi.fn<() => Promise<TariffCandidateRecord[]>>(),
   vectorSearch: vi.fn<() => Promise<TariffCandidateRecord[]>>(),
+  findTenantSkuPrecedent: vi.fn(),
 }));
 
 vi.mock('@tariffos/database', () => ({
   prisma: {
-    productMaster: { findFirst: vi.fn() },
     nationalTariff: { findMany: vi.fn(), findFirst: mocks.nationalTariffFindFirst },
     legalKnowledgeChunk: { findMany: mocks.legalKnowledgeChunkFindMany },
     hsPermitRequirement: { findMany: mocks.hsPermitRequirementFindMany },
@@ -26,6 +26,10 @@ vi.mock('./tariff-vector', () => ({
   searchTariffCandidatesVector: mocks.vectorSearch,
 }));
 
+vi.mock('./tier0-lookup', () => ({
+  findTenantSkuPrecedent: mocks.findTenantSkuPrecedent,
+}));
+
 import { createPrismaPipelinePorts } from './prisma-ports';
 
 describe('createPrismaPipelinePorts', () => {
@@ -33,36 +37,52 @@ describe('createPrismaPipelinePorts', () => {
     vi.clearAllMocks();
   });
 
-  it('matches both dotted and 10-digit compact HS codes and enforces non-derogated active rows', async () => {
+  it('matches both dotted and 10-digit compact HS codes and maps customsFee/BK/BIT and RL-1 prohibited flag', async () => {
     mocks.nationalTariffFindFirst.mockResolvedValue({
       hsCode: '8471309090',
       description: 'Las demás sin sintonizador de TV',
       adValorem: 16,
       iva: 16,
-      legalNotes: null,
+      customsFee: 1,
+      isBK: false,
+      isBIT: true,
+      legalNotes: 'Régimen Legal Importación: 1,20',
     });
-    mocks.hsPermitRequirementFindMany.mockResolvedValue([]);
+    mocks.hsPermitRequirementFindMany.mockResolvedValue([
+      { permitType: { code: 'RL-1', agency: 'Ministerio de Comercio Exterior', name: 'Importación o Exportación Prohibida' } },
+      { permitType: { code: 'RL-20', agency: 'SENCAMER', name: 'Constancia de Registro COVENIN' } },
+    ]);
 
     const ports = createPrismaPipelinePorts();
     const verified = await ports.verifyHsCode('VE', '8471.30.90.90');
 
-    expect(verified?.hsCode).toBe('8471309090');
-    expect(mocks.nationalTariffFindFirst).toHaveBeenCalledWith({
-      where: {
-        countryCode: 'VE',
-        hsCode: { in: ['8471.30.90.90', '8471309090'] },
-        isActive: true,
-        isDerogated: false,
-      },
+    expect(verified).toMatchObject({
+      hsCode: '8471309090',
+      customsFeeRate: 1,
+      isBK: false,
+      isBIT: true,
+      prohibited: true,
+      permits: [
+        'RL-1 (Ministerio de Comercio Exterior): Importación o Exportación Prohibida',
+        'RL-20 (SENCAMER): Constancia de Registro COVENIN',
+      ],
     });
+    expect(ports.fetchWebSpecs).toBeTypeOf('function');
   });
 
-  it('queries LegalKnowledgeChunk by parent.hierarchyPath chapter prefix (01..98)', async () => {
+  it('queries LegalKnowledgeChunk for both chapter and section hierarchyPath values', async () => {
     mocks.legalKnowledgeChunkFindMany.mockResolvedValue([
       {
         heading: 'CAPÍTULO 85 — MÁQUINAS Y APARATOS ELÉCTRICOS',
         ruleNumber: '1',
         content: 'Este Capítulo no comprende las mantas calentadas eléctricamente.',
+        parent: { hierarchyPath: '85' },
+      },
+      {
+        heading: 'SECCIÓN XVI — MÁQUINAS Y APARATOS',
+        ruleNumber: '4',
+        content: 'Unidad funcional constituida por elementos individualizados.',
+        parent: { hierarchyPath: 'SEC-XVI' },
       },
     ]);
 
@@ -73,10 +93,13 @@ describe('createPrismaPipelinePorts', () => {
       where: {
         parent: {
           countryCode: 'VE',
-          hierarchyPath: { startsWith: '85' },
+          hierarchyPath: { in: ['85', 'SEC-XVI'] },
         },
       },
-      take: 8,
+      include: {
+        parent: { select: { hierarchyPath: true } },
+      },
+      take: 12,
     });
     expect(notes).toEqual([
       {
@@ -84,10 +107,20 @@ describe('createPrismaPipelinePorts', () => {
         text: 'Este Capítulo no comprende las mantas calentadas eléctricamente.',
         chapter: '85',
       },
+      {
+        ref: 'SECCIÓN XVI — MÁQUINAS Y APARATOS (Nota 4)',
+        text: 'Unidad funcional constituida por elementos individualizados.',
+      },
     ]);
   });
 
-  it('fuses vector and FTS candidates with RRF when TariffNodeEmbedding returns hits', async () => {
+  it('delegates findSkuPrecedent to findTenantSkuPrecedent and fuses vector + FTS candidates', async () => {
+    mocks.findTenantSkuPrecedent.mockResolvedValue({
+      hsCode: '8471.30.90.90',
+      officialDescription: 'MacBook Pro 14',
+      confidencePct: 99,
+      approvedByBroker: true,
+    });
     mocks.vectorSearch.mockResolvedValue([
       { hsCode: '8504.40.90.00', description: 'Inversores', adValoremRate: 14, ivaRate: 16, unit: 'u', prohibited: false, score: 0.91 },
     ]);
@@ -97,8 +130,12 @@ describe('createPrismaPipelinePorts', () => {
     ]);
 
     const ports = createPrismaPipelinePorts();
-    const results = await ports.searchTariffCandidates('VE', 'inversor solar híbrido 5kw');
+    await expect(ports.findSkuPrecedent('t-1', 'MBP-14')).resolves.toMatchObject({
+      hsCode: '8471.30.90.90',
+    });
+    expect(mocks.findTenantSkuPrecedent).toHaveBeenCalledWith('t-1', 'MBP-14');
 
+    const results = await ports.searchTariffCandidates('VE', 'inversor solar híbrido 5kw');
     expect(results[0]?.hsCode).toBe('8504.40.90.00');
     expect(results[0]?.score).toBe(1);
     expect(results).toHaveLength(2);

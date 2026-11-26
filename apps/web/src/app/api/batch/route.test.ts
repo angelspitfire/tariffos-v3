@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   inngestSend: vi.fn(),
   getAuthenticatedUser: vi.fn(),
   membershipFindFirst: vi.fn(),
+  filingUpsert: vi.fn(),
   checkBillingLimit: vi.fn(),
 }));
 
@@ -21,6 +22,7 @@ vi.mock('@tariffos/database', () => ({
   },
   prisma: {
     membership: { findFirst: mocks.membershipFindFirst },
+    filing: { upsert: mocks.filingUpsert },
   },
 }));
 
@@ -88,6 +90,7 @@ describe('POST /api/batch', () => {
 
     mocks.getAuthenticatedUser.mockResolvedValue({ id: 'user-1', email: 'ops@agency.ve' });
     mocks.membershipFindFirst.mockResolvedValue({ tenantId: 'tenant-ve', role: 'ADMIN' });
+    mocks.filingUpsert.mockResolvedValue({ id: 'fil-cloud-42' });
     mocks.checkBillingLimit.mockResolvedValue({ allowed: true });
     mocks.inngestSend.mockResolvedValue({ ids: ['evt-123'] });
 

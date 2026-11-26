@@ -39,6 +39,25 @@ describe('duties', () => {
     expect(res.arancelAmount).toBe(160);
     expect(res.ivaAmount).toBe(185.6);
     expect(res.unit).toBe('u');
+    expect(res.customsFeeRate).toBeUndefined();
+  });
+
+  it('computes customsFeeAmount, IVA base including customs fee, totalTaxes, landedCost, and BK/BIT flags when customsFeeRate is provided', () => {
+    const res = calculateDeterministicDuties(1000, {
+      adValoremRate: 16,
+      ivaRate: 16,
+      unit: 'u',
+      customsFeeRate: 1,
+      isBK: false,
+      isBIT: true,
+    });
+    expect(res.customsFeeRate).toBe(1);
+    expect(res.customsFeeAmount).toBe(10);
+    expect(res.ivaAmount).toBe(187.2);
+    expect(res.totalTaxes).toBe(357.2);
+    expect(res.landedCost).toBe(1357.2);
+    expect(res.isBK).toBe(false);
+    expect(res.isBIT).toBe(true);
   });
 
   it('computes CIF customs value across EXW, FOB, CFR, CIF, and DDP', () => {

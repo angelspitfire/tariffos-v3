@@ -117,3 +117,16 @@ export {
   runRgiWithLlm,
   type RgiLlmRuntimeOverride,
 } from './adapters/rgi-llm-adapter.js';
+export { chapterToSectionPath } from './lib/pipeline/hs-sections.js';
+export {
+  createWebSpecsFetcher,
+  fetchWebSpecsFromEnv,
+} from './adapters/web-search-adapter.js';
+export {
+  matchPrefixDigits,
+  summarizeEvalResults,
+  type EvalCaseResult,
+  type EvalSummary,
+  type GoldenCase,
+} from './lib/pipeline/eval-metrics.js';
+export { PdfTextAdapter } from './intake/adapters/pdf-text.js';

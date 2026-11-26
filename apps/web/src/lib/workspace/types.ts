@@ -15,6 +15,7 @@ export interface WorkspaceAttachment {
   mimeType: string;
   sizeBytes: number;
   extractedText?: string;
+  imageDataUrl?: string;
 }
 
 export interface WorkspaceMessage {

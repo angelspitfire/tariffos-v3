@@ -165,7 +165,10 @@ export function buildCalculatorComponent(
     hsCode: formattedHsCode,
     adValoremPercent: payload.duties.adValoremRate,
     vatPercent: payload.duties.ivaRate,
-    customsServiceFeePercent: options.customsFeePercent ?? DEFAULT_CUSTOMS_FEE_PERCENT,
+    customsServiceFeePercent:
+      options.customsFeePercent ??
+      payload.duties.customsFeeRate ??
+      DEFAULT_CUSTOMS_FEE_PERCENT,
     currencyCode: options.currencyCode ?? 'USD',
     localCurrencyCode: options.localCurrencyCode ?? 'VES',
     suggestedExchangeRate: options.suggestedExchangeRate ?? DEFAULT_EXCHANGE_RATE,

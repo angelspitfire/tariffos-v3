@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
+import { prisma } from '@tariffos/database';
 import { checkTenantQuota, resolveCloudTenantContext } from '@/lib/agent/cloud-session';
 import { classifyItemOffline } from '@/lib/agent/offline-classifier';
 import { buildBatchSummary, parseBatchTextToItems } from '@/lib/inngest/batch-helpers';
@@ -87,6 +88,19 @@ export async function POST(request: Request): Promise<Response> {
               : 'El tamaño del lote excede tu cuota disponible.';
       return Response.json({ error, reason }, { status });
     }
+
+    await prisma.filing.upsert({
+      where: { id: filingId },
+      update: {},
+      create: {
+        id: filingId,
+        tenantId: auth.context.tenantId,
+        userId: auth.context.userId,
+        referenceId: filingId,
+        status: 'In progress',
+        items: [],
+      },
+    });
 
     await inngest.send({
       id: `filing-batch-${filingId}`,
