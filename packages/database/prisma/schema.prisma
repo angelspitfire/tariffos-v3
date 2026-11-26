@@ -56,6 +56,7 @@ model Tenant {
   decisionArtifacts         DecisionArtifact[]
 
   @@index([planId], map: "idx_Tenant_planId")
+  @@index([countryCode])
   @@schema("public")
 }
 
@@ -170,7 +171,6 @@ model ClassificationSession {
   filingId                  String?                @map("filing_id")
   filing                    Filing?                @relation(fields: [filingId], references: [id])
 
-  @@index([tenantId], map: "idx_ClassificationSession_tenant_id")
   @@index([filingId])
   @@index([tenantId])
   @@schema("public")
@@ -186,8 +186,6 @@ model ChatMessage {
   session   ClassificationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   tenant    Tenant                @relation(fields: [tenantId], references: [id])
 
-  @@index([sessionId], map: "idx_ChatMessage_session_id")
-  @@index([tenantId], map: "idx_ChatMessage_tenant_id")
   @@index([sessionId])
   @@index([tenantId])
   @@schema("public")
@@ -207,7 +205,6 @@ model ProductMaster {
   tenant      Tenant                 @relation(fields: [tenantId], references: [id])
 
   @@unique([tenantId, description])
-  @@index([tenantId], map: "idx_ProductMaster_tenant_id")
   @@index([tenantId])
   @@schema("public")
 }
@@ -274,7 +271,6 @@ model UsageRecord {
   tenant       Tenant   @relation(fields: [tenantId], references: [id])
 
   @@unique([tenantId, month, year])
-  @@index([tenantId], map: "idx_UsageRecord_tenantId")
   @@index([tenantId])
   @@schema("public")
 }
@@ -344,7 +340,6 @@ model FileMetadata {
   @@index([cacheUri])
   @@index([expiresAt])
   @@index([isIndexed])
-  @@index([classificationSessionId], map: "idx_FileMetadata_classificationSessionId")
   @@index([filingId], map: "idx_FileMetadata_filingId")
   @@index([classificationSessionId])
   @@schema("public")
@@ -364,8 +359,6 @@ model BatchJob {
   tenant                  Tenant                 @relation(fields: [tenantId], references: [id])
   items                   BatchJobItem[]
 
-  @@index([tenantId], map: "idx_BatchJob_tenant_id")
-  @@index([classificationSessionId], map: "idx_BatchJob_classificationSessionId")
   @@index([classificationSessionId])
   @@index([tenantId])
   @@schema("public")
@@ -387,8 +380,6 @@ model BatchJobItem {
   job              BatchJob  @relation(fields: [jobId], references: [id])
   tenant           Tenant    @relation(fields: [tenantId], references: [id])
 
-  @@index([jobId], map: "idx_BatchJobItem_jobId")
-  @@index([tenantId], map: "idx_BatchJobItem_tenant_id")
   @@index([jobId])
   @@index([tenantId])
   @@schema("public")
@@ -558,7 +549,6 @@ model BillingPeriod {
   tenant               Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, startDate, endDate])
-  @@index([tenantId], map: "idx_BillingPeriod_tenantId")
   @@index([tenantId])
   @@schema("public")
 }
@@ -985,6 +975,7 @@ model HsPermitRequirement {
   permitType           PermitType @relation(fields: [permitTypeId], references: [id])
   @@unique([hsCode, permitTypeId])
   @@index([hsCode])
+  @@index([permitTypeId])
   @@schema("public")
 }
 

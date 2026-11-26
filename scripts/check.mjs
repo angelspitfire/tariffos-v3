@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
+import { isDbRelatedPath } from './lib/db-guardrails.mjs';
 
 const QUICK = process.argv.includes('--quick');
 const WARN_LINES = 200;
@@ -12,7 +13,7 @@ function runStep(label, cmd, args) {
   return res.status === 0;
 }
 
-function getChangedSourceFiles() {
+function getAllChangedFiles() {
   try {
     const tracked = execFileSync('git', ['diff', '--name-only', '--diff-filter=ACMR', 'HEAD'], {
       encoding: 'utf8',
@@ -20,23 +21,27 @@ function getChangedSourceFiles() {
     const untracked = execFileSync('git', ['ls-files', '--others', '--exclude-standard'], {
       encoding: 'utf8',
     });
-    const all = new Set(
-      [...tracked.split('\n'), ...untracked.split('\n')]
-        .map((f) => f.trim())
-        .filter(Boolean),
-    );
-    return [...all].filter(
-      (f) =>
-        /\.(ts|tsx)$/.test(f) &&
-        !f.includes('/generated/') &&
-        !f.includes('/dist/') &&
-        !f.includes('/.next/') &&
-        existsSync(f),
-    );
+    return [
+      ...new Set(
+        [...tracked.split('\n'), ...untracked.split('\n')]
+          .map((f) => f.trim())
+          .filter((f) => Boolean(f) && existsSync(f)),
+      ),
+    ];
   } catch {
     return [];
   }
 }
+
+const allChangedFiles = getAllChangedFiles();
+const changedFiles = allChangedFiles.filter(
+  (f) =>
+    /\.(ts|tsx)$/.test(f) &&
+    !f.includes('/generated/') &&
+    !f.includes('/dist/') &&
+    !f.includes('/.next/'),
+);
+const changedDbFiles = allChangedFiles.filter((f) => isDbRelatedPath(f));
 
 let failed = false;
 
@@ -46,7 +51,6 @@ if (!runStep('1/5 TypeScript (tsc --noEmit)', 'pnpm', ['-r', '--if-present', 'ty
 }
 
 // 2. Oxlint (--type-aware --type-check) on clean workspaces + changed files in packages/database
-const changedFiles = getChangedSourceFiles();
 const OXLINT_CLEAN_DIRS = [
   'apps/web/src',
   'packages/agent/src',
@@ -93,6 +97,13 @@ for (const file of nonTestChanged) {
 }
 if (sizeClean) {
   console.log('   OK: all changed modules within size target');
+}
+
+// 3b. DB static guardrails (runs ONLY when Prisma schema, SQL migrations, or supabase/ files changed)
+if (changedDbFiles.length > 0) {
+  if (!runStep('3b/5 DB static guardrails (RLS, policies, indexes)', 'node', ['scripts/check-db-static.mjs', ...changedDbFiles])) {
+    failed = true;
+  }
 }
 
 // 4. Unit tests (skipped in --quick mode)
