@@ -128,7 +128,10 @@ describe('POST /api/admin/tenants/onboard', () => {
     expect(res.status).toBe(201);
     expect(mocks.inviteUserByEmail).toHaveBeenCalledWith(
       'new@agency.ve',
-      expect.objectContaining({ data: expect.objectContaining({ full_name: 'Pedro' }) }),
+      expect.objectContaining({
+        data: expect.objectContaining({ full_name: 'Pedro' }),
+        redirectTo: 'https://tariffos.app/auth/callback?next=%2Fapp',
+      }),
     );
     expect(mocks.recordAdminAudit).toHaveBeenCalledWith(
       expect.anything(),

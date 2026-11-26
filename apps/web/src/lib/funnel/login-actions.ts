@@ -1,10 +1,16 @@
 import type { SubscriptionBillingCycle } from '@tariffos/shared-types';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import {
+  buildAuthCallbackUrl,
+  resolveBrowserAuthOrigin,
+  sanitizeNextPath,
+} from './auth-origin';
+import {
   readMockProfile,
   readSelectedPlan,
   saveFunnelSession,
 } from './funnel-storage';
+import { validateSignupCredentials } from './password-policy';
 
 export type AuthTab = 'signin' | 'signup';
 
@@ -43,7 +49,7 @@ export async function executeGoogleAuth(params: {
 }): Promise<{ error: string | null; shouldNavigate: boolean }> {
   if (params.isCloud) {
     const supabase = createSupabaseBrowserClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(params.destination)}`;
+    const redirectTo = buildAuthCallbackUrl(resolveBrowserAuthOrigin(), params.destination);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo },
@@ -60,29 +66,63 @@ export async function executeGoogleAuth(params: {
   return { error: null, shouldNavigate: true };
 }
 
+export interface EmailAuthResult {
+  error: string | null;
+  requiresEmailConfirmation?: boolean;
+}
+
 export async function executeEmailAuth(params: {
   isCloud: boolean;
   tab: AuthTab;
   email: string;
   password: string;
   fullName: string;
-}): Promise<{ error: string | null }> {
+  destination?: string;
+}): Promise<EmailAuthResult> {
   const cleanEmail = params.email.trim();
+  if (params.tab === 'signup') {
+    const validationError = validateSignupCredentials({
+      fullName: params.fullName,
+      email: cleanEmail,
+      password: params.password,
+    });
+    if (validationError) {
+      return { error: validationError, requiresEmailConfirmation: false };
+    }
+  }
+
   if (params.isCloud) {
     const supabase = createSupabaseBrowserClient();
     if (params.tab === 'signup') {
-      const { error } = await supabase.auth.signUp({
+      const targetNext = sanitizeNextPath(params.destination, '/onboarding');
+      const emailRedirectTo = buildAuthCallbackUrl(resolveBrowserAuthOrigin(), targetNext);
+      const { data, error } = await supabase.auth.signUp({
         email: cleanEmail,
         password: params.password,
-        options: { data: { full_name: params.fullName.trim() } },
+        options: {
+          emailRedirectTo,
+          data: { full_name: params.fullName.trim() },
+        },
       });
-      return { error: error ? error.message : null };
+      if (error) {
+        return { error: error.message };
+      }
+      if (Array.isArray(data.user?.identities) && data.user.identities.length === 0) {
+        return {
+          error: 'Este correo ya está registrado. Inicia sesión o recupera tu contraseña.',
+        };
+      }
+      return {
+        error: null,
+        requiresEmailConfirmation: !data.session,
+      };
     }
+
     const { error } = await supabase.auth.signInWithPassword({
       email: cleanEmail,
       password: params.password,
     });
-    return { error: error ? error.message : null };
+    return { error: error ? error.message : null, requiresEmailConfirmation: false };
   }
 
   saveFunnelSession({
@@ -91,7 +131,7 @@ export async function executeEmailAuth(params: {
     fullName: params.fullName.trim() || cleanEmail.split('@')[0] || 'Operador',
     provider: 'email',
   });
-  return { error: null };
+  return { error: null, requiresEmailConfirmation: false };
 }
 
 export async function executePasswordReset(params: {
@@ -107,8 +147,9 @@ export async function executePasswordReset(params: {
   }
   if (params.isCloud) {
     const supabase = createSupabaseBrowserClient();
+    const redirectTo = buildAuthCallbackUrl(resolveBrowserAuthOrigin(), '/login');
     const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-      redirectTo: `${window.location.origin}/login`,
+      redirectTo,
     });
     if (error) return { error: error.message, info: null };
   }

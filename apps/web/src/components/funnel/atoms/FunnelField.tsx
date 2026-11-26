@@ -13,12 +13,14 @@ const BASE_CONTROL_CLASSES =
 export interface FunnelInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   leftIcon?: ReactNode;
+  rightSlot?: ReactNode;
   containerClassName?: string;
 }
 
 export function FunnelInput({
   label,
   leftIcon,
+  rightSlot,
   containerClassName,
   className,
   id,
@@ -43,9 +45,17 @@ export function FunnelInput({
         ) : null}
         <input
           id={fieldId}
-          className={cn(BASE_CONTROL_CLASSES, leftIcon ? 'pl-9' : '', className)}
+          className={cn(
+            BASE_CONTROL_CLASSES,
+            leftIcon ? 'pl-9' : '',
+            rightSlot ? 'pr-9' : '',
+            className,
+          )}
           {...rest}
         />
+        {rightSlot ? (
+          <div className="absolute right-2.5 flex items-center">{rightSlot}</div>
+        ) : null}
       </div>
     </div>
   );

@@ -7,17 +7,20 @@ import {
   getOfflineAdminState,
 } from '@/lib/admin/offline-store';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
+import { buildAuthCallbackUrl, resolveServerAuthOrigin } from '@/lib/funnel/auth-origin';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 
 async function resolveOrInviteCloudUser(
   email: string,
   fullName: string,
   sendInviteEmail: boolean,
+  publicOrigin: string,
 ): Promise<{ userId: string; invited: boolean }> {
   const supabaseAdmin = createSupabaseAdminClient();
   if (sendInviteEmail) {
     const inviteRes = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
       data: { full_name: fullName },
+      redirectTo: buildAuthCallbackUrl(publicOrigin, '/app'),
     });
     if (!inviteRes.error && inviteRes.data.user) {
       return { userId: inviteRes.data.user.id, invited: true };
@@ -121,6 +124,7 @@ export async function POST(request: Request): Promise<Response> {
     ownerEmail,
     input.ownerName,
     input.sendInviteEmail,
+    resolveServerAuthOrigin(request),
   );
   const effectiveLimit = input.billingLimit ?? plan.classificationLimit;
 
