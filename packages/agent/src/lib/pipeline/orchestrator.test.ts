@@ -124,4 +124,82 @@ describe('classifyInvoiceBatch', () => {
     expect(result.stats.webGroundingUsed).toBe(1);
     expect(fetchWebSpecs).toHaveBeenCalledTimes(1);
   });
+
+  it('enforces DEFAULT_MAX_WEB_GROUNDING_STANDARD (12) in Standard mode', async () => {
+    const fetchWebSpecs = vi.fn().mockResolvedValue('specs');
+    const ports = createBasePorts({ fetchWebSpecs });
+    const items = Array.from({ length: 15 }, (_, idx) => ({
+      lineId: `L${idx + 1}`,
+      description: `SKU${idx + 1}`,
+      originCountry: 'CN',
+      cifValue: 100,
+    }));
+
+    const result = await classifyInvoiceBatch(items, ports, {
+      tenantId: 't1',
+      countryCode: 'VE',
+      deepMode: false,
+    });
+
+    expect(result.stats.webGroundingUsed).toBe(12);
+    expect(fetchWebSpecs).toHaveBeenCalledTimes(12);
+  });
+
+  it('combines vector and lexical candidates and filters out off-chapter legal notes', async () => {
+    const runRgiReasoning = vi.fn().mockResolvedValue({
+      hsCode: '8471.30.90.90',
+      confidenceLevel: 'Alto',
+      confidencePct: 93,
+      confidenceReason: 'Verified via hybrid retrieval',
+      rgiSteps: [],
+      alternatives: [],
+      rejected: [],
+      flags: [],
+      unresolved: [],
+      modelUsed: 'reasoning-model',
+    });
+
+    const ports = createBasePorts({
+      searchVectorCandidates: vi.fn().mockResolvedValue([
+        { ...LAPTOP_TARIFF, hsCode: '8471.30.12.90', score: 0.8 },
+        { ...LAPTOP_TARIFF, hsCode: '8471.30.90.90', score: 0.75 },
+      ]),
+      searchTariffCandidates: vi.fn().mockResolvedValue([
+        { ...LAPTOP_TARIFF, hsCode: '8471.30.90.90', score: 0.72 },
+        { ...LAPTOP_TARIFF, hsCode: '8471.30.12.90', score: 0.71 },
+      ]),
+      getLegalNotes: vi.fn().mockResolvedValue([
+        { ref: 'Cap. 84 Nota 5(B)', text: 'Valid chapter 84 note' },
+        { ref: 'Cap. 91 Nota 2', text: 'Irrelevant chapter 91 note', chapter: '91' },
+      ]),
+      runRgiReasoning,
+    });
+
+    await classifyInvoiceBatch(
+      [{ lineId: 'L1', description: 'Laptop computer 14 inch aluminum', originCountry: 'CN', cifValue: 1200 }],
+      ports,
+      { tenantId: 't1', countryCode: 'VE' },
+    );
+
+    const passedInput = runRgiReasoning.mock.calls[0]?.[0] as { notes: Array<{ ref: string }> };
+    expect(passedInput.notes.map((n) => n.ref)).toEqual(['Cap. 84 Nota 5(B)']);
+  });
+
+  it('flags official schedule audit discrepancy when verifyHsCode returns a different code', async () => {
+    const ports = createBasePorts({
+      verifyHsCode: vi.fn().mockResolvedValue({
+        ...LAPTOP_TARIFF,
+        hsCode: '8471.30.19.90',
+      }),
+    });
+
+    const result = await classifyInvoiceBatch(
+      [{ lineId: 'L1', description: 'Laptop computer 14 inch aluminum', originCountry: 'CN', cifValue: 1200 }],
+      ports,
+      { tenantId: 't1', countryCode: 'VE' },
+    );
+
+    expect(result.lines[0]?.verifiedAgainstDb).toBe(false);
+    expect(result.lines[0]?.flags.some((f) => f.title.includes('Auditoría'))).toBe(true);
+  });
 });

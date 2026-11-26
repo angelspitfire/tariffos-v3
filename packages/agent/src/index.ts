@@ -4,7 +4,64 @@ export {
 } from './lib/pipeline/orchestrator.js';
 export {
   calculateDeterministicDuties,
+  calculateFullDuties,
+  inferTradeParamsFromContext,
+  type DutyEngineInput,
+  type DutyEngineResult,
 } from './lib/pipeline/duties.js';
+export {
+  ORIGIN_COUNTRIES,
+  INCOTERM_RULES,
+  resolvePreferentialTreatment,
+  detectOriginCodeFromText,
+  detectIncotermFromText,
+  type OriginCountryOption,
+  type IncotermRule,
+  type PreferentialAgreementResult,
+} from './lib/pipeline/trade-preferences.js';
+export {
+  evaluateTradeRemedies,
+  type TradeRemedyFlag,
+} from './lib/pipeline/trade-remedies.js';
+export {
+  auditTariffAgainstOfficialSchedule,
+  type TariffAuditInput,
+  type TariffAuditResult,
+  type TariffAuditDiscrepancy,
+} from './lib/pipeline/tariff-validator.js';
+export {
+  RRF_K,
+  DEFAULT_HYBRID_LIMIT,
+  fuseHybridTariffCandidates,
+  filterLegalNotesByChapter,
+  retrieveHybridCandidates,
+  type HybridFusionOptions,
+} from './lib/pipeline/hybrid-retrieval.js';
+export {
+  LOW_CONFIDENCE_REVIEW_THRESHOLD,
+  createAgentReviewTrigger,
+  resolveInitialDossierReview,
+  applyApprovalPolicyToEnvelope,
+} from './lib/pipeline/dossier-approval-policy.js';
+export {
+  CANONICAL_MERCEOLOGICAL_ATTRIBUTES,
+  HITL_CONFIDENCE_THRESHOLD,
+  computeMerceologicalConfidence,
+  buildMerceologicalSheet,
+  evaluateHitlGate,
+  type BuildMerceologicalSheetInput,
+  type HitlGateInput,
+  type HitlGateResult,
+} from './lib/pipeline/merceological-hitl.js';
+export {
+  mapPayloadToA2UIEnvelope,
+  type MapPayloadToA2UIOptions,
+} from './lib/pipeline/a2ui-mapper.js';
+export {
+  mapBatchToA2UIManifest,
+  mapBatchToA2UIEnvelope,
+  type MapBatchToA2UIOptions,
+} from './lib/pipeline/a2ui-batch-mapper.js';
 export {
   deduplicateInvoiceItems,
   buildItemKey,

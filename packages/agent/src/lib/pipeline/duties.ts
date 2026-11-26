@@ -1,32 +1,183 @@
-import type { DeterministicDuties } from '@tariffos/shared-types';
+import type {
+  A2UICalculatorComponent,
+  A2UIDocumentSummaryComponent,
+  A2UIDossierComponent,
+  DeterministicDuties,
+  IncotermCode,
+} from '@tariffos/shared-types';
+import type { DutyEngineInput, DutyEngineResult } from './duty-types.js';
+import {
+  INCOTERM_RULES,
+  detectIncotermFromText,
+  detectOriginCodeFromText,
+  resolvePreferentialTreatment,
+} from './trade-preferences.js';
+import { evaluateTradeRemedies } from './trade-remedies.js';
 import type { TariffCandidateRecord } from './types.js';
+
+export type { DutyEngineInput, DutyEngineResult } from './duty-types.js';
 
 const PERCENT_DIVISOR = 100;
 const CURRENCY_DECIMALS = 2;
+const RATE_DECIMALS = 4;
+const MIN_EXCHANGE_RATE = 0.0001;
+const MAX_DISCOUNT_PERCENT = 100;
 
-function roundCurrency(value: number): number {
-  const factor = 10 ** CURRENCY_DECIMALS;
+function roundNumber(value: number, decimals: number): number {
+  const factor = 10 ** decimals;
   return Math.round(value * factor) / factor;
 }
 
+function clampNonNegative(value: number): number {
+  return Number.isFinite(value) ? Math.max(0, value) : 0;
+}
+
 /**
- * Pure deterministic customs duty calculator (never delegated to an LLM).
+ * Pure deterministic customs duty calculator for single-line pipeline payloads
+ * (never delegated to an LLM).
  */
 export function calculateDeterministicDuties(
   cifValue: number,
   tariff: Pick<TariffCandidateRecord, 'adValoremRate' | 'ivaRate' | 'unit'>,
 ): DeterministicDuties {
-  const safeCif = Math.max(0, cifValue);
-  const arancelAmount = roundCurrency(safeCif * (tariff.adValoremRate / PERCENT_DIVISOR));
+  const safeCif = clampNonNegative(cifValue);
+  const arancelAmount = roundNumber(safeCif * (tariff.adValoremRate / PERCENT_DIVISOR), CURRENCY_DECIMALS);
   const ivaBase = safeCif + arancelAmount;
-  const ivaAmount = roundCurrency(ivaBase * (tariff.ivaRate / PERCENT_DIVISOR));
+  const ivaAmount = roundNumber(ivaBase * (tariff.ivaRate / PERCENT_DIVISOR), CURRENCY_DECIMALS);
 
   return {
-    cif: roundCurrency(safeCif),
+    cif: roundNumber(safeCif, CURRENCY_DECIMALS),
     adValoremRate: tariff.adValoremRate,
     arancelAmount,
     ivaRate: tariff.ivaRate,
     ivaAmount,
     unit: tariff.unit,
   };
+}
+
+/**
+ * Full deterministic customs valuation and duty calculator supporting
+ * Incoterms (EXW/FOB/CFR/CIF/DDP), US CBP FOB valuation, preferential trade
+ * agreements, antidumping remedies, customs service fee waivers, and exemptions.
+ */
+export function calculateFullDuties(input: DutyEngineInput): DutyEngineResult {
+  const rule = INCOTERM_RULES[input.incoterm];
+  const invoiceAmount = clampNonNegative(input.invoiceAmount);
+  const isUsCbp = input.jurisdictionId === 'us-htsus';
+
+  const addedOriginCharges = rule.includesOriginCharges ? 0 : clampNonNegative(input.originChargesAmount);
+  const addedFreight = isUsCbp || rule.includesFreight ? 0 : clampNonNegative(input.freightAmount);
+  const addedInsurance = isUsCbp || rule.includesInsurance ? 0 : clampNonNegative(input.insuranceAmount);
+  const customsValue = invoiceAmount + addedOriginCharges + addedFreight + addedInsurance;
+
+  const valuationBasisLabel = isUsCbp
+    ? 'Customs Value (FOB / Transaction Value CBP)'
+    : `Valor en Aduana CIF (desde ${input.incoterm})`;
+
+  const agreement = resolvePreferentialTreatment({
+    jurisdictionId: input.jurisdictionId,
+    originCode: input.originCode,
+    hsCode: input.hsCode,
+  });
+
+  const baseAdValoremPercent = clampNonNegative(input.baseAdValoremPercent);
+  const effectiveDiscountPercent = input.applyExemption
+    ? MAX_DISCOUNT_PERCENT
+    : input.hasCertificateOfOrigin && agreement.hasAgreement
+      ? Math.min(
+          MAX_DISCOUNT_PERCENT,
+          clampNonNegative(input.preferentialDiscountOverridePercent ?? agreement.discountPercent),
+        )
+      : 0;
+
+  const effectiveAdValoremPercent = input.applyExemption
+    ? 0
+    : roundNumber(baseAdValoremPercent * (1 - effectiveDiscountPercent / PERCENT_DIVISOR), RATE_DECIMALS);
+
+  const adValoremNmfAmount = customsValue * (baseAdValoremPercent / PERCENT_DIVISOR);
+  const adValoremAmount = customsValue * (effectiveAdValoremPercent / PERCENT_DIVISOR);
+  const preferentialSavingsAmount = Math.max(0, adValoremNmfAmount - adValoremAmount);
+
+  const remedies = evaluateTradeRemedies({
+    jurisdictionId: input.jurisdictionId,
+    originCode: input.originCode,
+    hsCode: input.hsCode,
+  });
+
+  const effectiveAntidumpingPercent = input.applyAntidumping ? clampNonNegative(input.antidumpingPercent) : 0;
+  const antidumpingAmount = customsValue * (effectiveAntidumpingPercent / PERCENT_DIVISOR);
+
+  const mpfWaived = Boolean(isUsCbp && input.hasCertificateOfOrigin && agreement.waivesCustomsFee);
+  const effectiveCustomsFeePercent = mpfWaived ? 0 : clampNonNegative(input.customsFeePercent);
+  const customsFeeAmount = customsValue * (effectiveCustomsFeePercent / PERCENT_DIVISOR);
+
+  const effectiveVatPercent = input.applyExemption ? 0 : clampNonNegative(input.vatPercent);
+  const vatBase = customsValue + adValoremAmount + antidumpingAmount + customsFeeAmount;
+  const vatAmount = vatBase * (effectiveVatPercent / PERCENT_DIVISOR);
+
+  const totalTaxes = adValoremAmount + antidumpingAmount + customsFeeAmount + vatAmount;
+  const landedCost = customsValue + totalTaxes;
+  const effectiveTaxBurdenPercent = customsValue > 0 ? (totalTaxes / customsValue) * PERCENT_DIVISOR : 0;
+  const fx = Math.max(MIN_EXCHANGE_RATE, Number(input.exchangeRate) || 1);
+
+  return {
+    incoterm: input.incoterm,
+    invoiceAmount,
+    addedOriginCharges,
+    addedFreight,
+    addedInsurance,
+    customsValue,
+    valuationBasisLabel,
+    agreement,
+    effectiveDiscountPercent,
+    baseAdValoremPercent,
+    effectiveAdValoremPercent,
+    adValoremNmfAmount,
+    adValoremAmount,
+    preferentialSavingsAmount,
+    effectiveAntidumpingPercent,
+    antidumpingAmount,
+    effectiveCustomsFeePercent,
+    customsFeeAmount,
+    vatBase,
+    effectiveVatPercent,
+    vatAmount,
+    totalTaxes,
+    landedCost,
+    effectiveTaxBurdenPercent,
+    localCustomsValue: customsValue * fx,
+    localTotalTaxes: totalTaxes * fx,
+    localLandedCost: landedCost * fx,
+    remedies,
+  };
+}
+
+export function inferTradeParamsFromContext(params: {
+  calculator?: A2UICalculatorComponent;
+  dossier?: A2UIDossierComponent;
+  docSummary?: A2UIDocumentSummaryComponent;
+  defaultIncoterm?: IncotermCode;
+}): { originCode: string; incoterm: IncotermCode } {
+  const { calculator, dossier, docSummary, defaultIncoterm } = params;
+  const specText = (dossier?.technicalSpecs ?? [])
+    .filter((s) => /origen|origin|pa[ií]s|proceden|fabric|manufact/i.test(s.key))
+    .map((s) => s.value)
+    .join(' ');
+
+  const combinedOriginText = [
+    calculator?.originCountry ?? '',
+    specText,
+    docSummary?.routeOrIncoterm ?? '',
+    docSummary?.shipper ?? '',
+    dossier?.officialDescription ?? '',
+  ].join(' ');
+
+  const originCode = detectOriginCodeFromText(combinedOriginText) ?? 'OTHER';
+  const incoterm =
+    calculator?.incoterm ??
+    detectIncotermFromText(docSummary?.routeOrIncoterm ?? '') ??
+    defaultIncoterm ??
+    'FOB';
+
+  return { originCode, incoterm };
 }
