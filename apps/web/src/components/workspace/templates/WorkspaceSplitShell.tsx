@@ -5,6 +5,7 @@ import { FileText, MessageSquare } from 'lucide-react';
 import type { CanvasTabType } from '@tariffos/shared-types';
 import { readSelectedPlan } from '@/lib/funnel/funnel-storage';
 import { buildWorkspaceInlineActions } from '@/lib/workspace/inline-actions';
+import { JURISDICTIONS } from '@/lib/workspace/jurisdictions';
 import { computePlanStatus } from '@/lib/workspace/plan-status';
 import { useWorkspaceState } from '@/lib/workspace/use-workspace-state';
 import { AnalyticsWorkspaceView } from '../organisms/AnalyticsWorkspaceView';
@@ -285,6 +286,10 @@ export function WorkspaceSplitShell() {
         key={settingsModalOpen ? 'open' : 'closed'}
         open={settingsModalOpen}
         profile={ws.profile}
+        jurisdictions={JURISDICTIONS}
+        plan={plan}
+        threadsCount={ws.threads.length}
+        skuCount={ws.skuPrecedents.length}
         onClose={() => setSettingsModalOpen(false)}
         onSave={(patch) => {
           ws.updateProfile(patch);
