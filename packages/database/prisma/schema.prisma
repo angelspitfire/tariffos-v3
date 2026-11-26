@@ -632,8 +632,15 @@ model UserProfile {
   fullName             String?  @map("full_name")
   position             String?
   idNumber             String?  @map("id_number")
+  companyName          String?  @map("company_name")
+  brokerLicense        String?  @map("broker_license")
   defaultExchangeRate  Float?   @default(36.5) @map("default_exchange_rate")
   defaultCustomsOffice String?  @default("5001 - LA GUAIRA") @map("default_customs_office")
+  approvalWorkflowMode String?  @default("agent_decides") @map("approval_workflow_mode")
+  defaultIncoterm      String?  @default("FOB") @map("default_incoterm")
+  preferredCurrency    String?  @default("USD") @map("preferred_currency")
+  detailLevel          String?  @default("standard") @map("detail_level")
+  signatureStorageKey  String?  @map("signature_storage_key")
   role                 String?  @default("user")
   createdAt            DateTime @default(now()) @map("created_at")
   updatedAt            DateTime @updatedAt @map("updated_at")
@@ -909,16 +916,26 @@ enum DocumentStatus {
 
 /// Platform-wide settings (key-value, editable by platform admins)
 model Payment {
-  id          String   @id @default(cuid())
-  status      PaymentStatus @default(PENDING)
-  amount      Float?
-  currency    String?   @default("USD")
-  tenantId    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                String        @id @default(cuid())
+  status            PaymentStatus @default(PENDING)
+  amount            Float?
+  currency          String?       @default("USD")
+  planId            String?       @map("plan_id")
+  billingCycle      String?       @default("monthly") @map("billing_cycle")
+  method            String?
+  referenceCode     String?       @map("reference_code")
+  receiptStorageKey String?       @map("receipt_storage_key")
+  notes             String?
+  verifiedBy        String?       @map("verified_by")
+  verifiedAt        DateTime?     @map("verified_at")
+  rejectionReason   String?       @map("rejection_reason")
+  tenantId          String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
+  @@index([tenantId, status])
   @@schema("public")
 }
 

@@ -1,8 +1,13 @@
 import { getUnscopedSystemPrisma } from '../src/client.js';
+import { seedCommercialPlans } from '../src/seeds/plans.js';
 
 const prisma = getUnscopedSystemPrisma();
 
 async function main() {
+  console.log('Seeding 5 commercial SaaS plans...');
+  const plansCount = await seedCommercialPlans(prisma);
+  console.log(`Seeded ${plansCount} SaaS plans.`);
+
   console.log('Clearing existing NationalTariff data for VE and CO...');
   await prisma.nationalTariff.deleteMany({
     where: {
