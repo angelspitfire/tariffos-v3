@@ -141,3 +141,22 @@ apps/filings/package-lock.json
 
 # Hallmark design skill local audit snapshots
 .hallmark/
+
+# Database dumps, local sqlite files, and generic caches
+*.sqlite
+*.sqlite3
+*.dump
+*.sql.gz
+*.bak
+.cache/
+
+# Private keys / certificates
+*.key
+*.p12
+*.pfx
+
+# Non-pnpm lockfiles (pnpm-only monorepo)
+package-lock.json
+yarn.lock
+bun.lock
+bun.lockb
