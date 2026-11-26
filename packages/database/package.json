@@ -12,6 +12,7 @@
     "prisma:seed:portable": "npx tsx src/scripts/seed_from_portable.ts",
     "laws:seniat": "npx tsx src/scripts/fetch_seniat_normativa.ts",
     "build": "prisma generate && tsc && rm -rf dist/generated && cp -R src/generated dist/generated",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "clean": "rimraf dist .turbo",
     "laws:ncm": "npx tsx src/scripts/fetch_ncm_table.ts",

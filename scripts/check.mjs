@@ -41,22 +41,41 @@ function getChangedSourceFiles() {
 let failed = false;
 
 // 1. TypeScript strict check across all workspaces
-if (!runStep('1/4 TypeScript (tsc --noEmit)', 'pnpm', ['-r', '--if-present', 'typecheck'])) {
+if (!runStep('1/5 TypeScript (tsc --noEmit)', 'pnpm', ['-r', '--if-present', 'typecheck'])) {
   failed = true;
 }
 
-// 2. Oxlint on changed/new TypeScript files (fast & zero legacy noise)
+// 2. Oxlint (--type-aware --type-check) on clean workspaces + changed files in packages/database
 const changedFiles = getChangedSourceFiles();
-console.log('\n==> 2/4 Oxlint (changed/new files)');
-if (changedFiles.length === 0) {
-  console.log('   OK: no changed TS/TSX files to lint');
-} else {
-  const lintRes = spawnSync('pnpm', ['exec', 'oxlint', ...changedFiles], { stdio: 'inherit' });
-  if (lintRes.status !== 0) failed = true;
+const OXLINT_CLEAN_DIRS = [
+  'apps/web/src',
+  'packages/agent/src',
+  'packages/ai-client/src',
+  'packages/shared-types/src',
+  'packages/env/src',
+  'packages/logger/src',
+];
+if (
+  !runStep('2/5 Oxlint (--type-aware --type-check on clean workspaces)', 'pnpm', [
+    'exec',
+    'oxlint',
+    '--type-aware',
+    '--type-check',
+    '--quiet',
+    ...OXLINT_CLEAN_DIRS,
+  ])
+) {
+  failed = true;
+}
+const dbChangedFiles = changedFiles.filter((f) => f.startsWith('packages/database/'));
+if (dbChangedFiles.length > 0) {
+  if (!runStep('2b/5 Oxlint (changed files in packages/database)', 'pnpm', ['exec', 'oxlint', ...dbChangedFiles])) {
+    failed = true;
+  }
 }
 
 // 3. Module size guardrail on changed/new non-test source files
-console.log(`\n==> 3/4 Module size (warn > ${WARN_LINES}, fail > ${MAX_LINES} lines)`);
+console.log(`\n==> 3/5 Module size (warn > ${WARN_LINES}, fail > ${MAX_LINES} lines)`);
 const nonTestChanged = changedFiles.filter(
   (f) => !/\.test\.tsx?$/.test(f) && !f.includes('/__tests__/') && !f.includes('/__mocks__/'),
 );
@@ -78,8 +97,15 @@ if (sizeClean) {
 
 // 4. Unit tests (skipped in --quick mode)
 if (QUICK) {
-  console.log('\n==> 4/4 Vitest [skipped in --quick mode]');
-} else if (!runStep('4/4 Vitest', 'pnpm', ['-r', '--if-present', 'test'])) {
+  console.log('\n==> 4/5 Vitest [skipped in --quick mode]');
+} else if (!runStep('4/5 Vitest', 'pnpm', ['-r', '--if-present', 'test'])) {
+  failed = true;
+}
+
+// 5. Workspace bootstrap build (skipped in --quick mode)
+if (QUICK) {
+  console.log('\n==> 5/5 Bootstrap build (@tariffos/database...) [skipped in --quick mode]');
+} else if (!runStep('5/5 Bootstrap build (@tariffos/database...)', 'pnpm', ['bootstrap'])) {
   failed = true;
 }
 

@@ -58,6 +58,8 @@
 
   "ignorePatterns": [
     ".next/**",
+    "**/.next/**",
+    "**/.eve/**",
     "out/**",
     "build/**",
     "dist/**",
