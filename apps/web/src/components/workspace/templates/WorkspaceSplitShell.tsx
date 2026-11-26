@@ -4,9 +4,14 @@ import { useEffect, useState } from 'react';
 import type { CanvasTabType } from '@tariffos/shared-types';
 import { readSelectedPlan } from '@/lib/funnel/funnel-storage';
 import { extractThreadArtifacts } from '@/lib/workspace/artifact-versions';
+import { exportWorkspaceDossierPdf } from '@/lib/workspace/dossier-pdf';
 import { buildWorkspaceInlineActions } from '@/lib/workspace/inline-actions';
 import { JURISDICTIONS } from '@/lib/workspace/jurisdictions';
-import { computePlanStatus, resolveWorkspaceReadOnlyReason } from '@/lib/workspace/plan-status';
+import {
+  computePlanStatus,
+  mergeCloudUsageIntoPlanStatus,
+  resolveWorkspaceReadOnlyReason,
+} from '@/lib/workspace/plan-status';
 import { useCloudUsageSnapshot } from '@/lib/workspace/use-cloud-usage';
 import { useWorkspaceState } from '@/lib/workspace/use-workspace-state';
 import { AnalyticsWorkspaceView } from '../organisms/AnalyticsWorkspaceView';
@@ -44,7 +49,7 @@ export function WorkspaceSplitShell() {
     ws.pendingAttachments.length +
     (ws.activeThread?.messages.reduce((acc, m) => acc + (m.attachments?.length ?? 0), 0) ?? 0);
   const showCanvas = hasCanvas && !canvasDismissed;
-  const plan = computePlanStatus(ws.threads, planId);
+  const plan = mergeCloudUsageIntoPlanStatus(computePlanStatus(ws.threads, planId), cloudUsage);
 
   useEffect(() => {
     setPlanId(readSelectedPlan()?.planId ?? 'pilot');
@@ -92,10 +97,8 @@ export function WorkspaceSplitShell() {
     window.addEventListener('mouseup', onUp);
   };
 
-  const handleExportPdf = () => {
-    ws.pushToast('Abriendo vista de impresión / exportación PDF...', 'info');
-    if (typeof window.print === 'function') window.print();
-  };
+  const handleExportPdf = () =>
+    exportWorkspaceDossierPdf(ws.canvasComponents, ws.profile, ws.pushToast);
 
   const showCanvasFor = (messageId: string | null, tab: CanvasTabType) => {
     ws.setSelectedCanvasMsgId(messageId);
