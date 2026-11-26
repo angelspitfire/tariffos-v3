@@ -1,0 +1,15 @@
+import "./eve10.mjs";
+// ../../node_modules/.pnpm/eve@1.4.0_@opentelemetry+api@1.10.0_ai@7.0.181_zod@4.6.7__next@16.4.6_@babel+core@7.29._7106a6b4633fcf609cecb5c210405702/node_modules/eve/dist/src/public/definitions/agent.js
+const DEFINED_AGENT = Symbol.for(`eve.defined-agent`);
+function defineAgent(e) {
+	return Object.defineProperty(e, DEFINED_AGENT, {
+		configurable: !0,
+		value: !0
+	}), e;
+}
+function isDefinedAgent(e) {
+	return typeof e == `object` && !!e && Reflect.get(e, DEFINED_AGENT) === !0;
+}
+export { defineAgent, isDefinedAgent };
+
+//# sourceMappingURL=eve47.mjs.map

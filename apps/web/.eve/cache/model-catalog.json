@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-11-25T04:25:20.728Z",
+  "fetchedAt": "2026-11-26T01:20:37.909Z",
   "kind": "eve-model-catalog-cache",
   "models": [
     {
@@ -9635,7 +9635,7 @@
           "provider": "particle",
           "providerModelId": "particle-ai/particle-1",
           "contextWindowTokens": 1048576,
-          "maxOutputTokens": 131072,
+          "maxOutputTokens": 1048576,
           "tags": [
             "implicit-caching",
             "reasoning",
@@ -10097,7 +10097,11 @@
           "provider": "scaledown",
           "providerModelId": "classify-1",
           "contextWindowTokens": 0,
-          "maxOutputTokens": 0
+          "maxOutputTokens": 0,
+          "tags": [
+            "file-input",
+            "vision"
+          ]
         }
       ]
     },
@@ -12771,8 +12775,8 @@
         {
           "provider": "particle",
           "providerModelId": "z-ai/glm-5.3-flash",
-          "contextWindowTokens": 1000000,
-          "maxOutputTokens": 131000,
+          "contextWindowTokens": 1048576,
+          "maxOutputTokens": 1048576,
           "tags": [
             "reasoning",
             "tool-use",

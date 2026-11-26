@@ -1,0 +1,24 @@
+// ../../node_modules/.pnpm/eve@1.4.0_@opentelemetry+api@1.10.0_ai@7.0.181_zod@4.6.7__next@16.4.6_@babel+core@7.29._7106a6b4633fcf609cecb5c210405702/node_modules/eve/dist/src/tools/provided/framework-tool.js
+const FRAMEWORK_TOOL = Symbol.for(`eve.framework-tool`);
+function frameworkTool(e) {
+	return Object.defineProperty(e, FRAMEWORK_TOOL, {
+		enumerable: !0,
+		value: !0
+	}), e;
+}
+function isFrameworkTool(e) {
+	return Reflect.get(e, FRAMEWORK_TOOL) === !0;
+}
+const INTERACTION_ONLY = Symbol.for(`eve.interaction-only`);
+function isInteractionOnly(e) {
+	return (typeof e == `function` || typeof e == `object` && !!e) && Reflect.get(e, INTERACTION_ONLY) === !0;
+}
+function markInteractionOnly(e) {
+	return Object.defineProperty(e, INTERACTION_ONLY, {
+		enumerable: !0,
+		value: !0
+	}), e;
+}
+export { frameworkTool, isFrameworkTool, isInteractionOnly, markInteractionOnly };
+
+//# sourceMappingURL=eve26.mjs.map
