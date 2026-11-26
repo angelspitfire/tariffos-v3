@@ -14,3 +14,4 @@ export * from './billing.js';
 export * from './admin.js';
 export * from './admin-ops.js';
 export * from './admin-phase2.js';
+export * from './legal-ingestion.js';

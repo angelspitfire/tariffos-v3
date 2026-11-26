@@ -17,6 +17,8 @@ export const AdminPermissionSchema = z.enum([
   'admins:manage',
   'settings:manage',
   'ai_quality:read',
+  'ingestion:read',
+  'ingestion:manage',
 ]);
 export type AdminPermission = z.infer<typeof AdminPermissionSchema>;
 

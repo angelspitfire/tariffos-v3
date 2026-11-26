@@ -16,6 +16,8 @@ import {
   parseBatchTextToItems,
 } from './batch-helpers';
 import { inngest } from './client';
+import { indexPublishedLegalFn } from './legal-indexing-fn';
+import { ingestLegalDocumentFn } from './legal-ingestion-fn';
 
 const PER_TENANT_CONCURRENCY_LIMIT = 3;
 const GLOBAL_BATCH_CONCURRENCY_LIMIT = 15;
@@ -192,4 +194,4 @@ export const classifyInvoiceBatchFn = inngest.createFunction(
   },
 );
 
-export const inngestFunctions = [classifyInvoiceBatchFn];
+export const inngestFunctions = [classifyInvoiceBatchFn, ingestLegalDocumentFn, indexPublishedLegalFn];

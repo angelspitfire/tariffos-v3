@@ -20,7 +20,8 @@
     "laws:notes": "npx tsx src/scripts/extract_arancel_notes.ts",
     "laws:tradex": "npx tsx src/scripts/fetch_tradex_normativa.ts",
     "laws:diff-arancel": "npx tsx src/scripts/diff_aranceles.ts",
-    "verify:index": "npx tsx src/scripts/verify_tariff_index.ts"
+    "verify:index": "npx tsx src/scripts/verify_tariff_index.ts",
+    "ingest:legal": "pnpm exec tsx src/scripts/ingest_legal.ts"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
@@ -31,6 +32,7 @@
     "@prisma/client-runtime-utils": "^7.10.1",
     "@tariffos/ai-client": "workspace:^",
     "@tariffos/shared-types": "workspace:*",
+    "pdfjs-dist": "^4.10.38",
     "pg": "^8.23.1",
     "zod": "^4.6.7"
   },
@@ -39,7 +41,6 @@
     "@types/node": "^26.6.6",
     "@types/pg": "^8.23.1",
     "dotenv": "^18.0.10",
-    "pdfjs-dist": "^6.5.438",
     "prisma": "^7.10.1",
     "rimraf": "^6.1.4",
     "tsx": "^4.23.15",

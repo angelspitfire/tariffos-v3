@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Activity,
+  BookOpen,
   Building2,
   ClipboardList,
   CreditCard,
@@ -24,6 +25,7 @@ export const ADMIN_NAV_ITEMS = [
   { href: '/admin/tenants', label: 'Tenants', icon: Building2, exact: false },
   { href: '/admin/usage', label: 'Consumo', icon: Activity, exact: false },
   { href: '/admin/ai-quality', label: 'Calidad IA', icon: Sparkles, exact: false },
+  { href: '/admin/ingestion', label: 'Normativa', icon: BookOpen, exact: false },
   { href: '/admin/settings', label: 'Configuración', icon: SlidersHorizontal, exact: false },
   { href: '/admin/audit', label: 'Auditoría', icon: ClipboardList, exact: false },
 ] as const;

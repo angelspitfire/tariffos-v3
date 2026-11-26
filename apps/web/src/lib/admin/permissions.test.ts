@@ -55,4 +55,15 @@ describe('admin permissions RBAC matrix', () => {
     expect(hasAdminPermission('support', 'ai_quality:read')).toBe(true);
     expect(hasAdminPermission('user', 'ai_quality:read')).toBe(false);
   });
+
+  it('grants ingestion:read to support/ops_billing/super_admin and restricts ingestion:manage to super_admin', () => {
+    expect(hasAdminPermission('user', 'ingestion:read')).toBe(false);
+    expect(hasAdminPermission('user', 'ingestion:manage')).toBe(false);
+    expect(hasAdminPermission('support', 'ingestion:read')).toBe(true);
+    expect(hasAdminPermission('support', 'ingestion:manage')).toBe(false);
+    expect(hasAdminPermission('ops_billing', 'ingestion:read')).toBe(true);
+    expect(hasAdminPermission('ops_billing', 'ingestion:manage')).toBe(false);
+    expect(hasAdminPermission('super_admin', 'ingestion:read')).toBe(true);
+    expect(hasAdminPermission('super_admin', 'ingestion:manage')).toBe(true);
+  });
 });

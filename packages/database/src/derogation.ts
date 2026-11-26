@@ -1,6 +1,22 @@
-export async function fetchAndValidateDraft(tx: any, draftId: string) {
+import type { PrismaClient } from './generated/client';
+
+export type DerogationTx = Parameters<Parameters<PrismaClient['$transaction']>[0]>[0];
+
+export interface SunsetOverlapParams {
+  draftId: string;
+  countryCode: string;
+  legalType: string;
+  hierarchyPath: string;
+  validFromDate: Date;
+}
+
+/**
+ * Fetches a LegalKnowledgeParent record by ID inside a transaction and throws
+ * when it does not exist.
+ */
+export async function fetchAndValidateDraft(tx: DerogationTx, draftId: string) {
   const draft = await tx.legalKnowledgeParent.findUnique({
-    where: { id: draftId }
+    where: { id: draftId },
   });
 
   if (!draft) {
@@ -10,39 +26,46 @@ export async function fetchAndValidateDraft(tx: any, draftId: string) {
   return draft;
 }
 
+/**
+ * Marks overlapping PUBLISHED records of the exact same `(countryCode, legalType,
+ * hierarchyPath)` and earlier/equal `validFromDate` as DEROGATED.
+ * Never uses prefix (`startsWith`) matching and rejects empty paths.
+ */
 export async function sunsetOverlappingRecords(
-  tx: any,
-  draftId: string,
-  countryCode: string,
-  hierarchyPath: string | null,
-  validFromDate: Date | null
-) {
-  const overlappingRecords = await tx.legalKnowledgeParent.findMany({
+  tx: DerogationTx,
+  params: SunsetOverlapParams,
+): Promise<string[]> {
+  const path = params.hierarchyPath.trim();
+  if (!path) {
+    throw new Error('hierarchyPath cannot be empty when derogating overlapping records.');
+  }
+
+  const overlapping = await tx.legalKnowledgeParent.findMany({
     where: {
-      id: { not: draftId },
-      countryCode,
+      id: { not: params.draftId },
+      countryCode: params.countryCode,
+      legalType: params.legalType,
+      hierarchyPath: path,
       isDerogated: false,
-      status: "PUBLISHED",
-      hierarchyPath: {
-        startsWith: hierarchyPath || ""
-      }
-    }
+      status: 'PUBLISHED',
+      validFromDate: { lte: params.validFromDate },
+    },
+    select: { id: true },
   });
 
-  if (overlappingRecords.length > 0) {
-    const fromDate = validFromDate || new Date();
-    const derogationDate = new Date(fromDate.getTime() - 1);
+  if (overlapping.length === 0) return [];
 
-    await tx.legalKnowledgeParent.updateMany({
-      where: {
-        id: { in: overlappingRecords.map((r: any) => r.id) }
-      },
-      data: {
-        isDerogated: true,
-        status: "DEROGATED",
-        validToDate: derogationDate,
-      }
-    });
-    console.log(`[Derogation] Sunset ${overlappingRecords.length} overlapping records for path: ${hierarchyPath}`);
-  }
+  const ids = overlapping.map((record) => record.id);
+  const derogationDate = new Date(params.validFromDate.getTime() - 1);
+
+  await tx.legalKnowledgeParent.updateMany({
+    where: { id: { in: ids } },
+    data: {
+      isDerogated: true,
+      status: 'DEROGATED',
+      validToDate: derogationDate,
+    },
+  });
+
+  return ids;
 }

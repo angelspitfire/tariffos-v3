@@ -93,12 +93,24 @@ describe('createPrismaPipelinePorts', () => {
       where: {
         parent: {
           countryCode: 'VE',
-          hierarchyPath: { in: ['85', 'SEC-XVI'] },
+          status: 'PUBLISHED',
+          isDerogated: false,
+          validFromDate: { lte: expect.any(Date) },
+          OR: [{ validToDate: null }, { validToDate: { gte: expect.any(Date) } }],
         },
+        OR: [
+          { parent: { hierarchyPath: { in: ['85', 'SEC-XVI'] } } },
+          {
+            scope: {
+              hasSome: expect.arrayContaining(['8504', '85.04', '8504.40', '8504.40.90.00']),
+            },
+          },
+        ],
       },
       include: {
         parent: { select: { hierarchyPath: true } },
       },
+      orderBy: [{ chunkIndex: 'asc' }, { id: 'asc' }],
       take: 12,
     });
     expect(notes).toEqual([

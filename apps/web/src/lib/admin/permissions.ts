@@ -14,11 +14,19 @@ const ALL_PERMISSIONS: readonly AdminPermission[] = [
   'admins:manage',
   'settings:manage',
   'ai_quality:read',
+  'ingestion:read',
+  'ingestion:manage',
 ];
 
 const ROLE_PERMISSIONS: Record<PlatformRole, ReadonlySet<AdminPermission>> = {
   user: new Set<AdminPermission>(),
-  support: new Set<AdminPermission>(['admin:read', 'billing:read', 'usage:read', 'ai_quality:read']),
+  support: new Set<AdminPermission>([
+    'admin:read',
+    'billing:read',
+    'usage:read',
+    'ai_quality:read',
+    'ingestion:read',
+  ]),
   ops_billing: new Set<AdminPermission>([
     'admin:read',
     'leads:manage',
@@ -30,6 +38,7 @@ const ROLE_PERMISSIONS: Record<PlatformRole, ReadonlySet<AdminPermission>> = {
     'usage:read',
     'audit:read',
     'ai_quality:read',
+    'ingestion:read',
   ]),
   super_admin: new Set<AdminPermission>(ALL_PERMISSIONS),
 };

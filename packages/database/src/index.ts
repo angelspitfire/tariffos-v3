@@ -14,6 +14,7 @@ export * from './admin-credentials-email';
 export * from './country';
 export * from './derogation';
 export * from './arancel-tree';
+export * from './ingestion';
 export {
   FilingLineInputSchema,
   FilingLineSchema,

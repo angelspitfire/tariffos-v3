@@ -472,6 +472,9 @@ importers:
       '@tariffos/shared-types':
         specifier: workspace:*
         version: link:../shared-types
+      pdfjs-dist:
+        specifier: ^4.10.38
+        version: 4.10.38
       pg:
         specifier: ^8.23.1
         version: 8.23.1
@@ -494,9 +497,6 @@ importers:
       dotenv:
         specifier: ^18.0.10
         version: 18.0.10
-      pdfjs-dist:
-        specifier: ^6.5.438
-        version: 6.5.438
       prisma:
         specifier: ^7.10.1
         version: 7.10.1(@types/node@26.6.6)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)

@@ -36,6 +36,31 @@ function buildHsCodeLookupVariants(hsCode: string): string[] {
   return Array.from(variants);
 }
 
+function buildHsScopeVariants(hsPrefix: string): string[] {
+  const compact = hsPrefix.replace(/[^0-9]/g, '');
+  if (compact.length < 4) return [];
+  const variants = new Set<string>([
+    compact.slice(0, 4),
+    `${compact.slice(0, 2)}.${compact.slice(2, 4)}`,
+  ]);
+  if (compact.length >= 6) {
+    variants.add(`${compact.slice(0, 4)}.${compact.slice(4, 6)}`);
+    variants.add(`${compact.slice(0, 2)}.${compact.slice(2, 4)}.${compact.slice(4, 6)}`);
+  }
+  if (compact.length >= 8) {
+    variants.add(`${compact.slice(0, 4)}.${compact.slice(4, 6)}.${compact.slice(6, 8)}`);
+    variants.add(
+      `${compact.slice(0, 2)}.${compact.slice(2, 4)}.${compact.slice(4, 6)}.${compact.slice(6, 8)}`,
+    );
+  }
+  if (compact.length >= 10) {
+    variants.add(
+      `${compact.slice(0, 4)}.${compact.slice(4, 6)}.${compact.slice(6, 8)}.${compact.slice(8, 10)}`,
+    );
+  }
+  return Array.from(variants);
+}
+
 /**
  * Hexagonal adapter wiring @tariffos/agent PipelinePorts to Prisma/Postgres
  * (hybrid `TariffNodeEmbedding` vector + `NationalTariff` FTS) and `@tariffos/ai-client`.
@@ -69,19 +94,29 @@ export function createPrismaPipelinePorts(runtimeLlm?: RgiLlmRuntimeOverride): P
       const chapter = hsPrefix.replace(/[^0-9]/g, '').slice(0, 2);
       if (!chapter) return [];
 
+      const now = new Date();
       const sectionPath = chapterToSectionPath(chapter);
       const hierarchyPaths = sectionPath ? [chapter, sectionPath] : [chapter];
+      const scopeVariants = buildHsScopeVariants(hsPrefix);
 
       const chunks = await prisma.legalKnowledgeChunk.findMany({
         where: {
           parent: {
             countryCode,
-            hierarchyPath: { in: hierarchyPaths },
+            status: 'PUBLISHED',
+            isDerogated: false,
+            validFromDate: { lte: now },
+            OR: [{ validToDate: null }, { validToDate: { gte: now } }],
           },
+          OR: [
+            { parent: { hierarchyPath: { in: hierarchyPaths } } },
+            ...(scopeVariants.length > 0 ? [{ scope: { hasSome: scopeVariants } }] : []),
+          ],
         },
         include: {
           parent: { select: { hierarchyPath: true } },
         },
+        orderBy: [{ chunkIndex: 'asc' }, { id: 'asc' }],
         take: MAX_LEGAL_NOTES,
       });
 
