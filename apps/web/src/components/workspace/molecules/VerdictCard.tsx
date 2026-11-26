@@ -36,7 +36,7 @@ export function VerdictCard({
   const hasHighRisk = summaryPoints.some((pt) => pt.severity === 'high');
 
   return (
-    <section className="tos-rise rounded-surface border border-line-frost bg-surface-frost-strong p-4 sm:p-5 shadow-elev-1 backdrop-blur-md">
+    <section className="@container tos-rise rounded-surface border border-line-frost bg-surface-frost-strong p-4 sm:p-5 shadow-elev-1 backdrop-blur-md">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-mono text-[11px] font-semibold tracking-[0.08em] text-ink-muted uppercase">
           Clasificación sugerida
@@ -52,11 +52,11 @@ export function VerdictCard({
         ))}
       </div>
 
-      <div className="mt-2">
+      <div className="mt-2 min-w-0">
         <CopyHsButton
           hsCode={verdict.hsCode}
           size="lg"
-          className="border-0 bg-transparent px-0 py-0 text-2xl sm:text-3xl font-bold hover:bg-transparent"
+          className="border-0 bg-transparent px-0 py-0 text-[clamp(1.25rem,5.5cqw,1.75rem)] font-bold hover:bg-transparent"
         />
       </div>
 
