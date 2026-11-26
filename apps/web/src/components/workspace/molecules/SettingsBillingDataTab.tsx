@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { CreditCard, Database, Sparkles, Trash2 } from 'lucide-react';
+import { CreditCard, Database, Download, Sparkles, Trash2 } from 'lucide-react';
+import { SAAS_PLANS } from '@tariffos/shared-types';
 import type { WorkspacePlanStatus } from '@/lib/workspace/plan-status';
 
 export interface SettingsBillingTabProps {
@@ -46,6 +47,37 @@ export function SettingsBillingTab({ plan, onClose }: SettingsBillingTabProps) {
           </Link>
         </div>
       </div>
+
+      <div className="space-y-2">
+        <div className="text-[11px] font-semibold tracking-wider text-ink-muted uppercase">
+          Planes disponibles
+        </div>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {SAAS_PLANS.filter((p) => p.published).map((item) => {
+            const isCurrent = item.planId === plan.planId;
+            return (
+              <div
+                key={item.planId}
+                className={`rounded-field border p-3 text-xs ${
+                  isCurrent
+                    ? 'border-accent-border bg-accent-soft/35'
+                    : 'border-border-subtle bg-surface-panel'
+                }`}
+              >
+                <div className="flex items-center justify-between font-semibold text-ink-primary">
+                  <span>{item.name}</span>
+                  <span className="font-mono tabular-nums">
+                    {item.monthlyPriceUsd > 0 ? `$${item.monthlyPriceUsd}/mes` : `$${item.annualPriceUsd}/año`}
+                  </span>
+                </div>
+                <div className="mt-0.5 text-[11px] text-ink-muted">
+                  {item.monthlyQuota.toLocaleString('en-US')} clasificaciones/mes
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
@@ -53,12 +85,14 @@ export function SettingsBillingTab({ plan, onClose }: SettingsBillingTabProps) {
 export interface SettingsLocalDataTabProps {
   threadsCount: number;
   skuCount: number;
+  onExportBackup?: () => void;
   onClearLocalData?: () => void;
 }
 
 export function SettingsLocalDataTab({
   threadsCount,
   skuCount,
+  onExportBackup,
   onClearLocalData,
 }: SettingsLocalDataTabProps) {
   return (
@@ -84,16 +118,28 @@ export function SettingsLocalDataTab({
         </div>
       </div>
 
-      {onClearLocalData ? (
-        <button
-          type="button"
-          onClick={onClearLocalData}
-          className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-rose-500/35 bg-rose-500/10 px-4 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-500/20 dark:text-rose-300"
-        >
-          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-          Limpiar caché local del navegador
-        </button>
-      ) : null}
+      <div className="flex flex-wrap items-center gap-2">
+        {onExportBackup ? (
+          <button
+            type="button"
+            onClick={onExportBackup}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle bg-surface-panel px-4 py-2 text-xs font-semibold text-ink-primary hover:bg-surface-hover"
+          >
+            <Download className="h-3.5 w-3.5 text-accent-ink" aria-hidden="true" />
+            Exportar respaldo JSON
+          </button>
+        ) : null}
+        {onClearLocalData ? (
+          <button
+            type="button"
+            onClick={onClearLocalData}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-rose-500/35 bg-rose-500/10 px-4 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-500/20 dark:text-rose-300"
+          >
+            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+            Limpiar caché local del navegador
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }

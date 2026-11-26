@@ -295,6 +295,28 @@ export function WorkspaceSplitShell() {
           ws.updateProfile(patch);
           ws.pushToast('Configuración guardada.', 'success');
         }}
+        onApplyNotice={(summary) => {
+          void ws.sendClassification(`Evaluar impacto normativo en la clasificación actual: ${summary}`);
+        }}
+        onExportBackup={() => {
+          const payload = JSON.stringify(
+            { profile: ws.profile, threads: ws.threads, skuPrecedents: ws.skuPrecedents },
+            null,
+            2,
+          );
+          const blob = new Blob([payload], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `tariffos-backup-${new Date().toISOString().slice(0, 10)}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+          ws.pushToast('Respaldo JSON descargado.', 'success');
+        }}
+        onClearLocalData={() => {
+          window.localStorage.clear();
+          ws.pushToast('Caché local limpiada. Recarga para reiniciar sesión.', 'info');
+        }}
       />
 
       {ws.toast ? (
