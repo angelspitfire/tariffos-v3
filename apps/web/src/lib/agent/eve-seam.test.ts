@@ -67,6 +67,32 @@ describe('Eve swap-ready model resolver', () => {
     expect(gatewayModel).toBe('anthropic/claude-sonnet-4');
   });
 
+  it('resolves OpenRouter and NVIDIA Build specs from EVE_MODEL', () => {
+    process.env.EVE_MODEL = 'openrouter:nvidia/nemotron-3.5-super-vl-120b-a12b';
+    expect(parseEveModelSpec()).toEqual({
+      provider: 'openrouter',
+      modelId: 'nvidia/nemotron-3.5-super-vl-120b-a12b',
+    });
+    const openrouterModel = resolveEveModel();
+    expect(typeof openrouterModel).toBe('object');
+    if (typeof openrouterModel !== 'string') {
+      expect(openrouterModel.modelId).toBe('nvidia/nemotron-3.5-super-vl-120b-a12b');
+      expect(openrouterModel.provider.toLowerCase()).toContain('openrouter');
+    }
+
+    process.env.EVE_MODEL = 'nvidia:nvidia/nemotron-3.5-super-vl-120b-a12b';
+    expect(parseEveModelSpec()).toEqual({
+      provider: 'nvidia',
+      modelId: 'nvidia/nemotron-3.5-super-vl-120b-a12b',
+    });
+    const nvidiaModel = resolveEveModel();
+    expect(typeof nvidiaModel).toBe('object');
+    if (typeof nvidiaModel !== 'string') {
+      expect(nvidiaModel.modelId).toBe('nvidia/nemotron-3.5-super-vl-120b-a12b');
+      expect(nvidiaModel.provider.toLowerCase()).toContain('nvidia');
+    }
+  });
+
   it('throws a clear error on unsupported provider prefixes', () => {
     expect(() => parseEveModelSpec('unsupported:foo-1')).toThrow(/Unsupported EVE_MODEL provider/);
   });

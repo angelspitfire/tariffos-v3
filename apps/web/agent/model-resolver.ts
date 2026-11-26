@@ -1,3 +1,4 @@
+import { createOpenAI } from '@ai-sdk/openai';
 import type { EveLanguageModel } from 'eve/models';
 import { anthropic } from 'eve/models/anthropic';
 import { openai } from 'eve/models/openai';
@@ -5,20 +6,43 @@ import { openai } from 'eve/models/openai';
 export const DEFAULT_ANTHROPIC_MODEL = 'claude-sonnet-5';
 export const DEFAULT_OPENAI_MODEL = 'gpt-4.1';
 const DEFAULT_GATEWAY_MODEL = 'anthropic/claude-sonnet-5';
+export const DEFAULT_NEMOTRON_MODEL = 'nvidia/nemotron-3.5-super-vl-120b-a12b';
 
-export type EveProviderName = 'anthropic' | 'openai' | 'gateway';
+export type EveProviderName = 'anthropic' | 'openai' | 'gateway' | 'openrouter' | 'nvidia';
 
 export interface ParsedEveModelSpec {
   provider: EveProviderName;
   modelId: string;
 }
 
-const SUPPORTED_PROVIDERS: readonly EveProviderName[] = ['anthropic', 'openai', 'gateway'];
+const DEFAULT_MODEL_BY_PROVIDER: Record<EveProviderName, string> = {
+  anthropic: DEFAULT_ANTHROPIC_MODEL,
+  openai: DEFAULT_OPENAI_MODEL,
+  gateway: DEFAULT_GATEWAY_MODEL,
+  openrouter: DEFAULT_NEMOTRON_MODEL,
+  nvidia: DEFAULT_NEMOTRON_MODEL,
+};
+
+const OPENAI_COMPAT_ENDPOINTS: Record<
+  'openrouter' | 'nvidia',
+  { baseURL: string; apiKeyEnv: string }
+> = {
+  openrouter: { baseURL: 'https://openrouter.ai/api/v1', apiKeyEnv: 'OPENROUTER_API_KEY' },
+  nvidia: { baseURL: 'https://integrate.api.nvidia.com/v1', apiKeyEnv: 'NVIDIA_API_KEY' },
+};
+
+const SUPPORTED_PROVIDERS = Object.keys(DEFAULT_MODEL_BY_PROVIDER) as EveProviderName[];
+
+function isEveProvider(value: string): value is EveProviderName {
+  return value in DEFAULT_MODEL_BY_PROVIDER;
+}
 
 /**
  * Parse an EVE_MODEL environment specification into provider + model ID.
  * Supports:
  * - "anthropic:claude-sonnet-4" / "openai:gpt-4.1" / "gateway:anthropic/claude-sonnet-4"
+ * - "openrouter:nvidia/nemotron-3.5-super-vl-120b-a12b"
+ * - "nvidia:nvidia/nemotron-3.5-super-vl-120b-a12b"
  * - "anthropic/claude-sonnet-4" (Vercel AI Gateway slash format)
  * - bare model name (defaults to Anthropic)
  */
@@ -33,14 +57,8 @@ export function parseEveModelSpec(raw: string | undefined = process.env.EVE_MODE
     const prefix = trimmed.slice(0, colonIndex).trim().toLowerCase();
     const modelPart = trimmed.slice(colonIndex + 1).trim();
 
-    if (prefix === 'anthropic') {
-      return { provider: 'anthropic', modelId: modelPart || DEFAULT_ANTHROPIC_MODEL };
-    }
-    if (prefix === 'openai') {
-      return { provider: 'openai', modelId: modelPart || DEFAULT_OPENAI_MODEL };
-    }
-    if (prefix === 'gateway') {
-      return { provider: 'gateway', modelId: modelPart || DEFAULT_GATEWAY_MODEL };
+    if (isEveProvider(prefix)) {
+      return { provider: prefix, modelId: modelPart || DEFAULT_MODEL_BY_PROVIDER[prefix] };
     }
 
     throw new Error(
@@ -68,6 +86,15 @@ export function resolveEveModel(
   }
   if (spec.provider === 'gateway') {
     return spec.modelId;
+  }
+  if (spec.provider === 'openrouter' || spec.provider === 'nvidia') {
+    const endpoint = OPENAI_COMPAT_ENDPOINTS[spec.provider];
+    const provider = createOpenAI({
+      name: spec.provider,
+      baseURL: endpoint.baseURL,
+      apiKey: process.env[endpoint.apiKeyEnv] ?? '',
+    });
+    return provider.chat(spec.modelId);
   }
   return anthropic(spec.modelId);
 }
