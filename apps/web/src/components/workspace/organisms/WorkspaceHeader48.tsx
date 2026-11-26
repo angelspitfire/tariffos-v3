@@ -50,7 +50,7 @@ export function WorkspaceHeader48({
   const [accountOpen, setAccountOpen] = useState(false);
 
   return (
-    <header className="no-print flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border-subtle bg-surface-panel/85 backdrop-blur-xl px-3">
+    <header className="no-print flex h-12 shrink-0 items-center justify-between gap-2 border-b border-black/[0.06] dark:border-white/[0.08] bg-white/80 dark:bg-[#111827]/80 backdrop-blur-xl px-3">
       <div className="flex min-w-0 items-center gap-2">
         <button
           type="button"
@@ -140,8 +140,8 @@ export function WorkspaceHeader48({
             aria-expanded={accountOpen}
             className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border-subtle bg-surface-muted px-2 text-xs font-medium text-ink-primary transition hover:bg-surface-hover"
           >
-            <UserCircle2 className="h-4 w-4 text-ink-muted" aria-hidden="true" />
-            <span className="hidden max-w-24 truncate lg:inline">{profile.fullName}</span>
+            <UserCircle2 className="h-4 w-4 text-ink-muted shrink-0" aria-hidden="true" />
+            <span className="hidden max-w-44 truncate lg:inline whitespace-nowrap">{profile.fullName}</span>
           </button>
 
           {accountOpen && (

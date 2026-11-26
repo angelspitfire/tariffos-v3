@@ -1,5 +1,6 @@
 'use client';
 
+import { X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { A2UICanvasComponent, CanvasTabType } from '@tariffos/shared-types';
 import { resolveConsolidatedTabs } from '@/lib/workspace/canvas-tabs';
@@ -10,6 +11,7 @@ export interface ConsolidatedTabStripProps {
   activeTab: CanvasTabType;
   unreadAlertsCount: number;
   onSelectTab: (tab: CanvasTabType) => void;
+  onCloseCanvas?: () => void;
 }
 
 export function ConsolidatedTabStrip({
@@ -17,6 +19,7 @@ export function ConsolidatedTabStrip({
   activeTab,
   unreadAlertsCount,
   onSelectTab,
+  onCloseCanvas,
 }: ConsolidatedTabStripProps) {
   const { tabs, showCompareShortcut, showRegulatoryShortcut } = resolveConsolidatedTabs({
     components,
@@ -25,8 +28,8 @@ export function ConsolidatedTabStrip({
   });
 
   return (
-    <div className="no-print flex items-center justify-between gap-2 border-b border-border-subtle bg-surface-panel px-3">
-      <div role="tablist" className="flex items-center gap-1 overflow-x-auto">
+    <div className="no-print flex items-center justify-between gap-2 border-b border-border-subtle bg-surface-panel px-3 min-w-0">
+      <div role="tablist" className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto">
         {tabs.map((tab) => {
           const isActive = tab.matchesTabs.includes(activeTab);
           return (
@@ -37,7 +40,7 @@ export function ConsolidatedTabStrip({
               aria-selected={isActive}
               onClick={() => onSelectTab(tab.targetTab)}
               className={cn(
-                'relative flex cursor-pointer items-center gap-1.5 whitespace-nowrap px-3 py-2.5 text-xs font-medium transition-colors',
+                'relative flex shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap px-2.5 py-2.5 text-xs font-medium transition-colors',
                 isActive ? 'text-accent-ink' : 'text-ink-muted hover:text-ink-primary',
               )}
             >
@@ -81,6 +84,17 @@ export function ConsolidatedTabStrip({
                 {unreadAlertsCount}
               </span>
             ) : null}
+          </button>
+        ) : null}
+        {onCloseCanvas ? (
+          <button
+            type="button"
+            onClick={onCloseCanvas}
+            aria-label="Cerrar panel de dictamen"
+            title="Cerrar panel"
+            className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary"
+          >
+            <X className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         ) : null}
       </div>

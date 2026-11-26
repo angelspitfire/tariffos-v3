@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   AssistantRuntimeProvider,
   AuiIf,
@@ -10,11 +10,12 @@ import {
   type AppendMessage,
   type ThreadMessageLike,
 } from '@assistant-ui/react';
-import { FileText, Scale, Sparkles } from 'lucide-react';
-import type { SkuPrecedent, StreamProgressEvent } from '@tariffos/shared-types';
-import { SAMPLE_MERCHANDISE, type SampleMerchandise } from '@/lib/workspace/jurisdictions';
+import { FileText } from 'lucide-react';
+import type { SkuPrecedent, StreamProgressEvent, UserProfileSettings } from '@tariffos/shared-types';
+import type { SampleBatchDocument, SampleMerchandise } from '@/lib/workspace/jurisdictions';
 import type { WorkspaceAttachment, WorkspaceMessage } from '@/lib/workspace/types';
 import { ProgressStagePill } from '../atoms/ProgressStagePill';
+import { WorkspaceEmptyState } from '../molecules/WorkspaceEmptyState';
 import { ThreadInlineCards, type InlineCardActions } from './ThreadInlineCards';
 import { WorkspaceComposer } from './WorkspaceComposer';
 
@@ -24,12 +25,16 @@ export interface AssistantThreadSurfaceProps {
   liveProgress: StreamProgressEvent | null;
   skuPrecedents: readonly SkuPrecedent[];
   pendingAttachments: readonly WorkspaceAttachment[];
+  profile: UserProfileSettings;
   inlineActions: InlineCardActions;
   onSendMessage: (text: string) => Promise<void>;
   onCancelRun: () => void;
   onAddFiles: (files: FileList) => void;
   onRemoveAttachment: (id: string) => void;
   onRunSample: (sample: SampleMerchandise) => void;
+  onRunBatchSample: (batch: SampleBatchDocument) => void;
+  onUpdateProfile: (patch: Partial<UserProfileSettings>) => void;
+  onNotifyUnavailableCamera?: () => void;
 }
 
 const convertMessage = (msg: WorkspaceMessage): ThreadMessageLike => ({
@@ -58,13 +63,19 @@ export function AssistantThreadSurface({
   liveProgress,
   skuPrecedents,
   pendingAttachments,
+  profile,
   inlineActions,
   onSendMessage,
   onCancelRun,
   onAddFiles,
   onRemoveAttachment,
   onRunSample,
+  onRunBatchSample,
+  onUpdateProfile,
+  onNotifyUnavailableCamera,
 }: AssistantThreadSurfaceProps) {
+  const hiddenUploadRef = useRef<HTMLInputElement | null>(null);
+  const [isDraggingFiles, setIsDraggingFiles] = useState(false);
   const messageMap = useMemo(() => {
     const map = new Map<string, WorkspaceMessage>();
     for (const item of messages) map.set(item.id, item);
@@ -88,51 +99,70 @@ export function AssistantThreadSurface({
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <ThreadPrimitive.Root className="flex h-full flex-col bg-surface-app">
-        <ThreadPrimitive.Viewport className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pt-4 pb-2">
+      <input
+        ref={hiddenUploadRef}
+        type="file"
+        multiple
+        accept=".pdf,.xlsx,.xls,.csv,.txt,.png,.jpg,.jpeg,.webp"
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files && e.target.files.length > 0) {
+            onAddFiles(e.target.files);
+            e.target.value = '';
+          }
+        }}
+      />
+      <ThreadPrimitive.Root
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDraggingFiles(true);
+        }}
+        onDragLeave={() => setIsDraggingFiles(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDraggingFiles(false);
+          if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+            onAddFiles(e.dataTransfer.files);
+          }
+        }}
+        className={`flex h-full min-w-0 flex-col overflow-x-hidden bg-transparent transition-colors ${
+          isDraggingFiles ? 'ring-2 ring-inset ring-accent-brand/60 bg-accent-soft/20' : ''
+        }`}
+      >
+        <ThreadPrimitive.Viewport className="flex flex-1 min-w-0 flex-col gap-5 overflow-y-auto overflow-x-hidden px-3 sm:px-6 pt-5 pb-2">
           <AuiIf condition={(s) => s.thread.isEmpty}>
-            <div className="my-auto flex flex-col items-center justify-center py-8 text-center">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent-soft text-accent-ink">
-                <Scale className="h-5 w-5" aria-hidden="true" />
-              </div>
-              <h1 className="mt-3 text-base font-semibold text-ink-primary">
-                Copiloto de Clasificación Arancelaria
-              </h1>
-              <p className="mt-1 max-w-md text-xs leading-relaxed text-ink-muted">
-                Aplica RGI 1→6 sobre aranceles oficiales, valida fichas merceológicas HITL y liquida tributos CIF deterministas.
-              </p>
-
-              <div className="mt-5 grid w-full max-w-lg gap-2 sm:grid-cols-2">
-                {SAMPLE_MERCHANDISE.map((sample) => (
-                  <button
-                    key={sample.id}
-                    type="button"
-                    onClick={() => onRunSample(sample)}
-                    className="flex cursor-pointer flex-col items-start rounded-xl border border-border-subtle bg-surface-panel p-3 text-left transition hover:border-accent-border hover:bg-accent-soft"
-                  >
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-ink-primary">
-                      <Sparkles className="h-3 w-3 text-accent-ink" aria-hidden="true" />
-                      {sample.label}
-                    </span>
-                    <span className="mt-1 line-clamp-2 text-[11px] text-ink-muted">
-                      {sample.description}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <WorkspaceEmptyState
+              onFocusComposer={() => {
+                const input = document.querySelector<HTMLTextAreaElement>(
+                  'textarea[aria-label="Consulta arancelaria o descripción de mercancía"]',
+                );
+                input?.focus();
+              }}
+              onTriggerUpload={() => hiddenUploadRef.current?.click()}
+              onRunSample={onRunSample}
+              onRunBatchSample={onRunBatchSample}
+            />
           </AuiIf>
 
           <ThreadPrimitive.Messages>
             {({ message }) => {
               const source = messageMap.get(message.id);
+              const timestamp = source?.createdAt
+                ? new Date(source.createdAt).toLocaleTimeString('es-VE', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                : '';
+
               if (message.role === 'user') {
                 return (
-                  <MessagePrimitive.Root className="flex flex-col items-end gap-1">
-                    <div className="max-w-[85%] rounded-2xl bg-surface-inverted px-3.5 py-2.5 text-sm text-ink-on-inverted shadow-xs">
-                      <p className="whitespace-pre-wrap">{source?.text}</p>
+                  <MessagePrimitive.Root className="max-w-2xl mx-auto w-full flex justify-end">
+                    <div className="max-w-[85%] bg-surface-inverted text-ink-on-inverted dark:border dark:border-border-subtle rounded-[22px] rounded-br-md px-4 py-3 shadow-sm space-y-2">
+                      <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
+                        {source?.text}
+                      </p>
                       {source?.attachments && source.attachments.length > 0 ? (
-                        <div className="mt-2 flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-1.5">
                           {source.attachments.map((att) => (
                             <span
                               key={att.id}
@@ -144,15 +174,36 @@ export function AssistantThreadSurface({
                           ))}
                         </div>
                       ) : null}
+                      {timestamp ? (
+                        <div className="text-[10px] text-slate-400 font-mono tabular-nums text-right">
+                          {timestamp}
+                        </div>
+                      ) : null}
                     </div>
                   </MessagePrimitive.Root>
                 );
               }
+
               return (
-                <MessagePrimitive.Root className="flex flex-col items-start gap-1">
-                  <div className="w-full max-w-2xl">
+                <MessagePrimitive.Root className="max-w-2xl mx-auto w-full flex items-start gap-3">
+                  <div
+                    aria-hidden="true"
+                    className="w-7 h-7 rounded-lg bg-slate-900 dark:bg-blue-700 text-white text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5"
+                  >
+                    T
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-2.5">
+                    <div className="flex items-center gap-2 text-xs text-ink-muted">
+                      <span className="font-semibold text-ink-primary">TariffOS</span>
+                      {timestamp ? (
+                        <>
+                          <span aria-hidden="true">·</span>
+                          <span className="font-mono tabular-nums">{timestamp}</span>
+                        </>
+                      ) : null}
+                    </div>
                     {source?.text ? (
-                      <div className="rounded-2xl border border-border-subtle bg-surface-panel/90 backdrop-blur-md px-3.5 py-2.5 text-sm leading-relaxed text-ink-primary shadow-xs whitespace-pre-wrap">
+                      <div className="text-sm leading-relaxed text-ink-primary whitespace-pre-line">
                         {renderInlineBold(source.text)}
                       </div>
                     ) : null}
@@ -164,17 +215,20 @@ export function AssistantThreadSurface({
           </ThreadPrimitive.Messages>
 
           {isRunning && liveProgress ? (
-            <div className="max-w-md">
+            <div className="max-w-2xl mx-auto w-full">
               <ProgressStagePill event={liveProgress} />
             </div>
           ) : null}
 
-          <ThreadPrimitive.ViewportFooter className="sticky bottom-0 mt-auto bg-gradient-to-t from-surface-app via-surface-app to-transparent pt-3 pb-3">
+          <ThreadPrimitive.ViewportFooter className="sticky bottom-0 mt-auto bg-gradient-to-t from-[#E4E6EB] via-[#E4E6EB]/90 to-transparent dark:from-[#0B0F19] dark:via-[#0B0F19]/90 pt-3 pb-3">
             <WorkspaceComposer
               skuPrecedents={skuPrecedents}
               pendingAttachments={pendingAttachments}
+              profile={profile}
               onAddFiles={onAddFiles}
               onRemoveAttachment={onRemoveAttachment}
+              onUpdateProfile={onUpdateProfile}
+              onNotifyUnavailableCamera={onNotifyUnavailableCamera}
             />
           </ThreadPrimitive.ViewportFooter>
         </ThreadPrimitive.Viewport>

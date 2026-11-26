@@ -101,6 +101,8 @@ export const UserProfileSettingsSchema = z.object({
   detailLevel: z.enum(['concise', 'standard', 'exhaustive']).default('standard'),
   approvalWorkflowMode: ApprovalWorkflowModeSchema.default('agent_decides'),
   autoOpenCanvas: z.boolean().default(true),
+  predictiveSearchEnabled: z.boolean().optional(),
+  webEnrichmentEnabled: z.boolean().optional(),
   updatedAt: z.string(),
 });
 

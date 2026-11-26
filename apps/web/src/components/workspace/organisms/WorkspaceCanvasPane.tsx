@@ -33,6 +33,7 @@ export interface WorkspaceCanvasPaneProps {
   }) => void;
   onExportPdf: () => void;
   onConfirmBatchItem: (lineNumber: number, update: BatchItemConfirmation) => void;
+  onCloseCanvas?: () => void;
 }
 
 export function WorkspaceCanvasPane({
@@ -47,6 +48,7 @@ export function WorkspaceCanvasPane({
   onSaveSignature,
   onExportPdf,
   onConfirmBatchItem,
+  onCloseCanvas,
 }: WorkspaceCanvasPaneProps) {
   const dossier = components.find((c) => c.type === 'dossier');
   const calculator = components.find((c) => c.type === 'calculator');
@@ -71,18 +73,38 @@ export function WorkspaceCanvasPane({
   }
 
   const workflowMode: ApprovalWorkflowMode = profile.approvalWorkflowMode;
+  const effectiveTab: CanvasTabType =
+    (activeTab === 'batch_manifest' && batch) ||
+    (activeTab === 'dossier' && dossier) ||
+    (activeTab === 'calculator' && calculator) ||
+    (activeTab === 'hierarchy' && hierarchy) ||
+    (activeTab === 'comparison' && comparison) ||
+    (activeTab === 'regulatory_diff' && dossier)
+      ? activeTab
+      : batch
+        ? 'batch_manifest'
+        : dossier
+          ? 'dossier'
+          : calculator
+            ? 'calculator'
+            : hierarchy
+              ? 'hierarchy'
+              : comparison
+                ? 'comparison'
+                : activeTab;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-surface-app">
+    <div className="flex h-full flex-col overflow-hidden bg-surface-panel">
       <ConsolidatedTabStrip
         components={components}
-        activeTab={activeTab}
+        activeTab={effectiveTab}
         unreadAlertsCount={0}
         onSelectTab={onSelectTab}
+        onCloseCanvas={onCloseCanvas}
       />
 
       <div className="flex-1 overflow-y-auto">
-        {activeTab === 'batch_manifest' && batch && (
+        {effectiveTab === 'batch_manifest' && batch && (
           <BatchManifestTriageView
             key={batch.id}
             manifest={batch}
@@ -91,7 +113,7 @@ export function WorkspaceCanvasPane({
           />
         )}
 
-        {activeTab === 'dossier' && dossier && (
+        {effectiveTab === 'dossier' && dossier && (
           <DossierView
             dossier={dossier}
             profile={profile}
@@ -104,7 +126,7 @@ export function WorkspaceCanvasPane({
           />
         )}
 
-        {activeTab === 'calculator' && calculator && (
+        {effectiveTab === 'calculator' && calculator && (
           <DutyCalculatorView
             key={calculator.id}
             calculator={calculator}
@@ -113,7 +135,7 @@ export function WorkspaceCanvasPane({
           />
         )}
 
-        {(activeTab === 'rgi_comparator' || activeTab === 'comparison') && (
+        {(effectiveTab === 'rgi_comparator' || effectiveTab === 'comparison') && (
           <RgiPathAndComparatorView
             dossier={dossier}
             comparison={comparison}
@@ -121,13 +143,13 @@ export function WorkspaceCanvasPane({
           />
         )}
 
-        {activeTab === 'hierarchy' && hierarchy && (
+        {effectiveTab === 'hierarchy' && hierarchy && (
           <div className="p-4">
             <HierarchyTreeView hierarchy={hierarchy} />
           </div>
         )}
 
-        {activeTab === 'regulatory_diff' && (
+        {effectiveTab === 'regulatory_diff' && (
           <RegulatoryDiffView jurisdiction={jurisdiction} dossier={dossier} />
         )}
       </div>

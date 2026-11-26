@@ -59,8 +59,8 @@
   --accent-ink: oklch(45.7% 0.214 261.3);
   --accent-soft: oklch(45.7% 0.214 261.3 / 0.10);
   --accent-border: oklch(45.7% 0.214 261.3 / 0.34);
-  --scrollbar-thumb: oklch(62% 0.028 256 / 0.35);
-  --scrollbar-thumb-hover: oklch(50% 0.034 257 / 0.55);
+  --scrollbar-thumb: oklch(74% 0.015 256 / 0.24);
+  --scrollbar-thumb-hover: oklch(58% 0.024 257 / 0.45);
   --space-3xs: 2px;
   --space-2xs: 4px;
   --space-xs: 8px;
