@@ -47,6 +47,7 @@ yarn-error.log*
 # eve
 .eve/
 **/.eve/
+.output/
 
 # typescript
 *.tsbuildinfo

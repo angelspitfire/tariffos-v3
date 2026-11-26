@@ -3,6 +3,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { isDbRelatedPath } from './lib/db-guardrails.mjs';
 import { checkRepoHygiene } from './lib/repo-guardrails.mjs';
+import { verifyWorkspacePackageOutputs } from './lib/workspace-build-guardrail.mjs';
 
 const QUICK = process.argv.includes('--quick');
 const WARN_LINES = 200;
@@ -141,11 +142,21 @@ if (QUICK) {
   failed = true;
 }
 
-// 5. Workspace bootstrap build (skipped in --quick mode)
+// 5. Workspace packages build + output verification (skipped in --quick mode)
 if (QUICK) {
-  console.log('\n==> 5/5 Bootstrap build (@tariffos/database...) [skipped in --quick mode]');
-} else if (!runStep('5/5 Bootstrap build (@tariffos/database...)', 'pnpm', ['bootstrap'])) {
+  console.log('\n==> 5/5 Workspace packages build (pnpm build:packages) [skipped in --quick mode]');
+} else if (!runStep('5/5 Workspace packages build (pnpm build:packages)', 'pnpm', ['build:packages'])) {
   failed = true;
+} else {
+  const missingOutputs = verifyWorkspacePackageOutputs(process.cwd());
+  if (missingOutputs.length > 0) {
+    for (const issue of missingOutputs) {
+      console.error(`   FAIL: ${issue.message}`);
+    }
+    failed = true;
+  } else {
+    console.log('   OK: all workspace packages produced their declared dist entrypoints');
+  }
 }
 
 if (failed) {

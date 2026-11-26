@@ -1,6 +1,7 @@
 const FORBIDDEN_ARTIFACT_PATTERNS = [
   /(?:^|\/)\.eve\//,
   /(?:^|\/)\.next\//,
+  /(?:^|\/)\.output\//,
   /(?:^|\/)dist\//,
   /(?:^|\/)node_modules\//,
   /(?:^|\/)\.vercel\//,
