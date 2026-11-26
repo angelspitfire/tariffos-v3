@@ -1,5 +1,3 @@
-import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
 import type { SessionAuthContext } from 'eve/context';
 
 export interface ParsedCookie {
@@ -73,6 +71,7 @@ export function createSupabaseChannelAuth(): (
     }
 
     if (cookies.length > 0) {
+      const { createServerClient } = await import('@supabase/ssr');
       const supabase = createServerClient(url, anonKey, {
         cookies: {
           getAll: () => cookies,
@@ -86,6 +85,7 @@ export function createSupabaseChannelAuth(): (
     }
 
     if (bearerToken) {
+      const { createClient } = await import('@supabase/supabase-js');
       const supabase = createClient(url, anonKey, {
         auth: { persistSession: false, autoRefreshToken: false },
       });
