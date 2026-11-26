@@ -2,6 +2,7 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { isDbRelatedPath } from './lib/db-guardrails.mjs';
+import { checkRepoHygiene } from './lib/repo-guardrails.mjs';
 
 const QUICK = process.argv.includes('--quick');
 const WARN_LINES = 200;
@@ -28,6 +29,17 @@ function getAllChangedFiles() {
           .filter((f) => Boolean(f) && existsSync(f)),
       ),
     ];
+  } catch {
+    return [];
+  }
+}
+
+function getGitTrackedFiles() {
+  try {
+    return execFileSync('git', ['ls-files'], { encoding: 'utf8' })
+      .split('\n')
+      .map((f) => f.trim())
+      .filter(Boolean);
   } catch {
     return [];
   }
@@ -104,6 +116,22 @@ if (changedDbFiles.length > 0) {
   if (!runStep('3b/5 DB static guardrails (RLS, policies, indexes)', 'node', ['scripts/check-db-static.mjs', ...changedDbFiles])) {
     failed = true;
   }
+}
+
+// 3c. Repo hygiene guardrail (TS-only source files + no tracked .eve/.next/dist artifacts)
+console.log('\n==> 3c/5 Repo hygiene (TypeScript-only source & no tracked artifacts)');
+const hygieneTargets = [...new Set([...getGitTrackedFiles(), ...allChangedFiles])];
+const hygieneIssues = checkRepoHygiene(hygieneTargets);
+if (hygieneIssues.length > 0) {
+  for (const issue of hygieneIssues.slice(0, 20)) {
+    console.error(`   FAIL [${issue.code}]: ${issue.message}`);
+  }
+  if (hygieneIssues.length > 20) {
+    console.error(`   ... and ${hygieneIssues.length - 20} more repo hygiene violation(s).`);
+  }
+  failed = true;
+} else {
+  console.log(`   OK: ${hygieneTargets.length} tracked/changed files verified (0 JS source files, 0 tracked artifacts)`);
 }
 
 // 4. Unit tests (skipped in --quick mode)
