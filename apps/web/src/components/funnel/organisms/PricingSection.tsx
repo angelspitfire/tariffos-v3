@@ -18,6 +18,7 @@ import {
 import { CorporatePlanBanner } from '../molecules/CorporatePlanBanner';
 import { PlanCard } from '../molecules/PlanCard';
 import { TrialPlanBanner } from '../molecules/TrialPlanBanner';
+import { SELECT_LEAD_INTENT_EVENT } from './LandingLeadCaptureSection';
 import { PlanRecommender } from './PlanRecommender';
 
 export interface PricingSectionProps {
@@ -64,6 +65,9 @@ export function PricingSection({
       if (onSelectPlan) {
         onSelectPlan(planId, 'custom');
         return;
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent(SELECT_LEAD_INTENT_EVENT, { detail: 'enterprise' }));
       }
       router.push('/#contacto');
       return;

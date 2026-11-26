@@ -8,6 +8,8 @@ export interface LeadFormValues {
   phone: string;
   country: string;
   volume: string;
+  enterpriseTeam: string;
+  enterpriseModules: string[];
   notes: string;
 }
 
@@ -30,18 +32,32 @@ export const LEAD_INTENT_OPTIONS: readonly { id: LeadInquiryIntent; label: strin
   { id: 'enterprise', label: 'Plan Enterprise a medida' },
 ] as const;
 
+export const ENTERPRISE_VOLUME_PILLS: readonly { value: string; label: string }[] = [
+  { value: '1,000-2,500/mes', label: '1,000 a 2,500 / mes' },
+  { value: '2,500-5,000/mes', label: '2,500 a 5,000 / mes' },
+  { value: '5,000-15,000/mes', label: '5,000 a 15,000 / mes' },
+  { value: '15,000+/mes', label: '15,000+ / mes' },
+] as const;
+
+export const ENTERPRISE_TEAM_PILLS: readonly { value: string; label: string }[] = [
+  { value: '5-10 usuarios', label: '5 a 10 operadores' },
+  { value: '10-25 usuarios', label: '10 a 25 operadores' },
+  { value: '25+ multi-sucursal', label: '25+ / multi-sucursal' },
+] as const;
+
+export const ENTERPRISE_MODULE_CHIPS: readonly { id: string; label: string }[] = [
+  { id: 'Carga inicial catálogo SKU', label: 'Carga inicial catálogo SKU' },
+  { id: 'Multi-sucursal y roles', label: 'Multi-sucursal y roles' },
+  { id: 'Multi-jurisdicción (CO/PA/MX)', label: 'Multi-jurisdicción (CO/PA/MX)' },
+  { id: 'Integración ERP / SIDUNEA', label: 'Integración ERP / SIDUNEA' },
+  { id: 'SLA prioritario y onboarding', label: 'SLA prioritario y onboarding' },
+] as const;
+
 export const LEAD_COUNTRY_OPTIONS: readonly { code: string; label: string }[] = [
   { code: 'VE', label: 'Venezuela (SENIAT)' },
   { code: 'CO', label: 'Colombia (DIAN)' },
   { code: 'PA', label: 'Panamá (ANA)' },
   { code: 'MX', label: 'México (SAT / ANAM)' },
-] as const;
-
-export const LEAD_VOLUME_OPTIONS: readonly { value: string; label: string }[] = [
-  { value: '1-250/mes', label: 'Hasta 250 clasificaciones / mes (Piloto)' },
-  { value: '250-1000/mes', label: '250 a 1,000 clasificaciones / mes (Agencia)' },
-  { value: '1000-5000/mes', label: '1,000 a 5,000 clasificaciones / mes (Enterprise)' },
-  { value: '5000+/mes', label: 'Más de 5,000 clasificaciones / mes (Multi-sucursal)' },
 ] as const;
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -100,16 +116,25 @@ export function hasLeadFormErrors(errors: LeadFieldErrors): boolean {
   return Object.values(errors).some((msg) => Boolean(msg));
 }
 
-export function formatLeadNotesPayload(
-  intents: readonly LeadInquiryIntent[],
-  notes: string,
-): string | undefined {
-  const tags: string[] = [];
-  if (intents.includes('demo')) tags.push('[Demo guiada]');
-  if (intents.includes('enterprise')) tags.push('[Plan Enterprise]');
-  const prefix = tags.join(' ');
-  const trimmed = notes.trim();
-  if (!trimmed) return prefix || undefined;
-  const combined = prefix ? `${prefix} ${trimmed}` : trimmed;
-  return combined.slice(0, MAX_LEAD_NOTES_LENGTH);
+export interface LeadNotesPayloadOptions {
+  intents: readonly LeadInquiryIntent[];
+  enterpriseTeam?: string;
+  enterpriseModules?: readonly string[];
+  notes: string;
+}
+
+export function formatLeadNotesPayload(options: LeadNotesPayloadOptions): string | undefined {
+  const parts: string[] = [];
+  if (options.intents.includes('demo')) parts.push('[Demo guiada]');
+  if (options.intents.includes('enterprise')) {
+    parts.push('[Plan Enterprise]');
+    if (options.enterpriseTeam) parts.push(`Equipo: ${options.enterpriseTeam}.`);
+    if (options.enterpriseModules && options.enterpriseModules.length > 0) {
+      parts.push(`Módulos: ${options.enterpriseModules.join(', ')}.`);
+    }
+  }
+  const trimmed = options.notes.trim();
+  if (trimmed) parts.push(trimmed);
+  if (parts.length === 0) return undefined;
+  return parts.join(' ').slice(0, MAX_LEAD_NOTES_LENGTH);
 }

@@ -14,7 +14,9 @@ const VALID_FORM: LeadFormValues = {
   email: 'carlos@caribe.ve',
   phone: '+58 412 555 0199',
   country: 'VE',
-  volume: '250-1000/mes',
+  volume: '2,500-5,000/mes',
+  enterpriseTeam: '10-25 usuarios',
+  enterpriseModules: ['Carga inicial catálogo SKU'],
   notes: 'Necesitamos validar lotes de 40 SKUs.',
 };
 
@@ -57,13 +59,17 @@ describe('validateLeadForm', () => {
     expect(errors.notes).toMatch(/600 caracteres/i);
   });
 
-  it('formats notes with intent prefix and enforces max length', () => {
-    expect(formatLeadNotesPayload(['enterprise'], 'Multi-sucursal')).toBe(
-      '[Plan Enterprise] Multi-sucursal',
+  it('formats notes with interactive Enterprise scope (team + modules) and enforces max length', () => {
+    expect(
+      formatLeadNotesPayload({
+        intents: ['enterprise'],
+        enterpriseTeam: '25+ multi-sucursal',
+        enterpriseModules: ['Carga inicial catálogo SKU', 'Integración ERP / SIDUNEA'],
+        notes: 'Operamos en La Guaira y Puerto Cabello',
+      }),
+    ).toBe(
+      '[Plan Enterprise] Equipo: 25+ multi-sucursal. Módulos: Carga inicial catálogo SKU, Integración ERP / SIDUNEA. Operamos en La Guaira y Puerto Cabello',
     );
-    expect(formatLeadNotesPayload(['demo', 'enterprise'], 'Urgente')).toBe(
-      '[Demo guiada] [Plan Enterprise] Urgente',
-    );
-    expect(formatLeadNotesPayload(['demo'], '')).toBe('[Demo guiada]');
+    expect(formatLeadNotesPayload({ intents: ['demo'], notes: '' })).toBe('[Demo guiada]');
   });
 });

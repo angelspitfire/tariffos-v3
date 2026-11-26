@@ -6,6 +6,7 @@ import { ArrowRight, FileDown } from 'lucide-react';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 import { readMockSession, savePendingQuery } from '@/lib/funnel/funnel-storage';
 import { LandingHeroPreview } from '../molecules/LandingHeroPreview';
+import { SELECT_LEAD_INTENT_EVENT } from './LandingLeadCaptureSection';
 import { LandingLoopHero } from './LandingLoopHero';
 
 export interface LandingHeroProps {
@@ -77,13 +78,16 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
               >
                 <span>{isAuthenticated ? 'Ir al workspace' : 'Activar Piloto Operativo'}</span>
                 <ArrowRight
-                  className="w-4 h-4 text-white transition-transform duration-200 group-hover:translate-x-0.5"
+                  className="w-4 h-4 text-white transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
                   aria-hidden="true"
                 />
               </button>
 
               <a
                 href="#contacto"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent(SELECT_LEAD_INTENT_EVENT, { detail: 'demo' }));
+                }}
                 className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-ink-secondary hover:text-ink-primary underline-offset-4 hover:underline transition-colors"
               >
                 Solicitar demo con tu factura
