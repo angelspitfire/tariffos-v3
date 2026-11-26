@@ -9,17 +9,39 @@ export interface CurrentMonthUsageSnapshot {
   outputTokens: number;
 }
 
+export interface CheckBillingLimitOptions {
+  requestedCount?: number;
+  isBatch?: boolean;
+}
+
 function getCurrentMonthYear(): { month: number; year: number } {
   const now = new Date();
   return { month: now.getMonth() + 1, year: now.getFullYear() };
 }
 
+function extractBillingPlanFlags(features: unknown): {
+  oneTimeOnly: boolean;
+  allowBatch: boolean;
+} {
+  if (!features || typeof features !== 'object' || Array.isArray(features)) {
+    return { oneTimeOnly: false, allowBatch: true };
+  }
+  const record = features as Record<string, unknown>;
+  return {
+    oneTimeOnly: Boolean(record.oneTimeOnly),
+    allowBatch: record.allowBatch === undefined ? true : Boolean(record.allowBatch),
+  };
+}
+
 class BillingService {
   /**
-   * Checks if a tenant is allowed to run a new classification based on their billing limit.
-   * Fail-closed on unknown tenant, canceled accounts, or past-due accounts.
+   * Checks if a tenant is allowed to run new classifications based on status, plan capabilities, and quota.
+   * Fail-closed on unknown tenant, canceled/past-due accounts, quota errors, or batch overflow.
    */
-  async checkBillingLimit(tenantId: string): Promise<{ allowed: boolean; reason?: string }> {
+  async checkBillingLimit(
+    tenantId: string,
+    options?: CheckBillingLimitOptions,
+  ): Promise<{ allowed: boolean; reason?: string }> {
     try {
       const prisma = getUnscopedSystemPrisma();
       const tenant = await prisma.tenant.findUnique({
@@ -42,21 +64,37 @@ class BillingService {
         return { allowed: false, reason: 'LIMIT_REACHED' };
       }
 
+      const planFlags = extractBillingPlanFlags(tenant.plan?.features);
+      if (options?.isBatch && (!planFlags.allowBatch || tenant.billingStatus === 'TRIALING')) {
+        return { allowed: false, reason: 'BATCH_NOT_IN_PLAN' };
+      }
+
       const planLimit = tenant.plan?.classificationLimit ?? tenant.plan?.maxClassifications ?? 0;
       const limit = tenant.billingLimit > 0 ? tenant.billingLimit : planLimit;
 
-      if (!tenant.plan && limit <= 0) {
-        return { allowed: true };
+      if (limit <= 0 && !tenant.allowOverage) {
+        return { allowed: false, reason: 'LIMIT_REACHED' };
       }
 
-      const { month, year } = getCurrentMonthYear();
-      const usage = await prisma.usageRecord.findUnique({
-        where: { tenantId_month_year: { tenantId, month, year } },
-        select: { count: true },
-      });
+      const isLifetimeQuota = planFlags.oneTimeOnly || tenant.billingStatus === 'TRIALING';
+      let currentCount = 0;
+      if (isLifetimeQuota) {
+        const agg = await prisma.usageRecord.aggregate({
+          where: { tenantId },
+          _sum: { count: true },
+        });
+        currentCount = agg._sum.count ?? 0;
+      } else {
+        const { month, year } = getCurrentMonthYear();
+        const usage = await prisma.usageRecord.findUnique({
+          where: { tenantId_month_year: { tenantId, month, year } },
+          select: { count: true },
+        });
+        currentCount = usage?.count ?? 0;
+      }
 
-      const currentCount = usage?.count ?? 0;
-      if (limit > 0 && currentCount >= limit) {
+      const requested = Math.max(1, options?.requestedCount ?? 1);
+      if (limit > 0 && currentCount + requested > limit) {
         if (tenant.allowOverage) {
           return { allowed: true };
         }
@@ -66,7 +104,7 @@ class BillingService {
       return { allowed: true };
     } catch (err: unknown) {
       console.error(`[BillingService] Error checking limit for tenant ${tenantId}:`, err);
-      return { allowed: true };
+      return { allowed: false, reason: 'QUOTA_CHECK_ERROR' };
     }
   }
 
@@ -84,6 +122,28 @@ class BillingService {
       count: usage?.count ?? 0,
       inputTokens: usage?.inputTokens ?? 0,
       outputTokens: usage?.outputTokens ?? 0,
+    };
+  }
+
+  async getEffectiveUsage(
+    tenantId: string,
+    oneTimeOnly: boolean,
+  ): Promise<CurrentMonthUsageSnapshot> {
+    if (!oneTimeOnly) {
+      return this.getCurrentMonthUsage(tenantId);
+    }
+    const { month, year } = getCurrentMonthYear();
+    const prisma = getUnscopedSystemPrisma();
+    const agg = await prisma.usageRecord.aggregate({
+      where: { tenantId },
+      _sum: { count: true, inputTokens: true, outputTokens: true },
+    });
+    return {
+      month,
+      year,
+      count: agg._sum.count ?? 0,
+      inputTokens: agg._sum.inputTokens ?? 0,
+      outputTokens: agg._sum.outputTokens ?? 0,
     };
   }
 
@@ -173,7 +233,10 @@ export async function incrementUsage(
   return billingService.incrementUsage(tenantId, type, amount);
 }
 
-export async function checkUsageLimit(tenantId: string) {
-  const { allowed, reason } = await billingService.checkBillingLimit(tenantId);
+export async function checkUsageLimit(
+  tenantId: string,
+  options?: CheckBillingLimitOptions,
+) {
+  const { allowed, reason } = await billingService.checkBillingLimit(tenantId, options);
   return { allowed, reason };
 }

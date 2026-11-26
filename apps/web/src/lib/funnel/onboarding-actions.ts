@@ -29,7 +29,7 @@ export function resolveInitialOnboardingPlan(params: {
       preselected: true,
     };
   }
-  return { planId: 'trial', billingCycle: 'monthly', preselected: false };
+  return { planId: 'pilot', billingCycle: 'monthly', preselected: false };
 }
 
 export async function persistOnboardingProfile(

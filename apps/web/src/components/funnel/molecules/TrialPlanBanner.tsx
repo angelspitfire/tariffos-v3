@@ -23,15 +23,17 @@ export function TrialPlanBanner({
       }`}
     >
       <div className="flex items-start gap-3 max-w-2xl">
-        <div className="w-8 h-8 rounded-xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+        <div className="w-8 h-8 rounded-xl bg-accent-soft text-accent-ink flex items-center justify-center shrink-0 mt-0.5">
           <Sparkles className="w-4 h-4" />
         </div>
         <div className="space-y-0.5">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-semibold text-ink-primary">
-              {plan.name} — {plan.monthlyQuota} clasificaciones completas
+              {plan.name} — {plan.monthlyQuota.toLocaleString('en-US')} clasificaciones completas
             </span>
-            <FunnelBadge variant="success">$0 · Sin tarjeta</FunnelBadge>
+            <FunnelBadge variant="success">
+              ${plan.monthlyPriceUsd} USD · Pago único · 100% acreditable
+            </FunnelBadge>
             {isRecommended ? (
               <FunnelBadge variant="accent">Recomendado para ti</FunnelBadge>
             ) : null}
@@ -47,7 +49,7 @@ export function TrialPlanBanner({
         onClick={onSelect}
         className="min-h-[40px] rounded-full px-5 whitespace-nowrap"
       >
-        Empezar prueba gratis
+        Activar Piloto Operativo
       </FunnelButton>
     </div>
   );

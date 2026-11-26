@@ -51,6 +51,7 @@ import {
   type LlmProvider,
 } from '../config.js';
 import { createNvidiaTransportFetch } from './nvidia-fetch.js';
+import { reportCallUsage } from './usage-helpers.js';
 
 /** Per-instance runtime override for generation calls (never mutates env). */
 export interface LlmRuntimeOverride {
@@ -125,8 +126,10 @@ export class OpenAICompatibleAdapter implements LlmProviderPort {
       model: this.chatModel(options),
       ...resolvePrompt(prompt, options.attachments),
       ...(options.temperature !== undefined ? { temperature: options.temperature } : {}),
+      ...(options.maxOutputTokens !== undefined ? { maxOutputTokens: options.maxOutputTokens } : {}),
       abortSignal: abortSignalFor(options),
     });
+    reportCallUsage(response.usage, options.onUsage);
     return response.text;
   }
 
@@ -144,11 +147,13 @@ export class OpenAICompatibleAdapter implements LlmProviderPort {
       model: this.chatModel(options),
       ...resolvePrompt(prompt, options.attachments),
       ...(options.temperature !== undefined ? { temperature: options.temperature } : {}),
+      ...(options.maxOutputTokens !== undefined ? { maxOutputTokens: options.maxOutputTokens } : {}),
       abortSignal: abortSignalFor(options),
       maxRetries: 0,
     };
     try {
       const response = await generateObject({ ...callOptions, schema });
+      reportCallUsage(response.usage, options.onUsage);
       return response.object as T;
     } catch {
       // Structured output rejected (many local servers do): take the text

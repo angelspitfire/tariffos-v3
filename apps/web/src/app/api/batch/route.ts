@@ -65,12 +65,27 @@ export async function POST(request: Request): Promise<Response> {
       return Response.json({ error: auth.error }, { status: auth.status });
     }
 
-    const quota = await checkTenantQuota(auth.context.tenantId);
+    const quota = await checkTenantQuota(auth.context.tenantId, {
+      requestedCount: items.length,
+      isBatch: true,
+    });
     if (!quota.allowed) {
-      return Response.json(
-        { error: 'Classification quota reached', reason: quota.reason ?? 'LIMIT_REACHED' },
-        { status: 402 },
-      );
+      const reason = quota.reason ?? 'LIMIT_REACHED';
+      const status =
+        reason === 'BATCH_NOT_IN_PLAN' || reason === 'ACCOUNT_CANCELED'
+          ? 403
+          : reason === 'QUOTA_CHECK_ERROR'
+            ? 503
+            : 402;
+      const error =
+        reason === 'BATCH_NOT_IN_PLAN'
+          ? 'Tu plan actual no incluye procesamiento masivo por lotes.'
+          : reason === 'PAST_DUE'
+            ? 'Activa tu Piloto Operativo o Plan Agencia para procesar lotes.'
+            : reason === 'QUOTA_CHECK_ERROR'
+              ? 'No pudimos verificar tu cuota en este momento. Intenta nuevamente.'
+              : 'El tamaño del lote excede tu cuota disponible.';
+      return Response.json({ error, reason }, { status });
     }
 
     await inngest.send({

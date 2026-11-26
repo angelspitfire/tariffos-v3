@@ -225,4 +225,30 @@ describe('classifyInvoiceBatch', () => {
       'verifying_tariff',
     ]);
   });
+
+  it('propagates RGI tokenUsage onto Tier 2 ClassificationLinePayload', async () => {
+    const ports = createBasePorts({
+      runRgiReasoning: vi.fn().mockResolvedValue({
+        hsCode: '8471.30.90.90',
+        confidenceLevel: 'Alto',
+        confidencePct: 95,
+        confidenceReason: 'Verified',
+        rgiSteps: [],
+        alternatives: [],
+        rejected: [],
+        flags: [],
+        unresolved: [],
+        modelUsed: 'nvidia/nemotron-3.5-super-vl',
+        tokenUsage: { inputTokens: 4200, outputTokens: 980 },
+      }),
+    });
+
+    const result = await classifyInvoiceBatch(
+      [{ lineId: 'L1', description: 'Laptop computer 14 inch aluminum', originCountry: 'CN', cifValue: 1200 }],
+      ports,
+      { tenantId: 't1', countryCode: 'VE' },
+    );
+
+    expect(result.lines[0]?.tokenUsage).toEqual({ inputTokens: 4200, outputTokens: 980 });
+  });
 });

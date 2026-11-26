@@ -67,11 +67,21 @@ export function SettingsBillingTab({ plan, onClose }: SettingsBillingTabProps) {
                 <div className="flex items-center justify-between font-semibold text-ink-primary">
                   <span>{item.name}</span>
                   <span className="font-mono tabular-nums">
-                    {item.monthlyPriceUsd > 0 ? `$${item.monthlyPriceUsd}/mes` : `$${item.annualPriceUsd}/año`}
+                    {item.customPricing
+                      ? 'A medida'
+                      : item.oneTimeOnly
+                        ? `$${item.monthlyPriceUsd} único`
+                        : item.monthlyPriceUsd > 0
+                          ? `$${item.monthlyPriceUsd}/mes`
+                          : `$${item.annualPriceUsd}/año`}
                   </span>
                 </div>
                 <div className="mt-0.5 text-[11px] text-ink-muted">
-                  {item.monthlyQuota.toLocaleString('en-US')} clasificaciones/mes
+                  {item.customPricing
+                    ? 'Volumen y sucursales a medida'
+                    : item.oneTimeOnly
+                      ? `${item.monthlyQuota.toLocaleString('en-US')} clasif. (30 días)`
+                      : `${item.monthlyQuota.toLocaleString('en-US')} clasificaciones/mes`}
                 </div>
               </div>
             );

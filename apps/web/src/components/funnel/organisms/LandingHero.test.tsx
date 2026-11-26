@@ -25,7 +25,7 @@ describe('LandingHero', () => {
     const input = screen.getByLabelText(/Describe una mercancía/i);
     expect(input).toHaveValue('Laptop Dell Latitude i7 16GB RAM SSD 512GB');
 
-    await user.click(screen.getByRole('button', { name: /Clasificar en workspace|Clasificar gratis/i }));
+    await user.click(screen.getByRole('button', { name: /Clasificar en workspace|Activar Piloto/i }));
 
     expect(readPendingQuery()).toBe('Laptop Dell Latitude i7 16GB RAM SSD 512GB');
     expect(mockPush).toHaveBeenCalledWith('/app');
@@ -37,7 +37,7 @@ describe('LandingHero', () => {
 
     const input = screen.getByLabelText(/Describe una mercancía/i);
     await user.type(input, 'Ecógrafo Doppler portátil');
-    await user.click(screen.getByRole('button', { name: /Clasificar gratis/i }));
+    await user.click(screen.getByRole('button', { name: 'Activar Piloto' }));
 
     expect(readPendingQuery()).toBe('Ecógrafo Doppler portátil');
     expect(mockPush).toHaveBeenCalledWith('/login?next=%2Fapp');
@@ -49,14 +49,14 @@ describe('LandingHero', () => {
     expect(screen.getByText(/Decreto 4\.944/i)).toBeInTheDocument();
   });
 
-  it('displays risk-reversal, starting price microcopy, and sample PDF download link', () => {
+  it('displays B2B pilot/agencia microcopy and sample PDF download link without free trial claims', () => {
     render(<LandingHero requiresAuth={false} />);
     expect(
       screen.getByRole('heading', { level: 1, name: /Clasificación arancelaria auditable con respaldo RGI/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Sin tarjeta/i)).toBeInTheDocument();
-    expect(screen.getByText(/Activación inmediata/i)).toBeInTheDocument();
-    expect(screen.getByText(/\$49\/mes/i)).toBeInTheDocument();
+    expect(screen.getByText(/Piloto Operativo \$150/i)).toBeInTheDocument();
+    expect(screen.getByText(/Plan Agencia desde \$300\/mes/i)).toBeInTheDocument();
+    expect(screen.getByText(/Enterprise a medida/i)).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: /Descargar Dictamen PDF de ejemplo/i }),
     ).toHaveAttribute('href', '/samples/dictamen-ejemplo-tariffos.pdf');

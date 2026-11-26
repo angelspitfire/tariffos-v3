@@ -78,6 +78,7 @@ export function UsageMonitorPanel() {
                   <th className="py-2.5 px-3 font-semibold">Plan / Estado</th>
                   <th className="py-2.5 px-3 font-semibold">Clasificaciones</th>
                   <th className="py-2.5 px-3 font-semibold">Tokens In / Out</th>
+                  <th className="py-2.5 px-3 font-semibold">Prom. / Costo IA</th>
                   <th className="py-2.5 px-4 font-semibold">Lotes (Activos / Fallidos)</th>
                 </tr>
               </thead>
@@ -105,6 +106,12 @@ export function UsageMonitorPanel() {
                     <td className="py-3 px-3 font-mono tabular-nums text-ink-secondary">
                       <div>In: {r.inputTokens.toLocaleString('en-US')}</div>
                       <div>Out: {r.outputTokens.toLocaleString('en-US')}</div>
+                    </td>
+                    <td className="py-3 px-3 font-mono tabular-nums text-ink-secondary">
+                      <div>{(r.avgTokensPerClassification ?? 0).toLocaleString('en-US')} tok/clasif.</div>
+                      <div className="text-ink-primary font-semibold">
+                        ${(r.estimatedCostUsd ?? 0).toFixed(4)}
+                      </div>
                     </td>
                     <td className="py-3 px-4 font-mono tabular-nums">
                       <span className="text-ink-primary">{r.activeBatchJobs}</span>

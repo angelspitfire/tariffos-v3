@@ -15,7 +15,7 @@ import {
   persistOnboardingProfile,
   resolveInitialOnboardingPlan,
 } from '@/lib/funnel/onboarding-actions';
-import { isPlanAnnualOnly, isPlanFree } from '@/lib/funnel/plan-recommender';
+import { isPlanAnnualOnly, isPlanFree, isPlanOneTime } from '@/lib/funnel/plan-recommender';
 import { FunnelBadge } from '../atoms/FunnelBadge';
 import { FunnelButton } from '../atoms/FunnelButton';
 import { FunnelCard } from '../atoms/FunnelCard';
@@ -59,9 +59,13 @@ export function ExpressOnboardingCard({
   const [error, setError] = useState<string | null>(null);
 
   const matchedPlan = SAAS_PLANS.find((p) => p.planId === selectedPlanId) ?? SAAS_PLANS[0];
-  const isPaidPlan = matchedPlan ? !isPlanFree(matchedPlan) : false;
-  const effectiveCycle: SubscriptionBillingCycle =
-    matchedPlan && isPlanAnnualOnly(matchedPlan) ? 'annual' : billingCycle;
+  const isOneTime = matchedPlan ? isPlanOneTime(matchedPlan) : false;
+  const isPaidPlan = matchedPlan ? !isPlanFree(matchedPlan) && !matchedPlan.customPricing : true;
+  const effectiveCycle: SubscriptionBillingCycle = isOneTime
+    ? 'monthly'
+    : matchedPlan && isPlanAnnualOnly(matchedPlan)
+      ? 'annual'
+      : billingCycle;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -115,7 +119,11 @@ export function ExpressOnboardingCard({
             <CheckCircle2 className="w-4 h-4 text-accent-ink shrink-0" />
             <span>
               Plan preseleccionado: <strong>{matchedPlan.name}</strong>
-              {isPaidPlan ? ` (${effectiveCycle === 'annual' ? 'Anual' : 'Mensual'})` : ' (Gratis)'}
+              {isOneTime
+                ? ` ($${matchedPlan.monthlyPriceUsd} · Pago único)`
+                : isPaidPlan
+                  ? ` (${effectiveCycle === 'annual' ? 'Anual' : 'Mensual'})`
+                  : ''}
             </span>
           </div>
           <button

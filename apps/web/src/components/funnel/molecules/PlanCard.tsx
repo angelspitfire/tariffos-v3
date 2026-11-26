@@ -3,7 +3,11 @@ import type {
   SubscriptionBillingCycle,
   SubscriptionPlanConfig,
 } from '@tariffos/shared-types';
-import { isPlanAnnualOnly } from '@/lib/funnel/plan-recommender';
+import {
+  isPlanAnnualOnly,
+  isPlanCustomPricing,
+  isPlanOneTime,
+} from '@/lib/funnel/plan-recommender';
 import { FunnelBadge } from '../atoms/FunnelBadge';
 import { FunnelButton } from '../atoms/FunnelButton';
 
@@ -20,12 +24,14 @@ export function PlanCard({
   isRecommended = false,
   onSelect,
 }: PlanCardProps) {
+  const customPricing = isPlanCustomPricing(plan);
+  const oneTime = isPlanOneTime(plan);
   const annualOnly = isPlanAnnualOnly(plan);
-  const showAnnual = annualOnly || billingCycle === 'annual';
+  const showAnnual = !customPricing && !oneTime && (annualOnly || billingCycle === 'annual');
   const price = showAnnual ? plan.annualPriceUsd : plan.monthlyPriceUsd;
   const monthlyEquiv =
     showAnnual && plan.annualPriceUsd > 0 ? Math.round(plan.annualPriceUsd / 12) : null;
-  const isPopular = plan.planId === 'pro';
+  const isPopular = plan.planId === 'agencia';
 
   return (
     <div
@@ -44,26 +50,42 @@ export function PlanCard({
             <FunnelBadge variant="accent">Recomendado</FunnelBadge>
           ) : isPopular ? (
             <FunnelBadge variant="accent">Más popular</FunnelBadge>
+          ) : customPricing ? (
+            <FunnelBadge variant="neutral">Corporativo</FunnelBadge>
           ) : annualOnly ? (
             <FunnelBadge variant="neutral">Solo anual</FunnelBadge>
           ) : null}
         </div>
 
         <div>
-          <div className="flex items-baseline gap-1 font-mono tabular-nums">
-            <span className="text-2xl font-bold text-ink-primary">
-              ${price.toLocaleString('en-US')}
-            </span>
-            <span className="text-xs text-ink-muted">/{showAnnual ? 'año' : 'mes'}</span>
-          </div>
-          {monthlyEquiv !== null ? (
-            <div className="text-[11px] font-mono text-ink-muted tabular-nums mt-0.5">
-              Equiv. ${monthlyEquiv.toLocaleString('en-US')}/mes
-            </div>
+          {customPricing ? (
+            <>
+              <div className="text-2xl font-bold text-ink-primary tracking-tight">A medida</div>
+              <div className="text-[11px] text-ink-muted mt-0.5">
+                Volumen y usuarios según tu operación
+              </div>
+            </>
           ) : (
-            <div className="text-[11px] text-ink-muted mt-0.5">
-              Hasta {plan.monthlyQuota.toLocaleString('en-US')} clasif./mes
-            </div>
+            <>
+              <div className="flex items-baseline gap-1 font-mono tabular-nums">
+                <span className="text-2xl font-bold text-ink-primary">
+                  ${price.toLocaleString('en-US')}
+                </span>
+                <span className="text-xs text-ink-muted">
+                  {oneTime ? 'pago único' : `/${showAnnual ? 'año' : 'mes'}`}
+                </span>
+              </div>
+              {monthlyEquiv !== null ? (
+                <div className="text-[11px] font-mono text-ink-muted tabular-nums mt-0.5">
+                  Equiv. ${monthlyEquiv.toLocaleString('en-US')}/mes
+                </div>
+              ) : (
+                <div className="text-[11px] text-ink-muted mt-0.5">
+                  Hasta {plan.monthlyQuota.toLocaleString('en-US')} clasif.
+                  {oneTime ? ' (30 días)' : '/mes'}
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -83,9 +105,14 @@ export function PlanCard({
         variant={isPopular || isRecommended ? 'primary' : 'outline'}
         size="md"
         className="w-full min-h-[44px] rounded-full whitespace-nowrap"
-        onClick={() => onSelect(plan.planId, showAnnual ? 'annual' : 'monthly')}
+        onClick={() =>
+          onSelect(
+            plan.planId,
+            customPricing ? 'custom' : showAnnual ? 'annual' : 'monthly',
+          )
+        }
       >
-        {annualOnly ? 'Solicitar Corporate' : `Elegir ${plan.name}`}
+        {customPricing ? 'Solicitar cotización' : `Elegir ${plan.name}`}
       </FunnelButton>
     </div>
   );

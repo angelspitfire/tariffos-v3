@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import {
   SAAS_PLANS,
@@ -7,7 +8,9 @@ import {
 } from '@tariffos/shared-types';
 import {
   isPlanAnnualOnly,
+  isPlanCustomPricing,
   isPlanFree,
+  isPlanOneTime,
   type PlanRecommendation,
 } from '@/lib/funnel/plan-recommender';
 import { FunnelBadge } from '../atoms/FunnelBadge';
@@ -31,11 +34,12 @@ export function OnboardingPlanPicker({
   const [recommendedPlanId, setRecommendedPlanId] = useState<string | null>(null);
 
   const visiblePlans = [...SAAS_PLANS]
-    .filter((p) => p.published)
+    .filter((p) => p.published && !isPlanCustomPricing(p))
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
   const handleApplyRecommendation = (rec: PlanRecommendation) => {
     setRecommendedPlanId(rec.planId);
+    if (rec.planId === 'enterprise') return;
     onChangeCycle?.(rec.recommendedCycle);
     onSelect?.(rec.planId, rec.recommendedCycle);
     onSelectPlan?.(rec.planId, rec.recommendedCycle);
@@ -73,31 +77,36 @@ export function OnboardingPlanPicker({
       </div>
 
       <PlanRecommender
-        plans={visiblePlans}
+        plans={[...SAAS_PLANS]}
         onApplyRecommendation={handleApplyRecommendation}
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {visiblePlans.map((plan) => {
           const selected = plan.planId === selectedPlanId;
           const isRec = plan.planId === recommendedPlanId;
+          const oneTime = isPlanOneTime(plan);
           const annualOnly = isPlanAnnualOnly(plan);
-          const showAnnual = annualOnly || billingCycle === 'annual';
-          const resolvedCycle: SubscriptionBillingCycle = annualOnly
-            ? 'annual'
-            : billingCycle;
+          const showAnnual = !oneTime && (annualOnly || billingCycle === 'annual');
+          const resolvedCycle: SubscriptionBillingCycle = oneTime
+            ? 'monthly'
+            : annualOnly
+              ? 'annual'
+              : billingCycle;
           const priceText = isPlanFree(plan)
-            ? '$0 · 5 clasif.'
-            : showAnnual
-              ? `$${plan.annualPriceUsd.toLocaleString('en-US')}/año`
-              : `$${plan.monthlyPriceUsd.toLocaleString('en-US')}/mes`;
+            ? '$0'
+            : oneTime
+              ? `$${plan.monthlyPriceUsd} · pago único (${plan.monthlyQuota} clasif.)`
+              : showAnnual
+                ? `$${plan.annualPriceUsd.toLocaleString('en-US')}/año (${plan.monthlyQuota.toLocaleString('en-US')}/mes)`
+                : `$${plan.monthlyPriceUsd.toLocaleString('en-US')}/mes (${plan.monthlyQuota.toLocaleString('en-US')}/mes)`;
           return (
             <button
               key={plan.planId}
               type="button"
               aria-pressed={selected}
               onClick={() => {
-                onSelect?.(plan.planId, annualOnly ? 'annual' : resolvedCycle);
+                onSelect?.(plan.planId, resolvedCycle);
                 onSelectPlan?.(plan.planId, resolvedCycle);
               }}
               className={`p-2.5 rounded-xl border text-left transition-colors cursor-pointer ${
@@ -115,6 +124,14 @@ export function OnboardingPlanPicker({
           );
         })}
       </div>
+
+      <p className="text-[11px] text-ink-muted">
+        ¿Tu agencia supera las 1,000 clasificaciones mensuales?{' '}
+        <Link href="/#contacto" className="font-semibold text-accent-ink hover:underline">
+          Solicita cotización Enterprise a medida
+        </Link>
+        .
+      </p>
     </div>
   );
 }

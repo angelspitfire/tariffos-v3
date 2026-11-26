@@ -44,22 +44,28 @@ const TEAM_RANK: Record<RecommenderTeamSize, number> = {
   corporate: 4,
 };
 
-const TIER_ORDER = ['trial', 'basico', 'pro', 'enterprise', 'corporate'] as const;
+const TIER_ORDER = ['pilot', 'agencia', 'enterprise'] as const;
 
 const HEADLINE_BY_PLAN: Record<string, string> = {
-  trial: 'Empieza sin costo para comprobar la calidad técnica de TariffOS.',
-  basico: 'Ajustado a operación individual con dictamen profesional RGI.',
-  pro: 'Mejor relación capacidad/valor para agentes aduanales activos.',
-  enterprise: 'Escala multi-usuario y multi-jurisdicción para agencias.',
-  corporate: 'Máxima capacidad anual con acompañamiento y SLA corporativo.',
+  pilot: 'Valida TariffOS con facturas reales y acredita el 100% al pasar a Agencia.',
+  agencia: 'Estación arancelaria completa para agencias activas con lotes y catálogo SKU.',
+  enterprise: 'Despliegue a medida para grandes agencias, navieras y corporativos.',
 };
 
 export function isPlanAnnualOnly(plan: SubscriptionPlanConfig): boolean {
   return Boolean(plan.annualOnly) || (plan.monthlyPriceUsd === 0 && plan.annualPriceUsd > 0);
 }
 
+export function isPlanOneTime(plan: SubscriptionPlanConfig): boolean {
+  return Boolean(plan.oneTimeOnly);
+}
+
+export function isPlanCustomPricing(plan: SubscriptionPlanConfig): boolean {
+  return Boolean(plan.customPricing);
+}
+
 export function isPlanFree(plan: SubscriptionPlanConfig): boolean {
-  return plan.monthlyPriceUsd === 0 && plan.annualPriceUsd === 0;
+  return !plan.customPricing && plan.monthlyPriceUsd === 0 && plan.annualPriceUsd === 0;
 }
 
 function buildPlanReasons(
@@ -67,37 +73,25 @@ function buildPlanReasons(
   needsBatch: boolean,
   hasMultiJurisdiction: boolean,
 ): string[] {
-  if (planId === 'trial') {
+  if (planId === 'pilot') {
     return [
-      'Valida la precisión RGI 1–6 y la ficha merceológica HITL sin compromiso.',
-      'Activación inmediata con 5 clasificaciones completas y dictamen PDF.',
+      '250 clasificaciones vitalicias con lotes Excel/CSV, cálculo CIF y dictámenes PDF.',
+      'Pago único de $150 USD: 100% acreditable al primer mes del Plan Agencia en 30 días.',
     ];
   }
-  if (planId === 'basico') {
+  if (planId === 'agencia') {
     return [
-      'Cubre operaciones individuales de hasta 40 clasificaciones/mes con respaldo RGI.',
-      'Incluye firma digital del agente y exportación de dictamen técnico PDF.',
-    ];
-  }
-  if (planId === 'pro') {
-    return [
-      'Ideal para flujo regular (hasta 400 clasif./mes) y equipos de hasta 3 operadores.',
+      'Hasta 1,000 clasificaciones/mes y hasta 5 usuarios con firma digital y patente.',
       needsBatch
-        ? 'Desbloquea carga masiva por lotes (Excel/CSV) y triage de confianza.'
-        : 'Incluye catálogo SKU corporativo, comparador histórico y alertas normativas.',
-    ];
-  }
-  if (planId === 'enterprise') {
-    return [
-      'Soporta agencias de hasta 10 usuarios y hasta 1,500 clasificaciones mensuales.',
-      hasMultiJurisdiction
-        ? 'Incluye cobertura multi-jurisdicción con decretos oficiales publicados.'
-        : 'Incorpora auditoría tributaria completa y validación acelerada.',
+        ? 'Incluye carga masiva por lotes (Excel/CSV), triage de confianza y catálogo SKU.'
+        : 'Incluye catálogo SKU corporativo, calculadora tributaria CIF y dictámenes PDF firmables.',
     ];
   }
   return [
-    'Diseñado para operaciones masivas (hasta 5,000+ clasif./mes) y hasta 25 usuarios.',
-    'Incluye SLA dedicado, onboarding asistido y carga inicial de catálogo SKU.',
+    'Volumen, usuarios multi-sucursal y carga inicial de catálogo SKU definidos a medida.',
+    hasMultiJurisdiction
+      ? 'Soporte multi-jurisdicción con decretos oficiales y SLA dedicado.'
+      : 'Incluye auditoría tributaria completa, integraciones y acompañamiento corporativo.',
   ];
 }
 
@@ -113,30 +107,39 @@ export function recommendSubscriptionPlan(
 
   let tierIndex = VOLUME_RANK[input.monthlyVolume];
 
-  if (input.paidOnly && tierIndex === 0) {
-    tierIndex = 1;
+  if (tierIndex > 0 && tierIndex <= 2) {
+    tierIndex = 1; // low or medium -> agencia
+  } else if (tierIndex >= 3) {
+    tierIndex = 2; // high or massive -> enterprise
   }
 
-  if (tierIndex > 0 || input.paidOnly || input.teamSize !== 'solo') {
-    tierIndex = Math.max(tierIndex, TEAM_RANK[input.teamSize]);
+  if (TEAM_RANK[input.teamSize] >= 3) {
+    tierIndex = Math.max(tierIndex, 2);
+  } else if (TEAM_RANK[input.teamSize] === 2) {
+    tierIndex = Math.max(tierIndex, 1);
   }
 
-  if (capSet.has('batch')) tierIndex = Math.max(tierIndex, 2);
-  if (capSet.has('multi_jurisdiction')) tierIndex = Math.max(tierIndex, 3);
-  if (capSet.has('audit_sla')) tierIndex = Math.max(tierIndex, 4);
+  if (capSet.has('batch')) tierIndex = Math.max(tierIndex, 1);
+  if (capSet.has('multi_jurisdiction') || capSet.has('audit_sla')) {
+    tierIndex = Math.max(tierIndex, 2);
+  }
 
-  const targetPlanId = TIER_ORDER[Math.min(tierIndex, TIER_ORDER.length - 1)] ?? 'pro';
+  const targetPlanId = TIER_ORDER[Math.min(tierIndex, TIER_ORDER.length - 1)] ?? 'agencia';
   const matchedPlan =
     available.find((p) => p.planId === targetPlanId) ??
-    available.find((p) => p.planId === 'pro') ??
+    available.find((p) => p.planId === 'agencia') ??
     available[0] ??
     plans[0];
 
   const resolvedId = matchedPlan?.planId ?? targetPlanId;
   const annualOnly = matchedPlan ? isPlanAnnualOnly(matchedPlan) : false;
+  const oneTime = matchedPlan ? isPlanOneTime(matchedPlan) : false;
+  const custom = matchedPlan ? isPlanCustomPricing(matchedPlan) : false;
   const free = matchedPlan ? isPlanFree(matchedPlan) : false;
   const recommendedCycle: 'monthly' | 'annual' =
-    annualOnly || (!free && capSet.has('annual_savings')) ? 'annual' : 'monthly';
+    annualOnly || (!free && !oneTime && !custom && capSet.has('annual_savings'))
+      ? 'annual'
+      : 'monthly';
 
   const reasons = buildPlanReasons(
     resolvedId,
@@ -149,23 +152,21 @@ export function recommendSubscriptionPlan(
       ? Math.max(0, matchedPlan.monthlyPriceUsd * 12 - matchedPlan.annualPriceUsd)
       : 0;
 
-  if (annualOnly && matchedPlan) {
-    const monthlyEquiv = Math.round(matchedPlan.annualPriceUsd / 12);
-    reasons.push(`Licencia corporativa anual equivalente a $${monthlyEquiv}/mes.`);
-  } else if (recommendedCycle === 'annual' && annualSavingsUsd > 0) {
+  if (recommendedCycle === 'annual' && annualSavingsUsd > 0) {
     reasons.push(
       `Con pago anual ahorras $${annualSavingsUsd.toLocaleString()} USD al año (2 meses gratis).`,
     );
   }
 
   let estimatedUnitCostLabel: string | undefined;
-  if (matchedPlan && !free && matchedPlan.monthlyQuota > 0) {
-    const effectiveMonthly =
-      recommendedCycle === 'annual' && matchedPlan.annualPriceUsd > 0
+  if (matchedPlan && !free && !custom && matchedPlan.monthlyQuota > 0) {
+    const effectiveAmount = oneTime
+      ? matchedPlan.monthlyPriceUsd
+      : recommendedCycle === 'annual' && matchedPlan.annualPriceUsd > 0
         ? matchedPlan.annualPriceUsd / 12
         : matchedPlan.monthlyPriceUsd;
-    if (effectiveMonthly > 0) {
-      const unitCost = effectiveMonthly / matchedPlan.monthlyQuota;
+    if (effectiveAmount > 0) {
+      const unitCost = effectiveAmount / matchedPlan.monthlyQuota;
       estimatedUnitCostLabel = `~$${unitCost.toFixed(2)} USD / clasificación al tope de cuota`;
     }
   }

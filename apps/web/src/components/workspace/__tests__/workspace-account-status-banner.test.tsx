@@ -34,7 +34,20 @@ describe('WorkspaceAccountStatusBanner', () => {
     expect(screen.getByText(/Cuenta dada de baja/i)).toBeInTheDocument();
   });
 
-  it('renders past-due banner with activate-plan link when billingStatus is PAST_DUE', () => {
+  it('renders initial activation banner when billingStatus is PAST_DUE and limit is 0', () => {
+    render(
+      <WorkspaceAccountStatusBanner
+        usage={{ ...BASE_USAGE, planId: 'pilot', planName: 'Piloto Operativo', billingStatus: 'PAST_DUE', limit: 0, used: 0 }}
+      />,
+    );
+    expect(screen.getByText(/Piloto Operativo \(\$150/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Activar plan/i })).toHaveAttribute(
+      'href',
+      '/activate-plan?plan=pilot',
+    );
+  });
+
+  it('renders past-due banner with activate-plan link when billingStatus is PAST_DUE and limit > 0', () => {
     render(
       <WorkspaceAccountStatusBanner
         usage={{ ...BASE_USAGE, billingStatus: 'PAST_DUE' }}

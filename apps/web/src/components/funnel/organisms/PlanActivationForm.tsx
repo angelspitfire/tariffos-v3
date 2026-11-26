@@ -80,7 +80,7 @@ export function PlanActivationForm({
 
     try {
       await onSubmitPayment({
-        planId: activePlan?.planId ?? 'pro',
+        planId: activePlan?.planId ?? 'pilot',
         billingCycle: effectiveCycle,
         method,
         amount: parsedAmount,
@@ -110,7 +110,11 @@ export function PlanActivationForm({
             <strong className="font-mono text-ink-primary tabular-nums">
               ${expectedAmount.toLocaleString('en-US')} {activePlan?.currency ?? 'USD'}
             </strong>{' '}
-            ({effectiveCycle === 'annual' ? 'facturación anual' : 'facturación mensual'}).
+            ({activePlan?.oneTimeOnly
+              ? 'pago único · 100% acreditable a Agencia en 30 días'
+              : effectiveCycle === 'annual'
+                ? 'facturación anual'
+                : 'facturación mensual'}).
           </p>
         </div>
 

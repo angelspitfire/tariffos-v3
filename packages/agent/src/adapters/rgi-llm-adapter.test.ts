@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createRgiLlmRunner, runRgiWithLlm } from './rgi-llm-adapter.js';
+import {
+  budgetLegalNotes,
+  createRgiLlmRunner,
+  MAX_OUTPUT_TOKENS_DEEP,
+  MAX_OUTPUT_TOKENS_STANDARD,
+  runRgiWithLlm,
+} from './rgi-llm-adapter.js';
 
 const mockGenerateJson = vi.fn();
 const mockGetLlmProvider = vi.fn((_override?: unknown) => ({ generateJson: mockGenerateJson }));
@@ -71,5 +77,41 @@ describe('createRgiLlmRunner', () => {
 
     expect(mockGetLlmProvider).toHaveBeenCalledWith(undefined);
     expect(result.hsCode).toBe('8471.30.00.00');
+  });
+
+  it('enforces maxOutputTokens per mode, budgets legalNotes, and propagates tokenUsage', async () => {
+    mockGenerateJson.mockImplementation(async (_prompt, _schema, opts) => {
+      opts?.onUsage?.({ inputTokens: 3900, outputTokens: 850 });
+      return sampleResponse;
+    });
+
+    const notes = Array.from({ length: 12 }, (_, idx) => ({
+      ref: `Nota ${idx + 1}`,
+      text: 'X'.repeat(1200),
+    }));
+    expect(budgetLegalNotes(notes, 3000)).toHaveLength(2);
+
+    const runner = createRgiLlmRunner({ provider: 'openrouter', model: 'nvidia/nemotron-3.5-super-vl' });
+    const std = await runner({
+      item: { lineId: '4', description: 'Válvula industrial', originCountry: 'US', cifValue: 500 },
+      candidates: [],
+      notes,
+      deepMode: false,
+    });
+
+    expect(mockGenerateJson.mock.calls[0][2]).toMatchObject({
+      maxOutputTokens: MAX_OUTPUT_TOKENS_STANDARD,
+    });
+    expect(std.tokenUsage).toEqual({ inputTokens: 3900, outputTokens: 850 });
+
+    await runner({
+      item: { lineId: '5', description: 'Válvula industrial', originCountry: 'US', cifValue: 500 },
+      candidates: [],
+      notes,
+      deepMode: true,
+    });
+    expect(mockGenerateJson.mock.calls[1][2]).toMatchObject({
+      maxOutputTokens: MAX_OUTPUT_TOKENS_DEEP,
+    });
   });
 });

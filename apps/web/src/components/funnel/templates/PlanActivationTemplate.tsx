@@ -15,7 +15,12 @@ import {
   type SubmitManualPaymentPayload,
 } from '@/lib/funnel/billing-port';
 import { readMockProfile, readMockSession } from '@/lib/funnel/funnel-storage';
-import { isPlanAnnualOnly, type PlanRecommendation } from '@/lib/funnel/plan-recommender';
+import {
+  isPlanAnnualOnly,
+  isPlanCustomPricing,
+  isPlanOneTime,
+  type PlanRecommendation,
+} from '@/lib/funnel/plan-recommender';
 import { FunnelBadge } from '../atoms/FunnelBadge';
 import { FunnelCard } from '../atoms/FunnelCard';
 import { PlanActivationSummary } from '../molecules/PlanActivationSummary';
@@ -40,19 +45,28 @@ export function PlanActivationTemplate({
   const paidPlans = useMemo(
     () =>
       [...plans]
-        .filter((p) => p.published && (p.monthlyPriceUsd > 0 || p.annualPriceUsd > 0))
+        .filter(
+          (p) =>
+            p.published &&
+            !isPlanCustomPricing(p) &&
+            (p.monthlyPriceUsd > 0 || p.annualPriceUsd > 0),
+        )
         .sort((a, b) => a.sortOrder - b.sortOrder),
     [plans],
   );
 
   const fallbackPlanId =
-    paidPlans.find((p) => p.planId === initialPlanId)?.planId ?? paidPlans[0]?.planId ?? 'pro';
+    paidPlans.find((p) => p.planId === initialPlanId)?.planId ?? paidPlans[0]?.planId ?? 'pilot';
   const initialPlanObj = paidPlans.find((p) => p.planId === fallbackPlanId);
 
   const [planId, setPlanId] = useState(fallbackPlanId);
   const [recommendedPlanId, setRecommendedPlanId] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<SubscriptionBillingCycle>(
-    initialPlanObj && isPlanAnnualOnly(initialPlanObj) ? 'annual' : initialCycle,
+    initialPlanObj && isPlanAnnualOnly(initialPlanObj)
+      ? 'annual'
+      : initialPlanObj && isPlanOneTime(initialPlanObj)
+        ? 'monthly'
+        : initialCycle,
   );
   const [payments, setPayments] = useState<ManualPaymentRecord[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,20 +81,29 @@ export function PlanActivationTemplate({
 
   const activePlan = paidPlans.find((p) => p.planId === planId) ?? paidPlans[0];
   const activeAnnualOnly = activePlan ? isPlanAnnualOnly(activePlan) : false;
-  const effectiveCycle: SubscriptionBillingCycle = activeAnnualOnly ? 'annual' : billingCycle;
+  const activeOneTime = activePlan ? isPlanOneTime(activePlan) : false;
+  const effectiveCycle: SubscriptionBillingCycle = activeOneTime
+    ? 'monthly'
+    : activeAnnualOnly
+      ? 'annual'
+      : billingCycle;
   const expectedAmount = activePlan
-    ? effectiveCycle === 'annual'
-      ? activePlan.annualPriceUsd
-      : activePlan.monthlyPriceUsd
+    ? activeOneTime
+      ? activePlan.monthlyPriceUsd
+      : effectiveCycle === 'annual'
+        ? activePlan.annualPriceUsd
+        : activePlan.monthlyPriceUsd
     : 0;
 
   const handleSelectPlan = (plan: SubscriptionPlanConfig) => {
     setPlanId(plan.planId);
     if (isPlanAnnualOnly(plan)) setBillingCycle('annual');
+    else if (isPlanOneTime(plan)) setBillingCycle('monthly');
   };
 
   const handleApplyRecommendation = (rec: PlanRecommendation) => {
     setRecommendedPlanId(rec.planId);
+    if (rec.planId === 'enterprise') return;
     setPlanId(rec.planId);
     setBillingCycle(rec.recommendedCycle);
   };
@@ -134,7 +157,7 @@ export function PlanActivationTemplate({
                   <span className="font-mono font-semibold">{lastSubmitted.referenceCode}</span>). Verificaremos el pago en menos de 24h hábiles y recibirás confirmación por correo.
                 </p>
                 <p className="text-[11px] text-ink-muted">
-                  Puedes seguir usando el workspace con tu cuota actual mientras procesamos el cambio. ¿Urgente? Escríbenos a{' '}
+                  Tu espacio permanecerá en modo lectura mientras verificamos tu pago (menos de 24h hábiles). ¿Urgente? Escríbenos a{' '}
                   <a href="mailto:soporte@tariffos.com" className="font-medium text-accent-ink hover:underline">
                     soporte@tariffos.com
                   </a>{' '}

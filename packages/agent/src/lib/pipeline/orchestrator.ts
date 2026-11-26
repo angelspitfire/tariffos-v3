@@ -131,6 +131,7 @@ async function classifyUniqueItem(
     tierUsed: 'tier2_rgi',
     verifiedAgainstDb: isVerified,
     modelUsed: rgi.modelUsed,
+    ...(rgi.tokenUsage ? { tokenUsage: rgi.tokenUsage } : {}),
   };
 }
 

@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SAAS_PLANS } from '@tariffos/shared-types';
 import { PricingSection } from './PricingSection';
-import { readSelectedPlan } from '@/lib/funnel/funnel-storage';
 
 const mockPush = vi.fn();
 
@@ -17,49 +16,41 @@ describe('PricingSection', () => {
     mockPush.mockReset();
   });
 
-  it('renders all 6 SAAS_PLANS including intermediate Profesional ($139/mes) and Corporate ($5,900/año)', () => {
+  it('renders the 3 B2B tiers: Piloto Operativo ($150 one-time), Agencia ($300/mes) and Enterprise (custom without price)', () => {
     render(<PricingSection plans={SAAS_PLANS} />);
 
-    expect(screen.getByText(/Trial \/ Piloto/i)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Básico' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Profesional' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Pro' })).toBeInTheDocument();
+    expect(screen.getAllByText(/Piloto Operativo/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole('heading', { name: 'Agencia' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Enterprise' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Corporate' })).toBeInTheDocument();
 
-    expect(screen.getByText('$49')).toBeInTheDocument();
-    expect(screen.getByText('$139')).toBeInTheDocument();
-    expect(screen.getByText('$299')).toBeInTheDocument();
-    expect(screen.getByText('$449')).toBeInTheDocument();
-    expect(screen.getByText('$5,900')).toBeInTheDocument();
-    expect(screen.getByText(/Solo anual/i)).toBeInTheDocument();
+    expect(screen.getByText(/\$150 USD/i)).toBeInTheDocument();
+    expect(screen.getByText('$300')).toBeInTheDocument();
+    expect(screen.getByText('A medida')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Solicitar cotización/i })).toBeInTheDocument();
   });
 
-  it('stores selected plan and cycle and routes to /onboarding when selecting Corporate', async () => {
+  it('routes Enterprise custom pricing CTA to #contacto without storing a paid plan', async () => {
     const user = userEvent.setup();
     render(<PricingSection plans={SAAS_PLANS} />);
 
-    await user.click(screen.getByRole('button', { name: /Solicitar Corporate/i }));
+    await user.click(screen.getByRole('button', { name: /Solicitar cotización/i }));
 
-    expect(readSelectedPlan()).toEqual({ planId: 'corporate', billingCycle: 'annual' });
-    expect(mockPush).toHaveBeenCalledWith('/onboarding?plan=corporate&cycle=annual');
+    expect(mockPush).toHaveBeenCalledWith('/#contacto');
   });
 
-  it('toggles commercial plan pricing to annual cycle', async () => {
+  it('toggles Agencia plan pricing to annual cycle ($3,000)', async () => {
     const user = userEvent.setup();
     render(<PricingSection plans={SAAS_PLANS} />);
 
     await user.click(screen.getByRole('button', { name: /Anual/i }));
 
-    expect(screen.getByText('$490')).toBeInTheDocument();
-    expect(screen.getByText('$2,990')).toBeInTheDocument();
-    expect(screen.getByText('$4,490')).toBeInTheDocument();
-    expect(screen.getByText('$5,900')).toBeInTheDocument();
+    expect(screen.getByText('$3,000')).toBeInTheDocument();
   });
 
-  it('distinguishes immediate Trial activation from 24h commercial plan verification', () => {
+  it('displays 100% creditable pilot and <24h manual verification copy without free trial claims', () => {
     render(<PricingSection plans={SAAS_PLANS} />);
-    expect(screen.getByText(/Trial gratuito con activación inmediata/i)).toBeInTheDocument();
-    expect(screen.getByText(/Planes comerciales en menos de 24 horas hábiles/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/100% acreditable/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Activación verificada en menos de 24 horas hábiles/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Trial gratuito/i)).not.toBeInTheDocument();
   });
 });

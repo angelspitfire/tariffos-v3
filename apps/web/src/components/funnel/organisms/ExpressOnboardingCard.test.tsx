@@ -20,7 +20,7 @@ describe('ExpressOnboardingCard', () => {
     mockSearchParams = new URLSearchParams();
   });
 
-  it('completes 1-step express onboarding for trial with advanced preferences accordion and routes to /app', async () => {
+  it('completes 1-step express onboarding defaulting to pilot and routes to /activate-plan', async () => {
     const user = userEvent.setup();
     render(<ExpressOnboardingCard cloudMode={false} />);
 
@@ -37,7 +37,7 @@ describe('ExpressOnboardingCard', () => {
     await user.selectOptions(screen.getByLabelText(/Moneda principal/i), 'EUR');
     await user.selectOptions(screen.getByLabelText(/Modo de revisión/i), 'always_review');
 
-    await user.click(screen.getByRole('button', { name: /Entrar al workspace/i }));
+    await user.click(screen.getByRole('button', { name: /Continuar a activación/i }));
 
     const profile = readMockProfile();
     expect(profile).toMatchObject({
@@ -47,16 +47,16 @@ describe('ExpressOnboardingCard', () => {
       defaultIncoterm: 'CIF',
       preferredCurrency: 'EUR',
       approvalWorkflowMode: 'always_review',
-      selectedPlanId: 'trial',
+      selectedPlanId: 'pilot',
       onboardingCompleted: true,
     });
-    expect(mockPush).toHaveBeenCalledWith('/app');
+    expect(mockPush).toHaveBeenCalledWith('/activate-plan?plan=pilot&cycle=monthly');
   });
 
   it('skips plan picker when plan is preselected and routes paid plan to /activate-plan', async () => {
     const user = userEvent.setup();
-    saveSelectedPlan('pro', 'annual');
-    mockSearchParams = new URLSearchParams('plan=pro&cycle=annual');
+    saveSelectedPlan('agencia', 'annual');
+    mockSearchParams = new URLSearchParams('plan=agencia&cycle=annual');
 
     render(<ExpressOnboardingCard cloudMode={false} />);
 
@@ -67,29 +67,29 @@ describe('ExpressOnboardingCard', () => {
     await user.type(screen.getByLabelText(/Empresa o agencia/i), 'Logística Caribe S.A.');
     await user.click(screen.getByRole('button', { name: /Continuar a activación/i }));
 
-    expect(mockPush).toHaveBeenCalledWith('/activate-plan?plan=pro&cycle=annual');
+    expect(mockPush).toHaveBeenCalledWith('/activate-plan?plan=agencia&cycle=annual');
   });
 
-  it('posts to /api/onboarding in cloud mode before routing', async () => {
+  it('posts to /api/onboarding in cloud mode before routing to /activate-plan', async () => {
     const user = userEvent.setup();
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ ok: true, mode: 'cloud' }),
     });
     vi.stubGlobal('fetch', fetchMock);
-    mockSearchParams = new URLSearchParams('plan=trial&cycle=monthly');
+    mockSearchParams = new URLSearchParams('plan=pilot&cycle=monthly');
 
     render(<ExpressOnboardingCard cloudMode />);
 
     await user.type(screen.getByLabelText(/Nombre completo/i), 'Elena Torres');
     await user.type(screen.getByLabelText(/Empresa o agencia/i), 'Torres Aduanas');
-    await user.click(screen.getByRole('button', { name: /Entrar al workspace/i }));
+    await user.click(screen.getByRole('button', { name: /Continuar a activación/i }));
 
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/onboarding',
       expect.objectContaining({ method: 'POST' }),
     );
-    expect(mockPush).toHaveBeenCalledWith('/app');
+    expect(mockPush).toHaveBeenCalledWith('/activate-plan?plan=pilot&cycle=monthly');
     vi.unstubAllGlobals();
   });
 
@@ -98,7 +98,7 @@ describe('ExpressOnboardingCard', () => {
     render(<ExpressOnboardingCard cloudMode={false} />);
 
     await user.click(screen.getByRole('button', { name: /Recomendar plan/i }));
-    await user.click(screen.getByRole('button', { name: /401–1,500/i }));
+    await user.click(screen.getByRole('button', { name: /250–1,000/i }));
     await user.click(screen.getByRole('button', { name: /Aplicar plan/i }));
 
     expect(screen.getAllByText(/Recomendado/i).length).toBeGreaterThanOrEqual(2);

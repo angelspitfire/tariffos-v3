@@ -52,13 +52,13 @@ describe('ThreadSidebar (mockup shell)', () => {
   it('keeps the footer compact by default and reveals plan usage + Activar plan + Configuración inside the profile menu', async () => {
     const user = userEvent.setup();
     const onOpenSettings = vi.fn<() => void>();
-    renderSidebar({ onOpenSettings });
+    renderSidebar({ plan: computePlanStatus([], 'pilot'), onOpenSettings });
 
     expect(screen.queryByLabelText(/Consumo del plan/i)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Cuenta y ajustes/i }));
 
     expect(screen.getByLabelText(/Consumo del plan/i)).toBeInTheDocument();
-    expect(screen.getByText(/0 \/ 5 clasif\./i)).toBeInTheDocument();
+    expect(screen.getByText(/0 \/ 250 clasif\./i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Activar plan/i })).toHaveAttribute('href', '/activate-plan');
     expect(screen.getByLabelText(/Política de sellado/i)).toBeInTheDocument();
 
@@ -66,9 +66,9 @@ describe('ThreadSidebar (mockup shell)', () => {
     expect(onOpenSettings).toHaveBeenCalledTimes(1);
   });
 
-  it('shows Gestionar plan inside the profile menu when on a paid plan', async () => {
+  it('shows Gestionar plan inside the profile menu when on an active Agencia plan', async () => {
     const user = userEvent.setup();
-    renderSidebar({ plan: computePlanStatus([], 'basico') });
+    renderSidebar({ plan: computePlanStatus([], 'agencia') });
 
     await user.click(screen.getByRole('button', { name: /Cuenta y ajustes/i }));
     expect(screen.getByLabelText(/Consumo del plan/i)).toBeInTheDocument();

@@ -57,7 +57,7 @@ export const MANUAL_PAYMENT_METHOD_OPTIONS: ReadonlyArray<{
 ];
 
 export const DEFAULT_MOCK_BILLING_STATE: MockWorkspaceBillingState = {
-  planId: 'trial',
+  planId: 'pilot',
   status: 'trial',
   billingCycle: 'monthly',
 };
@@ -69,11 +69,11 @@ export const SEED_MANUAL_PAYMENTS: readonly ManualPaymentRecord[] = [
     tenantId: 'ten-demo-1',
     userEmail: 'finanzas@aduanaspacifico.com',
     companyName: 'Aduanas del Pacífico C.A.',
-    planId: 'pro',
-    planName: 'Pro',
+    planId: 'agencia',
+    planName: 'Agencia',
     billingCycle: 'monthly',
     monthsCovered: 1,
-    amount: 299,
+    amount: 300,
     currency: 'USD',
     method: 'zelle',
     referenceCode: 'ZEL-894201',
@@ -87,11 +87,11 @@ export const SEED_MANUAL_PAYMENTS: readonly ManualPaymentRecord[] = [
     tenantId: 'ten-demo-2',
     userEmail: 'operaciones@caribecargo.ve',
     companyName: 'Caribe Cargo Logistics S.A.',
-    planId: 'enterprise',
-    planName: 'Enterprise',
+    planId: 'agencia',
+    planName: 'Agencia',
     billingCycle: 'annual',
     monthsCovered: 12,
-    amount: 4490,
+    amount: 3000,
     currency: 'USD',
     method: 'transferencia_usd',
     referenceCode: 'WIRE-2026-9910',
@@ -105,11 +105,11 @@ export const SEED_MANUAL_PAYMENTS: readonly ManualPaymentRecord[] = [
     tenantId: 'ten-demo-3',
     userEmail: 'carlos@importadoravalle.ve',
     companyName: 'Importadora El Valle C.A.',
-    planId: 'basico',
-    planName: 'Básico',
+    planId: 'pilot',
+    planName: 'Piloto Operativo',
     billingCycle: 'monthly',
     monthsCovered: 1,
-    amount: 49,
+    amount: 150,
     currency: 'USD',
     method: 'binance_pay',
     referenceCode: 'BNP-66420811',
@@ -127,11 +127,11 @@ export function deriveWorkspacePlanStatus(
 ): WorkspacePlanStatusSnapshot {
   const currentPlan =
     plans.find((p) => p.planId === billing.planId) ??
-    plans.find((p) => p.planId === 'trial') ??
+    plans.find((p) => p.planId === 'pilot') ??
     plans[0];
 
-  const quotaLimit = currentPlan?.monthlyQuota ?? 5;
-  const planName = currentPlan?.name ?? 'Trial / Piloto';
+  const quotaLimit = currentPlan?.monthlyQuota ?? 250;
+  const planName = currentPlan?.name ?? 'Piloto Operativo';
 
   if (billing.status === 'pending_verification') {
     return {

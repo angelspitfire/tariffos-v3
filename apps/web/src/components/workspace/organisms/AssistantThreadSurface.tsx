@@ -16,6 +16,7 @@ import type { SampleBatchDocument, SampleMerchandise } from '@/lib/workspace/jur
 import type { WorkspaceAttachment, WorkspaceMessage } from '@/lib/workspace/types';
 import { ProgressStagePill } from '../atoms/ProgressStagePill';
 import { WorkspaceEmptyState } from '../molecules/WorkspaceEmptyState';
+import { WorkspaceReadOnlyBar } from '../molecules/WorkspaceReadOnlyBar';
 import { ThreadInlineCards, type InlineCardActions } from './ThreadInlineCards';
 import { WorkspaceComposer } from './WorkspaceComposer';
 
@@ -27,6 +28,7 @@ export interface AssistantThreadSurfaceProps {
   pendingAttachments: readonly WorkspaceAttachment[];
   profile: UserProfileSettings;
   inlineActions: InlineCardActions;
+  readOnlyReason?: string | null;
   onSendMessage: (text: string) => Promise<void>;
   onCancelRun: () => void;
   onAddFiles: (files: FileList) => void;
@@ -65,6 +67,7 @@ export function AssistantThreadSurface({
   pendingAttachments,
   profile,
   inlineActions,
+  readOnlyReason = null,
   onSendMessage,
   onCancelRun,
   onAddFiles,
@@ -83,6 +86,7 @@ export function AssistantThreadSurface({
   }, [messages]);
 
   const onNew = async (append: AppendMessage) => {
+    if (readOnlyReason) return;
     const textPart = append.content.find((part) => part.type === 'text');
     const text = textPart && textPart.type === 'text' ? textPart.text.trim() : '';
     if (!text && pendingAttachments.length === 0) return;
@@ -221,15 +225,19 @@ export function AssistantThreadSurface({
           ) : null}
 
           <ThreadPrimitive.ViewportFooter className="sticky bottom-0 mt-auto bg-gradient-to-t from-[#E4E6EB] via-[#E4E6EB]/90 to-transparent dark:from-[#0B0F19] dark:via-[#0B0F19]/90 pt-3 pb-3">
-            <WorkspaceComposer
-              skuPrecedents={skuPrecedents}
-              pendingAttachments={pendingAttachments}
-              profile={profile}
-              onAddFiles={onAddFiles}
-              onRemoveAttachment={onRemoveAttachment}
-              onUpdateProfile={onUpdateProfile}
-              onNotifyUnavailableCamera={onNotifyUnavailableCamera}
-            />
+            {readOnlyReason ? (
+              <WorkspaceReadOnlyBar reason={readOnlyReason} />
+            ) : (
+              <WorkspaceComposer
+                skuPrecedents={skuPrecedents}
+                pendingAttachments={pendingAttachments}
+                profile={profile}
+                onAddFiles={onAddFiles}
+                onRemoveAttachment={onRemoveAttachment}
+                onUpdateProfile={onUpdateProfile}
+                onNotifyUnavailableCamera={onNotifyUnavailableCamera}
+              />
+            )}
           </ThreadPrimitive.ViewportFooter>
         </ThreadPrimitive.Viewport>
       </ThreadPrimitive.Root>

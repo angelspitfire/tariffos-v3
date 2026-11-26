@@ -109,16 +109,18 @@ export async function POST(request: Request): Promise<Response> {
 
     const quota = await checkTenantQuota(tenantId);
     if (!quota.allowed) {
-      const isCanceled = quota.reason === 'ACCOUNT_CANCELED';
-      return Response.json(
-        {
-          error: isCanceled
-            ? 'Cuenta dada de baja. Contacta a soporte.'
-            : 'Classification quota reached',
-          reason: quota.reason ?? 'LIMIT_REACHED',
-        },
-        { status: isCanceled ? 403 : 402 },
-      );
+      const reason = quota.reason ?? 'LIMIT_REACHED';
+      const status =
+        reason === 'ACCOUNT_CANCELED' ? 403 : reason === 'QUOTA_CHECK_ERROR' ? 503 : 402;
+      const error =
+        reason === 'ACCOUNT_CANCELED'
+          ? 'Cuenta dada de baja. Contacta a soporte.'
+          : reason === 'PAST_DUE'
+            ? 'Activa tu Piloto Operativo o Plan Agencia para ejecutar clasificaciones.'
+            : reason === 'QUOTA_CHECK_ERROR'
+              ? 'No pudimos validar tu cuota de servicio. Intenta nuevamente.'
+              : 'Classification quota reached';
+      return Response.json({ error, reason }, { status });
     }
 
     if (!isSupportedLiveCountry(input.countryCode)) {

@@ -85,6 +85,17 @@ describe('OpenAICompatibleAdapter', () => {
     expect(mockedText).not.toHaveBeenCalled();
   });
 
+  it('forwards maxOutputTokens and reports token usage via onUsage', async () => {
+    const onUsage = vi.fn();
+    mockedObject.mockResolvedValueOnce({
+      object: { ok: true },
+      usage: { inputTokens: 4100, outputTokens: 920 },
+    });
+    await adapter().generateJson('hi', schema, { maxOutputTokens: 1500, onUsage });
+    expect(mockedObject.mock.calls[0][0]).toMatchObject({ maxOutputTokens: 1500 });
+    expect(onUsage).toHaveBeenCalledWith({ inputTokens: 4100, outputTokens: 920 });
+  });
+
   it('falls back to text + repair when object mode is rejected', async () => {
     mockedObject.mockRejectedValueOnce(new Error('json_object unsupported'));
     mockedText.mockResolvedValueOnce({ text: '{"ok":false}' });

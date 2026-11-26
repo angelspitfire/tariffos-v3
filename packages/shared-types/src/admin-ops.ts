@@ -91,6 +91,8 @@ export interface AdminUsageRow {
   nearLimit: boolean;
   inputTokens: number;
   outputTokens: number;
+  avgTokensPerClassification?: number;
+  estimatedCostUsd?: number;
   activeBatchJobs: number;
   failedBatchJobs: number;
 }
@@ -117,6 +119,8 @@ export interface ClientCurrentUsageSnapshot {
   planName: string;
   billingStatus: TenantBillingStatus;
   allowOverage: boolean;
+  oneTimeOnly?: boolean;
+  allowBatch?: boolean;
   month: number;
   year: number;
   used: number;

@@ -74,7 +74,11 @@ export function SidebarAccountFooter({
               <span className="shrink-0 rounded-full px-1.5 py-0.5 font-mono text-[9px] font-semibold bg-rose-500/15 text-rose-700 dark:text-rose-300">
                 De baja
               </span>
-            ) : effectivePlan.isTrial ? (
+            ) : effectivePlan.billingStatus === 'PAST_DUE' ? (
+              <span className="shrink-0 rounded-full px-1.5 py-0.5 font-mono text-[9px] font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                Pendiente
+              </span>
+            ) : effectivePlan.isTrial || effectivePlan.isPilot ? (
               <span
                 className={`shrink-0 rounded-full px-1.5 py-0.5 font-mono text-[9px] font-semibold tabular-nums ${
                   effectivePlan.exhausted
@@ -82,7 +86,7 @@ export function SidebarAccountFooter({
                     : 'bg-accent-soft text-accent-ink'
                 }`}
               >
-                Trial
+                {effectivePlan.isTrial ? 'Trial' : 'Piloto'}
               </span>
             ) : null}
           </span>
@@ -124,7 +128,9 @@ export function SidebarAccountFooter({
               className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-full bg-surface-inverted px-3 py-1.5 text-[11px] font-semibold text-ink-on-inverted transition-colors hover:bg-surface-inverted-hover"
             >
               <CreditCard className="h-3.5 w-3.5" aria-hidden="true" />
-              {effectivePlan.isTrial ? 'Activar plan' : 'Gestionar plan'}
+              {effectivePlan.isTrial || effectivePlan.isPilot || effectivePlan.billingStatus === 'PAST_DUE'
+                ? 'Activar plan'
+                : 'Gestionar plan'}
             </Link>
           </section>
 

@@ -4,6 +4,7 @@ import {
   countClassifications,
   mergeCloudUsageIntoPlanStatus,
   PLAN_WARNING_RATIO,
+  resolveWorkspaceReadOnlyReason,
 } from './plan-status';
 import type { WorkspaceThread } from './types';
 
@@ -37,27 +38,67 @@ describe('plan status', () => {
     expect(countClassifications([])).toBe(0);
   });
 
-  it('flags trial usage against the 5-classification quota', () => {
-    const status = computePlanStatus([threadWithResults(1)], 'trial');
-    expect(status.isTrial).toBe(true);
-    expect(status.quotaLimit).toBe(5);
+  it('flags pilot usage against the 250-classification quota', () => {
+    const status = computePlanStatus([threadWithResults(50)], 'pilot');
+    expect(status.isTrial).toBe(false);
+    expect(status.isPilot).toBe(true);
+    expect(status.quotaLimit).toBe(250);
     expect(status.usagePct).toBe(20);
     expect(status.nearLimit).toBe(false);
     expect(status.exhausted).toBe(false);
   });
 
   it('warns near the limit and marks exhaustion', () => {
-    const near = computePlanStatus([threadWithResults(4)], 'trial');
+    const near = computePlanStatus([threadWithResults(200)], 'pilot');
     expect(near.usagePct / 100).toBeGreaterThanOrEqual(PLAN_WARNING_RATIO);
     expect(near.nearLimit).toBe(true);
-    const done = computePlanStatus([threadWithResults(5)], 'trial');
+    const done = computePlanStatus([threadWithResults(250)], 'pilot');
     expect(done.exhausted).toBe(true);
   });
 
-  it('uses the selected paid plan quota and is not flagged as trial', () => {
-    const status = computePlanStatus([threadWithResults(2)], 'basico');
+  it('uses the selected agencia plan quota and is not flagged as trial or pilot', () => {
+    const status = computePlanStatus([threadWithResults(2)], 'agencia');
     expect(status.isTrial).toBe(false);
-    expect(status.quotaLimit).toBeGreaterThan(5);
+    expect(status.isPilot).toBe(false);
+    expect(status.quotaLimit).toBe(1000);
+  });
+
+  it('resolves read-only reason for PAST_DUE, CANCELED, and exhausted accounts', () => {
+    expect(resolveWorkspaceReadOnlyReason(null)).toBeNull();
+    expect(
+      resolveWorkspaceReadOnlyReason({
+        tenantId: 't1',
+        tenantName: 'A',
+        planId: 'pilot',
+        planName: 'Piloto Operativo',
+        billingStatus: 'PAST_DUE',
+        allowOverage: false,
+        month: 11,
+        year: 2026,
+        used: 0,
+        limit: 0,
+        percentUsed: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+      }),
+    ).toMatch(/Piloto Operativo|Activa/i);
+    expect(
+      resolveWorkspaceReadOnlyReason({
+        tenantId: 't1',
+        tenantName: 'A',
+        planId: 'agencia',
+        planName: 'Agencia',
+        billingStatus: 'ACTIVE',
+        allowOverage: false,
+        month: 11,
+        year: 2026,
+        used: 100,
+        limit: 1000,
+        percentUsed: 10,
+        inputTokens: 0,
+        outputTokens: 0,
+      }),
+    ).toBeNull();
   });
 
   it('merges live cloud usage into plan status including CANCELED state', () => {

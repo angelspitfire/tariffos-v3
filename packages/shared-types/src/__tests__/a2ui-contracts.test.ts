@@ -68,20 +68,27 @@ describe('A2UI & ApprovalWorkflowMode contracts', () => {
     expect(envelope.canvasComponents[0]?.type).toBe('dossier');
   });
 
-  it('exposes the 6 commercial SaaS plans with Corporate as annual-only', () => {
+  it('exposes the 3 commercial B2B SAAS_PLANS (pilot, agencia, enterprise)', () => {
     expect(SAAS_PLANS.map((p) => p.planId)).toEqual([
-      'trial',
-      'basico',
-      'profesional',
-      'pro',
+      'pilot',
+      'agencia',
       'enterprise',
-      'corporate',
     ]);
     for (const plan of SAAS_PLANS) {
       expect(() => SubscriptionPlanConfigSchema.parse(plan)).not.toThrow();
     }
-    const corporate = SAAS_PLANS.find((p) => p.planId === 'corporate');
-    expect(corporate?.annualOnly).toBe(true);
-    expect(corporate?.annualPriceUsd).toBe(5900);
+    const pilot = SAAS_PLANS.find((p) => p.planId === 'pilot');
+    expect(pilot?.oneTimeOnly).toBe(true);
+    expect(pilot?.monthlyPriceUsd).toBe(150);
+    expect(pilot?.monthlyQuota).toBe(250);
+    expect(pilot?.creditableDays).toBe(30);
+
+    const agencia = SAAS_PLANS.find((p) => p.planId === 'agencia');
+    expect(agencia?.monthlyPriceUsd).toBe(300);
+    expect(agencia?.monthlyQuota).toBe(1000);
+
+    const enterprise = SAAS_PLANS.find((p) => p.planId === 'enterprise');
+    expect(enterprise?.customPricing).toBe(true);
+    expect(enterprise?.monthlyPriceUsd).toBe(0);
   });
 });

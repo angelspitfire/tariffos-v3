@@ -108,10 +108,10 @@ export function PublicMarketingShell({
                   Iniciar sesión
                 </Link>
                 <Link
-                  href="/onboarding?plan=trial&cycle=monthly"
+                  href="/onboarding?plan=pilot&cycle=monthly"
                   className="px-4 min-h-[38px] inline-flex items-center rounded-full text-xs font-semibold bg-accent-brand hover:bg-accent-brand-hover text-white transition-colors whitespace-nowrap"
                 >
-                  Empezar gratis
+                  Activar Piloto
                 </Link>
               </>
             )}

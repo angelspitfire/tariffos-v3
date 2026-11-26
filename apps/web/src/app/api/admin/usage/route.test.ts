@@ -32,11 +32,20 @@ describe('GET /api/admin/usage', () => {
     const res = await GET(new Request('http://localhost/api/admin/usage'));
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
-      rows: Array<{ tenantId: string; percentUsed: number; nearLimit: boolean; inputTokens: number }>;
+      rows: Array<{
+        tenantId: string;
+        percentUsed: number;
+        nearLimit: boolean;
+        inputTokens: number;
+        avgTokensPerClassification?: number;
+        estimatedCostUsd?: number;
+      }>;
     };
     expect(body.rows.length).toBe(2);
     expect(body.rows[0]?.percentUsed).toBeGreaterThanOrEqual(80);
     expect(body.rows[0]?.nearLimit).toBe(true);
     expect(body.rows[0]?.inputTokens).toBeGreaterThan(0);
+    expect(body.rows[0]?.avgTokensPerClassification).toBeGreaterThan(0);
+    expect(body.rows[0]?.estimatedCostUsd).toBeGreaterThan(0);
   });
 });

@@ -35,10 +35,10 @@ describe('billing-port (offline/mock adapter)', () => {
   it('approves a pending payment and activates the workspace plan', async () => {
     const adapter = createBillingActivationAdapter({ cloudMode: false });
     const created = await adapter.submitPayment({
-      planId: 'enterprise',
+      planId: 'agencia',
       billingCycle: 'annual',
       method: 'transferencia_usd',
-      amount: 4490,
+      amount: 3000,
       currency: 'USD',
       referenceCode: 'WIRE-9011',
       paidAt: '2026-11-25',
@@ -51,17 +51,17 @@ describe('billing-port (offline/mock adapter)', () => {
 
     const status = await adapter.getWorkspacePlanStatus(10);
     expect(status.status).toBe('active');
-    expect(status.planId).toBe('enterprise');
-    expect(status.quotaLimit).toBe(1500);
+    expect(status.planId).toBe('agencia');
+    expect(status.quotaLimit).toBe(1000);
   });
 
   it('rejects a pending payment with an explicit rejection reason', async () => {
     const adapter = createBillingActivationAdapter({ cloudMode: false });
     const created = await adapter.submitPayment({
-      planId: 'basico',
+      planId: 'pilot',
       billingCycle: 'monthly',
       method: 'pago_movil',
-      amount: 49,
+      amount: 150,
       currency: 'VES',
       referenceCode: 'PM-001122',
       paidAt: '2026-11-25',

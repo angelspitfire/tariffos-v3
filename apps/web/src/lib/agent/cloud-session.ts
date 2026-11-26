@@ -1,5 +1,6 @@
 import { billingService, prisma } from '@tariffos/database';
 import type { ClassificationLinePayload } from '@tariffos/shared-types';
+import { estimateTokenCostUsd } from '@/lib/admin/llm-pricing';
 import { getAuthenticatedUser } from '@/lib/supabase/server';
 
 export interface CloudTenantContext {
@@ -39,8 +40,11 @@ export async function resolveCloudTenantContext(): Promise<CloudAuthResult> {
   };
 }
 
-export async function checkTenantQuota(tenantId: string) {
-  return billingService.checkBillingLimit(tenantId);
+export async function checkTenantQuota(
+  tenantId: string,
+  options?: { requestedCount?: number; isBatch?: boolean },
+) {
+  return billingService.checkBillingLimit(tenantId, options);
 }
 
 export async function persistClassificationOutcome(
@@ -63,6 +67,14 @@ export async function persistClassificationOutcome(
           modelUsed: line.modelUsed,
           provider: provider ?? 'env',
           verifiedAgainstDb: line.verifiedAgainstDb,
+          tokenUsage: line.tokenUsage ?? null,
+          estimatedCostUsd: line.tokenUsage
+            ? estimateTokenCostUsd(
+                line.modelUsed,
+                line.tokenUsage.inputTokens,
+                line.tokenUsage.outputTokens,
+              )
+            : 0,
         },
         rerankingScores: { confidencePct: line.confidencePct, confidenceLevel: line.confidenceLevel },
         sustento: { rgiSteps: line.rgiSteps, flags: line.flags },

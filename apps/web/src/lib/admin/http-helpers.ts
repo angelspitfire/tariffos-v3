@@ -29,13 +29,26 @@ export function extractPlanFeaturesMeta(features: unknown): {
   displayName?: string;
   annualPriceUsd?: number;
   annualOnly: boolean;
+  oneTimeOnly: boolean;
+  customPricing: boolean;
+  allowBatch: boolean;
+  creditableDays?: number;
   maxUsers: number;
   isPublic: boolean;
   isArchived: boolean;
   items: string[];
 } {
   if (!features || typeof features !== 'object' || Array.isArray(features)) {
-    return { annualOnly: false, maxUsers: 1, isPublic: true, isArchived: false, items: [] };
+    return {
+      annualOnly: false,
+      oneTimeOnly: false,
+      customPricing: false,
+      allowBatch: true,
+      maxUsers: 1,
+      isPublic: true,
+      isArchived: false,
+      items: [],
+    };
   }
   const obj = features as Record<string, unknown>;
   const items = Array.isArray(obj.items)
@@ -45,6 +58,10 @@ export function extractPlanFeaturesMeta(features: unknown): {
     displayName: typeof obj.displayName === 'string' ? obj.displayName : undefined,
     annualPriceUsd: typeof obj.annualPriceUsd === 'number' ? obj.annualPriceUsd : undefined,
     annualOnly: Boolean(obj.annualOnly),
+    oneTimeOnly: Boolean(obj.oneTimeOnly),
+    customPricing: Boolean(obj.customPricing),
+    allowBatch: obj.allowBatch === undefined ? true : Boolean(obj.allowBatch),
+    creditableDays: typeof obj.creditableDays === 'number' ? obj.creditableDays : undefined,
     maxUsers: typeof obj.maxUsers === 'number' && obj.maxUsers > 0 ? obj.maxUsers : 1,
     isPublic: obj.isPublic === undefined ? true : Boolean(obj.isPublic),
     isArchived: Boolean(obj.isArchived),

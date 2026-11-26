@@ -1,6 +1,11 @@
 import { prisma } from '@tariffos/database';
 import type { AdminUsageRow } from '@tariffos/shared-types';
 import { extractPlanFeaturesMeta, requireAdmin } from '@/lib/admin/http-helpers';
+import {
+  computeAvgTokensPerClassification,
+  estimateTokenCostUsd,
+} from '@/lib/admin/llm-pricing';
+import { getActiveLlmRuntimeConfig } from '@/lib/admin/llm-settings';
 import { findOfflinePlan, getOfflineAdminState } from '@/lib/admin/offline-store';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 
@@ -31,6 +36,16 @@ export async function GET(request: Request): Promise<Response> {
           nearLimit: percentUsed >= 80,
           inputTokens: t.inputTokensThisMonth,
           outputTokens: t.outputTokensThisMonth,
+          avgTokensPerClassification: computeAvgTokensPerClassification(
+            t.inputTokensThisMonth,
+            t.outputTokensThisMonth,
+            t.usedThisMonth,
+          ),
+          estimatedCostUsd: estimateTokenCostUsd(
+            null,
+            t.inputTokensThisMonth,
+            t.outputTokensThisMonth,
+          ),
           activeBatchJobs: t.activeBatchJobs,
           failedBatchJobs: t.failedBatchJobs,
         };
@@ -39,6 +54,9 @@ export async function GET(request: Request): Promise<Response> {
 
     return Response.json({ mode: 'offline', month, year, rows }, { status: 200 });
   }
+
+  const runtimeConfig = await getActiveLlmRuntimeConfig().catch(() => null);
+  const activeModelId = runtimeConfig?.model ?? null;
 
   const tenants = await prisma.tenant.findMany({
     include: {
@@ -58,6 +76,8 @@ export async function GET(request: Request): Promise<Response> {
       const limit = t.billingLimit > 0 ? t.billingLimit : (t.plan?.classificationLimit ?? 100);
       const percentUsed = limit > 0 ? Math.round((used / limit) * 100) : 0;
       const meta = extractPlanFeaturesMeta(t.plan?.features);
+      const inputTokens = usage?.inputTokens ?? 0;
+      const outputTokens = usage?.outputTokens ?? 0;
       return {
         tenantId: t.id,
         tenantName: t.name,
@@ -68,8 +88,10 @@ export async function GET(request: Request): Promise<Response> {
         limit,
         percentUsed,
         nearLimit: percentUsed >= 80,
-        inputTokens: usage?.inputTokens ?? 0,
-        outputTokens: usage?.outputTokens ?? 0,
+        inputTokens,
+        outputTokens,
+        avgTokensPerClassification: computeAvgTokensPerClassification(inputTokens, outputTokens, used),
+        estimatedCostUsd: estimateTokenCostUsd(activeModelId, inputTokens, outputTokens),
         activeBatchJobs: t.batchJobs.filter(
           (j) => j.status === 'PENDING' || j.status === 'PROCESSING',
         ).length,

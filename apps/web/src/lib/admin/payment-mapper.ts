@@ -21,7 +21,7 @@ export function resolveAdminPlanName(
     const meta = extractPlanFeaturesMeta(planRecord.features);
     if (meta.displayName) return meta.displayName;
   }
-  return SAAS_PLANS.find((p) => p.planId === planId)?.name ?? planRecord?.name ?? planId ?? 'Pro';
+  return SAAS_PLANS.find((p) => p.planId === planId)?.name ?? planRecord?.name ?? planId ?? 'Piloto Operativo';
 }
 
 export function toManualPaymentRecord(row: {

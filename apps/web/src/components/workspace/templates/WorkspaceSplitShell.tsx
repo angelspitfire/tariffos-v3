@@ -1,21 +1,20 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FileText, MessageSquare } from 'lucide-react';
 import type { CanvasTabType } from '@tariffos/shared-types';
 import { readSelectedPlan } from '@/lib/funnel/funnel-storage';
 import { extractThreadArtifacts } from '@/lib/workspace/artifact-versions';
 import { buildWorkspaceInlineActions } from '@/lib/workspace/inline-actions';
 import { JURISDICTIONS } from '@/lib/workspace/jurisdictions';
-import { computePlanStatus } from '@/lib/workspace/plan-status';
+import { computePlanStatus, resolveWorkspaceReadOnlyReason } from '@/lib/workspace/plan-status';
+import { useCloudUsageSnapshot } from '@/lib/workspace/use-cloud-usage';
 import { useWorkspaceState } from '@/lib/workspace/use-workspace-state';
 import { AnalyticsWorkspaceView } from '../organisms/AnalyticsWorkspaceView';
 import { AssistantThreadSurface } from '../organisms/AssistantThreadSurface';
-import { ChatFilesPanel } from '../organisms/ChatFilesPanel';
-import { SkuCatalogModal } from '../organisms/SkuCatalogModal';
-import { WorkspaceCanvasPane } from '../organisms/WorkspaceCanvasPane';
 import { WorkspaceHeader48 } from '../organisms/WorkspaceHeader48';
-import { WorkspaceSettingsModal } from '../organisms/WorkspaceSettingsModal';
+import { WorkspaceCanvasSlot } from '../molecules/WorkspaceCanvasSlot';
+import { WorkspaceMobilePaneTabs } from '../molecules/WorkspaceMobilePaneTabs';
+import { WorkspaceModalsSlot } from '../molecules/WorkspaceModalsSlot';
 import { WorkspaceSidebarSlot } from '../molecules/WorkspaceSidebarSlot';
 
 const MIN_CHAT_PCT = 32;
@@ -35,7 +34,9 @@ export function WorkspaceSplitShell() {
   const [mobilePane, setMobilePane] = useState<'chat' | 'canvas'>('chat');
   const [chatWidthPct, setChatWidthPct] = useState(46);
   const [isDark, setIsDark] = useState(false);
-  const [planId, setPlanId] = useState('trial');
+  const [planId, setPlanId] = useState('pilot');
+  const cloudUsage = useCloudUsageSnapshot();
+  const readOnlyReason = resolveWorkspaceReadOnlyReason(cloudUsage);
 
   const hasCanvas = ws.canvasComponents.length > 0;
   const threadArtifacts = extractThreadArtifacts(ws.activeThread?.messages ?? []);
@@ -46,7 +47,7 @@ export function WorkspaceSplitShell() {
   const plan = computePlanStatus(ws.threads, planId);
 
   useEffect(() => {
-    setPlanId(readSelectedPlan()?.planId ?? 'trial');
+    setPlanId(readSelectedPlan()?.planId ?? 'pilot');
   }, []);
 
   useEffect(() => {
@@ -103,6 +104,17 @@ export function WorkspaceSplitShell() {
     setMobilePane('canvas');
   };
 
+  const guardedSendClassification = async (
+    prompt: string,
+    opts?: { attachmentsText?: string; isBatchHint?: boolean },
+  ) => {
+    if (readOnlyReason) {
+      ws.pushToast(readOnlyReason, 'info');
+      return;
+    }
+    await ws.sendClassification(prompt, opts);
+  };
+
   const inlineActions = buildWorkspaceInlineActions({
     onSelectCanvasMessage: (messageId, tab) => showCanvasFor(messageId, tab),
     onExportPdf: () => {
@@ -112,7 +124,7 @@ export function WorkspaceSplitShell() {
       handleExportPdf();
     },
     onSaveSku: (msg) => ws.saveSkuFromMessage(msg),
-    onClassify: (prompt) => void ws.sendClassification(prompt),
+    onClassify: (prompt) => void guardedSendClassification(prompt),
   });
 
   const goToChat = () => {
@@ -188,13 +200,14 @@ export function WorkspaceSplitShell() {
                   pendingAttachments={ws.pendingAttachments}
                   profile={ws.profile}
                   inlineActions={inlineActions}
-                  onSendMessage={(text) => ws.sendClassification(text)}
+                  readOnlyReason={readOnlyReason}
+                  onSendMessage={(text) => guardedSendClassification(text)}
                   onCancelRun={ws.cancelRun}
                   onAddFiles={(files) => void ws.addFiles(files)}
                   onRemoveAttachment={ws.removeAttachment}
-                  onRunSample={(s) => void ws.sendClassification(s.description)}
+                  onRunSample={(s) => void guardedSendClassification(s.description)}
                   onRunBatchSample={(b) =>
-                    void ws.sendClassification(b.promptText, { attachmentsText: b.documentText, isBatchHint: true })
+                    void guardedSendClassification(b.promptText, { attachmentsText: b.documentText, isBatchHint: true })
                   }
                   onUpdateProfile={ws.updateProfile}
                   onNotifyUnavailableCamera={() =>
@@ -204,143 +217,72 @@ export function WorkspaceSplitShell() {
               </section>
 
               {showCanvas ? (
-                <>
-                  {!canvasFullscreen ? (
-                    <button
-                      type="button"
-                      aria-label="Redimensionar panel de chat y dictamen"
-                      onMouseDown={handleStartResize}
-                      className="no-print hidden w-1.5 shrink-0 cursor-col-resize bg-transparent transition hover:bg-accent-brand/40 lg:block"
-                    />
-                  ) : null}
-                  <section
-                    className={`min-w-0 flex-1 bg-surface-panel ${
-                      canvasFullscreen
-                        ? 'lg:m-2.5 lg:overflow-hidden lg:rounded-surface lg:border lg:border-line-frost lg:shadow-elev-2'
-                        : 'lg:my-2.5 lg:mr-2.5 lg:overflow-hidden lg:rounded-surface lg:border lg:border-line-frost lg:shadow-elev-2'
-                    } ${mobilePane === 'canvas' ? 'block' : 'hidden lg:block'}`}
-                  >
-                    <WorkspaceCanvasPane
-                      components={ws.canvasComponents}
-                      activeTab={ws.activeTab}
-                      jurisdiction={ws.jurisdiction}
-                      profile={ws.profile}
-                      onSelectTab={ws.setActiveTab}
-                      onApproveDossier={ws.approveActiveDossier}
-                      onRequestDossierReview={ws.requestDossierReview}
-                      onChangeWorkflowMode={ws.setApprovalWorkflowMode}
-                      onReevaluateSpecs={(specs) => {
-                        const summary = specs.map((s) => `${s.key}: ${s.value}`).join('; ');
-                        void ws.sendClassification(`Reevaluar dictamen con ficha actualizada: ${summary}`);
-                      }}
-                      onSaveSku={() => ws.saveSkuFromMessage()}
-                      onSaveSignature={(p) =>
-                        ws.updateProfile({
-                          fullName: p.fullName,
-                          brokerLicense: p.brokerLicense,
-                          brokerSignatureDataUrl: p.signatureDataUrl,
-                        })
-                      }
-                      onExportPdf={handleExportPdf}
-                      onConfirmBatchItem={ws.confirmBatchItem}
-                      artifacts={threadArtifacts}
-                      activeArtifactId={ws.selectedCanvasMsgId}
-                      onSelectArtifact={(id) => ws.setSelectedCanvasMsgId(id)}
-                      isFullscreen={canvasFullscreen}
-                      onToggleFullscreen={() => setCanvasFullscreen((p) => !p)}
-                      onCloseCanvas={() => {
-                        setCanvasFullscreen(false);
-                        setCanvasDismissed(true);
-                        setMobilePane('chat');
-                      }}
-                    />
-                  </section>
-                </>
+                <WorkspaceCanvasSlot
+                  components={ws.canvasComponents}
+                  activeTab={ws.activeTab}
+                  jurisdiction={ws.jurisdiction}
+                  profile={ws.profile}
+                  artifacts={threadArtifacts}
+                  activeArtifactId={ws.selectedCanvasMsgId}
+                  canvasFullscreen={canvasFullscreen}
+                  mobileVisible={mobilePane === 'canvas'}
+                  onStartResize={handleStartResize}
+                  onSelectTab={ws.setActiveTab}
+                  onApproveDossier={ws.approveActiveDossier}
+                  onRequestDossierReview={ws.requestDossierReview}
+                  onChangeWorkflowMode={ws.setApprovalWorkflowMode}
+                  onReevaluateSpecs={(specs) => {
+                    const summary = specs.map((s) => `${s.key}: ${s.value}`).join('; ');
+                    void guardedSendClassification(`Reevaluar dictamen con ficha actualizada: ${summary}`);
+                  }}
+                  onSaveSku={() => ws.saveSkuFromMessage()}
+                  onSaveSignature={(p) =>
+                    ws.updateProfile({
+                      fullName: p.fullName,
+                      brokerLicense: p.brokerLicense,
+                      brokerSignatureDataUrl: p.signatureDataUrl,
+                    })
+                  }
+                  onExportPdf={handleExportPdf}
+                  onConfirmBatchItem={ws.confirmBatchItem}
+                  onSelectArtifact={(id) => ws.setSelectedCanvasMsgId(id)}
+                  onToggleFullscreen={() => setCanvasFullscreen((p) => !p)}
+                  onCloseCanvas={() => {
+                    setCanvasFullscreen(false);
+                    setCanvasDismissed(true);
+                    setMobilePane('chat');
+                  }}
+                />
               ) : null}
             </main>
           )}
         </div>
 
         {showCanvas && !analyticsOpen ? (
-          <nav aria-label="Cambiar vista móvil" className="no-print grid grid-cols-2 border-t border-line-frost bg-surface-frost lg:hidden">
-            {(
-              [
-                { id: 'chat', label: 'Chat', Icon: MessageSquare },
-                { id: 'canvas', label: 'Dictamen', Icon: FileText },
-              ] as const
-            ).map(({ id, label, Icon }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setMobilePane(id)}
-                className={`flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium ${
-                  mobilePane === id ? 'text-accent-ink' : 'text-ink-muted'
-                }`}
-              >
-                <Icon className="h-4 w-4" aria-hidden="true" /> {label}
-              </button>
-            ))}
-          </nav>
+          <WorkspaceMobilePaneTabs activePane={mobilePane} onSelectPane={setMobilePane} />
         ) : null}
       </div>
 
-      <SkuCatalogModal
-        open={skuModalOpen}
-        precedents={ws.skuPrecedents}
+      <WorkspaceModalsSlot
+        skuModalOpen={skuModalOpen}
+        filesPanelOpen={filesPanelOpen}
+        settingsModalOpen={settingsModalOpen}
+        skuPrecedents={ws.skuPrecedents}
         jurisdictionId={ws.jurisdiction.id}
-        onClose={() => setSkuModalOpen(false)}
-        onSave={ws.saveSku}
-        onDelete={ws.deleteSku}
-        onApplyToChat={(item) => void ws.sendClassification(`Clasificar precedente SKU ${item.sku}: ${item.title}`)}
-      />
-
-      <ChatFilesPanel
-        open={filesPanelOpen}
+        jurisdictions={JURISDICTIONS}
         messages={ws.activeThread?.messages ?? []}
         pendingAttachments={ws.pendingAttachments}
-        onClose={() => setFilesPanelOpen(false)}
-        onReclassifyFile={(att) =>
-          void ws.sendClassification(
-            att.extractedText ? `Clasificar documento adjunto (${att.name}):\n${att.extractedText}` : `Clasificar archivo ${att.name}`,
-          )
-        }
-      />
-
-      <WorkspaceSettingsModal
-        key={settingsModalOpen ? 'open' : 'closed'}
-        open={settingsModalOpen}
         profile={ws.profile}
-        jurisdictions={JURISDICTIONS}
         plan={plan}
-        threadsCount={ws.threads.length}
-        skuCount={ws.skuPrecedents.length}
-        onClose={() => setSettingsModalOpen(false)}
-        onSave={(patch) => {
-          ws.updateProfile(patch);
-          ws.pushToast('Configuración guardada.', 'success');
-        }}
-        onApplyNotice={(summary) => {
-          void ws.sendClassification(`Evaluar impacto normativo en la clasificación actual: ${summary}`);
-        }}
-        onExportBackup={() => {
-          const payload = JSON.stringify(
-            { profile: ws.profile, threads: ws.threads, skuPrecedents: ws.skuPrecedents },
-            null,
-            2,
-          );
-          const blob = new Blob([payload], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `tariffos-backup-${new Date().toISOString().slice(0, 10)}.json`;
-          a.click();
-          URL.revokeObjectURL(url);
-          ws.pushToast('Respaldo JSON descargado.', 'success');
-        }}
-        onClearLocalData={() => {
-          window.localStorage.clear();
-          ws.pushToast('Caché local limpiada. Recarga para reiniciar sesión.', 'info');
-        }}
+        threads={ws.threads}
+        onCloseSku={() => setSkuModalOpen(false)}
+        onSaveSku={ws.saveSku}
+        onDeleteSku={ws.deleteSku}
+        onCloseFiles={() => setFilesPanelOpen(false)}
+        onCloseSettings={() => setSettingsModalOpen(false)}
+        onSaveSettings={ws.updateProfile}
+        onClassify={(prompt) => void guardedSendClassification(prompt)}
+        onToast={ws.pushToast}
       />
 
       {ws.toast ? (

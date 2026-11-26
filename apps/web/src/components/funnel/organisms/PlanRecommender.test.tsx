@@ -5,7 +5,7 @@ import { SAAS_PLANS } from '@tariffos/shared-types';
 import { PlanRecommender } from './PlanRecommender';
 
 describe('PlanRecommender', () => {
-  it('recommends Pro when batch processing is toggled on and triggers CTA callback', async () => {
+  it('recommends Agencia when batch processing is toggled on and triggers CTA callback', async () => {
     const user = userEvent.setup();
     const onApply = vi.fn();
 
@@ -18,17 +18,17 @@ describe('PlanRecommender', () => {
     );
 
     await user.click(screen.getByRole('button', { name: /Carga por lotes/i }));
-    expect(screen.getByRole('heading', { name: /Plan Pro/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Plan Agencia/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /Aplicar plan Pro/i }));
+    await user.click(screen.getByRole('button', { name: /Aplicar plan Agencia/i }));
     expect(onApply).toHaveBeenCalledWith(
       expect.objectContaining({
-        planId: 'pro',
+        planId: 'agencia',
       }),
     );
   });
 
-  it('recommends Corporate (Anual) for massive volume and 10+ team size', async () => {
+  it('recommends Enterprise (A medida, no fixed price) for massive volume and 10+ team size', async () => {
     const user = userEvent.setup();
     const onApply = vi.fn();
 
@@ -40,10 +40,10 @@ describe('PlanRecommender', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: '1,500+' }));
+    await user.click(screen.getByRole('button', { name: '1,000+' }));
     await user.click(screen.getByRole('button', { name: '10+ usuarios' }));
 
-    expect(screen.getByRole('heading', { name: /Plan Corporate/i })).toBeInTheDocument();
-    expect(screen.getByText('$5,900/año')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Plan Enterprise/i })).toBeInTheDocument();
+    expect(screen.getByText('A medida')).toBeInTheDocument();
   });
 });

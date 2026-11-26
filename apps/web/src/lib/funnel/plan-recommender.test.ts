@@ -2,27 +2,30 @@ import { describe, expect, it } from 'vitest';
 import { SAAS_PLANS } from '@tariffos/shared-types';
 import {
   isPlanAnnualOnly,
+  isPlanCustomPricing,
   isPlanFree,
+  isPlanOneTime,
   recommendSubscriptionPlan,
 } from './plan-recommender';
 
 describe('plan-recommender', () => {
-  it('identifies trial as free and corporate as annual-only', () => {
-    const trial = SAAS_PLANS.find((p) => p.planId === 'trial');
-    const corporate = SAAS_PLANS.find((p) => p.planId === 'corporate');
-    const pro = SAAS_PLANS.find((p) => p.planId === 'pro');
+  it('identifies pilot as one-time, agencia as recurring, and enterprise as custom pricing', () => {
+    const pilot = SAAS_PLANS.find((p) => p.planId === 'pilot');
+    const agencia = SAAS_PLANS.find((p) => p.planId === 'agencia');
+    const enterprise = SAAS_PLANS.find((p) => p.planId === 'enterprise');
 
-    expect(trial).toBeDefined();
-    expect(corporate).toBeDefined();
-    expect(pro).toBeDefined();
+    expect(pilot).toBeDefined();
+    expect(agencia).toBeDefined();
+    expect(enterprise).toBeDefined();
 
-    expect(isPlanFree(trial!)).toBe(true);
-    expect(isPlanFree(pro!)).toBe(false);
-    expect(isPlanAnnualOnly(corporate!)).toBe(true);
-    expect(isPlanAnnualOnly(pro!)).toBe(false);
+    expect(isPlanOneTime(pilot!)).toBe(true);
+    expect(isPlanFree(pilot!)).toBe(false);
+    expect(isPlanFree(enterprise!)).toBe(false);
+    expect(isPlanCustomPricing(enterprise!)).toBe(true);
+    expect(isPlanAnnualOnly(agencia!)).toBe(false);
   });
 
-  it('recommends trial for evaluation volume and solo operator', () => {
+  it('recommends pilot for evaluation volume and solo operator', () => {
     const rec = recommendSubscriptionPlan(
       {
         monthlyVolume: 'trial',
@@ -32,11 +35,11 @@ describe('plan-recommender', () => {
       SAAS_PLANS,
     );
 
-    expect(rec.planId).toBe('trial');
+    expect(rec.planId).toBe('pilot');
     expect(rec.recommendedCycle).toBe('monthly');
   });
 
-  it('recommends basico for low volume solo operator without batch', () => {
+  it('recommends agencia for low or medium volume solo/small operator', () => {
     const rec = recommendSubscriptionPlan(
       {
         monthlyVolume: 'low',
@@ -46,25 +49,25 @@ describe('plan-recommender', () => {
       SAAS_PLANS,
     );
 
-    expect(rec.planId).toBe('basico');
+    expect(rec.planId).toBe('agencia');
     expect(rec.recommendedCycle).toBe('monthly');
   });
 
-  it('upgrades low volume to pro when batch processing is required', () => {
+  it('keeps agencia when batch processing is required for active volume', () => {
     const rec = recommendSubscriptionPlan(
       {
-        monthlyVolume: 'low',
-        teamSize: 'solo',
+        monthlyVolume: 'medium',
+        teamSize: 'small',
         needsBatch: true,
       },
       SAAS_PLANS,
     );
 
-    expect(rec.planId).toBe('pro');
+    expect(rec.planId).toBe('agencia');
     expect(rec.reasons.some((r) => r.toLowerCase().includes('lotes'))).toBe(true);
   });
 
-  it('recommends enterprise for agency teams (4-10 users) or high volume', () => {
+  it('recommends enterprise for high/massive volume or multi-jurisdiction corporate teams', () => {
     const rec = recommendSubscriptionPlan(
       {
         monthlyVolume: 'high',
@@ -75,23 +78,10 @@ describe('plan-recommender', () => {
     );
 
     expect(rec.planId).toBe('enterprise');
+    expect(rec.estimatedUnitCostLabel).toBeUndefined();
   });
 
-  it('locks corporate recommendation to annual cycle', () => {
-    const rec = recommendSubscriptionPlan(
-      {
-        monthlyVolume: 'massive',
-        teamSize: 'corporate',
-        needsBatch: true,
-      },
-      SAAS_PLANS,
-    );
-
-    expect(rec.planId).toBe('corporate');
-    expect(rec.recommendedCycle).toBe('annual');
-  });
-
-  it('excludes trial when paidOnly is enabled', () => {
+  it('excludes pilot when paidOnly recurring-only filter is enabled or respects pilot in paidOnly', () => {
     const rec = recommendSubscriptionPlan(
       {
         monthlyVolume: 'trial',
@@ -102,6 +92,6 @@ describe('plan-recommender', () => {
       SAAS_PLANS,
     );
 
-    expect(rec.planId).toBe('basico');
+    expect(rec.planId).toBe('pilot');
   });
 });

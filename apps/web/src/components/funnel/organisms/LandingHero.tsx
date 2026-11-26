@@ -53,7 +53,7 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
       navigateTarget();
       return;
     }
-    router.push('/onboarding?plan=trial&cycle=monthly');
+    router.push('/onboarding?plan=pilot&cycle=monthly');
   };
 
   return (
@@ -75,7 +75,7 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
                 onClick={handlePrimaryCta}
                 className="group relative inline-flex items-center gap-2.5 px-7 min-h-[52px] rounded-full text-sm font-semibold text-ink-primary dark:text-white bg-[linear-gradient(135deg,rgba(255,255,255,0.92)_0%,rgba(219,234,254,0.95)_48%,rgba(186,230,253,0.92)_100%)] dark:bg-[linear-gradient(135deg,rgba(37,99,235,0.92)_0%,rgba(29,78,216,0.95)_55%,rgba(14,165,233,0.88)_100%)] border border-white/80 dark:border-sky-300/30 shadow-[0_12px_32px_-8px_rgba(29,78,216,0.35)] hover:shadow-[0_16px_36px_-6px_rgba(29,78,216,0.45)] transition-shadow cursor-pointer active:translate-y-px"
               >
-                <span>{isAuthenticated ? 'Ir al workspace' : 'Empezar prueba gratis'}</span>
+                <span>{isAuthenticated ? 'Ir al workspace' : 'Activar Piloto Operativo'}</span>
                 <ArrowRight
                   className="w-4 h-4 text-accent-brand dark:text-white transition-transform duration-200 group-hover:translate-x-0.5"
                   aria-hidden="true"
@@ -83,15 +83,15 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
               </button>
 
               <a
-                href="#demo"
+                href="#contacto"
                 className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-ink-secondary hover:text-ink-primary underline-offset-4 hover:underline transition-colors"
               >
-                Ver demo en vivo
+                Solicitar demo con tu factura
               </a>
             </div>
 
             <p className="font-mono text-xs text-ink-muted">
-              5 clasificaciones gratis · Sin tarjeta · Activación inmediata · Planes desde $49/mes
+              Piloto Operativo $150 (250 clasif. acreditables) · Plan Agencia desde $300/mes · Enterprise a medida
             </p>
           </div>
 

@@ -60,6 +60,10 @@ export interface RgiModelOutput {
   flags: ComplianceFlag[];
   unresolved: UnresolvedItem[];
   modelUsed: string;
+  tokenUsage?: {
+    inputTokens: number;
+    outputTokens: number;
+  };
 }
 
 /** Hexagonal ports injected into the unified classification pipeline. */

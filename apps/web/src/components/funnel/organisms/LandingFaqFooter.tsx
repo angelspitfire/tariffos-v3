@@ -19,12 +19,12 @@ const FAQ_ITEMS = [
     a: 'Un chat genérico improvisa códigos sin verificar. TariffOS exige validación pericial de atributos merceológicos, aplica RGI 1–6 contra el arancel real, calcula impuestos CIF y genera un dictamen PDF firmable.',
   },
   {
-    q: '¿Cómo funciona el Trial inmediato y la activación de planes pagos?',
-    a: 'El Trial de 5 clasificaciones se activa al instante y sin tarjeta. Al elegir un plan comercial, pagas por Zelle, Transferencia USD/EUR, Binance Pay o Pago Móvil, reportas la referencia y activamos tu cuenta en menos de 24 horas hábiles.',
+    q: '¿Cómo funciona el Piloto Operativo de $150 y la activación de planes?',
+    a: 'El Piloto Operativo ($150 pago único) te da 250 clasificaciones con lotes Excel y dictámenes PDF por 30 días, y se acredita al 100% a tu primer mes del Plan Agencia ($300/mes). Pagas por Zelle, Transferencia USD/EUR, Binance Pay o Pago Móvil y activamos tu cuenta en menos de 24 horas hábiles.',
   },
   {
     q: '¿Puedo trabajar con lotes grandes y múltiples jurisdicciones?',
-    a: 'Sí. Desde el plan Profesional puedes cargar archivos Excel/CSV con múltiples mercancías, y nuestra arquitectura soporta configuración multi-país bajo demanda.',
+    a: 'Sí. Tanto el Piloto Operativo como el Plan Agencia incluyen carga masiva de archivos Excel/CSV; para operaciones multi-sucursal o multi-jurisdicción cotizamos el plan Enterprise a medida.',
   },
 ] as const;
 
@@ -67,14 +67,14 @@ export function LandingFaqFooter() {
               Comprueba la precisión de TariffOS con tus propios expedientes
             </h2>
             <p className="text-base text-ink-secondary leading-relaxed">
-              Empieza hoy con 5 clasificaciones completas sin tarjeta de crédito y escala cuando tu operación lo necesite.
+              Activa tu Piloto Operativo por $150 (250 clasificaciones, 100% acreditables al Plan Agencia) o agenda una demo en vivo con tu propia factura.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <Link
-                href="/onboarding?plan=trial&cycle=monthly"
+                href="/onboarding?plan=pilot&cycle=monthly"
                 className="inline-flex items-center gap-2 min-h-[50px] rounded-full px-7 bg-accent-brand hover:bg-accent-brand-hover text-white text-sm font-semibold transition-colors whitespace-nowrap"
               >
-                <span>Crear cuenta gratis</span>
+                <span>Activar Piloto Operativo</span>
                 <ArrowRight className="w-4 h-4" aria-hidden="true" />
               </Link>
               <Link

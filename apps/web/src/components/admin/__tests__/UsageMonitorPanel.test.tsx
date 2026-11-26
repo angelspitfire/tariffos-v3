@@ -24,6 +24,8 @@ describe('UsageMonitorPanel', () => {
               nearLimit: true,
               inputTokens: 120000,
               outputTokens: 35000,
+              avgTokensPerClassification: 431,
+              estimatedCostUsd: 0.0345,
               activeBatchJobs: 1,
               failedBatchJobs: 0,
             },
@@ -42,5 +44,6 @@ describe('UsageMonitorPanel', () => {
     expect(screen.getByText('90%')).toBeInTheDocument();
     expect(screen.getByText(/Cerca o sobre el límite/i)).toBeInTheDocument();
     expect(screen.getByText(/120,000/)).toBeInTheDocument();
+    expect(screen.getByText(/\$0\.0345/)).toBeInTheDocument();
   });
 });

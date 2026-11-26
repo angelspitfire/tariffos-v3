@@ -36,7 +36,7 @@ export interface OfflineTenantRecord {
 }
 
 export function createInitialOfflinePlans(): AdminPlanRecord[] {
-  return SAAS_PLANS.map((plan) => ({
+  const publicPlans: AdminPlanRecord[] = SAAS_PLANS.map((plan) => ({
     id: plan.planId,
     name: plan.planId,
     displayName: plan.name,
@@ -52,8 +52,49 @@ export function createInitialOfflinePlans(): AdminPlanRecord[] {
     isPublic: plan.published,
     isArchived: false,
     features: [...plan.features],
-    tenantCount: plan.planId === 'pro' ? 1 : plan.planId === 'trial' ? 1 : 0,
+    tenantCount: plan.planId === 'agencia' ? 1 : 0,
   }));
+
+  const legacyHiddenPlans: AdminPlanRecord[] = [
+    {
+      id: 'trial',
+      name: 'trial',
+      displayName: 'Cortesía Admin (Trial)',
+      description: 'Plan de cortesía interno asignable manualmente por el administrador.',
+      basePrice: 0,
+      annualPriceUsd: 0,
+      annualOnly: false,
+      classificationLimit: 5,
+      maxTokens: 50_000,
+      maxUsers: 1,
+      overagePrice: 0,
+      allowOverage: false,
+      isPublic: false,
+      isArchived: false,
+      features: ['Cortesía controlada desde /admin/onboarding'],
+      tenantCount: 1,
+    },
+    {
+      id: 'pro',
+      name: 'pro',
+      displayName: 'Pro (Legacy)',
+      description: 'Plan histórico oculto del embudo público.',
+      basePrice: 299,
+      annualPriceUsd: 2990,
+      annualOnly: false,
+      classificationLimit: 400,
+      maxTokens: 4_000_000,
+      maxUsers: 3,
+      overagePrice: 0,
+      allowOverage: false,
+      isPublic: false,
+      isArchived: false,
+      features: ['Plan legado'],
+      tenantCount: 1,
+    },
+  ];
+
+  return [...publicPlans, ...legacyHiddenPlans];
 }
 
 export function createInitialOfflineLeads(): AdminLeadRecord[] {

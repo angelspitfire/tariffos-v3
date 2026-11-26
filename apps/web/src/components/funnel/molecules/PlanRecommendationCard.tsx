@@ -2,7 +2,9 @@ import { Check } from 'lucide-react';
 import type { SubscriptionPlanConfig } from '@tariffos/shared-types';
 import {
   isPlanAnnualOnly,
+  isPlanCustomPricing,
   isPlanFree,
+  isPlanOneTime,
   type PlanRecommendation,
 } from '@/lib/funnel/plan-recommender';
 import { FunnelBadge } from '../atoms/FunnelBadge';
@@ -19,15 +21,21 @@ export function PlanRecommendationCard({
   matchedPlan,
   onApply,
 }: PlanRecommendationCardProps) {
+  const custom = matchedPlan ? isPlanCustomPricing(matchedPlan) : false;
+  const oneTime = matchedPlan ? isPlanOneTime(matchedPlan) : false;
   const free = matchedPlan ? isPlanFree(matchedPlan) : false;
   const annualOnly = matchedPlan ? isPlanAnnualOnly(matchedPlan) : false;
   const priceLabel = !matchedPlan
     ? ''
-    : free
-      ? '$0'
-      : recommendation.recommendedCycle === 'annual' || annualOnly
-        ? `$${matchedPlan.annualPriceUsd.toLocaleString('en-US')}/año`
-        : `$${matchedPlan.monthlyPriceUsd.toLocaleString('en-US')}/mes`;
+    : custom
+      ? 'A medida'
+      : oneTime
+        ? `$${matchedPlan.monthlyPriceUsd.toLocaleString('en-US')} pago único`
+        : free
+          ? '$0'
+          : recommendation.recommendedCycle === 'annual' || annualOnly
+            ? `$${matchedPlan.annualPriceUsd.toLocaleString('en-US')}/año`
+            : `$${matchedPlan.monthlyPriceUsd.toLocaleString('en-US')}/mes`;
 
   return (
     <div className="lg:col-span-5 p-3.5 rounded-xl bg-surface-panel border border-accent-brand/50 shadow-xs space-y-2.5">
@@ -41,7 +49,7 @@ export function PlanRecommendationCard({
       <div>
         <h3 className="text-sm font-bold text-ink-primary">
           Plan {recommendation.planName}
-          {!free ? (
+          {!free && !custom && !oneTime ? (
             <span className="text-[11px] font-normal text-ink-muted ml-1.5">
               ({recommendation.recommendedCycle === 'annual' ? 'Anual' : 'Mensual'})
             </span>

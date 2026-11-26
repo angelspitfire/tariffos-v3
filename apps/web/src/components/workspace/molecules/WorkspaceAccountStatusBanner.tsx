@@ -31,6 +31,25 @@ export function WorkspaceAccountStatusBanner({
     );
   }
 
+  if (usage.billingStatus === 'PAST_DUE' && usage.limit === 0) {
+    return (
+      <div
+        role="alert"
+        className="no-print flex flex-wrap items-center justify-between gap-2 border-b border-accent-border bg-accent-soft/65 px-4 py-2 text-xs text-ink-primary"
+      >
+        <div className="flex items-center gap-2 font-medium">
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-accent-ink" aria-hidden="true" />
+          <span>
+            <strong>Modo lectura activo.</strong> Activa tu Piloto Operativo ($150 · 250 clasificaciones) o Plan Agencia ($300/mes) para clasificar con IA.
+          </span>
+        </div>
+        <Link href="/activate-plan?plan=pilot" className="font-semibold text-accent-ink underline underline-offset-2 hover:opacity-80">
+          Activar plan
+        </Link>
+      </div>
+    );
+  }
+
   if (usage.billingStatus === 'PAST_DUE') {
     return (
       <div

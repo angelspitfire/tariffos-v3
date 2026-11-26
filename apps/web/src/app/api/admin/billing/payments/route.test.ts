@@ -100,7 +100,58 @@ describe('/api/admin/billing/payments', () => {
     expect(postRes.status).toBe(201);
     const tenant = getOfflineAdminState().tenants.find((t) => t.id === 'ten-demo-2');
     expect(tenant?.planId).toBe('enterprise');
-    expect(tenant?.billingLimit).toBe(1500);
+    expect(tenant?.billingLimit).toBe(5000);
+  });
+
+  it('activates pilot (250) and upgrades to agencia (1000) in offline mode', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'false';
+    mocks.requireAdmin.mockResolvedValue({
+      ok: true,
+      context: { userId: 'adm-1', userEmail: 'adm@tariffos.app', role: 'ops_billing' },
+    });
+
+    const pilotRes = await POST(
+      new Request('http://localhost/api/admin/billing/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenantId: 'ten-demo-2',
+          planId: 'pilot',
+          billingCycle: 'monthly',
+          amount: 150,
+          currency: 'USD',
+          method: 'zelle',
+          referenceCode: 'ZEL-PILOT-1',
+          autoApprove: true,
+        }),
+      }),
+    );
+    expect(pilotRes.status).toBe(201);
+    let tenant = getOfflineAdminState().tenants.find((t) => t.id === 'ten-demo-2');
+    expect(tenant?.billingStatus).toBe('ACTIVE');
+    expect(tenant?.planId).toBe('pilot');
+    expect(tenant?.billingLimit).toBe(250);
+
+    const agenciaRes = await POST(
+      new Request('http://localhost/api/admin/billing/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenantId: 'ten-demo-2',
+          planId: 'agencia',
+          billingCycle: 'monthly',
+          amount: 300,
+          currency: 'USD',
+          method: 'zelle',
+          referenceCode: 'ZEL-AGENCIA-2',
+          autoApprove: true,
+        }),
+      }),
+    );
+    expect(agenciaRes.status).toBe(201);
+    tenant = getOfflineAdminState().tenants.find((t) => t.id === 'ten-demo-2');
+    expect(tenant?.planId).toBe('agencia');
+    expect(tenant?.billingLimit).toBe(1000);
   });
 
   it('verifies payment transactionally in cloud mode with BillingPeriod and AuditLog', async () => {

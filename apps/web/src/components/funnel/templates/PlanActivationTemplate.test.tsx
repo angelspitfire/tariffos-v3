@@ -18,11 +18,14 @@ describe('PlanActivationTemplate', () => {
     render(
       <PlanActivationTemplate
         plans={SAAS_PLANS}
-        initialPlanId="pro"
+        initialPlanId="pilot"
         initialCycle="monthly"
         billingPort={port}
       />,
     );
+
+    expect(screen.queryByRole('button', { name: 'Enterprise' })).not.toBeInTheDocument();
+    expect(screen.getAllByText(/100% acreditable/i).length).toBeGreaterThanOrEqual(1);
 
     await user.type(screen.getByLabelText(/Referencia bancaria/i), 'BIN-554433');
     await user.type(screen.getByLabelText(/Titular o empresa/i), 'Importadora Andes C.A.');
@@ -37,6 +40,7 @@ describe('PlanActivationTemplate', () => {
     });
     expect(screen.getAllByText('BIN-554433').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/soporte@tariffos\.com/i)).toBeInTheDocument();
+    expect(screen.getByText(/modo lectura/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Ir al workspace/i })).toHaveAttribute('href', '/app');
   });
 });

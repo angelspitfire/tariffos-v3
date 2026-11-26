@@ -32,7 +32,7 @@ function mapStatus(status: string): ManualPaymentStatus {
 }
 
 function resolvePlanName(planId: string | null | undefined): string {
-  return SAAS_PLANS.find((p) => p.planId === planId)?.name ?? planId ?? 'Pro';
+  return SAAS_PLANS.find((p) => p.planId === planId)?.name ?? planId ?? 'Piloto Operativo';
 }
 
 async function parseJsonBody(request: Request): Promise<unknown> {

@@ -67,7 +67,7 @@ export function LandingHeroPreview({
             rightIcon={<ArrowRight className="w-4 h-4" />}
             className="shrink-0 min-h-[52px] rounded-full px-6 whitespace-nowrap"
           >
-            {isAuthenticated ? 'Clasificar en workspace' : 'Clasificar gratis'}
+            {isAuthenticated ? 'Clasificar en workspace' : 'Activar Piloto'}
           </FunnelButton>
         </form>
 

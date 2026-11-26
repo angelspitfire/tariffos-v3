@@ -9,7 +9,13 @@ import {
   type SubscriptionPlanConfig,
 } from '@tariffos/shared-types';
 import { saveSelectedPlan } from '@/lib/funnel/funnel-storage';
-import { isPlanAnnualOnly, isPlanFree, type PlanRecommendation } from '@/lib/funnel/plan-recommender';
+import {
+  isPlanAnnualOnly,
+  isPlanCustomPricing,
+  isPlanFree,
+  isPlanOneTime,
+  type PlanRecommendation,
+} from '@/lib/funnel/plan-recommender';
 import { CorporatePlanBanner } from '../molecules/CorporatePlanBanner';
 import { PlanCard } from '../molecules/PlanCard';
 import { TrialPlanBanner } from '../molecules/TrialPlanBanner';
@@ -32,8 +38,8 @@ export function PricingSection({
     .filter((p) => p.published)
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
-  const trialPlan = visiblePlans.find((p) => isPlanFree(p));
-  const allPaidPlans = visiblePlans.filter((p) => !isPlanFree(p));
+  const pilotOrFreePlan = visiblePlans.find((p) => isPlanOneTime(p) || isPlanFree(p));
+  const allPaidPlans = visiblePlans.filter((p) => !isPlanOneTime(p) && !isPlanFree(p));
   const shouldSplitCorporate = allPaidPlans.length > 4;
   const corporatePlan = shouldSplitCorporate
     ? allPaidPlans.find((p) => isPlanAnnualOnly(p))
@@ -49,6 +55,15 @@ export function PricingSection({
         : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4';
 
   const handleSelectPlan = (planId: string, cycle: SubscriptionBillingCycle) => {
+    const chosen = visiblePlans.find((p) => p.planId === planId);
+    if (chosen && isPlanCustomPricing(chosen)) {
+      if (onSelectPlan) {
+        onSelectPlan(planId, 'custom');
+        return;
+      }
+      router.push('/#contacto');
+      return;
+    }
     saveSelectedPlan(planId, cycle);
     if (onSelectPlan) {
       onSelectPlan(planId, cycle);
@@ -70,7 +85,7 @@ export function PricingSection({
             Invierte en precisión arancelaria, no en multas evitables
           </h2>
           <p className="text-base text-ink-secondary leading-relaxed">
-            Comienza gratis con 5 clasificaciones completas o activa un plan comercial mediante facturación manual asistida (Zelle, Transferencia, Binance Pay o Pago Móvil).
+            Valida TariffOS en operación real con el Piloto Operativo de $150 (100% acreditable) o activa tu estación de agencia mediante facturación manual asistida.
           </p>
 
           <div className="pt-2 flex justify-center">
@@ -109,11 +124,11 @@ export function PricingSection({
           />
         </div>
 
-        {trialPlan ? (
+        {pilotOrFreePlan ? (
           <TrialPlanBanner
-            plan={trialPlan}
-            isRecommended={recommendedPlanId === trialPlan.planId}
-            onSelect={() => handleSelectPlan(trialPlan.planId, 'monthly')}
+            plan={pilotOrFreePlan}
+            isRecommended={recommendedPlanId === pilotOrFreePlan.planId}
+            onSelect={() => handleSelectPlan(pilotOrFreePlan.planId, 'monthly')}
           />
         ) : null}
 
@@ -140,7 +155,7 @@ export function PricingSection({
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-xs text-ink-muted pt-2">
           <span className="inline-flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5 text-accent-ink shrink-0" aria-hidden="true" />
-            Trial gratuito con activación inmediata · Planes comerciales en menos de 24 horas hábiles
+            Activación verificada en menos de 24 horas hábiles · Piloto 100% acreditable en 30 días
           </span>
           <span>Zelle, Transferencia USD/EUR, Binance Pay (USDT) y Pago Móvil</span>
         </div>

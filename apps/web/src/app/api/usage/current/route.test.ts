@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   resolveCloudTenantContext: vi.fn<() => Promise<unknown>>(),
   tenantFindUnique: vi.fn<() => Promise<unknown>>(),
   getCurrentMonthUsage: vi.fn<() => Promise<unknown>>(),
+  getEffectiveUsage: vi.fn<() => Promise<unknown>>(),
 }));
 
 vi.mock('@/lib/agent/cloud-session', () => ({
@@ -16,6 +17,7 @@ vi.mock('@tariffos/database', () => ({
   },
   billingService: {
     getCurrentMonthUsage: mocks.getCurrentMonthUsage,
+    getEffectiveUsage: mocks.getEffectiveUsage,
   },
 }));
 
@@ -63,7 +65,7 @@ describe('GET /api/usage/current', () => {
       allowOverage: false,
       plan: { name: 'pro', classificationLimit: 400, features: { displayName: 'Pro' } },
     });
-    mocks.getCurrentMonthUsage.mockResolvedValue({
+    mocks.getEffectiveUsage.mockResolvedValue({
       month: 11,
       year: 2026,
       count: 100,
@@ -82,5 +84,47 @@ describe('GET /api/usage/current', () => {
     expect(body.usage.limit).toBe(400);
     expect(body.usage.percentUsed).toBe(25);
     expect(body.usage.inputTokens).toBe(45000);
+  });
+
+  it('preserves limit=0 for PAST_DUE pending tenants and passes oneTimeOnly to getEffectiveUsage', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+
+    mocks.resolveCloudTenantContext.mockResolvedValue({
+      ok: true,
+      context: { userId: 'u-2', userEmail: 'p@b.com', tenantId: 'ten-pending', role: 'OWNER' },
+    });
+    mocks.tenantFindUnique.mockResolvedValue({
+      id: 'ten-pending',
+      name: 'Agencia Nueva',
+      planId: 'pilot',
+      billingLimit: 0,
+      billingStatus: 'PAST_DUE',
+      allowOverage: false,
+      plan: {
+        name: 'pilot',
+        classificationLimit: 250,
+        features: { displayName: 'Piloto Operativo', oneTimeOnly: true, allowBatch: true },
+      },
+    });
+    mocks.getEffectiveUsage.mockResolvedValue({
+      month: 11,
+      year: 2026,
+      count: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+    });
+
+    const res = await GET();
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      usage: { limit: number; oneTimeOnly?: boolean; allowBatch?: boolean; billingStatus: string };
+    };
+    expect(mocks.getEffectiveUsage).toHaveBeenCalledWith('ten-pending', true);
+    expect(body.usage.limit).toBe(0);
+    expect(body.usage.billingStatus).toBe('PAST_DUE');
+    expect(body.usage.oneTimeOnly).toBe(true);
+    expect(body.usage.allowBatch).toBe(true);
   });
 });

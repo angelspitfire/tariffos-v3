@@ -1,7 +1,9 @@
 import type { SubscriptionPlanConfig } from '@tariffos/shared-types';
 import {
   isPlanAnnualOnly,
+  isPlanCustomPricing,
   isPlanFree,
+  isPlanOneTime,
   type PlanRecommendation,
   type RecommenderCapability,
   type RecommenderTeamSize,
@@ -13,20 +15,18 @@ export const RECOMMENDER_VOLUME_OPTIONS: ReadonlyArray<{
   label: string;
   paidOnlyHide?: boolean;
 }> = [
-  { id: 'trial', label: 'Prueba (1–5)', paidOnlyHide: true },
-  { id: 'low', label: 'Hasta 40' },
-  { id: 'medium', label: '41–400' },
-  { id: 'high', label: '401–1,500' },
-  { id: 'massive', label: '1,500+' },
+  { id: 'trial', label: 'Piloto (hasta 250)' },
+  { id: 'medium', label: '250–1,000' },
+  { id: 'high', label: '1,000+' },
 ];
 
 export const RECOMMENDER_TEAM_OPTIONS: ReadonlyArray<{
   id: RecommenderTeamSize;
   label: string;
 }> = [
-  { id: 'solo', label: '1 operador' },
-  { id: 'small', label: '2–3 usuarios' },
-  { id: 'agency', label: '4–10 usuarios' },
+  { id: 'solo', label: '1–2 operadores' },
+  { id: 'small', label: '3–5 usuarios' },
+  { id: 'agency', label: '6–10 usuarios' },
   { id: 'corporate', label: '10+ usuarios' },
 ];
 
@@ -44,6 +44,10 @@ export function formatRecommendationPrice(
   recommendation: PlanRecommendation,
 ): string {
   if (!matchedPlan) return '';
+  if (isPlanCustomPricing(matchedPlan)) return 'A medida';
+  if (isPlanOneTime(matchedPlan)) {
+    return `$${matchedPlan.monthlyPriceUsd.toLocaleString('en-US')} pago único`;
+  }
   if (isPlanFree(matchedPlan)) return '$0';
   const showAnnual =
     recommendation.recommendedCycle === 'annual' || isPlanAnnualOnly(matchedPlan);

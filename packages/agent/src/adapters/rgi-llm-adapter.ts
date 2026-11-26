@@ -28,6 +28,27 @@ const RgiResponseSchema = z.object({
 });
 
 const RGI_TIMEOUT_MS = 90_000;
+export const MAX_OUTPUT_TOKENS_STANDARD = 1_500;
+export const MAX_OUTPUT_TOKENS_DEEP = 3_500;
+export const MAX_CANDIDATES_FOR_LLM = 10;
+export const MAX_NOTES_CHARS_STANDARD = 8_000;
+export const MAX_NOTES_CHARS_DEEP = 16_000;
+
+/** Deterministically caps legalNotes payload size to stay inside per-call input budgets. */
+export function budgetLegalNotes(
+  notes: LegalNoteRecord[],
+  maxChars: number,
+): LegalNoteRecord[] {
+  const selected: LegalNoteRecord[] = [];
+  let totalChars = 0;
+  for (const note of notes) {
+    const cost = note.ref.length + note.text.length;
+    if (totalChars + cost > maxChars) break;
+    selected.push(note);
+    totalChars += cost;
+  }
+  return selected;
+}
 
 const RGI_SYSTEM_PROMPT = `You are an expert customs tariff classifier applying strict General Rules of Interpretation (RGI 1 through 6) in order.
 Rules:
@@ -77,21 +98,36 @@ export function createRgiLlmRunner(runtimeLlm?: RgiLlmRuntimeOverride) {
         : runtimeLlm.model
       : rgiModel(input.deepMode);
 
+    const maxOutputTokens = input.deepMode ? MAX_OUTPUT_TOKENS_DEEP : MAX_OUTPUT_TOKENS_STANDARD;
+    const maxNotesChars = input.deepMode ? MAX_NOTES_CHARS_DEEP : MAX_NOTES_CHARS_STANDARD;
+    const budgetedCandidates = input.candidates.slice(0, MAX_CANDIDATES_FOR_LLM);
+    const budgetedNotes = budgetLegalNotes(input.notes, maxNotesChars);
+    let capturedUsage: { inputTokens: number; outputTokens: number } | undefined;
+
     const result = await provider.generateJson(
       `${RGI_SYSTEM_PROMPT}\n\nInput:\n${JSON.stringify({
         item: input.item,
         webContext: input.webContext ?? null,
-        candidates: input.candidates,
-        legalNotes: input.notes,
+        candidates: budgetedCandidates,
+        legalNotes: budgetedNotes,
         deepMode: input.deepMode,
       })}`,
       RgiResponseSchema,
-      { model: modelId, temperature: 0, timeoutMs: RGI_TIMEOUT_MS },
+      {
+        model: modelId,
+        temperature: 0,
+        timeoutMs: RGI_TIMEOUT_MS,
+        maxOutputTokens,
+        onUsage: (usage) => {
+          capturedUsage = usage;
+        },
+      },
     );
 
     return {
       ...result,
       modelUsed: modelId,
+      ...(capturedUsage ? { tokenUsage: capturedUsage } : {}),
     };
   };
 }

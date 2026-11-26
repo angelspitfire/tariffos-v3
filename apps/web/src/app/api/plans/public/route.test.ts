@@ -50,16 +50,19 @@ describe('GET /api/plans/public', () => {
       features: [],
       tenantCount: 0,
     });
-    const basico = state.plans.find((p) => p.id === 'basico');
-    if (basico) basico.isArchived = true;
+    const enterprise = state.plans.find((p) => p.id === 'enterprise');
+    if (enterprise) enterprise.isArchived = true;
 
     const res = await GET();
     expect(res.status).toBe(200);
     const body = (await res.json()) as { plans: Array<{ planId: string }> };
     const ids = body.plans.map((p) => p.planId);
-    expect(ids).toContain('pro');
+    expect(ids).toContain('pilot');
+    expect(ids).toContain('agencia');
     expect(ids).not.toContain('private-vip');
-    expect(ids).not.toContain('basico');
+    expect(ids).not.toContain('enterprise');
+    expect(ids).not.toContain('pro');
+    expect(ids).not.toContain('trial');
   });
 
   it('maps public plans from Postgres in cloud mode and falls back when empty', async () => {
@@ -105,6 +108,6 @@ describe('GET /api/plans/public', () => {
     mocks.planFindMany.mockResolvedValueOnce([]);
     const fallbackRes = await GET();
     const fallbackBody = (await fallbackRes.json()) as { plans: Array<{ planId: string }> };
-    expect(fallbackBody.plans.length).toBeGreaterThanOrEqual(5);
+    expect(fallbackBody.plans.map((p) => p.planId)).toEqual(['pilot', 'agencia', 'enterprise']);
   });
 });

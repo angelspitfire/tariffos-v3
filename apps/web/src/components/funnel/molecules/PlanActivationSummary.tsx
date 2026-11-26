@@ -1,9 +1,10 @@
+import Link from 'next/link';
 import { Clock } from 'lucide-react';
 import type {
   SubscriptionBillingCycle,
   SubscriptionPlanConfig,
 } from '@tariffos/shared-types';
-import { isPlanAnnualOnly } from '@/lib/funnel/plan-recommender';
+import { isPlanAnnualOnly, isPlanOneTime } from '@/lib/funnel/plan-recommender';
 import { FunnelBadge } from '../atoms/FunnelBadge';
 import { FunnelCard } from '../atoms/FunnelCard';
 
@@ -28,6 +29,8 @@ export function PlanActivationSummary({
   onSelectPlan,
   onChangeCycle,
 }: PlanActivationSummaryProps) {
+  const activeOneTime = activePlan ? isPlanOneTime(activePlan) : false;
+
   return (
     <div className="lg:col-span-5 space-y-4">
       <FunnelCard padding="p-4" className="space-y-3.5">
@@ -35,7 +38,9 @@ export function PlanActivationSummary({
           <span className="text-xs font-semibold text-ink-primary">Plan a activar</span>
           <div className="inline-flex items-center gap-1 p-0.5 bg-surface-subtle rounded-lg">
             {(['monthly', 'annual'] as const).map((cycle) => {
-              const disabled = cycle === 'monthly' && activeAnnualOnly;
+              const disabled =
+                (cycle === 'monthly' && activeAnnualOnly) ||
+                (cycle === 'annual' && activeOneTime);
               return (
                 <button
                   key={cycle}
@@ -58,8 +63,9 @@ export function PlanActivationSummary({
         <div className="space-y-2">
           {paidPlans.map((plan) => {
             const selected = plan.planId === selectedPlanId;
+            const oneTime = isPlanOneTime(plan);
             const annualOnly = isPlanAnnualOnly(plan);
-            const showAnnual = annualOnly || effectiveCycle === 'annual';
+            const showAnnual = !oneTime && (annualOnly || effectiveCycle === 'annual');
             const price = showAnnual ? plan.annualPriceUsd : plan.monthlyPriceUsd;
 
             return (
@@ -79,22 +85,33 @@ export function PlanActivationSummary({
                     {recommendedPlanId === plan.planId ? (
                       <FunnelBadge variant="accent">Recomendado</FunnelBadge>
                     ) : null}
-                    {annualOnly ? (
+                    {oneTime ? (
+                      <FunnelBadge variant="success">100% acreditable</FunnelBadge>
+                    ) : annualOnly ? (
                       <FunnelBadge variant="neutral">Solo anual</FunnelBadge>
                     ) : null}
                   </div>
                   <span className="font-mono text-sm font-bold text-ink-primary tabular-nums">
-                    ${price.toLocaleString('en-US')}/{showAnnual ? 'año' : 'mes'}
+                    ${price.toLocaleString('en-US')}{oneTime ? ' único' : `/${showAnnual ? 'año' : 'mes'}`}
                   </span>
                 </div>
                 <p className="text-[11px] text-ink-muted mt-0.5">
-                  Hasta {plan.monthlyQuota.toLocaleString('en-US')} clasificaciones/mes
+                  {oneTime
+                    ? `${plan.monthlyQuota.toLocaleString('en-US')} clasificaciones · 100% acreditable a Agencia en 30 días`
+                    : `Hasta ${plan.monthlyQuota.toLocaleString('en-US')} clasificaciones/mes`}
                   {plan.maxUsers ? ` · hasta ${plan.maxUsers} usuarios` : ''}
                 </p>
               </button>
             );
           })}
         </div>
+
+        <p className="text-[11px] text-ink-muted pt-1">
+          ¿Necesitas volumen Enterprise?{' '}
+          <Link href="/#contacto" className="font-semibold text-accent-ink hover:underline">
+            Solicita cotización
+          </Link>
+        </p>
       </FunnelCard>
 
       <FunnelCard padding="p-4" className="bg-surface-muted space-y-2.5">

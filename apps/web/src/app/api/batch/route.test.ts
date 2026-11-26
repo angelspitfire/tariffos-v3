@@ -117,6 +117,10 @@ describe('POST /api/batch', () => {
       queued: true,
       totalItems: 1,
     });
+    expect(mocks.checkBillingLimit).toHaveBeenCalledWith('tenant-ve', {
+      requestedCount: 1,
+      isBatch: true,
+    });
     expect(mocks.inngestSend).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'filing/batch.requested',
@@ -127,5 +131,40 @@ describe('POST /api/batch', () => {
         }),
       }),
     );
+  });
+
+  it('returns 403 when batch is excluded from plan and 402 when batch exceeds quota', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    mocks.getAuthenticatedUser.mockResolvedValue({ id: 'user-1', email: 'ops@agency.ve' });
+    mocks.membershipFindFirst.mockResolvedValue({ tenantId: 'tenant-ve', role: 'ADMIN' });
+
+    const makeReq = () =>
+      new Request('http://localhost/api/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filingId: 'fil-blocked',
+          countryCode: 'VE',
+          items: [
+            { lineId: 'l1', description: 'Inversor solar 5kW', originCountry: 'CN', cifValue: 1000 },
+            { lineId: 'l2', description: 'Panel solar 550W', originCountry: 'CN', cifValue: 400 },
+          ],
+        }),
+      });
+
+    mocks.checkBillingLimit.mockResolvedValueOnce({ allowed: false, reason: 'BATCH_NOT_IN_PLAN' });
+    const forbidden = await POST(makeReq());
+    expect(forbidden.status).toBe(403);
+
+    mocks.checkBillingLimit.mockResolvedValueOnce({ allowed: false, reason: 'LIMIT_REACHED' });
+    const overQuota = await POST(makeReq());
+    expect(overQuota.status).toBe(402);
+
+    mocks.checkBillingLimit.mockResolvedValueOnce({ allowed: false, reason: 'QUOTA_CHECK_ERROR' });
+    const checkErr = await POST(makeReq());
+    expect(checkErr.status).toBe(503);
+    expect(mocks.inngestSend).not.toHaveBeenCalled();
   });
 });

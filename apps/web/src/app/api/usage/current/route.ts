@@ -13,15 +13,17 @@ export async function GET(): Promise<Response> {
     const usage: ClientCurrentUsageSnapshot = {
       tenantId: 'offline-tenant',
       tenantName: 'Espacio Demo TariffOS',
-      planId: 'pro',
-      planName: 'Pro',
+      planId: 'agencia',
+      planName: 'Agencia',
       billingStatus: 'ACTIVE',
       allowOverage: false,
+      oneTimeOnly: false,
+      allowBatch: true,
       month,
       year,
       used: 18,
-      limit: 400,
-      percentUsed: 5,
+      limit: 1000,
+      percentUsed: 2,
       inputTokens: 14200,
       outputTokens: 3800,
     };
@@ -50,22 +52,32 @@ export async function GET(): Promise<Response> {
     return Response.json({ error: 'Tenant not found' }, { status: 404 });
   }
 
-  const monthly = await billingService.getCurrentMonthUsage(tenant.id);
-  const limit =
-    tenant.billingLimit > 0 ? tenant.billingLimit : (tenant.plan?.classificationLimit ?? 100);
+  const planMeta = extractPlanFeaturesMeta(tenant.plan?.features);
+  const isOneTime = planMeta.oneTimeOnly || tenant.billingStatus === 'TRIALING';
+  const monthly = await billingService.getEffectiveUsage(tenant.id, isOneTime);
+  const isPendingInitialActivation =
+    tenant.billingStatus === 'PAST_DUE' && tenant.billingLimit === 0;
+  const limit = isPendingInitialActivation
+    ? 0
+    : tenant.billingLimit > 0
+      ? tenant.billingLimit
+      : (tenant.plan?.classificationLimit ?? 0);
   const percentUsed = limit > 0 ? Math.min(100, Math.round((monthly.count / limit) * 100)) : 0;
 
-  const planMeta = extractPlanFeaturesMeta(tenant.plan?.features);
   const fallbackPlanName =
-    SAAS_PLANS.find((p) => p.planId === tenant.planId)?.name ?? tenant.plan?.name ?? 'Trial';
+    SAAS_PLANS.find((p) => p.planId === tenant.planId || p.planId === tenant.plan?.name)?.name ??
+    tenant.plan?.name ??
+    'Piloto Operativo';
 
   const usage: ClientCurrentUsageSnapshot = {
     tenantId: tenant.id,
     tenantName: tenant.name,
-    planId: tenant.planId ?? 'trial',
+    planId: tenant.planId ?? tenant.plan?.name ?? 'pilot',
     planName: planMeta.displayName ?? fallbackPlanName,
     billingStatus: tenant.billingStatus,
     allowOverage: tenant.allowOverage,
+    oneTimeOnly: planMeta.oneTimeOnly,
+    allowBatch: planMeta.allowBatch,
     month: monthly.month,
     year: monthly.year,
     used: monthly.count,

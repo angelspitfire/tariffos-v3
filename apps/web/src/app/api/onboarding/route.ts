@@ -15,6 +15,8 @@ const ExpressOnboardingSchema = z.object({
   defaultIncoterm: IncotermCodeSchema.default('FOB'),
   preferredCurrency: z.enum(['USD', 'EUR']).default('USD'),
   approvalWorkflowMode: ApprovalWorkflowModeSchema.default('agent_decides'),
+  selectedPlanId: z.string().trim().min(1).default('pilot'),
+  selectedBillingCycle: z.enum(['monthly', 'annual', 'custom']).default('monthly'),
 });
 
 export async function POST(request: Request): Promise<Response> {
@@ -96,6 +98,11 @@ export async function POST(request: Request): Promise<Response> {
     select: { tenantId: true },
   });
 
+  const selectedPlan = !existingMembership
+    ? ((await prisma.plan.findUnique({ where: { name: data.selectedPlanId }, select: { id: true } })) ??
+      (await prisma.plan.findUnique({ where: { name: 'pilot' }, select: { id: true } })))
+    : null;
+
   const tenant = existingMembership
     ? await prisma.tenant.update({
         where: { id: existingMembership.tenantId },
@@ -116,6 +123,10 @@ export async function POST(request: Request): Promise<Response> {
           countryCode: data.countryCode,
           ownerName: data.fullName,
           ownerEmail: user.email ?? undefined,
+          planId: selectedPlan?.id ?? null,
+          billingStatus: 'PAST_DUE',
+          billingLimit: 0,
+          allowOverage: false,
           isOnboarded: true,
           onboardedAt: new Date(),
           memberships: {

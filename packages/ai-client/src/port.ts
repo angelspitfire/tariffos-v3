@@ -34,6 +34,10 @@ export interface GenerateCallOptions {
   /** Model override; adapters fall back to the configured default model. */
   model?: string;
   temperature?: number;
+  /** Maximum completion tokens requested from the model. */
+  maxOutputTokens?: number;
+  /** Optional usage callback invoked with prompt/completion token counts. */
+  onUsage?: (usage: { inputTokens: number; outputTokens: number }) => void;
   /**
    * Ask for a valid JSON envelope (provider-specific JSON mode on).
    *

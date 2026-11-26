@@ -182,7 +182,33 @@ describe('POST /api/classify-stream', () => {
     expect(res.status).toBe(402);
     const json = (await res.json()) as { reason?: string };
     expect(json.reason).toBe('LIMIT_REACHED');
-    expect(mocks.checkBillingLimit).toHaveBeenCalledWith('tenant-1');
+    expect(mocks.checkBillingLimit).toHaveBeenCalledWith('tenant-1', undefined);
+  });
+
+  it('returns 402 with activation prompt on PAST_DUE and 503 on QUOTA_CHECK_ERROR', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    mocks.getAuthenticatedUser.mockResolvedValue({ id: 'user-1', email: 'broker@example.com' });
+    mocks.membershipFindFirst.mockResolvedValue({ tenantId: 'tenant-1', role: 'OWNER' });
+
+    const makeReq = () =>
+      new Request('http://localhost/api/classify-stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: 'Inversor solar híbrido 5kW 48V MPPT', countryCode: 'VE' }),
+      });
+
+    mocks.checkBillingLimit.mockResolvedValueOnce({ allowed: false, reason: 'PAST_DUE' });
+    const pastDueRes = await POST(makeReq());
+    expect(pastDueRes.status).toBe(402);
+    const pastDueBody = (await pastDueRes.json()) as { error?: string; reason?: string };
+    expect(pastDueBody.reason).toBe('PAST_DUE');
+    expect(pastDueBody.error).toMatch(/Piloto Operativo|Agencia/i);
+
+    mocks.checkBillingLimit.mockResolvedValueOnce({ allowed: false, reason: 'QUOTA_CHECK_ERROR' });
+    const errRes = await POST(makeReq());
+    expect(errRes.status).toBe(503);
   });
 
   it('persists DecisionArtifact and increments usage on cloud-mode classification', async () => {

@@ -7,6 +7,7 @@ vi.mock('../client', () => {
   const mockTenantFindUnique = vi.fn();
   const mockUsageRecordUpsert = vi.fn();
   const mockUsageRecordFindUnique = vi.fn();
+  const mockUsageRecordAggregate = vi.fn();
 
   const mockPrisma = {
     tenant: {
@@ -15,6 +16,7 @@ vi.mock('../client', () => {
     usageRecord: {
       upsert: mockUsageRecordUpsert,
       findUnique: mockUsageRecordFindUnique,
+      aggregate: mockUsageRecordAggregate,
     },
   };
 
@@ -100,10 +102,85 @@ describe('BillingService', () => {
         plan: { classificationLimit: 5, maxClassifications: 5 },
         allowOverage: false,
       });
-      (mockPrisma.usageRecord.findUnique as any).mockResolvedValue({ count: 2 });
+      (mockPrisma.usageRecord.aggregate as any).mockResolvedValue({ _sum: { count: 2 } });
 
       const result = await billingService.checkBillingLimit('trial-tenant');
       expect(result).toEqual({ allowed: true });
+    });
+
+    it('uses lifetime usage via aggregate for TRIALING and oneTimeOnly plans', async () => {
+      const mockPrisma = getUnscopedSystemPrisma();
+      (mockPrisma.tenant.findUnique as any).mockResolvedValue({
+        billingLimit: 250,
+        billingStatus: 'ACTIVE',
+        plan: { classificationLimit: 250, maxClassifications: 250, features: { oneTimeOnly: true } },
+        allowOverage: false,
+      });
+      (mockPrisma.usageRecord.aggregate as any).mockResolvedValue({ _sum: { count: 250 } });
+
+      const result = await billingService.checkBillingLimit('pilot-tenant');
+      expect(result).toEqual({ allowed: false, reason: 'LIMIT_REACHED' });
+      expect(mockPrisma.usageRecord.aggregate).toHaveBeenCalled();
+    });
+
+    it('blocks batch requests when requestedCount exceeds remaining quota', async () => {
+      const mockPrisma = getUnscopedSystemPrisma();
+      (mockPrisma.tenant.findUnique as any).mockResolvedValue({
+        billingLimit: 1000,
+        billingStatus: 'ACTIVE',
+        plan: { classificationLimit: 1000, maxClassifications: 1000, features: { allowBatch: true } },
+        allowOverage: false,
+      });
+      (mockPrisma.usageRecord.findUnique as any).mockResolvedValue({ count: 995 });
+
+      const blocked = await billingService.checkBillingLimit('agency-tenant', {
+        requestedCount: 10,
+        isBatch: true,
+      });
+      expect(blocked).toEqual({ allowed: false, reason: 'LIMIT_REACHED' });
+
+      const allowed = await billingService.checkBillingLimit('agency-tenant', {
+        requestedCount: 5,
+        isBatch: true,
+      });
+      expect(allowed).toEqual({ allowed: true });
+    });
+
+    it('blocks batch requests with BATCH_NOT_IN_PLAN when allowBatch is false or TRIALING', async () => {
+      const mockPrisma = getUnscopedSystemPrisma();
+      (mockPrisma.tenant.findUnique as any).mockResolvedValue({
+        billingLimit: 50,
+        billingStatus: 'ACTIVE',
+        plan: { classificationLimit: 50, maxClassifications: 50, features: { allowBatch: false } },
+        allowOverage: false,
+      });
+
+      const result = await billingService.checkBillingLimit('no-batch-tenant', {
+        requestedCount: 3,
+        isBatch: true,
+      });
+      expect(result).toEqual({ allowed: false, reason: 'BATCH_NOT_IN_PLAN' });
+    });
+
+    it('fails closed with QUOTA_CHECK_ERROR when database query throws', async () => {
+      const mockPrisma = getUnscopedSystemPrisma();
+      (mockPrisma.tenant.findUnique as any).mockRejectedValue(new Error('DB offline'));
+
+      const result = await billingService.checkBillingLimit('any-tenant');
+      expect(result).toEqual({ allowed: false, reason: 'QUOTA_CHECK_ERROR' });
+    });
+
+    it('blocks when limit <= 0 and allowOverage is false even without a plan', async () => {
+      const mockPrisma = getUnscopedSystemPrisma();
+      (mockPrisma.tenant.findUnique as any).mockResolvedValue({
+        billingLimit: 0,
+        billingStatus: 'ACTIVE',
+        plan: null,
+        allowOverage: false,
+      });
+
+      const result = await billingService.checkBillingLimit('zero-limit-tenant');
+      expect(result).toEqual({ allowed: false, reason: 'LIMIT_REACHED' });
     });
 
     it('blocks classification with ACCOUNT_CANCELED when tenant is CANCELED', async () => {
@@ -172,6 +249,20 @@ describe('BillingService', () => {
       expect(snapshot.count).toBe(42);
       expect(snapshot.inputTokens).toBe(12000);
       expect(snapshot.outputTokens).toBe(3500);
+    });
+  });
+
+  describe('getEffectiveUsage', () => {
+    it('aggregates lifetime counts and tokens when oneTimeOnly is true', async () => {
+      const mockPrisma = getUnscopedSystemPrisma();
+      (mockPrisma.usageRecord.aggregate as any).mockResolvedValue({
+        _sum: { count: 140, inputTokens: 80000, outputTokens: 21000 },
+      });
+
+      const snapshot = await billingService.getEffectiveUsage('pilot-tenant', true);
+      expect(snapshot.count).toBe(140);
+      expect(snapshot.inputTokens).toBe(80000);
+      expect(snapshot.outputTokens).toBe(21000);
     });
   });
 });
