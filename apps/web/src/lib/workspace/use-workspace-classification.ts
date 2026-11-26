@@ -42,6 +42,8 @@ export function useWorkspaceClassification({
   pushToast,
 }: UseWorkspaceClassificationParams) {
   const [pendingAttachments, setPendingAttachments] = useState<WorkspaceAttachment[]>([]);
+  const pendingRef = useRef<WorkspaceAttachment[]>([]);
+  pendingRef.current = pendingAttachments;
   const [isRunning, setIsRunning] = useState(false);
   const [liveProgress, setLiveProgress] = useState<StreamProgressEvent | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -179,6 +181,11 @@ export function useWorkspaceClassification({
     sendClassification,
     cancelRun: () => abortRef.current?.abort(),
     addFiles,
+    consumePendingAttachments: () => {
+      const current = pendingRef.current;
+      if (current.length > 0) setPendingAttachments([]);
+      return current;
+    },
     removeAttachment: (id: string) =>
       setPendingAttachments((prev) => prev.filter((a) => a.id !== id)),
   };

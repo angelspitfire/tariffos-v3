@@ -129,3 +129,36 @@ export function buildSkuPrecedentFromMessage(
     updatedAt: now,
   };
 }
+
+/** Inserts or updates a message inside an active thread (creating one if null). */
+export function buildThreadWithExternalMessage(
+  existing: WorkspaceThread | null,
+  threadId: string,
+  message: WorkspaceMessage,
+): WorkspaceThread {
+  const verdict = message.envelope?.inlineComponents.find((c) => c.type === 'verdict');
+  const titleHint = verdict?.description || message.text.slice(0, 48) || 'Nueva clasificación';
+
+  if (!existing) {
+    return {
+      id: threadId,
+      title: titleHint,
+      jurisdictionId: message.jurisdictionId,
+      status: 'regular',
+      messages: [message],
+      createdAt: message.createdAt,
+      updatedAt: message.createdAt,
+    };
+  }
+
+  const hasMessage = existing.messages.some((m) => m.id === message.id);
+  const messages = hasMessage
+    ? existing.messages.map((m) => (m.id === message.id ? message : m))
+    : [...existing.messages, message];
+
+  return {
+    ...existing,
+    messages,
+    updatedAt: message.createdAt,
+  };
+}

@@ -1,6 +1,9 @@
+export type AgentRuntimeMode = 'sse' | 'eve';
+
 export interface DualRuntimeConfig {
   cloudMode: boolean;
   supabaseConfigured: boolean;
+  agentRuntimeMode: AgentRuntimeMode;
 }
 
 /**
@@ -26,10 +29,22 @@ export function isGoogleOAuthEnabled(isCloud = isCloudModeEnabled()): boolean {
   return process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED === 'true';
 }
 
+export function getAgentRuntimeMode(isCloud = isCloudModeEnabled()): AgentRuntimeMode {
+  if (!isCloud) return 'sse';
+  const raw = process.env.NEXT_PUBLIC_AGENT_RUNTIME?.trim().toLowerCase();
+  return raw === 'eve' ? 'eve' : 'sse';
+}
+
+export function getEveBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_EVE_URL?.trim() || '';
+}
+
 export function getDualRuntimeConfig(): DualRuntimeConfig {
   const supabaseConfigured = isSupabaseConfigured();
+  const cloudMode = isCloudModeEnabled();
   return {
     supabaseConfigured,
-    cloudMode: isCloudModeEnabled(),
+    cloudMode,
+    agentRuntimeMode: getAgentRuntimeMode(cloudMode),
   };
 }

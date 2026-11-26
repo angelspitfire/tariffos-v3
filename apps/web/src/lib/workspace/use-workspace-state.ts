@@ -12,6 +12,7 @@ import { consumeWorkspacePendingQuery } from './pending-query';
 import { createWorkspacePersistence } from './persistence';
 import {
   buildSkuPrecedentFromMessage,
+  buildThreadWithExternalMessage,
   getLatestCanvasComponents,
   updateBatchItemInThread,
   updateDossierInThread,
@@ -162,6 +163,20 @@ export function useWorkspaceState() {
     void persistence.deleteThread(threadId);
   }, [activeThreadId, persistence]);
 
+  const ingestExternalMessage = useCallback(
+    (msg: WorkspaceMessage) => {
+      const targetId = activeThreadId ?? `thread-eve-${Date.now()}`;
+      if (!activeThreadId) setActiveThreadId(targetId);
+      const nextThread = buildThreadWithExternalMessage(activeThread, targetId, msg);
+      persistThread(nextThread);
+      if (msg.envelope?.canvasComponents.length) {
+        setSelectedCanvasMsgId(msg.id);
+        setActiveTab('dossier');
+      }
+    },
+    [activeThread, activeThreadId, persistThread],
+  );
+
   return {
     threads, activeThread, activeThreadId, selectedCanvasMsgId, canvasComponents, activeTab,
     jurisdiction, skuPrecedents, profile, toast, ...runner,
@@ -170,7 +185,7 @@ export function useWorkspaceState() {
     setApprovalWorkflowMode: (mode: ApprovalWorkflowMode) => updateProfile({ approvalWorkflowMode: mode }),
     updateProfile,
     startNewThread: () => { setActiveThreadId(null); setSelectedCanvasMsgId(null); },
-    deleteThread, approveActiveDossier, requestDossierReview, confirmBatchItem,
+    deleteThread, ingestExternalMessage, approveActiveDossier, requestDossierReview, confirmBatchItem,
     saveSku, saveSkuFromMessage, deleteSku, pushToast,
   };
 }

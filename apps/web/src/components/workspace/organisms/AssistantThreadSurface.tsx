@@ -14,6 +14,7 @@ import { FileText } from 'lucide-react';
 import type { SkuPrecedent, StreamProgressEvent, UserProfileSettings } from '@tariffos/shared-types';
 import type { SampleBatchDocument, SampleMerchandise } from '@/lib/workspace/jurisdictions';
 import type { WorkspaceAttachment, WorkspaceMessage } from '@/lib/workspace/types';
+import { InlineMarkdownText } from '../atoms/InlineMarkdownText';
 import { ProgressStagePill } from '../atoms/ProgressStagePill';
 import { WorkspaceEmptyState } from '../molecules/WorkspaceEmptyState';
 import { WorkspaceReadOnlyBar } from '../molecules/WorkspaceReadOnlyBar';
@@ -45,19 +46,6 @@ const convertMessage = (msg: WorkspaceMessage): ThreadMessageLike => ({
   createdAt: new Date(msg.createdAt),
   content: [{ type: 'text', text: msg.text }],
 });
-
-function renderInlineBold(text: string) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((part, idx) =>
-    part.startsWith('**') && part.endsWith('**') && part.length > 4 ? (
-      <strong key={idx} className="font-semibold text-ink-primary">
-        {part.slice(2, -2)}
-      </strong>
-    ) : (
-      part
-    ),
-  );
-}
 
 export function AssistantThreadSurface({
   messages,
@@ -208,7 +196,7 @@ export function AssistantThreadSurface({
                     </div>
                     {source?.text ? (
                       <div className="text-sm leading-relaxed text-ink-primary whitespace-pre-line">
-                        {renderInlineBold(source.text)}
+                        <InlineMarkdownText text={source.text} />
                       </div>
                     ) : null}
                     {source ? <ThreadInlineCards message={source} actions={inlineActions} /> : null}
