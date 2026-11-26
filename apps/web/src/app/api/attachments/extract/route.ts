@@ -1,12 +1,14 @@
 import { PdfTextAdapter } from '@tariffos/agent';
 import { resolveCloudTenantContext } from '@/lib/agent/cloud-session';
+import { formatRowsToDelimitedText, parseXlsxBufferToRows } from '@/lib/inngest/xlsx-parser';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
-const MAX_PDF_PAGES = 5;
-const MAX_EXTRACTED_CHARS = 8_000;
+const MAX_PDF_PAGES = 15;
+const MAX_EXTRACTED_CHARS = 48_000;
 const ALLOWED_IMAGE_MIME = new Set(['image/png', 'image/jpeg', 'image/webp']);
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
 export async function POST(request: Request): Promise<Response> {
   if (isCloudModeEnabled()) {
@@ -34,6 +36,15 @@ export async function POST(request: Request): Promise<Response> {
 
   const mime = entry.type.toLowerCase();
   const nameLower = entry.name.toLowerCase();
+
+  if (mime === XLSX_MIME || nameLower.endsWith('.xlsx')) {
+    const rows = parseXlsxBufferToRows(new Uint8Array(await entry.arrayBuffer()));
+    return Response.json({
+      kind: 'xlsx',
+      text: formatRowsToDelimitedText(rows).slice(0, MAX_EXTRACTED_CHARS),
+      rowCount: rows.length,
+    });
+  }
 
   if (mime === 'application/pdf' || nameLower.endsWith('.pdf')) {
     const buffer = Buffer.from(await entry.arrayBuffer());

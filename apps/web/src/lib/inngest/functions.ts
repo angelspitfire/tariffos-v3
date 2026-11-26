@@ -1,11 +1,9 @@
 import {
-  AUTO_APPROVE_CONFIDENCE_THRESHOLD,
   calculateDeterministicDuties,
   classifyInvoiceBatch,
   deduplicateInvoiceItems,
   type InvoiceItemInput,
 } from '@tariffos/agent';
-import { billingService, prisma } from '@tariffos/database';
 import type { ClassificationLinePayload } from '@tariffos/shared-types';
 import { getActiveLlmRuntimeConfig } from '@/lib/admin/llm-settings';
 import { createPrismaPipelinePorts } from '@/lib/agent/prisma-ports';
@@ -15,14 +13,15 @@ import {
   DEFAULT_MICRO_BATCH_SIZE,
   parseBatchTextToItems,
 } from './batch-helpers';
+import { batchChannel, type BatchProgressEvent } from './channels';
 import { inngest } from './client';
 import { indexPublishedLegalFn } from './legal-indexing-fn';
 import { ingestLegalDocumentFn } from './legal-ingestion-fn';
+import { persistFilingLinesAndUsage } from './persist-filing';
 
 const PER_TENANT_CONCURRENCY_LIMIT = 3;
 const GLOBAL_BATCH_CONCURRENCY_LIMIT = 15;
 const BATCH_THROTTLE_LIMIT = 60;
-const AUTO_STATUS_CONFIDENCE_THRESHOLD = AUTO_APPROVE_CONFIDENCE_THRESHOLD;
 
 export interface ClassifyBatchEventData {
   filingId: string;
@@ -31,15 +30,6 @@ export interface ClassifyBatchEventData {
   deepMode: boolean;
   items?: InvoiceItemInput[];
   sourceText?: string;
-}
-
-function mapLineStatus(line: ClassificationLinePayload): 'AUTO' | 'CONFIRM' | 'BLOCKED' {
-  if (line.tierUsed === 'pre_gate_blocked' || line.flags.some((f) => f.type === 'blocking')) {
-    return 'BLOCKED';
-  }
-  return line.confidencePct >= AUTO_STATUS_CONFIDENCE_THRESHOLD && line.verifiedAgainstDb
-    ? 'AUTO'
-    : 'CONFIRM';
 }
 
 export const classifyInvoiceBatchFn = inngest.createFunction(
@@ -58,10 +48,43 @@ export const classifyInvoiceBatchFn = inngest.createFunction(
   },
   async ({ event, step }) => {
     const data = event.data as ClassifyBatchEventData;
+    const totalRequested = data.items?.length ?? 0;
+
+    const publishProgress = async (
+      stepId: string,
+      payload: Omit<BatchProgressEvent, 'filingId' | 'ts'>,
+    ) => {
+      if (!step.realtime?.publish) return;
+      try {
+        await step.realtime.publish(stepId, batchChannel(data.filingId).progress, {
+          filingId: data.filingId,
+          ...payload,
+          ts: Date.now(),
+        });
+      } catch {
+        // Realtime broadcast must never fail durable batch classification
+      }
+    };
+
+    await publishProgress('emit-parsing', {
+      stage: 'parsing',
+      label: 'Extrayendo líneas de factura…',
+      completedItems: 0,
+      totalItems: totalRequested,
+      progressPct: 5,
+    });
 
     const parsedItems = await step.run('parse-source-document', async () => {
       if (data.items && data.items.length > 0) return data.items;
       return data.sourceText ? parseBatchTextToItems(data.sourceText) : [];
+    });
+
+    await publishProgress('emit-deduplicating', {
+      stage: 'deduplicating',
+      label: 'Agrupando SKUs idénticos…',
+      completedItems: 0,
+      totalItems: parsedItems.length,
+      progressPct: 15,
     });
 
     const deduped = await step.run('deduplicate-invoice-lines', async () => {
@@ -76,7 +99,10 @@ export const classifyInvoiceBatchFn = inngest.createFunction(
     const representativeItems = deduped.map((g) => g.representative);
     const chunks = chunkItems(representativeItems, DEFAULT_MICRO_BATCH_SIZE);
     const classifiedByRepId = new Map<string, ClassificationLinePayload>();
+    const groupSizeByRepId = new Map<string, number>();
+    for (const group of deduped) groupSizeByRepId.set(group.representative.lineId, group.members.length);
 
+    let coveredCount = 0;
     for (let idx = 0; idx < chunks.length; idx += 1) {
       const chunk = chunks[idx];
       const chunkLines = await step.run(`classify-micro-batch-${idx}`, async () => {
@@ -101,7 +127,19 @@ export const classifyInvoiceBatchFn = inngest.createFunction(
 
       for (const line of chunkLines) {
         classifiedByRepId.set(line.lineId, line);
+        coveredCount += groupSizeByRepId.get(line.lineId) ?? 1;
       }
+
+      const pct = chunks.length > 0 ? Math.round(20 + ((idx + 1) / chunks.length) * 65) : 85;
+      await publishProgress(`emit-chunk-${idx}`, {
+        stage: 'classifying',
+        label: `Clasificando bloque ${idx + 1} de ${chunks.length}…`,
+        completedItems: Math.min(coveredCount, parsedItems.length),
+        totalItems: parsedItems.length,
+        progressPct: pct,
+        chunkIndex: idx + 1,
+        totalChunks: chunks.length,
+      });
     }
 
     const allLines: ClassificationLinePayload[] = [];
@@ -121,69 +159,28 @@ export const classifyInvoiceBatchFn = inngest.createFunction(
       }
     }
 
-    await step.run('persist-filing-and-usage', async () => {
-      if (!process.env.DATABASE_URL) return { persisted: 0 };
+    await publishProgress('emit-persisting', {
+      stage: 'persisting',
+      label: 'Guardando expediente y métricas…',
+      completedItems: allLines.length,
+      totalItems: parsedItems.length || allLines.length,
+      progressPct: 92,
+    });
 
-      for (let i = 0; i < allLines.length; i += 1) {
-        const line = allLines[i];
-        await prisma.filingLine.upsert({
-          where: {
-            filingId_lineNumber: {
-              filingId: data.filingId,
-              lineNumber: i + 1,
-            },
-          },
-          update: {
-            description: line.product,
-            hsCode: line.hsCode,
-            confidence: line.confidencePct / 100,
-            status: mapLineStatus(line),
-            cifValue: line.duties.cif,
-            taxBreakdown: line.duties,
-            rgiSteps: line.rgiSteps,
-            candidates: line.alternatives,
-            rawResult: line,
-          },
-          create: {
-            tenantId: data.tenantId,
-            filingId: data.filingId,
-            lineNumber: i + 1,
-            description: line.product,
-            hsCode: line.hsCode,
-            confidence: line.confidencePct / 100,
-            status: mapLineStatus(line),
-            cifValue: line.duties.cif,
-            taxBreakdown: line.duties,
-            rgiSteps: line.rgiSteps,
-            candidates: line.alternatives,
-            rawResult: line,
-          },
-        });
-      }
+    await step.run('persist-filing-and-usage', async () =>
+      persistFilingLinesAndUsage({
+        filingId: data.filingId,
+        tenantId: data.tenantId,
+        lines: allLines,
+      }),
+    );
 
-      if (allLines.length > 0) {
-        await billingService.incrementUsage(data.tenantId, 'classification', allLines.length);
-        const totalInput = allLines.reduce(
-          (sum, line) => sum + (line.tokenUsage?.inputTokens ?? 0),
-          0,
-        );
-        const totalOutput = allLines.reduce(
-          (sum, line) => sum + (line.tokenUsage?.outputTokens ?? 0),
-          0,
-        );
-        if (
-          (totalInput > 0 || totalOutput > 0) &&
-          typeof billingService.incrementTokenUsage === 'function'
-        ) {
-          await billingService.incrementTokenUsage(data.tenantId, totalInput, totalOutput);
-        }
-      }
-      await prisma.filing.updateMany({
-        where: { id: data.filingId, tenantId: data.tenantId },
-        data: { status: 'Completed' },
-      });
-
-      return { persisted: allLines.length };
+    await publishProgress('emit-completed', {
+      stage: 'completed',
+      label: 'Lote clasificado y listo para triage',
+      completedItems: allLines.length,
+      totalItems: parsedItems.length || allLines.length,
+      progressPct: 100,
     });
 
     return {

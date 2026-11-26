@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { deflateRawSync } from 'node:zlib';
 import { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -94,5 +95,54 @@ describe('POST /api/attachments/extract', () => {
     expect(json.kind).toBe('image');
     expect(json.mimeType).toBe('image/png');
     expect(json.dataUrl).toMatch(/^data:image\/png;base64,/);
+  });
+
+  it('extracts delimited rows from .xlsx spreadsheet attachments', async () => {
+    const sheetXml = `<?xml version="1.0"?><worksheet><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>SKU</t></is></c><c r="B1" t="inlineStr"><is><t>Descripcion</t></is></c></row><row r="2"><c r="A2" t="inlineStr"><is><t>MTR-5</t></is></c><c r="B2" t="inlineStr"><is><t>Motor 5HP</t></is></c></row></sheetData></worksheet>`;
+    const nameBuf = Buffer.from('xl/worksheets/sheet1.xml', 'utf8');
+    const rawBuf = Buffer.from(sheetXml, 'utf8');
+    const compBuf = deflateRawSync(rawBuf);
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt16LE(8, 8);
+    local.writeUInt32LE(compBuf.length, 18);
+    local.writeUInt32LE(rawBuf.length, 22);
+    local.writeUInt16LE(nameBuf.length, 26);
+    const central = Buffer.alloc(46);
+    central.writeUInt32LE(0x02014b50, 0);
+    central.writeUInt16LE(20, 4);
+    central.writeUInt16LE(20, 6);
+    central.writeUInt16LE(8, 10);
+    central.writeUInt32LE(compBuf.length, 20);
+    central.writeUInt32LE(rawBuf.length, 24);
+    central.writeUInt16LE(nameBuf.length, 28);
+    const offset = 30 + nameBuf.length + compBuf.length;
+    const eocd = Buffer.alloc(22);
+    eocd.writeUInt32LE(0x06054b50, 0);
+    eocd.writeUInt16LE(1, 8);
+    eocd.writeUInt16LE(1, 10);
+    eocd.writeUInt32LE(46 + nameBuf.length, 12);
+    eocd.writeUInt32LE(offset, 16);
+    const xlsxBytes = Buffer.concat([local, nameBuf, compBuf, central, nameBuf, eocd]);
+
+    const form = new FormData();
+    form.append(
+      'file',
+      new File([xlsxBytes], 'lote.xlsx', {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      }),
+    );
+    const req = new NextRequest('http://localhost/api/attachments/extract', {
+      method: 'POST',
+      body: form,
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as { kind: string; text: string; rowCount: number };
+    expect(json.kind).toBe('xlsx');
+    expect(json.rowCount).toBe(2);
+    expect(json.text).toContain('MTR-5 | Motor 5HP');
   });
 });

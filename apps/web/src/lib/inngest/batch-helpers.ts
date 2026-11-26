@@ -80,6 +80,35 @@ function roundCurrency(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+function detectColumnMap(headers: readonly string[]): {
+  sku?: number;
+  description?: number;
+  origin?: number;
+  cif?: number;
+  quantity?: number;
+} | null {
+  const norm = headers.map((h) =>
+    h
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim(),
+  );
+  const findCol = (keywords: readonly string[]) => {
+    const idx = norm.findIndex((h) => keywords.some((kw) => h.includes(kw)));
+    return idx >= 0 ? idx : undefined;
+  };
+  const description = findCol(['description', 'descripcion', 'mercancia', 'producto', 'detalle', 'item']);
+  if (description === undefined) return null;
+  return {
+    description,
+    sku: findCol(['sku', 'codigo', 'code', 'ref', 'part']),
+    origin: findCol(['origin', 'origen', 'pais', 'country']),
+    cif: findCol(['cif', 'fob', 'valor', 'value', 'precio', 'monto', 'amount']),
+    quantity: findCol(['qty', 'cantidad', 'quantity', 'unidades', 'units']),
+  };
+}
+
 /**
  * Parse CSV, pipe-delimited, tab-delimited, or plain newline text into InvoiceItemInput rows.
  */
@@ -102,7 +131,9 @@ export function parseBatchTextToItems(text: string, defaultOrigin = 'CN'): Invoi
   }
 
   const firstCells = splitDelimitedRow(rawLines[0], delimiter);
-  const startIndex = isHeaderRow(firstCells) ? 1 : 0;
+  const hasHeader = isHeaderRow(firstCells);
+  const colMap = hasHeader ? detectColumnMap(firstCells) : null;
+  const startIndex = hasHeader ? 1 : 0;
   const items: InvoiceItemInput[] = [];
 
   for (let i = startIndex; i < rawLines.length; i += 1) {
@@ -119,7 +150,11 @@ export function parseBatchTextToItems(text: string, defaultOrigin = 'CN'): Invoi
       continue;
     }
 
-    const [sku, description, origin, cifRaw, qtyRaw] = cells;
+    const sku = colMap ? (colMap.sku !== undefined ? cells[colMap.sku] : undefined) : cells[0];
+    const description = colMap ? cells[colMap.description!] : cells[1];
+    const origin = colMap ? (colMap.origin !== undefined ? cells[colMap.origin] : undefined) : cells[2];
+    const cifRaw = colMap ? (colMap.cif !== undefined ? cells[colMap.cif] : undefined) : cells[3];
+    const qtyRaw = colMap ? (colMap.quantity !== undefined ? cells[colMap.quantity] : undefined) : cells[4];
     if (!description) continue;
 
     items.push({

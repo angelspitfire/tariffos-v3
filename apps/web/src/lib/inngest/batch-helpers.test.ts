@@ -58,6 +58,34 @@ describe('Inngest batch helpers', () => {
     expect(plain[1].description).toBe('Compresor industrial 10HP');
   });
 
+  it('maps reordered Spanish or English column headers accurately', () => {
+    const reorderedPipe = [
+      'Descripcion | Valor FOB | Origen | SKU | Cantidad',
+      'Cable THHN 12 AWG 100m | $420.50 | US | CAB-12 | 5',
+      'Panel solar monocristalino 550W | 180 | CN | PNL-550 | 10',
+    ].join('\n');
+
+    const items = parseBatchTextToItems(reorderedPipe);
+    expect(items).toEqual([
+      {
+        lineId: 'line-1',
+        sku: 'CAB-12',
+        description: 'Cable THHN 12 AWG 100m',
+        originCountry: 'US',
+        cifValue: 420.5,
+        quantity: 5,
+      },
+      {
+        lineId: 'line-2',
+        sku: 'PNL-550',
+        description: 'Panel solar monocristalino 550W',
+        originCountry: 'CN',
+        cifValue: 180,
+        quantity: 10,
+      },
+    ]);
+  });
+
   it('aggregates batch classification summary metrics accurately', () => {
     const lines: ClassificationLinePayload[] = [
       {
