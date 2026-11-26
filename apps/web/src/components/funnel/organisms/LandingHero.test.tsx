@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { LandingHero } from './LandingHero';
 import { readPendingQuery } from '@/lib/funnel/funnel-storage';
 
-const mockPush = vi.fn();
+const mockPush = vi.fn<(href: string) => void>();
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
@@ -21,13 +21,13 @@ describe('LandingHero', () => {
     const user = userEvent.setup();
     render(<LandingHero requiresAuth={false} />);
 
-    await user.click(screen.getByRole('button', { name: /Inversor solar híbrido 5 kW/i }));
+    await user.click(screen.getByRole('button', { name: /Laptop Dell Latitude i7/i }));
     const input = screen.getByLabelText(/Describe una mercancía/i);
-    expect(input).toHaveValue('Inversor solar híbrido 5 kW');
+    expect(input).toHaveValue('Laptop Dell Latitude i7 16GB RAM SSD 512GB');
 
-    await user.click(screen.getByRole('button', { name: /Clasificar gratis/i }));
+    await user.click(screen.getByRole('button', { name: /Clasificar en workspace|Clasificar gratis/i }));
 
-    expect(readPendingQuery()).toBe('Inversor solar híbrido 5 kW');
+    expect(readPendingQuery()).toBe('Laptop Dell Latitude i7 16GB RAM SSD 512GB');
     expect(mockPush).toHaveBeenCalledWith('/app');
   });
 

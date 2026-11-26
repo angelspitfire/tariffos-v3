@@ -33,7 +33,7 @@ export function ThreadSidebar({
   if (!open) return null;
 
   return (
-    <aside className="no-print flex h-full w-64 shrink-0 flex-col border-r border-border-subtle bg-surface-panel">
+    <aside className="no-print flex h-full w-64 shrink-0 flex-col border-r border-border-subtle bg-surface-panel/85 backdrop-blur-xl">
       <div className="p-3">
         <button
           type="button"

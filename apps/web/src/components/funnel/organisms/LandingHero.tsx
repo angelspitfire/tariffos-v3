@@ -1,26 +1,12 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  ArrowRight,
-  BookmarkCheck,
-  CheckCircle2,
-  Globe,
-  Layers,
-  Scale,
-  Search,
-} from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 import { readMockSession, savePendingQuery } from '@/lib/funnel/funnel-storage';
-import { FunnelButton } from '../atoms/FunnelButton';
-import { HeroPreviewCard } from '../molecules/HeroPreviewCard';
-
-export const HERO_SAMPLE_PROMPTS = [
-  'Inversor solar híbrido 5 kW',
-  'Ecógrafo Doppler portátil',
-  'Bomba sumergible acero inox 2HP 120 L/min',
-] as const;
+import { LandingHeroPreview } from '../molecules/LandingHeroPreview';
+import { LandingLoopHero } from './LandingLoopHero';
 
 export interface LandingHeroProps {
   hasSession?: boolean;
@@ -30,10 +16,16 @@ export interface LandingHeroProps {
 export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
   const router = useRouter();
   const [heroPrompt, setHeroPrompt] = useState('');
+  const [hasClientSession, setHasClientSession] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    const trimmed = heroPrompt.trim();
+  useEffect(() => {
+    setHasClientSession(Boolean(readMockSession()));
+  }, []);
+
+  const isAuthenticated =
+    requiresAuth !== undefined ? !requiresAuth : Boolean(hasSession ?? hasClientSession);
+
+  const navigateTarget = (trimmed?: string) => {
     if (trimmed) {
       savePendingQuery(trimmed);
     }
@@ -50,100 +42,87 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
     router.push('/app');
   };
 
+  const handleHeroSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const trimmed = heroPrompt.trim();
+    navigateTarget(trimmed || undefined);
+  };
+
+  const handlePrimaryCta = () => {
+    if (isAuthenticated) {
+      navigateTarget();
+      return;
+    }
+    router.push('/onboarding?plan=trial&cycle=monthly');
+  };
+
+  const scrollToDemo = () => {
+    document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <section className="py-12 sm:py-20">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-        <div className="lg:col-span-6 space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent-border bg-accent-soft/60 text-accent-ink text-[11px] font-semibold">
-            <Scale className="w-3.5 h-3.5" />
-            <span>Motor arancelario auditable · RGI 1–6 + HITL + Tributos</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-bold tracking-tight text-ink-primary leading-[1.12]">
-            Clasificación arancelaria de nivel pericial, en segundos.
-          </h1>
-
-          <p className="text-sm sm:text-base text-ink-secondary leading-relaxed max-w-xl">
-            Diseñado para agentes de aduanas, agencias e importadores que no pueden
-            permitirse códigos inventados. Valida fichas merceológicas, clasifica lotes
-            Excel/CSV y emite dictámenes PDF firmados con respaldo RGI.
+    <>
+      <section className="pt-10 sm:pt-14 pb-12 sm:pb-20 overflow-x-clip">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-8 text-center space-y-6">
+          <p className="font-mono text-xs tracking-[0.12em] text-ink-secondary uppercase">
+            CLASIFICACIÓN ARANCELARIA AUDITABLE
           </p>
 
-          <form
-            onSubmit={handleSubmit}
-            className="p-1.5 rounded-2xl border border-border-strong bg-surface-panel shadow-sm"
-          >
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <div className="flex-1 flex items-center gap-2 px-3 py-1.5 min-w-0">
-                <Search className="w-4 h-4 text-accent-ink shrink-0" />
-                <input
-                  type="text"
-                  value={heroPrompt}
-                  onChange={(e) => setHeroPrompt(e.target.value)}
-                  placeholder="Describe una mercancía para clasificar ahora..."
-                  aria-label="Describe una mercancía para probar TariffOS"
-                  className="w-full bg-transparent text-xs sm:text-sm text-ink-primary placeholder:text-ink-subtle focus:outline-none"
-                />
-              </div>
-              <FunnelButton
-                type="submit"
-                variant="primary"
-                size="md"
-                rightIcon={<ArrowRight className="w-4 h-4" />}
-                className="shrink-0"
-              >
-                Clasificar gratis
-              </FunnelButton>
-            </div>
-          </form>
+          <h1 className="text-[clamp(2.6rem,5.4vw+0.8rem,4.75rem)] font-medium tracking-[-0.035em] text-ink-primary leading-[1.02] max-w-[18ch] mx-auto [text-wrap:balance]">
+            Clasifica con precisión pericial
+          </h1>
 
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[11px] text-ink-muted mr-1">Prueba con:</span>
-            {HERO_SAMPLE_PROMPTS.map((sample) => (
-              <button
-                key={sample}
-                type="button"
-                onClick={() => setHeroPrompt(sample)}
-                className="px-2.5 py-1 rounded-full text-[11px] border border-border-subtle bg-surface-panel hover:border-accent-brand hover:text-accent-ink text-ink-secondary transition-colors cursor-pointer truncate max-w-[260px]"
-              >
-                {sample}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <a
-              href="#planes"
-              className="px-4 py-2 rounded-xl border border-border-strong bg-surface-panel hover:bg-surface-hover text-xs sm:text-sm font-semibold text-ink-primary transition-colors"
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={handlePrimaryCta}
+              className="group relative inline-flex items-center gap-2.5 px-7 min-h-[52px] rounded-full text-sm font-semibold text-ink-primary dark:text-white bg-[linear-gradient(135deg,rgba(255,255,255,0.92)_0%,rgba(219,234,254,0.95)_48%,rgba(186,230,253,0.92)_100%)] dark:bg-[linear-gradient(135deg,rgba(37,99,235,0.92)_0%,rgba(29,78,216,0.95)_55%,rgba(14,165,233,0.88)_100%)] border border-white/80 dark:border-sky-300/30 shadow-[0_12px_32px_-8px_rgba(29,78,216,0.35)] hover:shadow-[0_16px_36px_-6px_rgba(29,78,216,0.45)] transition-shadow cursor-pointer active:translate-y-px"
             >
-              Ver planes y recomendador
-            </a>
+              <span>{isAuthenticated ? 'Ir al workspace' : 'Empezar prueba gratis'}</span>
+              <ArrowRight
+                className="w-4 h-4 text-accent-brand dark:text-white transition-transform duration-200 group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
+            </button>
+
+            <button
+              type="button"
+              onClick={scrollToDemo}
+              className="inline-flex items-center gap-2 px-5 min-h-[52px] rounded-full text-sm font-medium text-ink-secondary hover:text-ink-primary bg-white/55 dark:bg-white/[0.05] border border-black/[0.07] dark:border-white/[0.09] backdrop-blur-sm transition-colors cursor-pointer"
+            >
+              Probar con una mercancía
+            </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-border-hairline text-[11px] text-ink-muted">
-            <span className="inline-flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              RGI 1–6 trazables
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-accent-ink shrink-0" />
-              Lotes Excel/CSV
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <BookmarkCheck className="w-3.5 h-3.5 text-accent-ink shrink-0" />
-              Catálogo SKU
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Globe className="w-3.5 h-3.5 text-accent-ink shrink-0" />
-              Multi-jurisdicción
-            </span>
-          </div>
+          <p className="text-base sm:text-lg text-ink-secondary max-w-[52ch] mx-auto leading-relaxed pt-1">
+            TariffOS valida fichas merceológicas, clasifica lotes Excel y emite dictámenes PDF firmados con respaldo RGI.
+          </p>
         </div>
 
-        <div className="lg:col-span-6">
-          <HeroPreviewCard />
+        <div className="mt-4 sm:mt-6 px-2 sm:px-6">
+          <LandingLoopHero />
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section id="demo" className="py-16 sm:py-24">
+        <div className="max-w-[1160px] mx-auto px-4 sm:px-8 space-y-10">
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <h2 className="text-[clamp(2rem,3vw+0.8rem,3.25rem)] font-medium tracking-[-0.03em] text-ink-primary leading-[1.08] [text-wrap:balance] mx-auto">
+              Conoce tu dictamen en segundos
+            </h2>
+            <p className="font-mono text-xs sm:text-sm text-ink-secondary">
+              Diseñado para agentes de aduanas cansados de sistemas lentos y opacos
+            </p>
+          </div>
+
+          <LandingHeroPreview
+            heroPrompt={heroPrompt}
+            onChangePrompt={setHeroPrompt}
+            onSubmitPrompt={handleHeroSubmit}
+            isAuthenticated={isAuthenticated}
+          />
+        </div>
+      </section>
+    </>
   );
 }

@@ -1,64 +1,12 @@
 @import "tailwindcss";
+@import "./tokens.css";
+@import "./base.css" layer(base);
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  color-scheme: light;
-  --surface-app: #f8fafc;
-  --surface-panel: #ffffff;
-  --surface-muted: #f8fafc;
-  --surface-subtle: #f1f5f9;
-  --surface-hover: #f1f5f9;
-  --surface-input: #ffffff;
-  --surface-inverted: #0f172a;
-  --surface-inverted-hover: #1e293b;
-  --surface-tooltip: #0f172a;
-  --ink-primary: #0f172a;
-  --ink-secondary: #334155;
-  --ink-muted: #64748b;
-  --ink-subtle: #94a3b8;
-  --ink-on-inverted: #ffffff;
-  --ink-tooltip: #ffffff;
-  --border-subtle: #e2e8f0;
-  --border-hairline: #f1f5f9;
-  --border-strong: #cbd5e1;
-  --accent-brand: #1d4ed8;
-  --accent-brand-hover: #1e40af;
-  --accent-ink: #1d4ed8;
-  --accent-soft: rgba(29, 78, 216, 0.08);
-  --accent-border: rgba(29, 78, 216, 0.35);
-}
-
-.dark {
-  color-scheme: dark;
-  --surface-app: #090d16;
-  --surface-panel: #111827;
-  --surface-muted: #0f172a;
-  --surface-subtle: #1e293b;
-  --surface-hover: #1e293b;
-  --surface-input: #0b1120;
-  --surface-inverted: #f8fafc;
-  --surface-inverted-hover: #e2e8f0;
-  --surface-tooltip: #1e293b;
-  --ink-primary: #f8fafc;
-  --ink-secondary: #cbd5e1;
-  --ink-muted: #94a3b8;
-  --ink-subtle: #64748b;
-  --ink-on-inverted: #0f172a;
-  --ink-tooltip: #f8fafc;
-  --border-subtle: #1e293b;
-  --border-hairline: #172033;
-  --border-strong: #334155;
-  --accent-brand: #2563eb;
-  --accent-brand-hover: #3b82f6;
-  --accent-ink: #60a5fa;
-  --accent-soft: rgba(59, 130, 246, 0.16);
-  --accent-border: rgba(96, 165, 250, 0.45);
-}
-
 @theme inline {
-  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --color-surface-app: var(--surface-app);
   --color-surface-panel: var(--surface-panel);
@@ -117,41 +65,16 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.35);
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.55);
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.45);
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.65);
+  background: var(--scrollbar-thumb-hover);
 }
 
 @media print {
   .no-print {
     display: none !important;
-  }
-
-  :root,
-  .dark {
-    color-scheme: light;
-    --surface-app: #ffffff;
-    --surface-panel: #ffffff;
-    --surface-muted: #f8fafc;
-    --surface-subtle: #f1f5f9;
-    --surface-input: #ffffff;
-    --ink-primary: #0f172a;
-    --ink-secondary: #334155;
-    --ink-muted: #64748b;
-    --border-subtle: #e2e8f0;
-    --border-hairline: #f1f5f9;
-    --border-strong: #cbd5e1;
-    --accent-ink: #1d4ed8;
   }
 }

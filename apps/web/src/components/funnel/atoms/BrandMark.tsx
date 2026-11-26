@@ -1,30 +1,28 @@
 import Link from 'next/link';
 
 export interface BrandMarkProps {
-  subtitle?: string;
   href?: string;
+  showBadge?: boolean;
 }
 
-export function BrandMark({ subtitle = 'Inteligencia Arancelaria', href = '/' }: BrandMarkProps) {
-  const content = (
-    <>
-      <span className="w-8 h-8 rounded-lg bg-surface-inverted text-ink-on-inverted text-xs font-bold flex items-center justify-center shrink-0">
-        T
-      </span>
-      <div className="leading-tight">
-        <span className="text-sm font-bold tracking-tight text-ink-primary block">
-          TariffOS
-        </span>
-        {subtitle ? (
-          <span className="text-[10px] text-ink-muted hidden sm:block">{subtitle}</span>
-        ) : null}
-      </div>
-    </>
-  );
-
+export function BrandMark({ href = '/', showBadge = true }: BrandMarkProps) {
   return (
-    <Link href={href} className="inline-flex items-center gap-2.5 shrink-0">
-      {content}
+    <Link
+      href={href}
+      className="inline-flex items-center gap-2.5 text-ink-primary whitespace-nowrap shrink-0 focus:outline-none"
+    >
+      <span className="h-7 px-2.5 rounded-full bg-surface-inverted text-ink-on-inverted inline-flex items-center gap-1 shrink-0">
+        <span className="w-1.5 h-1.5 rounded-full bg-current" />
+        <span className="w-1.5 h-1.5 rounded-full bg-accent-brand dark:bg-sky-400" />
+      </span>
+      <span className="text-[15px] font-semibold tracking-tight text-ink-primary">
+        TariffOS
+      </span>
+      {showBadge ? (
+        <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md border border-border-subtle font-mono text-[10px] text-ink-muted">
+          RGI + HITL
+        </span>
+      ) : null}
     </Link>
   );
 }

@@ -29,12 +29,12 @@ export function PlanCard({
 
   return (
     <div
-      className={`p-5 rounded-2xl border flex flex-col justify-between gap-5 transition-all ${
+      className={`p-6 rounded-[24px] border backdrop-blur-md flex flex-col justify-between gap-6 transition-colors ${
         isRecommended
-          ? 'border-accent-brand bg-accent-soft/55 ring-2 ring-accent-brand shadow-sm'
+          ? 'border-accent-brand bg-white/95 dark:bg-white/[0.08] ring-2 ring-accent-brand'
           : isPopular
-            ? 'border-accent-border bg-surface-panel shadow-sm ring-1 ring-accent-brand/40'
-            : 'border-border-subtle bg-surface-panel'
+            ? 'border-accent-brand/60 bg-white/90 dark:bg-white/[0.065] shadow-sm'
+            : 'border-black/[0.07] dark:border-white/[0.09] bg-white/75 dark:bg-white/[0.04]'
       }`}
     >
       <div className="space-y-3">
@@ -82,7 +82,7 @@ export function PlanCard({
       <FunnelButton
         variant={isPopular || isRecommended ? 'primary' : 'outline'}
         size="md"
-        className="w-full"
+        className="w-full min-h-[44px] rounded-full whitespace-nowrap"
         onClick={() => onSelect(plan.planId, showAnnual ? 'annual' : 'monthly')}
       >
         {annualOnly ? 'Solicitar Corporate' : `Elegir ${plan.name}`}

@@ -16,10 +16,10 @@ export function TrialPlanBanner({
 }: TrialPlanBannerProps) {
   return (
     <div
-      className={`p-4 sm:p-5 rounded-2xl border flex flex-wrap items-center justify-between gap-4 transition-all ${
+      className={`p-6 rounded-[24px] border backdrop-blur-md flex flex-wrap items-center justify-between gap-4 transition-colors ${
         isRecommended
-          ? 'border-accent-brand bg-accent-soft/60 ring-1 ring-accent-brand'
-          : 'border-border-subtle bg-surface-panel'
+          ? 'border-accent-brand bg-white/95 dark:bg-white/[0.08] ring-1 ring-accent-brand'
+          : 'border-black/[0.07] dark:border-white/[0.09] bg-white/80 dark:bg-white/[0.045]'
       }`}
     >
       <div className="flex items-start gap-3 max-w-2xl">
@@ -45,6 +45,7 @@ export function TrialPlanBanner({
         size="md"
         rightIcon={<ArrowRight className="w-4 h-4" />}
         onClick={onSelect}
+        className="min-h-[44px] rounded-full px-5 whitespace-nowrap"
       >
         Empezar prueba gratis
       </FunnelButton>

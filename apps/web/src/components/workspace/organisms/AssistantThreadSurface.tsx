@@ -39,6 +39,19 @@ const convertMessage = (msg: WorkspaceMessage): ThreadMessageLike => ({
   content: [{ type: 'text', text: msg.text }],
 });
 
+function renderInlineBold(text: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, idx) =>
+    part.startsWith('**') && part.endsWith('**') && part.length > 4 ? (
+      <strong key={idx} className="font-semibold text-ink-primary">
+        {part.slice(2, -2)}
+      </strong>
+    ) : (
+      part
+    ),
+  );
+}
+
 export function AssistantThreadSurface({
   messages,
   isRunning,
@@ -139,8 +152,8 @@ export function AssistantThreadSurface({
                 <MessagePrimitive.Root className="flex flex-col items-start gap-1">
                   <div className="w-full max-w-2xl">
                     {source?.text ? (
-                      <div className="rounded-2xl border border-border-subtle bg-surface-panel px-3.5 py-2.5 text-sm leading-relaxed text-ink-primary shadow-xs">
-                        {source.text}
+                      <div className="rounded-2xl border border-border-subtle bg-surface-panel/90 backdrop-blur-md px-3.5 py-2.5 text-sm leading-relaxed text-ink-primary shadow-xs whitespace-pre-wrap">
+                        {renderInlineBold(source.text)}
                       </div>
                     ) : null}
                     {source ? <ThreadInlineCards message={source} actions={inlineActions} /> : null}

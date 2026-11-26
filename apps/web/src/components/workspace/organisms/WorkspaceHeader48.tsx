@@ -7,7 +7,6 @@ import {
   BookMarked,
   Moon,
   PanelLeft,
-  Scale,
   Sun,
   UserCircle2,
   Zap,
@@ -51,7 +50,7 @@ export function WorkspaceHeader48({
   const [accountOpen, setAccountOpen] = useState(false);
 
   return (
-    <header className="no-print flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border-subtle bg-surface-panel px-3">
+    <header className="no-print flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border-subtle bg-surface-panel/85 backdrop-blur-xl px-3">
       <div className="flex min-w-0 items-center gap-2">
         <button
           type="button"
@@ -62,9 +61,12 @@ export function WorkspaceHeader48({
           <PanelLeft className="h-4 w-4" aria-hidden="true" />
         </button>
 
-        <Link href="/" className="hidden items-center gap-1.5 text-sm font-semibold text-ink-primary sm:inline-flex">
-          <Scale className="h-4 w-4 text-accent-ink" aria-hidden="true" />
-          <span>TariffOS</span>
+        <Link href="/" className="hidden items-center gap-2 text-sm font-semibold text-ink-primary sm:inline-flex">
+          <span className="inline-flex items-center justify-center w-6 h-5 rounded-full bg-surface-inverted text-ink-on-inverted shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-white" />
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-400 -ml-0.5" />
+          </span>
+          <span className="tracking-tight">TariffOS</span>
         </Link>
 
         <span className="hidden h-4 w-px bg-border-subtle sm:inline-block" aria-hidden="true" />

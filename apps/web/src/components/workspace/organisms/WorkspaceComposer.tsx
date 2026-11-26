@@ -125,7 +125,7 @@ export function WorkspaceComposer({
         </div>
       )}
 
-      <ComposerPrimitive.Root className="flex items-end gap-1.5 rounded-2xl border border-border-strong bg-surface-panel p-2 shadow-xs focus-within:border-accent-brand">
+      <ComposerPrimitive.Root className="flex items-end gap-1.5 rounded-2xl border border-border-strong bg-surface-panel/90 backdrop-blur-xl p-2 shadow-sm focus-within:border-accent-brand">
         <input
           ref={fileInputRef}
           type="file"
