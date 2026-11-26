@@ -4,6 +4,8 @@ import { FolderOpen, Globe, LayoutGrid, Moon, PanelLeft, Sun } from 'lucide-reac
 import type { JurisdictionConfig } from '@tariffos/shared-types';
 import { BrandMark } from '@/components/funnel/atoms/BrandMark';
 import { JURISDICTIONS } from '@/lib/workspace/jurisdictions';
+import { useCloudUsageSnapshot } from '@/lib/workspace/use-cloud-usage';
+import { WorkspaceAccountStatusBanner } from '../molecules/WorkspaceAccountStatusBanner';
 
 export interface WorkspaceHeader48Props {
   jurisdiction: JurisdictionConfig;
@@ -34,8 +36,11 @@ export function WorkspaceHeader48({
   onToggleCanvas,
   onOpenFilesPanel,
 }: WorkspaceHeader48Props) {
+  const cloudUsage = useCloudUsageSnapshot();
+
   return (
-    <header className="no-print flex h-12 shrink-0 items-center justify-between gap-2 border-b border-line-frost bg-surface-frost px-3 backdrop-blur-xl sm:px-4">
+    <>
+      <header className="no-print flex h-12 shrink-0 items-center justify-between gap-2 border-b border-line-frost bg-surface-frost px-3 backdrop-blur-xl sm:px-4">
       <div className="flex min-w-0 items-center gap-2">
         <button
           type="button"
@@ -109,5 +114,7 @@ export function WorkspaceHeader48({
         ) : null}
       </div>
     </header>
+    <WorkspaceAccountStatusBanner usage={cloudUsage} />
+    </>
   );
 }

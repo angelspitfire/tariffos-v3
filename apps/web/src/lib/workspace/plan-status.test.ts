@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { computePlanStatus, countClassifications, PLAN_WARNING_RATIO } from './plan-status';
+import {
+  computePlanStatus,
+  countClassifications,
+  mergeCloudUsageIntoPlanStatus,
+  PLAN_WARNING_RATIO,
+} from './plan-status';
 import type { WorkspaceThread } from './types';
 
 function threadWithResults(results: number): WorkspaceThread {
@@ -53,5 +58,30 @@ describe('plan status', () => {
     const status = computePlanStatus([threadWithResults(2)], 'basico');
     expect(status.isTrial).toBe(false);
     expect(status.quotaLimit).toBeGreaterThan(5);
+  });
+
+  it('merges live cloud usage into plan status including CANCELED state', () => {
+    const local = computePlanStatus([], 'trial');
+    const merged = mergeCloudUsageIntoPlanStatus(local, {
+      tenantId: 'ten-1',
+      tenantName: 'Aduanas Alpha',
+      planId: 'pro',
+      planName: 'Pro',
+      billingStatus: 'CANCELED',
+      allowOverage: false,
+      month: 11,
+      year: 2026,
+      used: 350,
+      limit: 400,
+      percentUsed: 88,
+      inputTokens: 1000,
+      outputTokens: 500,
+    });
+    expect(merged.planName).toBe('Pro');
+    expect(merged.quotaUsed).toBe(350);
+    expect(merged.quotaLimit).toBe(400);
+    expect(merged.nearLimit).toBe(true);
+    expect(merged.billingStatus).toBe('CANCELED');
+    expect(merged.isTrial).toBe(false);
   });
 });

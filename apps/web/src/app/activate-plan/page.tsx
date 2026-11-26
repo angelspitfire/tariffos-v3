@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import type { SubscriptionBillingCycle } from '@tariffos/shared-types';
 import { PlanActivationTemplate } from '@/components/funnel/templates/PlanActivationTemplate';
+import { loadPublicPlans } from '@/lib/funnel/public-plans';
 
 interface ActivatePlanPageProps {
   searchParams: Promise<{
@@ -10,12 +11,13 @@ interface ActivatePlanPageProps {
 }
 
 async function ActivatePlanContent({ searchParams }: ActivatePlanPageProps) {
-  const params = await searchParams;
+  const [params, plans] = await Promise.all([searchParams, loadPublicPlans()]);
   const cycle: SubscriptionBillingCycle =
     params.cycle === 'annual' ? 'annual' : 'monthly';
 
   return (
     <PlanActivationTemplate
+      plans={plans}
       initialPlanId={params.plan}
       initialCycle={cycle}
     />

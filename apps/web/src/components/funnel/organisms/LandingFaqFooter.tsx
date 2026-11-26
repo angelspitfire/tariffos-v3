@@ -110,6 +110,9 @@ export function LandingFaqFooter() {
               <a href="#planes" className="hover:text-ink-primary transition-colors">
                 Planes
               </a>
+              <a href="#contacto" className="hover:text-ink-primary transition-colors">
+                Contacto
+              </a>
               <Link href="/activate-plan" className="hover:text-ink-primary transition-colors">
                 Activar plan
               </Link>

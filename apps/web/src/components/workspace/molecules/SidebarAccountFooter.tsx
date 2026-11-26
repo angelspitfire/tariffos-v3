@@ -4,8 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { CreditCard, LogOut, Settings, Sparkles } from 'lucide-react';
 import type { ApprovalWorkflowMode, UserProfileSettings } from '@tariffos/shared-types';
-import type { WorkspacePlanStatus } from '@/lib/workspace/plan-status';
+import {
+  mergeCloudUsageIntoPlanStatus,
+  type WorkspacePlanStatus,
+} from '@/lib/workspace/plan-status';
 import { getInitials } from '@/lib/workspace/thread-meta';
+import { useCloudUsageSnapshot } from '@/lib/workspace/use-cloud-usage';
 
 export interface SidebarAccountFooterProps {
   profile: UserProfileSettings;
@@ -32,6 +36,8 @@ export function SidebarAccountFooter({
   onChangeApprovalMode,
   onOpenSettings,
 }: SidebarAccountFooterProps) {
+  const cloudUsage = useCloudUsageSnapshot();
+  const effectivePlan = mergeCloudUsageIntoPlanStatus(plan, cloudUsage);
   const [menuOpen, setMenuOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
@@ -64,10 +70,14 @@ export function SidebarAccountFooter({
         <span className="min-w-0 flex-1">
           <span className="flex items-center justify-between gap-1.5">
             <span className="truncate text-xs font-semibold text-ink-primary">{profile.fullName}</span>
-            {plan.isTrial ? (
+            {effectivePlan.billingStatus === 'CANCELED' ? (
+              <span className="shrink-0 rounded-full px-1.5 py-0.5 font-mono text-[9px] font-semibold bg-rose-500/15 text-rose-700 dark:text-rose-300">
+                De baja
+              </span>
+            ) : effectivePlan.isTrial ? (
               <span
                 className={`shrink-0 rounded-full px-1.5 py-0.5 font-mono text-[9px] font-semibold tabular-nums ${
-                  plan.exhausted
+                  effectivePlan.exhausted
                     ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
                     : 'bg-accent-soft text-accent-ink'
                 }`}
@@ -96,16 +106,16 @@ export function SidebarAccountFooter({
             <div className="flex items-center justify-between gap-2">
               <span className="inline-flex items-center gap-1.5 font-semibold text-ink-primary">
                 <Sparkles className="h-3.5 w-3.5 text-accent-ink" aria-hidden="true" />
-                {plan.planName}
+                {effectivePlan.planName}
               </span>
               <span className="font-mono text-[10px] text-ink-muted tabular-nums">
-                {plan.quotaUsed} / {plan.quotaLimit} clasif.
+                {effectivePlan.quotaUsed} / {effectivePlan.quotaLimit} clasif.
               </span>
             </div>
             <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-subtle">
               <div
-                className={`h-full rounded-full ${usageBarTone(plan)}`}
-                style={{ width: `${Math.max(plan.usagePct, 4)}%` }}
+                className={`h-full rounded-full ${usageBarTone(effectivePlan)}`}
+                style={{ width: `${Math.max(effectivePlan.usagePct, 4)}%` }}
               />
             </div>
             <Link
@@ -114,7 +124,7 @@ export function SidebarAccountFooter({
               className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-full bg-surface-inverted px-3 py-1.5 text-[11px] font-semibold text-ink-on-inverted transition-colors hover:bg-surface-inverted-hover"
             >
               <CreditCard className="h-3.5 w-3.5" aria-hidden="true" />
-              {plan.isTrial ? 'Activar plan' : 'Gestionar plan'}
+              {effectivePlan.isTrial ? 'Activar plan' : 'Gestionar plan'}
             </Link>
           </section>
 
