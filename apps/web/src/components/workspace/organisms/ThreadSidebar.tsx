@@ -27,6 +27,7 @@ export interface ThreadSidebarProps {
   onDeleteThread: (threadId: string) => void;
   onOpenDashboard: () => void;
   onOpenSkuCatalog: () => void;
+  onOpenSettings?: () => void;
   onChangeApprovalMode: (mode: ApprovalWorkflowMode) => void;
 }
 
@@ -48,6 +49,7 @@ export function ThreadSidebar({
   onDeleteThread,
   onOpenDashboard,
   onOpenSkuCatalog,
+  onOpenSettings,
   onChangeApprovalMode,
 }: ThreadSidebarProps) {
   if (!open && !drawer) {
@@ -133,7 +135,12 @@ export function ThreadSidebar({
         />
       </div>
 
-      <SidebarAccountFooter profile={profile} plan={plan} onChangeApprovalMode={onChangeApprovalMode} />
+      <SidebarAccountFooter
+        profile={profile}
+        plan={plan}
+        onChangeApprovalMode={onChangeApprovalMode}
+        onOpenSettings={onOpenSettings}
+      />
     </aside>
   );
 }

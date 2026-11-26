@@ -11,6 +11,7 @@ export interface SidebarAccountFooterProps {
   profile: UserProfileSettings;
   plan: WorkspacePlanStatus;
   onChangeApprovalMode: (mode: ApprovalWorkflowMode) => void;
+  onOpenSettings?: () => void;
 }
 
 const APPROVAL_OPTIONS: ReadonlyArray<{ value: ApprovalWorkflowMode; label: string }> = [
@@ -25,7 +26,12 @@ function usageBarTone(plan: WorkspacePlanStatus): string {
   return 'bg-accent-brand';
 }
 
-export function SidebarAccountFooter({ profile, plan, onChangeApprovalMode }: SidebarAccountFooterProps) {
+export function SidebarAccountFooter({
+  profile,
+  plan,
+  onChangeApprovalMode,
+  onOpenSettings,
+}: SidebarAccountFooterProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
@@ -127,7 +133,20 @@ export function SidebarAccountFooter({ profile, plan, onChangeApprovalMode }: Si
             </select>
           </label>
 
-          <div className="border-t border-border-hairline pt-2">
+          <div className="space-y-0.5 border-t border-border-hairline pt-2">
+            {onOpenSettings ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  onOpenSettings();
+                }}
+                className="inline-flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 text-ink-primary hover:bg-surface-hover"
+              >
+                <Settings className="h-3.5 w-3.5 text-ink-muted" aria-hidden="true" />
+                Configuración
+              </button>
+            ) : null}
             <Link
               href="/login"
               className="inline-flex w-full items-center gap-1.5 rounded-lg px-2 py-1.5 text-ink-muted hover:bg-surface-hover hover:text-rose-600"

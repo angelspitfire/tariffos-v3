@@ -21,6 +21,7 @@ export interface WorkspaceSidebarSlotProps {
   onDeleteThread: (threadId: string) => void;
   onOpenDashboard: () => void;
   onOpenSkuCatalog: () => void;
+  onOpenSettings?: () => void;
   onChangeApprovalMode: (mode: ApprovalWorkflowMode) => void;
 }
 

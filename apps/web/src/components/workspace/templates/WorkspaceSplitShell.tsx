@@ -12,6 +12,7 @@ import { AssistantThreadSurface } from '../organisms/AssistantThreadSurface';
 import { SkuCatalogModal } from '../organisms/SkuCatalogModal';
 import { WorkspaceCanvasPane } from '../organisms/WorkspaceCanvasPane';
 import { WorkspaceHeader48 } from '../organisms/WorkspaceHeader48';
+import { WorkspaceSettingsModal } from '../organisms/WorkspaceSettingsModal';
 import { WorkspaceSidebarSlot } from '../molecules/WorkspaceSidebarSlot';
 
 const MIN_CHAT_PCT = 32;
@@ -25,6 +26,7 @@ export function WorkspaceSplitShell() {
   const [canvasDismissed, setCanvasDismissed] = useState(false);
   const [canvasFullscreen, setCanvasFullscreen] = useState(false);
   const [skuModalOpen, setSkuModalOpen] = useState(false);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [mobilePane, setMobilePane] = useState<'chat' | 'canvas'>('chat');
   const [chatWidthPct, setChatWidthPct] = useState(46);
@@ -135,6 +137,7 @@ export function WorkspaceSplitShell() {
         onDeleteThread={ws.deleteThread}
         onOpenDashboard={() => setAnalyticsOpen((p) => !p)}
         onOpenSkuCatalog={() => setSkuModalOpen(true)}
+        onOpenSettings={() => setSettingsModalOpen(true)}
         onChangeApprovalMode={ws.setApprovalWorkflowMode}
       />
 
@@ -276,6 +279,17 @@ export function WorkspaceSplitShell() {
         onSave={ws.saveSku}
         onDelete={ws.deleteSku}
         onApplyToChat={(item) => void ws.sendClassification(`Clasificar precedente SKU ${item.sku}: ${item.title}`)}
+      />
+
+      <WorkspaceSettingsModal
+        key={settingsModalOpen ? 'open' : 'closed'}
+        open={settingsModalOpen}
+        profile={ws.profile}
+        onClose={() => setSettingsModalOpen(false)}
+        onSave={(patch) => {
+          ws.updateProfile(patch);
+          ws.pushToast('Configuración guardada.', 'success');
+        }}
       />
 
       {ws.toast ? (

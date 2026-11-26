@@ -49,9 +49,10 @@ describe('ThreadSidebar (mockup shell)', () => {
     expect(props.onOpenSkuCatalog).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the footer compact by default and reveals plan usage + Activar plan inside the profile menu', async () => {
+  it('keeps the footer compact by default and reveals plan usage + Activar plan + Configuración inside the profile menu', async () => {
     const user = userEvent.setup();
-    renderSidebar();
+    const onOpenSettings = vi.fn<() => void>();
+    renderSidebar({ onOpenSettings });
 
     expect(screen.queryByLabelText(/Consumo del plan/i)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Cuenta y ajustes/i }));
@@ -60,6 +61,9 @@ describe('ThreadSidebar (mockup shell)', () => {
     expect(screen.getByText(/0 \/ 5 clasif\./i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Activar plan/i })).toHaveAttribute('href', '/activate-plan');
     expect(screen.getByLabelText(/Política de sellado/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Configuración/i }));
+    expect(onOpenSettings).toHaveBeenCalledTimes(1);
   });
 
   it('shows Gestionar plan inside the profile menu when on a paid plan', async () => {
