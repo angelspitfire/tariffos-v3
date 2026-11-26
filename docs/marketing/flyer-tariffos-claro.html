@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TariffOS — Flyer Editorial Claro (Media Carta 139.7x215.9mm + 3mm sangrado)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --paper: #fafbfd;
+      --navy: #0f172a;
+      --cobalt: #2563eb;
+      --ink: #0f172a;
+      --ink-soft: #334155;
+      --ink-muted: #64748b;
+      --rule: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    @page {
+      size: 145.7mm 221.9mm;
+      margin: 0;
+    }
+
+    body {
+      font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #e2e8f0;
+      color: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8mm;
+      padding: 10mm;
+    }
+
+    .screen-note {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      color: #334155;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 8px 14px;
+      text-align: center;
+      max-width: 145mm;
+    }
+
+    .sheet {
+      position: relative;
+      width: 145.7mm;
+      height: 221.9mm;
+      overflow: hidden;
+      background: var(--paper);
+      box-shadow: 0 24px 60px -16px rgba(15, 23, 42, 0.22);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 10.5mm 11mm 9mm;
+    }
+
+    /* Bold editorial top stripe */
+    .top-stripe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4mm;
+      background: var(--cobalt);
+    }
+
+    /* Subtle graphic corner arc */
+    .deco-ring {
+      position: absolute;
+      top: -28mm;
+      right: -28mm;
+      width: 90mm;
+      height: 90mm;
+      border-radius: 50%;
+      border: 0.35mm solid rgba(37, 99, 235, 0.14);
+      pointer-events: none;
+    }
+
+    /* Corner crop marks at 3mm inset */
+    .crop-marks {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 30;
+    }
+    .mark {
+      position: absolute;
+      background: rgba(15, 23, 42, 0.55);
+    }
+    .mark-light {
+      background: rgba(255, 255, 255, 0.65);
+    }
+    .m-tl-h { top: 3mm; left: 0; width: 2.3mm; height: 0.2mm; }
+    .m-tr-h { top: 3mm; right: 0; width: 2.3mm; height: 0.2mm; }
+    .m-bl-h { bottom: 3mm; left: 0; width: 2.3mm; height: 0.2mm; }
+    .m-br-h { bottom: 3mm; right: 0; width: 2.3mm; height: 0.2mm; }
+    .m-tl-v { top: 0; left: 3mm; width: 0.2mm; height: 2.3mm; }
+    .m-tr-v { top: 0; right: 3mm; width: 0.2mm; height: 2.3mm; }
+    .m-bl-v { bottom: 0; left: 3mm; width: 0.2mm; height: 2.3mm; }
+    .m-br-v { bottom: 0; right: 3mm; width: 0.2mm; height: 2.3mm; }
+
+    /* ================= MASTHEAD ================= */
+    .masthead {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 4.5mm;
+      border-bottom: 0.35mm solid var(--navy);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 2.4mm;
+    }
+
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 1.2mm;
+      height: 5.8mm;
+      padding: 0 2.4mm;
+      border-radius: 999px;
+      background: var(--navy);
+    }
+
+    .dot-white { width: 1.6mm; height: 1.6mm; border-radius: 50%; background: #ffffff; }
+    .dot-blue { width: 1.6mm; height: 1.6mm; border-radius: 50%; background: #60a5fa; }
+
+    .brand-name {
+      font-size: 13pt;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--navy);
+    }
+
+    .masthead-tag {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 6.8pt;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--cobalt);
+    }
+
+    /* ================= POSTER HEADLINE ================= */
+    .poster-hero {
+      position: relative;
+      z-index: 2;
+      margin-top: 2mm;
+    }
+
+    .kicker {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 7.2pt;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--cobalt);
+      margin-bottom: 3mm;
+    }
+
+    .headline {
+      font-size: 26pt;
+      font-weight: 800;
+      line-height: 0.98;
+      letter-spacing: -0.035em;
+      color: var(--navy);
+    }
+
+    .headline em {
+      font-style: normal;
+      color: var(--cobalt);
+    }
+
+    .lead {
+      margin-top: 4mm;
+      font-size: 9.2pt;
+      line-height: 1.44;
+      color: var(--ink-soft);
+      max-width: 112mm;
+    }
+
+    /* ================= SWISS EDITORIAL SPECS ================= */
+    .editorial-block {
+      position: relative;
+      z-index: 2;
+      border-top: 0.6mm solid var(--navy);
+      border-bottom: 0.3mm solid var(--rule);
+    }
+
+    .spec-row {
+      display: grid;
+      grid-template-columns: 11mm 1fr;
+      gap: 3mm;
+      padding: 3.6mm 0;
+      border-bottom: 0.25mm solid var(--rule);
+      align-items: baseline;
+    }
+
+    .spec-row:last-child {
+      border-bottom: none;
+    }
+
+    .spec-num {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: var(--cobalt);
+    }
+
+    .spec-title {
+      font-size: 10.2pt;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: -0.015em;
+    }
+
+    .spec-desc {
+      margin-top: 0.8mm;
+      font-size: 8pt;
+      line-height: 1.38;
+      color: var(--ink-soft);
+    }
+
+    /* ================= OFFER STRIP (PRINT BANNER) ================= */
+    .offer-strip {
+      position: relative;
+      z-index: 2;
+      background: var(--navy);
+      padding: 3.4mm 4.5mm;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 3mm;
+    }
+
+    .offer-main {
+      font-size: 9.5pt;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .offer-sub {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 7pt;
+      color: #93c5fd;
+      white-space: nowrap;
+    }
+
+    /* ================= FOOTER / CONTACT & QR ================= */
+    .footer-strip {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1fr 27mm;
+      gap: 5mm;
+      align-items: center;
+      padding-top: 2mm;
+    }
+
+    .footer-heading {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 6.8pt;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--cobalt);
+      margin-bottom: 2mm;
+    }
+
+    .contact-line {
+      font-size: 8pt;
+      line-height: 1.48;
+      color: var(--navy);
+    }
+
+    .contact-line span {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 7.1pt;
+      color: var(--ink-soft);
+    }
+
+    .web-url {
+      margin-top: 2mm;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 8.5pt;
+      font-weight: 700;
+      color: var(--cobalt);
+      letter-spacing: -0.01em;
+    }
+
+    .qr-frame {
+      background: #ffffff;
+      border: 0.35mm solid var(--navy);
+      padding: 2mm;
+      text-align: center;
+    }
+
+    .qr-box {
+      width: 22.3mm;
+      height: 22.3mm;
+      overflow: hidden;
+    }
+
+    .qr-box svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .qr-label {
+      margin-top: 1.1mm;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 5.6pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--navy);
+    }
+
+    @media print {
+      body { background: none; padding: 0; gap: 0; display: block; }
+      .screen-note { display: none !important; }
+      .sheet { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="screen-note">
+    Flyer Editorial <strong>Tema Claro</strong> · Media Carta (<strong>139.7 × 215.9 mm</strong> + 3 mm sangrado).
+  </div>
+
+  <main class="sheet" aria-label="Flyer Editorial TariffOS Claro">
+    <div class="top-stripe"></div>
+    <div class="deco-ring"></div>
+
+    <div class="crop-marks">
+      <span class="mark mark-light m-tl-h"></span>
+      <span class="mark mark-light m-tr-h"></span>
+      <span class="mark m-bl-h"></span>
+      <span class="mark m-br-h"></span>
+      <span class="mark mark-light m-tl-v"></span>
+      <span class="mark mark-light m-tr-v"></span>
+      <span class="mark m-bl-v"></span>
+      <span class="mark m-br-v"></span>
+    </div>
+
+    <header class="masthead">
+      <div class="brand">
+        <span class="brand-pill">
+          <span class="dot-white"></span>
+          <span class="dot-blue"></span>
+        </span>
+        <span class="brand-name">TariffOS</span>
+      </div>
+      <span class="masthead-tag">IA Aduanera · Venezuela</span>
+    </header>
+
+    <section class="poster-hero">
+      <p class="kicker">Para importadores, aduanas y logística</p>
+      <h1 class="headline">
+        Clasifica mercancías<br />
+        y calcula aduanas<br />
+        <em>en segundos.</em>
+      </h1>
+      <p class="lead">
+        Evita multas, retenciones y demoras en puerto. Obtén la partida arancelaria exacta, impuestos de importación y dictamen PDF listo para presentar.
+      </p>
+    </section>
+
+    <section class="editorial-block">
+      <div class="spec-row">
+        <div class="spec-num">01</div>
+        <div>
+          <div class="spec-title">Cero improvisación en aduana</div>
+          <div class="spec-desc">Valida los datos clave de cada producto con respaldo legal y decretos vigentes.</div>
+        </div>
+      </div>
+
+      <div class="spec-row">
+        <div class="spec-num">02</div>
+        <div>
+          <div class="spec-title">Sube tus documentos completos</div>
+          <div class="spec-desc">Facturas comerciales, packing list, BL, PDF o Excel/CSV — cientos de ítems en minutos.</div>
+        </div>
+      </div>
+
+      <div class="spec-row">
+        <div class="spec-num">03</div>
+        <div>
+          <div class="spec-title">Costos claros + Dictamen PDF firmable</div>
+          <div class="spec-desc">Calcula al instante Ad Valorem, IVA, tasas y permisos antes de embarcar.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="offer-strip">
+      <span class="offer-main">5 clasificaciones gratis</span>
+      <span class="offer-sub">Sin tarjeta · Planes desde $49/mes</span>
+    </div>
+
+    <footer class="footer-strip">
+      <div>
+        <div class="footer-heading">Contacto directo</div>
+        <div class="contact-line"><strong>Angel Fernandez</strong> · <span>+58 424-1638786 · angel@tariffos.app</span></div>
+        <div class="contact-line"><strong>Erika Peña</strong> · <span>+58 414-2368702 · erika@tariffos.app</span></div>
+        <div class="web-url">tariffos.app</div>
+      </div>
+
+      <div class="qr-frame">
+        <div class="qr-box" aria-label="Código QR hacia https://tariffos.app">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h33v33H0z"/><path stroke="#0f172a" d="M4 4.5h7m2 0h1m2 0h1m3 0h1m1 0h7M4 5.5h1m5 0h1m3 0h1m1 0h1m2 0h1m2 0h1m5 0h1M4 6.5h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1M4 7.5h1m1 0h3m1 0h1m1 0h1m2 0h4m3 0h1m1 0h3m1 0h1M4 8.5h1m1 0h3m1 0h1m1 0h4m2 0h1m3 0h1m1 0h3m1 0h1M4 9.5h1m5 0h1m1 0h5m2 0h2m1 0h1m5 0h1M4 10.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M12 11.5h2m1 0h2M4 12.5h1m1 0h5m6 0h4m1 0h5M9 13.5h1m4 0h1m1 0h1m1 0h1m1 0h1m2 0h1m3 0h1M4 14.5h1m1 0h1m1 0h1m1 0h3m6 0h2m1 0h1m2 0h1m1 0h2M6 15.5h1m4 0h2m7 0h4m4 0h1M7 16.5h5m1 0h3m5 0h4m1 0h3M4 17.5h2m1 0h1m1 0h1m6 0h2m2 0h2m1 0h1m1 0h1m1 0h1M4 18.5h1m1 0h2m1 0h2m3 0h1m2 0h3m2 0h4m1 0h2M4 19.5h1m1 0h2m1 0h1m1 0h1m1 0h2m1 0h2m2 0h1m2 0h2m3 0h1M4 20.5h1m5 0h1m1 0h1m1 0h1m1 0h1m1 0h7m1 0h1M12 21.5h3m4 0h2m3 0h2M4 22.5h7m2 0h4m3 0h1m1 0h1m1 0h1m1 0h3M4 23.5h1m5 0h1m1 0h4m2 0h1m1 0h1m3 0h2m2 0h1M4 24.5h1m1 0h3m1 0h1m1 0h1m1 0h2m3 0h6m1 0h3M4 25.5h1m1 0h3m1 0h1m1 0h3m1 0h7m1 0h5M4 26.5h1m1 0h3m1 0h1m1 0h1m4 0h2m6 0h2m1 0h1M4 27.5h1m5 0h1m2 0h1m2 0h2m1 0h2m2 0h3m2 0h1M4 28.5h7m1 0h1m1 0h1m1 0h1m1 0h1m2 0h8"/></svg>
+        </div>
+        <div class="qr-label">Escanea y prueba</div>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>
