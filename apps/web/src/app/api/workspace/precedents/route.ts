@@ -1,6 +1,7 @@
 import { prisma } from '@tariffos/database';
 import { SkuPrecedentSchema, type SkuPrecedent } from '@tariffos/shared-types';
 import { resolveCloudTenantContext } from '@/lib/agent/cloud-session';
+import { saveProductMasterEmbedding } from '@/lib/agent/product-master-embedding';
 
 interface ProductMetadata {
   precedentId?: string;
@@ -119,6 +120,8 @@ export async function PUT(request: Request): Promise<Response> {
     },
     select: { id: true },
   });
+
+  await saveProductMasterEmbedding(saved.id, p.description);
 
   return Response.json({ ok: true, id: saved.id });
 }

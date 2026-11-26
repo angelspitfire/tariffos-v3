@@ -22,6 +22,7 @@ export interface InvoiceItemInput {
   quantity?: number;
   unit?: string;
   brokerNote?: string;
+  imageDataUrls?: string[];
 }
 
 export interface TariffCandidateRecord {

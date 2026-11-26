@@ -1,4 +1,4 @@
-import { getLlmProvider, type LlmProvider } from '@tariffos/ai-client';
+import { getLlmProvider, type Attachment, type LlmProvider } from '@tariffos/ai-client';
 import { rgiModel } from '@tariffos/env';
 import { z } from 'zod';
 import {
@@ -28,11 +28,31 @@ const RgiResponseSchema = z.object({
 });
 
 const RGI_TIMEOUT_MS = 90_000;
+const MAX_INLINE_IMAGES = 2;
+const IMAGE_DATA_URL_PATTERN = /^data:(image\/(?:png|jpeg|jpg|webp));base64,[A-Za-z0-9+/=]+$/i;
 export const MAX_OUTPUT_TOKENS_STANDARD = 1_500;
 export const MAX_OUTPUT_TOKENS_DEEP = 3_500;
 export const MAX_CANDIDATES_FOR_LLM = 16;
 export const MAX_NOTES_CHARS_STANDARD = 8_000;
 export const MAX_NOTES_CHARS_DEEP = 16_000;
+
+/** Extracts valid inline image attachments (`png`/`jpeg`/`webp` base64 data URLs) up to cap. */
+export function toInlineImageAttachments(imageDataUrls?: string[]): Attachment[] {
+  if (!imageDataUrls?.length) return [];
+  const attachments: Attachment[] = [];
+  for (const url of imageDataUrls) {
+    const trimmed = url.trim();
+    const match = IMAGE_DATA_URL_PATTERN.exec(trimmed);
+    if (!match?.[1]) continue;
+    attachments.push({
+      type: 'inline',
+      dataUrl: trimmed,
+      mimeType: match[1].toLowerCase() === 'image/jpg' ? 'image/jpeg' : match[1].toLowerCase(),
+    });
+    if (attachments.length >= MAX_INLINE_IMAGES) break;
+  }
+  return attachments;
+}
 
 /** Deterministically caps legalNotes payload size to stay inside per-call input budgets. */
 export function budgetLegalNotes(
@@ -107,11 +127,14 @@ export function createRgiLlmRunner(runtimeLlm?: RgiLlmRuntimeOverride) {
     const maxNotesChars = input.deepMode ? MAX_NOTES_CHARS_DEEP : MAX_NOTES_CHARS_STANDARD;
     const budgetedCandidates = input.candidates.slice(0, MAX_CANDIDATES_FOR_LLM);
     const budgetedNotes = budgetLegalNotes(input.notes, maxNotesChars);
+    const attachments = toInlineImageAttachments(input.item.imageDataUrls);
+    const { imageDataUrls: _ignoredImages, ...itemForPrompt } = input.item;
     let capturedUsage: { inputTokens: number; outputTokens: number } | undefined;
 
     const result = await provider.generateJson(
       `${RGI_SYSTEM_PROMPT}\n\nInput:\n${JSON.stringify({
-        item: input.item,
+        item: itemForPrompt,
+        attachedImagesCount: attachments.length,
         webContext: input.webContext ?? null,
         candidates: budgetedCandidates,
         legalNotes: budgetedNotes,
@@ -123,6 +146,7 @@ export function createRgiLlmRunner(runtimeLlm?: RgiLlmRuntimeOverride) {
         temperature: 0,
         timeoutMs: RGI_TIMEOUT_MS,
         maxOutputTokens,
+        ...(attachments.length > 0 ? { attachments } : {}),
         onUsage: (usage) => {
           capturedUsage = usage;
         },

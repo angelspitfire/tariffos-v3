@@ -154,3 +154,28 @@ export async function retrieveHybridCandidates(
 
   return fuseHybridTariffCandidates(vectorCandidates, lexicalCandidates, options);
 }
+
+/** Expands up to 3 unique 6-digit NCM/HS sibling prefixes before Tier 2 RGI 6 reasoning. */
+export async function expandSiblingsForRgi(
+  ports: Pick<PipelinePorts, 'expandSiblingSubheadings'>,
+  countryCode: string,
+  candidates: TariffCandidateRecord[],
+): Promise<TariffCandidateRecord[]> {
+  if (!ports.expandSiblingSubheadings || candidates.length === 0) return candidates;
+  const siblingPrefixes = Array.from(
+    new Set(candidates.map((c) => digits(c.hsCode).slice(0, 6)).filter((p) => p.length === 6)),
+  ).slice(0, 3);
+  if (siblingPrefixes.length === 0) return candidates;
+
+  const siblings = await ports
+    .expandSiblingSubheadings(countryCode, siblingPrefixes)
+    .catch(() => [] as TariffCandidateRecord[]);
+  const seen = new Set(candidates.map((c) => digits(c.hsCode)));
+  const extra = siblings.filter((s) => {
+    const key = digits(s.hsCode);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return extra.length > 0 ? [...candidates, ...extra] : candidates;
+}

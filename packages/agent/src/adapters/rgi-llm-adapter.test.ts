@@ -115,6 +115,36 @@ describe('createRgiLlmRunner', () => {
     });
   });
 
+  it('forwards valid image data URLs as inline multimodal attachments without dumping base64 into prompt text', async () => {
+    mockGenerateJson.mockResolvedValueOnce(sampleResponse);
+    const pngDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB';
+    const runner = createRgiLlmRunner({ provider: 'nvidia', model: 'nvidia/nemotron-3.5-super-vl-120b-a12b' });
+
+    await runner({
+      item: {
+        lineId: 'img-1',
+        description: 'Placa técnica de equipo',
+        originCountry: 'CN',
+        cifValue: 500,
+        imageDataUrls: [pngDataUrl, 'invalid-url'],
+      },
+      candidates: [],
+      notes: [],
+      deepMode: false,
+    });
+
+    const [prompt, , callOpts] = mockGenerateJson.mock.calls[0] as [
+      string,
+      unknown,
+      { attachments?: Array<{ type: string; dataUrl: string; mimeType: string }> },
+    ];
+    expect(prompt).not.toContain('iVBORw0KGgo');
+    expect(prompt).toContain('"attachedImagesCount":1');
+    expect(callOpts.attachments).toEqual([
+      { type: 'inline', dataUrl: pngDataUrl, mimeType: 'image/png' },
+    ]);
+  });
+
   it('instructs the model with Venezuela Decreto 4.944 NCM rules and non-blocking compliance flags', async () => {
     mockGenerateJson.mockResolvedValueOnce(sampleResponse);
 

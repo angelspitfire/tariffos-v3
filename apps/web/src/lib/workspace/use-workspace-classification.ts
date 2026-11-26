@@ -9,6 +9,7 @@ import type {
   StreamProgressEvent,
 } from '@tariffos/shared-types';
 import { resolveDefaultCanvasTab } from './canvas-tabs';
+import { extractWorkspaceAttachments } from './attachment-upload';
 import { classifyStream } from './classify-client';
 import { applyApprovalPolicyToEnvelope } from './dossier-approval-policy';
 import type { WorkspaceAttachment, WorkspaceMessage, WorkspaceThread, WorkspaceToast } from './types';
@@ -97,6 +98,11 @@ export function useWorkspaceClassification({
           .filter(Boolean)
           .join('\n');
 
+        const imageDataUrls = attachments
+          .map((a) => a.imageDataUrl)
+          .filter((u): u is string => Boolean(u))
+          .slice(0, 2);
+
         const rawEnvelope = await classifyStream({
           query: clean,
           jurisdiction,
@@ -104,6 +110,7 @@ export function useWorkspaceClassification({
           incoterm: defaultIncoterm,
           deepMode,
           attachmentsText: combinedAttachments || undefined,
+          imageDataUrls: imageDataUrls.length > 0 ? imageDataUrls : undefined,
           isBatchHint: options?.isBatchHint || attachments.length > 0,
           onProgress: setLiveProgress,
           signal: controller.signal,
@@ -161,47 +168,7 @@ export function useWorkspaceClassification({
   );
 
   const addFiles = useCallback(async (files: FileList) => {
-    const added: WorkspaceAttachment[] = [];
-    for (const file of Array.from(files)) {
-      let extractedText: string | undefined;
-      let imageDataUrl: string | undefined;
-      const isText = /text|csv|json/i.test(file.type) || /\.(txt|csv)$/i.test(file.name);
-      const isPdfOrImage =
-        /pdf|image\/(png|jpeg|webp)/i.test(file.type) || /\.(pdf|png|jpe?g|webp)$/i.test(file.name);
-
-      if (isText) {
-        try {
-          extractedText = (await file.text()).slice(0, 8000);
-        } catch {
-          extractedText = undefined;
-        }
-      } else if (isPdfOrImage && typeof fetch !== 'undefined') {
-        try {
-          const form = new FormData();
-          form.append('file', file);
-          const res = await fetch('/api/attachments/extract', { method: 'POST', body: form });
-          if (res.ok) {
-            const payload = (await res.json()) as {
-              kind?: string;
-              text?: string;
-              dataUrl?: string;
-            };
-            if (payload.text) extractedText = payload.text;
-            if (payload.dataUrl) imageDataUrl = payload.dataUrl;
-          }
-        } catch {
-          // Graceful fallback to filename attachment
-        }
-      }
-      added.push({
-        id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        name: file.name,
-        mimeType: file.type || 'application/octet-stream',
-        sizeBytes: file.size,
-        ...(extractedText ? { extractedText } : {}),
-        ...(imageDataUrl ? { imageDataUrl } : {}),
-      });
-    }
+    const added = await extractWorkspaceAttachments(files);
     setPendingAttachments((prev) => [...prev, ...added]);
   }, []);
 

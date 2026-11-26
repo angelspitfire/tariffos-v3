@@ -7,33 +7,18 @@ import {
 import type { StreamProgressEvent } from '@tariffos/shared-types';
 import { getActiveLlmRuntimeConfig } from '@/lib/admin/llm-settings';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
-import {
-  ClassifyStreamRequestSchema,
-  type ClassifyStreamRequest,
-} from '@/lib/agent/classify-stream-schema';
+import { ClassifyStreamRequestSchema, type ClassifyStreamRequest } from '@/lib/agent/classify-stream-schema';
 import {
   checkTenantQuota,
+  formatQuotaErrorResponse,
   persistClassificationOutcome,
   resolveCloudTenantContext,
 } from '@/lib/agent/cloud-session';
-import {
-  buildFullClassificationDescription,
-  evaluateDynamicHitl,
-} from '@/lib/agent/dynamic-hitl';
-import {
-  buildA2UIEnvelopeFromLine,
-  buildHitlEnvelope,
-} from '@/lib/agent/envelope-builder';
-import {
-  classifyRequestOffline,
-  detectMissingCriticalInfo,
-} from '@/lib/agent/offline-classifier';
+import { buildFullClassificationDescription, evaluateDynamicHitl } from '@/lib/agent/dynamic-hitl';
+import { buildA2UIEnvelopeFromLine, buildHitlEnvelope } from '@/lib/agent/envelope-builder';
+import { classifyRequestOffline, detectMissingCriticalInfo } from '@/lib/agent/offline-classifier';
 import { createPrismaPipelinePorts } from '@/lib/agent/prisma-ports';
-import {
-  encodeErrorEvent,
-  encodeProgressEvent,
-  encodeResultEvent,
-} from '@/lib/agent/sse-encoder';
+import { encodeErrorEvent, encodeProgressEvent, encodeResultEvent } from '@/lib/agent/sse-encoder';
 
 async function runLiveClassificationLine(
   input: ClassifyStreamRequest,
@@ -49,6 +34,7 @@ async function runLiveClassificationLine(
         description: buildFullClassificationDescription(input),
         originCountry: input.originCountry,
         cifValue: input.cifValue,
+        ...(input.imageDataUrls?.length ? { imageDataUrls: input.imageDataUrls } : {}),
       },
     ],
     ports,
@@ -91,18 +77,11 @@ export async function POST(request: Request): Promise<Response> {
 
     const quota = await checkTenantQuota(tenantId);
     if (!quota.allowed) {
-      const reason = quota.reason ?? 'LIMIT_REACHED';
-      const status =
-        reason === 'ACCOUNT_CANCELED' ? 403 : reason === 'QUOTA_CHECK_ERROR' ? 503 : 402;
-      const error =
-        reason === 'ACCOUNT_CANCELED'
-          ? 'Cuenta dada de baja. Contacta a soporte.'
-          : reason === 'PAST_DUE'
-            ? 'Activa tu Piloto Operativo o Plan Agencia para ejecutar clasificaciones.'
-            : reason === 'QUOTA_CHECK_ERROR'
-              ? 'No pudimos validar tu cuota de servicio. Intenta nuevamente.'
-              : 'Classification quota reached';
-      return Response.json({ error, reason }, { status });
+      const formatted = formatQuotaErrorResponse(quota.reason);
+      return Response.json(
+        { error: formatted.error, reason: formatted.reason },
+        { status: formatted.status },
+      );
     }
 
     if (!isSupportedLiveCountry(input.countryCode)) {

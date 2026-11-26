@@ -21,6 +21,7 @@ export interface ClassifyStreamRequest {
   deepMode?: boolean;
   sku?: string;
   attachmentsText?: string;
+  imageDataUrls?: string[];
   isBatchHint?: boolean;
   onProgress?: (event: StreamProgressEvent) => void;
   signal?: AbortSignal;
@@ -100,6 +101,7 @@ export async function classifyStream(
       deepMode: input.deepMode,
       sku: input.sku,
       attachmentsText: input.attachmentsText,
+      imageDataUrls: input.imageDataUrls,
       isBatchHint: input.isBatchHint,
     }),
   });

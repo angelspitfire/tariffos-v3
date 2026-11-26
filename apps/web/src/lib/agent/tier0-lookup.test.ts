@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   customRuleFindMany: vi.fn(),
   productMasterFindFirst: vi.fn(),
+  searchProductMasterSemantic: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock('@tariffos/database', () => ({
@@ -10,6 +11,10 @@ vi.mock('@tariffos/database', () => ({
     customClassificationRule: { findMany: mocks.customRuleFindMany },
     productMaster: { findFirst: mocks.productMasterFindFirst },
   },
+}));
+
+vi.mock('./product-master-embedding', () => ({
+  searchProductMasterSemantic: mocks.searchProductMasterSemantic,
 }));
 
 import { findTenantSkuPrecedent } from './tier0-lookup';
@@ -77,5 +82,23 @@ describe('findTenantSkuPrecedent', () => {
       confidencePct: 96,
       approvedByBroker: true,
     });
+  });
+
+  it('uses semantic ProductMaster embedding fallback when exact rule and description do not match', async () => {
+    mocks.customRuleFindMany.mockResolvedValue([]);
+    mocks.productMasterFindFirst.mockResolvedValue(null);
+    mocks.searchProductMasterSemantic.mockResolvedValueOnce({
+      hsCode: '8471.30.90.90',
+      officialDescription: 'Laptop MacBook Pro 14',
+      confidencePct: 96,
+      approvedByBroker: true,
+    });
+
+    const hit = await findTenantSkuPrecedent('t-1', 'Apple MacBook Pro 14 pulgadas');
+    expect(mocks.searchProductMasterSemantic).toHaveBeenCalledWith(
+      't-1',
+      'Apple MacBook Pro 14 pulgadas',
+    );
+    expect(hit?.hsCode).toBe('8471.30.90.90');
   });
 });

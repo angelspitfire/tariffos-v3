@@ -1,27 +1,16 @@
 import { formatHsCode, type ClassificationLinePayload } from '@tariffos/shared-types';
-import { digits } from '../util/code.js';
 import { calculateDeterministicDuties } from './duties.js';
 import { deduplicateInvoiceItems } from './dedup.js';
-import { filterLegalNotesByChapter, retrieveHybridCandidates } from './hybrid-retrieval.js';
+import { expandSiblingsForRgi, filterLegalNotesByChapter, retrieveHybridCandidates } from './hybrid-retrieval.js';
 import {
-  appendAuditUnresolved,
-  buildProhibitedPayload,
-  buildTier0Payload,
-  buildTier1Payload,
-  canUseTier1FastPath,
-  isShortDescription,
-  mergeTariffFlags,
-  projectToLine,
+  appendAuditUnresolved, buildProhibitedPayload, buildTier0Payload, buildTier1Payload,
+  canUseTier1FastPath, isShortDescription, mergeTariffFlags, projectToLine,
 } from './orchestrator-helpers.js';
 import { runCompliancePreGate } from './pre-gate.js';
 import { auditTariffAgainstOfficialSchedule } from './tariff-validator.js';
 import {
-  DEFAULT_MAX_WEB_GROUNDING_STANDARD,
-  HIGH_CONFIDENCE_THRESHOLD,
-  type BatchPipelineResult,
-  type InvoiceItemInput,
-  type PipelinePorts,
-  type PipelineRunOptions,
+  DEFAULT_MAX_WEB_GROUNDING_STANDARD, HIGH_CONFIDENCE_THRESHOLD,
+  type BatchPipelineResult, type InvoiceItemInput, type PipelinePorts, type PipelineRunOptions,
 } from './types.js';
 
 const DEFAULT_BATCH_CONCURRENCY = 5;
@@ -80,27 +69,7 @@ async function classifyUniqueItem(
 
   // 5. Tier 2: Expand sibling 6-digit subheadings, RGI 1 -> 6 Reasoning, Legal Notes & Audit
   options.onProgress?.({ stage: 'rgi_reasoning', label: 'Aplicando recorrido RGI 1 → 6', progressPct: 72 });
-  let rgiCandidates = candidates;
-  if (ports.expandSiblingSubheadings && candidates.length > 0) {
-    const siblingPrefixes = Array.from(
-      new Set(candidates.map((c) => digits(c.hsCode).slice(0, 6)).filter((p) => p.length === 6)),
-    ).slice(0, 3);
-    if (siblingPrefixes.length > 0) {
-      const siblings = await ports
-        .expandSiblingSubheadings(options.countryCode, siblingPrefixes)
-        .catch(() => [] as typeof candidates);
-      const seen = new Set(candidates.map((c) => digits(c.hsCode)));
-      const extra = siblings.filter((s) => {
-        const key = digits(s.hsCode);
-        if (!key || seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-      if (extra.length > 0) {
-        rgiCandidates = [...candidates, ...extra];
-      }
-    }
-  }
+  const rgiCandidates = await expandSiblingsForRgi(ports, options.countryCode, candidates);
 
   const topCandidates = rgiCandidates.slice(0, MAX_CANDIDATES_FOR_NOTES);
   const prefixes = [...new Set(topCandidates.map((c) => c.hsCode.slice(0, 4)))];

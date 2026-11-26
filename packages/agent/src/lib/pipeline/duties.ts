@@ -1,21 +1,11 @@
-import type {
-  A2UICalculatorComponent,
-  A2UIDocumentSummaryComponent,
-  A2UIDossierComponent,
-  DeterministicDuties,
-  IncotermCode,
-} from '@tariffos/shared-types';
+import type { DeterministicDuties } from '@tariffos/shared-types';
 import type { DutyEngineInput, DutyEngineResult } from './duty-types.js';
-import {
-  INCOTERM_RULES,
-  detectIncotermFromText,
-  detectOriginCodeFromText,
-  resolvePreferentialTreatment,
-} from './trade-preferences.js';
+import { INCOTERM_RULES, resolvePreferentialTreatment } from './trade-preferences.js';
 import { evaluateTradeRemedies } from './trade-remedies.js';
 import type { TariffCandidateRecord } from './types.js';
 
 export type { DutyEngineInput, DutyEngineResult } from './duty-types.js';
+export { inferTradeParamsFromContext } from './trade-context.js';
 
 const PERCENT_DIVISOR = 100;
 const CURRENCY_DECIMALS = 2;
@@ -171,34 +161,4 @@ export function calculateFullDuties(input: DutyEngineInput): DutyEngineResult {
     localLandedCost: landedCost * fx,
     remedies,
   };
-}
-
-export function inferTradeParamsFromContext(params: {
-  calculator?: A2UICalculatorComponent;
-  dossier?: A2UIDossierComponent;
-  docSummary?: A2UIDocumentSummaryComponent;
-  defaultIncoterm?: IncotermCode;
-}): { originCode: string; incoterm: IncotermCode } {
-  const { calculator, dossier, docSummary, defaultIncoterm } = params;
-  const specText = (dossier?.technicalSpecs ?? [])
-    .filter((s) => /origen|origin|pa[ií]s|proceden|fabric|manufact/i.test(s.key))
-    .map((s) => s.value)
-    .join(' ');
-
-  const combinedOriginText = [
-    calculator?.originCountry ?? '',
-    specText,
-    docSummary?.routeOrIncoterm ?? '',
-    docSummary?.shipper ?? '',
-    dossier?.officialDescription ?? '',
-  ].join(' ');
-
-  const originCode = detectOriginCodeFromText(combinedOriginText) ?? 'OTHER';
-  const incoterm =
-    calculator?.incoterm ??
-    detectIncotermFromText(docSummary?.routeOrIncoterm ?? '') ??
-    defaultIncoterm ??
-    'FOB';
-
-  return { originCode, incoterm };
 }

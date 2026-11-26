@@ -47,6 +47,24 @@ export async function checkTenantQuota(
   return billingService.checkBillingLimit(tenantId, options);
 }
 
+export function formatQuotaErrorResponse(reason = 'LIMIT_REACHED'): {
+  status: number;
+  error: string;
+  reason: string;
+} {
+  const status =
+    reason === 'ACCOUNT_CANCELED' ? 403 : reason === 'QUOTA_CHECK_ERROR' ? 503 : 402;
+  const error =
+    reason === 'ACCOUNT_CANCELED'
+      ? 'Cuenta dada de baja. Contacta a soporte.'
+      : reason === 'PAST_DUE'
+        ? 'Activa tu Piloto Operativo o Plan Agencia para ejecutar clasificaciones.'
+        : reason === 'QUOTA_CHECK_ERROR'
+          ? 'No pudimos validar tu cuota de servicio. Intenta nuevamente.'
+          : 'Classification quota reached';
+  return { status, error, reason };
+}
+
 export async function persistClassificationOutcome(
   tenantId: string,
   line: ClassificationLinePayload,

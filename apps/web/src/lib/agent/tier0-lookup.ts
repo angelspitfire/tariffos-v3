@@ -1,9 +1,11 @@
 import { prisma } from '@tariffos/database';
 import type { SkuPrecedentRecord } from '@tariffos/agent';
+import { searchProductMasterSemantic } from './product-master-embedding';
 
 /**
  * Looks up an active custom classification rule (preferring tenant-specific rules
- * over `GLOBAL`) or a previously approved `ProductMaster` entry by description or SKU.
+ * over `GLOBAL`), exact `ProductMaster` match (description or SKU), or high-confidence
+ * semantic `ProductMaster.embedding` match (`>= 0.94` cosine similarity).
  */
 export async function findTenantSkuPrecedent(
   tenantId: string,
@@ -40,12 +42,14 @@ export async function findTenantSkuPrecedent(
       ],
     },
   });
-  if (!product?.hsCode) return null;
+  if (product?.hsCode) {
+    return {
+      hsCode: product.hsCode,
+      officialDescription: product.description,
+      confidencePct: Math.round((product.confidence ?? 0.98) * 100),
+      approvedByBroker: true,
+    };
+  }
 
-  return {
-    hsCode: product.hsCode,
-    officialDescription: product.description,
-    confidencePct: Math.round((product.confidence ?? 0.98) * 100),
-    approvedByBroker: true,
-  };
+  return searchProductMasterSemantic(tenantId, trimmed);
 }

@@ -40,6 +40,7 @@ describe('classifyStream (cloud contract)', () => {
       deepMode: true,
       sku: 'MBP-14-M3',
       attachmentsText: '1.6 kg, pantalla 14.2 pulgadas',
+      imageDataUrls: ['data:image/png;base64,AAA'],
       isBatchHint: false,
     });
 
@@ -58,6 +59,7 @@ describe('classifyStream (cloud contract)', () => {
       deepMode: true,
       sku: 'MBP-14-M3',
       attachmentsText: '1.6 kg, pantalla 14.2 pulgadas',
+      imageDataUrls: ['data:image/png;base64,AAA'],
       isBatchHint: false,
     });
   });

@@ -5,10 +5,15 @@ const mocks = vi.hoisted(() => ({
   findMany: vi.fn(),
   upsert: vi.fn(),
   deleteMany: vi.fn(),
+  saveProductMasterEmbedding: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@/lib/agent/cloud-session', () => ({
   resolveCloudTenantContext: mocks.resolveCloudTenantContext,
+}));
+
+vi.mock('@/lib/agent/product-master-embedding', () => ({
+  saveProductMasterEmbedding: mocks.saveProductMasterEmbedding,
 }));
 
 vi.mock('@tariffos/database', () => ({
@@ -76,6 +81,7 @@ describe('/api/workspace/precedents', () => {
     );
     expect(putRes.status).toBe(200);
     expect(mocks.upsert).toHaveBeenCalledTimes(1);
+    expect(mocks.saveProductMasterEmbedding).toHaveBeenCalledWith('pm-1', 'MacBook Pro 14 M3');
 
     const delRes = await DELETE(new Request('http://localhost/api/workspace/precedents?id=pm-1', { method: 'DELETE' }));
     expect(delRes.status).toBe(200);
