@@ -9,16 +9,15 @@ import {
 } from '@assistant-ui/react';
 import {
   ChevronDown,
-  FileText,
   Mic,
   Plus,
   Send,
   SlidersHorizontal,
   Square,
-  X,
 } from 'lucide-react';
 import type { SkuPrecedent, UserProfileSettings } from '@tariffos/shared-types';
 import type { WorkspaceAttachment } from '@/lib/workspace/types';
+import { ComposerAttachmentStrip } from '../molecules/ComposerAttachmentStrip';
 import { ComposerDictationBar, createSpeechRecognition, type SpeechRecognitionLike } from '../molecules/ComposerDictationBar';
 import { ComposerMenus, type ComposerMenuKind } from '../molecules/ComposerMenus';
 import { PredictiveSkuList } from '../molecules/PredictiveSkuList';
@@ -31,6 +30,7 @@ export interface WorkspaceComposerProps {
   onAddFiles: (files: FileList) => void;
   onRemoveAttachment: (id: string) => void;
   onUpdateProfile: (patch: Partial<UserProfileSettings>) => void;
+  onTriggerBatchUpload?: () => void;
   onNotifyUnavailableCamera?: () => void;
 }
 
@@ -41,6 +41,7 @@ export function WorkspaceComposer({
   onAddFiles,
   onRemoveAttachment,
   onUpdateProfile,
+  onTriggerBatchUpload,
   onNotifyUnavailableCamera,
 }: WorkspaceComposerProps) {
   const aui = useAui();
@@ -116,6 +117,7 @@ export function WorkspaceComposer({
         profile={profile}
         onClose={() => setComposerMenu(null)}
         onTriggerUpload={() => fileInputRef.current?.click()}
+        onTriggerBatchUpload={onTriggerBatchUpload}
         onUpdateProfile={onUpdateProfile}
         onNotifyUnavailableCamera={() => {
           setCameraOpen(true);
@@ -150,27 +152,7 @@ export function WorkspaceComposer({
             : 'border-border-strong/75 focus-within:border-accent-brand focus-within:ring-2 focus-within:ring-accent-brand/25'
         }`}
       >
-        {pendingAttachments.length > 0 && (
-          <div className="px-3.5 pt-3 pb-1 flex flex-wrap gap-2">
-            {pendingAttachments.map((att) => (
-              <div
-                key={att.id}
-                className="inline-flex items-center gap-2 p-1.5 pl-2.5 bg-surface-muted border border-border-subtle rounded-lg"
-              >
-                <FileText className="w-3.5 h-3.5 text-accent-ink shrink-0" aria-hidden="true" />
-                <span className="text-xs font-medium text-ink-primary truncate max-w-[160px]">{att.name}</span>
-                <button
-                  type="button"
-                  onClick={() => onRemoveAttachment(att.id)}
-                  aria-label={`Quitar archivo ${att.name}`}
-                  className="p-0.5 text-ink-subtle hover:text-ink-primary cursor-pointer"
-                >
-                  <X className="w-3.5 h-3.5" aria-hidden="true" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+        <ComposerAttachmentStrip attachments={pendingAttachments} onRemove={onRemoveAttachment} />
 
         <ComposerPrimitive.Input
           rows={2}

@@ -9,11 +9,13 @@ import { exportWorkspaceDossierPdf } from '@/lib/workspace/dossier-pdf';
 import { buildWorkspaceInlineActions } from '@/lib/workspace/inline-actions';
 import { JURISDICTIONS } from '@/lib/workspace/jurisdictions';
 import { computePlanStatus, mergeCloudUsageIntoPlanStatus, resolveWorkspaceReadOnlyReason } from '@/lib/workspace/plan-status';
+import { useBatchJob } from '@/lib/workspace/use-batch-job';
 import { useCloudUsageSnapshot } from '@/lib/workspace/use-cloud-usage';
 import { useWorkspaceShellLayout } from '@/lib/workspace/use-split-layout';
 import { useWorkspaceState } from '@/lib/workspace/use-workspace-state';
 import { AnalyticsWorkspaceView } from '../organisms/AnalyticsWorkspaceView';
 import { WorkspaceHeader48 } from '../organisms/WorkspaceHeader48';
+import { BatchProgressBanner } from '../molecules/BatchProgressBanner';
 import { WorkspaceCanvasSlot } from '../molecules/WorkspaceCanvasSlot';
 import { WorkspaceMobilePaneTabs } from '../molecules/WorkspaceMobilePaneTabs';
 import { WorkspaceModalsSlot } from '../molecules/WorkspaceModalsSlot';
@@ -25,9 +27,16 @@ export function WorkspaceSplitShell() {
   const [planId, setPlanId] = useState('pilot');
   const [eveSessionKey, setEveSessionKey] = useState(0);
   const eveSendRef = useRef<((text: string) => void) | null>(null);
+  const batchInputRef = useRef<HTMLInputElement | null>(null);
   const runtimeMode = getAgentRuntimeMode();
   const cloudUsage = useCloudUsageSnapshot();
   const readOnlyReason = resolveWorkspaceReadOnlyReason(cloudUsage);
+  const batchJob = useBatchJob({
+    jurisdiction: ws.jurisdiction,
+    deepMode: ws.profile.detailLevel === 'exhaustive',
+    onBatchCompleted: ws.ingestExternalMessage,
+    pushToast: ws.pushToast,
+  });
 
   const hasCanvas = ws.canvasComponents.length > 0;
   const threadArtifacts = extractThreadArtifacts(ws.activeThread?.messages ?? []);
@@ -91,6 +100,17 @@ export function WorkspaceSplitShell() {
 
   return (
     <div className="flex h-dvh overflow-hidden bg-surface-app text-ink-primary">
+      <input
+        ref={batchInputRef}
+        type="file"
+        accept=".xlsx,.csv,.txt,.pdf"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void batchJob.startBatchUpload(file);
+          e.target.value = '';
+        }}
+      />
       <WorkspaceSidebarSlot
         desktopOpen={layout.sidebarOpen}
         mobileOpen={layout.mobileDrawerOpen}
@@ -162,6 +182,24 @@ export function WorkspaceSplitShell() {
                   profile={ws.profile}
                   inlineActions={inlineActions}
                   readOnlyReason={readOnlyReason}
+                  batchBanner={
+                    batchJob.bannerState ? (
+                      <BatchProgressBanner
+                        fileName={batchJob.bannerState.fileName}
+                        totalItems={batchJob.bannerState.totalItems}
+                        connectionStatus={batchJob.bannerState.connectionStatus}
+                        progress={batchJob.bannerState.progress}
+                        onDismiss={batchJob.dismissJob}
+                      />
+                    ) : null
+                  }
+                  onTriggerBatchUpload={() => {
+                    if (readOnlyReason) {
+                      ws.pushToast(readOnlyReason, 'info');
+                      return;
+                    }
+                    batchInputRef.current?.click();
+                  }}
                   onSendMessage={guardedSendClassification}
                   onCancelRun={ws.cancelRun}
                   onAddFiles={(files) => void ws.addFiles(files)}

@@ -11,6 +11,7 @@ import {
 export interface WorkspaceEmptyStateProps {
   onFocusComposer: () => void;
   onTriggerUpload: () => void;
+  onTriggerBatchUpload?: () => void;
   onRunSample: (sample: SampleMerchandise) => void;
   onRunBatchSample: (batch: SampleBatchDocument) => void;
 }
@@ -18,6 +19,7 @@ export interface WorkspaceEmptyStateProps {
 export function WorkspaceEmptyState({
   onFocusComposer,
   onTriggerUpload,
+  onTriggerBatchUpload,
   onRunSample,
   onRunBatchSample,
 }: WorkspaceEmptyStateProps) {
@@ -72,7 +74,7 @@ export function WorkspaceEmptyState({
         {firstBatch ? (
           <button
             type="button"
-            onClick={() => onRunBatchSample(firstBatch)}
+            onClick={() => (onTriggerBatchUpload ? onTriggerBatchUpload() : onRunBatchSample(firstBatch))}
             className="tos-rise text-left p-4 bg-surface-panel border border-border-subtle hover:border-accent-brand rounded-surface shadow-xs transition-colors group cursor-pointer space-y-2"
           >
             <div className="flex items-center justify-between gap-2">
@@ -80,10 +82,12 @@ export function WorkspaceEmptyState({
               <ArrowUpRight className="w-3.5 h-3.5 text-ink-subtle group-hover:text-accent-ink" />
             </div>
             <div className="text-xs font-semibold text-ink-primary">
-              Probar lote manifiesto
+              {onTriggerBatchUpload ? 'Cargar lote Excel / PDF' : 'Probar lote manifiesto'}
             </div>
             <p className="text-[11px] text-ink-muted leading-relaxed">
-              {firstBatch.label}
+              {onTriggerBatchUpload
+                ? 'Sube una factura .xlsx, .csv o .pdf para clasificarla por bloques.'
+                : firstBatch.label}
             </p>
           </button>
         ) : null}

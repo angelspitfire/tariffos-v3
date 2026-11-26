@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import type {
   SkuPrecedent,
   StreamProgressEvent,
@@ -24,6 +25,8 @@ export interface WorkspaceThreadSlotProps {
   profile: UserProfileSettings;
   inlineActions: InlineCardActions;
   readOnlyReason: string | null;
+  batchBanner?: ReactNode;
+  onTriggerBatchUpload?: () => void;
   onSendMessage: (
     prompt: string,
     opts?: { attachmentsText?: string; isBatchHint?: boolean },
@@ -53,6 +56,8 @@ export function WorkspaceThreadSlot({
   profile,
   inlineActions,
   readOnlyReason,
+  batchBanner = null,
+  onTriggerBatchUpload,
   onSendMessage,
   onCancelRun,
   onAddFiles,
@@ -79,6 +84,8 @@ export function WorkspaceThreadSlot({
         profile={profile}
         inlineActions={inlineActions}
         readOnlyReason={readOnlyReason}
+        batchBanner={batchBanner}
+        onTriggerBatchUpload={onTriggerBatchUpload}
         onAddFiles={onAddFiles}
         onRemoveAttachment={onRemoveAttachment}
         onConsumeAttachments={onConsumeAttachments}
@@ -107,6 +114,8 @@ export function WorkspaceThreadSlot({
       profile={profile}
       inlineActions={inlineActions}
       readOnlyReason={readOnlyReason}
+      batchBanner={batchBanner}
+      onTriggerBatchUpload={onTriggerBatchUpload}
       onSendMessage={(text) => onSendMessage(text)}
       onCancelRun={onCancelRun}
       onAddFiles={onAddFiles}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Camera, FilePlus2, Globe, PanelRightOpen, Search } from 'lucide-react';
+import { Camera, FilePlus2, FileSpreadsheet, Globe, PanelRightOpen, Search } from 'lucide-react';
 import type { UserProfileSettings } from '@tariffos/shared-types';
 
 export type ComposerMenuKind = 'attach' | 'tools' | null;
@@ -10,6 +10,7 @@ export interface ComposerMenusProps {
   profile: UserProfileSettings;
   onClose: () => void;
   onTriggerUpload: () => void;
+  onTriggerBatchUpload?: () => void;
   onUpdateProfile: (patch: Partial<UserProfileSettings>) => void;
   onNotifyUnavailableCamera: () => void;
 }
@@ -19,6 +20,7 @@ export function ComposerMenus({
   profile,
   onClose,
   onTriggerUpload,
+  onTriggerBatchUpload,
   onUpdateProfile,
   onNotifyUnavailableCamera,
 }: ComposerMenusProps) {
@@ -41,9 +43,27 @@ export function ComposerMenus({
           <FilePlus2 className="w-4 h-4 text-accent-ink shrink-0 mt-0.5" />
           <div className="min-w-0">
             <div className="text-xs font-semibold text-ink-primary">Subir archivos o fotos</div>
-            <div className="text-[11px] text-ink-muted">Excel (.xlsx/.xls), CSV, PDF o fotos</div>
+            <div className="text-[11px] text-ink-muted">Adjuntar ficha técnica al chat actual</div>
           </div>
         </button>
+
+        {onTriggerBatchUpload ? (
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              onClose();
+              onTriggerBatchUpload();
+            }}
+            className="w-full flex items-start gap-2.5 p-2.5 text-left rounded-lg hover:bg-surface-hover transition-colors cursor-pointer"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-accent-ink shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <div className="text-xs font-semibold text-ink-primary">Procesar lote masivo</div>
+              <div className="text-[11px] text-ink-muted">Factura Excel (.xlsx), CSV o PDF en cola</div>
+            </div>
+          </button>
+        ) : null}
 
         <button
           type="button"

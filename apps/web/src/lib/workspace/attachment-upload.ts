@@ -1,6 +1,6 @@
 import type { WorkspaceAttachment } from './types';
 
-const MAX_INLINE_TEXT_CHARS = 8_000;
+const MAX_INLINE_TEXT_CHARS = 48_000;
 
 /**
  * Extracts text or base64 image previews from user-selected workspace attachments
@@ -15,8 +15,9 @@ export async function extractWorkspaceAttachments(
     let extractedText: string | undefined;
     let imageDataUrl: string | undefined;
     const isText = /text|csv|json/i.test(file.type) || /\.(txt|csv)$/i.test(file.name);
-    const isPdfOrImage =
-      /pdf|image\/(png|jpeg|webp)/i.test(file.type) || /\.(pdf|png|jpe?g|webp)$/i.test(file.name);
+    const isExtractableBinary =
+      /pdf|spreadsheetml|image\/(png|jpeg|webp)/i.test(file.type) ||
+      /\.(pdf|xlsx|png|jpe?g|webp)$/i.test(file.name);
 
     if (isText) {
       try {
@@ -24,7 +25,7 @@ export async function extractWorkspaceAttachments(
       } catch {
         extractedText = undefined;
       }
-    } else if (isPdfOrImage && typeof fetch !== 'undefined') {
+    } else if (isExtractableBinary && typeof fetch !== 'undefined') {
       try {
         const form = new FormData();
         form.append('file', file);

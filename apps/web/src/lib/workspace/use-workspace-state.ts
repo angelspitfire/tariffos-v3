@@ -7,6 +7,7 @@ import type {
   SkuPrecedent,
   UserProfileSettings,
 } from '@tariffos/shared-types';
+import { resolveDefaultCanvasTab } from './canvas-tabs';
 import { getJurisdictionById } from './jurisdictions';
 import { consumeWorkspacePendingQuery } from './pending-query';
 import { createWorkspacePersistence } from './persistence';
@@ -171,7 +172,7 @@ export function useWorkspaceState() {
       persistThread(nextThread);
       if (msg.envelope?.canvasComponents.length) {
         setSelectedCanvasMsgId(msg.id);
-        setActiveTab('dossier');
+        setActiveTab(resolveDefaultCanvasTab(msg.envelope.canvasComponents));
       }
     },
     [activeThread, activeThreadId, persistThread],

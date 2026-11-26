@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   AssistantRuntimeProvider,
   AuiIf,
@@ -30,6 +30,8 @@ export interface AssistantThreadSurfaceProps {
   profile: UserProfileSettings;
   inlineActions: InlineCardActions;
   readOnlyReason?: string | null;
+  batchBanner?: ReactNode;
+  onTriggerBatchUpload?: () => void;
   onSendMessage: (text: string) => Promise<void>;
   onCancelRun: () => void;
   onAddFiles: (files: FileList) => void;
@@ -56,6 +58,8 @@ export function AssistantThreadSurface({
   profile,
   inlineActions,
   readOnlyReason = null,
+  batchBanner = null,
+  onTriggerBatchUpload,
   onSendMessage,
   onCancelRun,
   onAddFiles,
@@ -131,6 +135,7 @@ export function AssistantThreadSurface({
                 input?.focus();
               }}
               onTriggerUpload={() => hiddenUploadRef.current?.click()}
+              onTriggerBatchUpload={onTriggerBatchUpload}
               onRunSample={onRunSample}
               onRunBatchSample={onRunBatchSample}
             />
@@ -212,7 +217,8 @@ export function AssistantThreadSurface({
             </div>
           ) : null}
 
-          <ThreadPrimitive.ViewportFooter className="sticky bottom-0 mt-auto bg-gradient-to-t from-surface-app via-surface-app/90 to-transparent pt-3 pb-3">
+          <ThreadPrimitive.ViewportFooter className="sticky bottom-0 mt-auto space-y-2 bg-gradient-to-t from-surface-app via-surface-app/90 to-transparent pt-3 pb-3">
+            {batchBanner}
             {readOnlyReason ? (
               <WorkspaceReadOnlyBar reason={readOnlyReason} />
             ) : (
@@ -223,6 +229,7 @@ export function AssistantThreadSurface({
                 onAddFiles={onAddFiles}
                 onRemoveAttachment={onRemoveAttachment}
                 onUpdateProfile={onUpdateProfile}
+                onTriggerBatchUpload={onTriggerBatchUpload}
                 onNotifyUnavailableCamera={onNotifyUnavailableCamera}
               />
             )}
