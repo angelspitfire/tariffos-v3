@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { FileText, MessageSquare } from 'lucide-react';
 import type { CanvasTabType } from '@tariffos/shared-types';
 import { readSelectedPlan } from '@/lib/funnel/funnel-storage';
+import { extractThreadArtifacts } from '@/lib/workspace/artifact-versions';
 import { buildWorkspaceInlineActions } from '@/lib/workspace/inline-actions';
 import { JURISDICTIONS } from '@/lib/workspace/jurisdictions';
 import { computePlanStatus } from '@/lib/workspace/plan-status';
@@ -37,6 +38,7 @@ export function WorkspaceSplitShell() {
   const [planId, setPlanId] = useState('trial');
 
   const hasCanvas = ws.canvasComponents.length > 0;
+  const threadArtifacts = extractThreadArtifacts(ws.activeThread?.messages ?? []);
   const filesCount =
     ws.pendingAttachments.length +
     (ws.activeThread?.messages.reduce((acc, m) => acc + (m.attachments?.length ?? 0), 0) ?? 0);
@@ -241,6 +243,9 @@ export function WorkspaceSplitShell() {
                       }
                       onExportPdf={handleExportPdf}
                       onConfirmBatchItem={ws.confirmBatchItem}
+                      artifacts={threadArtifacts}
+                      activeArtifactId={ws.selectedCanvasMsgId}
+                      onSelectArtifact={(id) => ws.setSelectedCanvasMsgId(id)}
                       isFullscreen={canvasFullscreen}
                       onToggleFullscreen={() => setCanvasFullscreen((p) => !p)}
                       onCloseCanvas={() => {

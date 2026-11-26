@@ -1,17 +1,21 @@
 'use client';
 
-import { Maximize2, Minimize2, X } from 'lucide-react';
+import { GitCompareArrows, Maximize2, Minimize2, X } from 'lucide-react';
 
 export interface CanvasTitleBarProps {
   codeLabel: string;
+  versionsCount?: number;
   isFullscreen?: boolean;
+  onOpenTimeline?: () => void;
   onToggleFullscreen?: () => void;
   onClose?: () => void;
 }
 
 export function CanvasTitleBar({
   codeLabel,
+  versionsCount = 0,
   isFullscreen = false,
+  onOpenTimeline,
   onToggleFullscreen,
   onClose,
 }: CanvasTitleBarProps) {
@@ -26,6 +30,17 @@ export function CanvasTitleBar({
       </div>
 
       <div className="flex shrink-0 items-center gap-1">
+        {versionsCount >= 2 && onOpenTimeline ? (
+          <button
+            type="button"
+            onClick={onOpenTimeline}
+            aria-label="Historial y comparador de versiones"
+            className="inline-flex h-7 cursor-pointer items-center gap-1 rounded-full border border-border-subtle bg-surface-muted px-2.5 text-[11px] font-medium text-ink-secondary transition-colors hover:bg-surface-hover hover:text-ink-primary"
+          >
+            <GitCompareArrows className="h-3 w-3 text-accent-ink" aria-hidden="true" />
+            <span>Versiones ({versionsCount})</span>
+          </button>
+        ) : null}
         {onToggleFullscreen ? (
           <button
             type="button"

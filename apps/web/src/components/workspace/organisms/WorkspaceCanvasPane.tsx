@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Scale } from 'lucide-react';
 import type {
   A2UICanvasComponent,
@@ -8,12 +9,15 @@ import type {
   JurisdictionConfig,
   UserProfileSettings,
 } from '@tariffos/shared-types';
+import type { ThreadArtifactSummary } from '@/lib/workspace/artifact-versions';
 import { CanvasStatusStrip } from '../molecules/CanvasStatusStrip';
 import { CanvasTitleBar } from '../molecules/CanvasTitleBar';
 import { ConsolidatedTabStrip } from '../molecules/ConsolidatedTabStrip';
 import type { TechnicalSpecItem } from '../molecules/MerceologicalSpecsCard';
+import { OpenArtifactTabsStrip } from '../molecules/OpenArtifactTabsStrip';
 import type { BatchItemConfirmation } from './BatchItemInspector';
 import { BatchManifestTriageView } from './BatchManifestTriageView';
+import { ChangeTimelineModal } from './ChangeTimelineModal';
 import { DossierView } from './DossierView';
 import { DutyCalculatorView } from './DutyCalculatorView';
 import { HierarchyTreeView } from './HierarchyTreeView';
@@ -38,6 +42,9 @@ export interface WorkspaceCanvasPaneProps {
   onConfirmBatchItem: (lineNumber: number, update: BatchItemConfirmation) => void;
   onChangeWorkflowMode?: (mode: ApprovalWorkflowMode) => void;
   onReevaluateSpecs?: (updatedSpecs: TechnicalSpecItem[]) => void;
+  artifacts?: readonly ThreadArtifactSummary[];
+  activeArtifactId?: string | null;
+  onSelectArtifact?: (artifactId: string) => void;
   isFullscreen?: boolean;
   onToggleFullscreen?: () => void;
   onCloseCanvas?: () => void;
@@ -57,10 +64,14 @@ export function WorkspaceCanvasPane({
   onConfirmBatchItem,
   onChangeWorkflowMode,
   onReevaluateSpecs,
+  artifacts = [],
+  activeArtifactId = null,
+  onSelectArtifact,
   isFullscreen,
   onToggleFullscreen,
   onCloseCanvas,
 }: WorkspaceCanvasPaneProps) {
+  const [timelineOpen, setTimelineOpen] = useState(false);
   const dossier = components.find((c) => c.type === 'dossier');
   const calculator = components.find((c) => c.type === 'calculator');
   const hierarchy = components.find((c) => c.type === 'hierarchy');
@@ -110,10 +121,20 @@ export function WorkspaceCanvasPane({
     <div className="flex h-full flex-col overflow-hidden bg-surface-panel">
       <CanvasTitleBar
         codeLabel={titleLabel}
+        versionsCount={artifacts.length}
         isFullscreen={isFullscreen}
+        onOpenTimeline={() => setTimelineOpen(true)}
         onToggleFullscreen={onToggleFullscreen}
         onClose={onCloseCanvas}
       />
+
+      {onSelectArtifact ? (
+        <OpenArtifactTabsStrip
+          artifacts={artifacts}
+          activeArtifactId={activeArtifactId}
+          onSelectArtifact={onSelectArtifact}
+        />
+      ) : null}
 
       <ConsolidatedTabStrip
         components={components}
@@ -181,6 +202,15 @@ export function WorkspaceCanvasPane({
           <RegulatoryDiffView jurisdiction={jurisdiction} dossier={dossier} />
         )}
       </div>
+
+      {onSelectArtifact ? (
+        <ChangeTimelineModal
+          open={timelineOpen}
+          artifacts={artifacts}
+          onClose={() => setTimelineOpen(false)}
+          onSelectArtifact={onSelectArtifact}
+        />
+      ) : null}
     </div>
   );
 }

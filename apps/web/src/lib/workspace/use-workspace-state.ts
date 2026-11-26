@@ -161,7 +161,7 @@ export function useWorkspaceState() {
   }, [activeThreadId, persistence]);
 
   return {
-    threads, activeThread, activeThreadId, canvasComponents, activeTab,
+    threads, activeThread, activeThreadId, selectedCanvasMsgId, canvasComponents, activeTab,
     jurisdiction, skuPrecedents, profile, toast, ...runner,
     setActiveTab, setActiveThreadId, setSelectedCanvasMsgId,
     setJurisdictionId: (id: string) => { setJurisdictionId(id); updateProfile({ defaultJurisdictionId: id }); },
