@@ -60,17 +60,6 @@ export function SidebarRail({
           </button>
         </RailTooltip>
 
-        <RailTooltip label={`Historial de chats (${threadCount})`}>
-          <button type="button" onClick={onExpand} aria-label={`Historial de chats (${threadCount})`} className={`${RAIL_ICON_BTN} flex-col gap-0.5`}>
-            <MessageSquare className="h-4 w-4" aria-hidden="true" />
-            {threadCount > 0 ? (
-              <span className="font-mono text-[10px] leading-none font-semibold text-ink-muted tabular-nums">{threadCount}</span>
-            ) : null}
-          </button>
-        </RailTooltip>
-
-        <div className="my-1 w-6 border-t border-border-hairline" />
-
         <RailTooltip label="Dashboard">
           <button
             type="button"
@@ -86,6 +75,17 @@ export function SidebarRail({
         <RailTooltip label={`Catálogo SKU (${skuCount})`}>
           <button type="button" onClick={onOpenSkuCatalog} aria-label={`Catálogo SKU (${skuCount})`} className={RAIL_ICON_BTN}>
             <BookmarkCheck className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </RailTooltip>
+
+        <div className="my-1 w-6 border-t border-border-hairline" />
+
+        <RailTooltip label={`Historial de chats (${threadCount})`}>
+          <button type="button" onClick={onExpand} aria-label={`Historial de chats (${threadCount})`} className={`${RAIL_ICON_BTN} flex-col gap-0.5`}>
+            <MessageSquare className="h-4 w-4" aria-hidden="true" />
+            {threadCount > 0 ? (
+              <span className="font-mono text-[10px] leading-none font-semibold text-ink-muted tabular-nums">{threadCount}</span>
+            ) : null}
           </button>
         </RailTooltip>
       </div>
