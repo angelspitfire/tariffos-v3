@@ -19,6 +19,33 @@ import { applyApprovalPolicyToEnvelope } from './dossier-approval-policy.js';
 
 export type { MapPayloadToA2UIOptions } from './a2ui-mapper-helpers.js';
 
+function buildAssistantMessage(
+  payload: ClassificationLinePayload,
+  formattedHsCode: string,
+  isBlocked: boolean,
+): string {
+  const header = 'BORRADOR — REVISIÓN DE AGENTE ADUANAL / COMPLIANCE REQUERIDA.';
+  if (isBlocked) {
+    return `${header} Mercancía bloqueada en Pre-Gate Compliance para ${payload.product}. Requiere revisión legal.`;
+  }
+
+  const parts = [
+    header,
+    `Clasificación sugerida ${formattedHsCode} (${payload.confidenceLevel} ${payload.confidencePct}%) para ${payload.product}: ${payload.confidenceReason}`,
+  ];
+  const pending = payload.unresolved
+    .filter((u) => !u.resolved)
+    .slice(0, 2)
+    .map((u) => u.item);
+  if (pending.length > 0) {
+    parts.push(`Pendiente por confirmar: ${pending.join('; ')}.`);
+  }
+  parts.push(
+    'Revisa el dictamen interactivo en el panel derecho o indícame si deseas calcular tributos CIF, evaluar alternativas o clasificar ítems complementarios.',
+  );
+  return parts.join(' ');
+}
+
 /**
  * Pure mapper converting a `ClassificationLinePayload` into a schema-validated
  * `A2UIEnvelope` enforcing Section 3.1 mandatory vs. contextual A2UI rules.
@@ -69,9 +96,7 @@ export function mapPayloadToA2UIEnvelope(
   }
 
   const envelope: A2UIEnvelope = {
-    assistantMessage: isBlocked
-      ? `BORRADOR — Mercancía bloqueada en Pre-Gate Compliance para ${payload.product}. Requiere revisión legal.`
-      : `BORRADOR — Clasificación sugerida ${formattedHsCode} (${payload.confidenceLevel} ${payload.confidencePct}%) para ${payload.product}.`,
+    assistantMessage: buildAssistantMessage(payload, formattedHsCode, isBlocked),
     classificationStatus: isBlocked ? 'needs_details' : 'classified',
     workflowState: isBlocked ? 'proposed_review' : 'classified',
     inlineComponents,

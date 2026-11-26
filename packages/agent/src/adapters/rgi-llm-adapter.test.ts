@@ -114,4 +114,28 @@ describe('createRgiLlmRunner', () => {
       maxOutputTokens: MAX_OUTPUT_TOKENS_DEEP,
     });
   });
+
+  it('instructs the model with Venezuela Decreto 4.944 NCM rules and non-blocking compliance flags', async () => {
+    mockGenerateJson.mockResolvedValueOnce(sampleResponse);
+
+    const runner = createRgiLlmRunner({ provider: 'google', model: 'gemini-2.5-flash' });
+    await runner({
+      item: {
+        lineId: '6',
+        description: 'Compresor de aire de tornillo RTF-100 75 kW 8 bar',
+        originCountry: 'CN',
+        cifValue: 18500,
+      },
+      candidates: [],
+      notes: [],
+      deepMode: false,
+    });
+
+    const sentPrompt = String(mockGenerateJson.mock.calls[0][0]);
+    expect(sentPrompt).toContain('Decreto 4.944');
+    expect(sentPrompt).toContain('NCM');
+    expect(sentPrompt).toContain('antidumping');
+    expect(sentPrompt).toContain('unresolved');
+    expect(sentPrompt).toContain('Spanish');
+  });
 });

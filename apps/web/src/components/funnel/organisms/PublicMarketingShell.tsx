@@ -39,7 +39,7 @@ export function PublicMarketingShell({
   };
 
   return (
-    <div className="min-h-screen bg-[#E4E6EB] dark:bg-[#0B0F19] text-ink-primary flex flex-col">
+    <div className="min-h-screen bg-surface-app text-ink-primary flex flex-col">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[500] focus:px-4 focus:py-2 focus:rounded-full focus:bg-ink-primary focus:text-ink-on-inverted focus:text-sm focus:font-medium"
@@ -49,10 +49,10 @@ export function PublicMarketingShell({
 
       <header className="sticky top-0 z-[300] px-3 sm:px-8 pt-4 pb-2 pointer-events-none">
         <div
-          className={`pointer-events-auto mx-auto flex items-center justify-between gap-2 sm:gap-4 rounded-full px-3 sm:px-5 min-h-14 py-1.5 backdrop-blur-xl transition-colors duration-200 ${
+          className={`pointer-events-auto mx-auto flex items-center justify-between gap-2 sm:gap-4 rounded-full px-3 sm:px-5 min-h-14 py-1.5 transition-colors duration-200 ${
             isScrolled
-              ? 'max-w-5xl bg-white/88 dark:bg-[#111827]/90 border border-black/[0.08] dark:border-white/[0.12] shadow-[0_10px_30px_-14px_rgba(15,23,42,0.22)]'
-              : 'max-w-[1280px] bg-white/70 dark:bg-[#111827]/75 border border-black/[0.06] dark:border-white/[0.08]'
+              ? 'max-w-5xl bg-surface-panel border border-border-strong shadow-card'
+              : 'max-w-[1280px] bg-surface-panel border border-border-subtle'
           }`}
         >
           <BrandMark />
@@ -125,7 +125,7 @@ export function PublicMarketingShell({
       </main>
 
       {!hideFooter ? (
-        <footer className="border-t border-black/[0.06] dark:border-white/[0.08] bg-white/70 dark:bg-[#111827]/75 backdrop-blur-md py-6">
+        <footer className="border-t border-border-subtle bg-surface-panel py-6">
           <div className="max-w-[1280px] mx-auto px-4 sm:px-8 flex flex-wrap items-center justify-between gap-3 text-xs text-ink-muted">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-ink-primary">TariffOS</span>

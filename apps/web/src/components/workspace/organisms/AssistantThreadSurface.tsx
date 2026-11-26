@@ -224,7 +224,7 @@ export function AssistantThreadSurface({
             </div>
           ) : null}
 
-          <ThreadPrimitive.ViewportFooter className="sticky bottom-0 mt-auto bg-gradient-to-t from-[#E4E6EB] via-[#E4E6EB]/90 to-transparent dark:from-[#0B0F19] dark:via-[#0B0F19]/90 pt-3 pb-3">
+          <ThreadPrimitive.ViewportFooter className="sticky bottom-0 mt-auto bg-gradient-to-t from-surface-app via-surface-app/90 to-transparent pt-3 pb-3">
             {readOnlyReason ? (
               <WorkspaceReadOnlyBar reason={readOnlyReason} />
             ) : (

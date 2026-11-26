@@ -10,8 +10,10 @@ import type {
 import { ConfidenceBadge } from '../atoms/ConfidenceBadge';
 import { CopyHsButton } from '../atoms/CopyHsButton';
 import { DossierApprovalBar } from '../molecules/DossierApprovalBar';
+import { DossierComplianceSection } from '../molecules/DossierComplianceSection';
 import { MerceologicalSpecsCard, type TechnicalSpecItem } from '../molecules/MerceologicalSpecsCard';
 import { OfficialScheduleAuditBar } from '../molecules/OfficialScheduleAuditBar';
+import { RgiDecisionDiagram } from '../molecules/RgiDecisionDiagram';
 import { SignatureQuickModal } from './SignatureQuickModal';
 
 export interface DossierViewProps {
@@ -29,6 +31,7 @@ export interface DossierViewProps {
     signatureDataUrl: string;
   }) => void;
   onExportPdf?: () => void;
+  onOpenRgi?: () => void;
 }
 
 export function DossierView({
@@ -42,6 +45,7 @@ export function DossierView({
   onSaveSku,
   onSaveSignature,
   onExportPdf,
+  onOpenRgi,
 }: DossierViewProps) {
   const [signatureOpen, setSignatureOpen] = useState(false);
 
@@ -57,12 +61,14 @@ export function DossierView({
     <div className="space-y-4 p-4">
       <div className="flex flex-wrap items-start justify-between gap-3 rounded-card border border-border-subtle bg-surface-panel p-4 shadow-xs">
         <div className="space-y-1.5">
-          <div className="text-[11px] font-medium tracking-wide text-ink-muted uppercase">
-            {dossier.jurisdictionName}
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-base font-semibold tracking-tight text-ink-primary">
+              Dictamen Técnico
+            </h2>
+            <span className="rounded-md border border-border-subtle bg-surface-muted px-2 py-0.5 text-xs font-medium text-ink-muted">
+              {dossier.jurisdictionName}
+            </span>
           </div>
-          <h2 className="text-base font-semibold tracking-tight text-ink-primary">
-            Dictamen Técnico
-          </h2>
           <div className="flex flex-wrap items-center gap-2">
             <CopyHsButton hsCode={dossier.hsCode} size="lg" />
             <ConfidenceBadge label={dossier.confidenceLevel} pct={dossier.confidencePct} />
@@ -109,16 +115,33 @@ export function DossierView({
         jurisdictionName={dossier.jurisdictionName}
       />
 
+      <RgiDecisionDiagram
+        hsCode={dossier.hsCode}
+        confidencePct={dossier.confidencePct}
+        rgiSteps={dossier.rgiSteps}
+        flagsCount={dossier.flags?.length ?? 0}
+        unresolvedCount={dossier.unresolved?.length ?? 0}
+        onOpenRgi={onOpenRgi}
+      />
+
       <MerceologicalSpecsCard
         specs={dossier.technicalSpecs}
         onReevaluate={onReevaluateSpecs}
       />
 
+      <DossierComplianceSection
+        flags={dossier.flags}
+        rejectedAlternatives={dossier.rejectedAlternatives}
+        unresolved={dossier.unresolved}
+        verifiedAgainstOfficial={dossier.verifiedAgainstOfficial}
+        jurisdictionName={dossier.jurisdictionName}
+      />
+
       {dossier.permits.length > 0 && (
         <section className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
-          <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-amber-800 uppercase dark:text-amber-300">
+          <h3 className="flex items-center gap-1.5 text-xs font-semibold text-amber-800 dark:text-amber-300">
             <ShieldAlert className="h-3.5 w-3.5" aria-hidden="true" />
-            Permisos y Controles OGA ({dossier.permits.length})
+            Permisos y controles OGA ({dossier.permits.length})
           </h3>
           <ul className="mt-2 space-y-1.5">
             {dossier.permits.map((permit) => (
@@ -139,8 +162,8 @@ export function DossierView({
 
       {dossier.legalNotes.length > 0 && (
         <section className="rounded-xl border border-border-subtle bg-surface-panel p-4 shadow-xs">
-          <h3 className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
-            Notas Legales y Sustento Normativo
+          <h3 className="text-xs font-semibold text-ink-secondary">
+            Notas legales y sustento normativo
           </h3>
           <ul className="mt-2 list-disc space-y-1.5 pl-4 text-xs leading-relaxed text-ink-secondary">
             {dossier.legalNotes.map((note) => (

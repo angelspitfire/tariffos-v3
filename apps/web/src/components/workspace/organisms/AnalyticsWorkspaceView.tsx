@@ -98,7 +98,7 @@ export function AnalyticsWorkspaceView({
             </div>
 
             <section className="rounded-xl border border-border-subtle bg-surface-panel p-4 shadow-xs">
-              <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-ink-muted uppercase">
+              <h3 className="flex items-center gap-1.5 text-xs font-semibold text-ink-secondary">
                 <TrendingUp className="h-3.5 w-3.5 text-accent-ink" aria-hidden="true" />
                 Actividad mensual y tasa Fast-Path ({metrics.fastPathRatePct}%)
               </h3>
@@ -130,7 +130,7 @@ export function AnalyticsWorkspaceView({
 
         {activeTab === 'hs_distribution' && (
           <section className="rounded-xl border border-border-subtle bg-surface-panel p-4 shadow-xs">
-            <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-ink-muted uppercase">
+            <h3 className="flex items-center gap-1.5 text-xs font-semibold text-ink-secondary">
               <Layers className="h-3.5 w-3.5 text-accent-ink" aria-hidden="true" />
               Capítulos SA más clasificados
             </h3>

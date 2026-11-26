@@ -129,8 +129,16 @@ describe('LoginCard', () => {
     expect(screen.getByText(/enlace de confirmación/i)).toBeInTheDocument();
   });
 
-  it('triggers Supabase Google OAuth in cloud mode', async () => {
+  it('hides the Google OAuth button in cloud mode when NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED is not enabled', () => {
+    render(<LoginCard cloudMode />);
+
+    expect(screen.queryByRole('button', { name: /Continuar con Google/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/o con tu correo/i)).not.toBeInTheDocument();
+  });
+
+  it('triggers Supabase Google OAuth in cloud mode when NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED is true', async () => {
     const user = userEvent.setup();
+    vi.stubEnv('NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED', 'true');
     mockSignInWithOAuth.mockResolvedValue({ data: { url: 'https://google.test' }, error: null });
     mockSearchParams = new URLSearchParams('next=/app');
 

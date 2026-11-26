@@ -8,7 +8,7 @@ import {
 } from './lead-form-validation';
 
 const VALID_FORM: LeadFormValues = {
-  intent: 'demo',
+  intents: ['demo'],
   name: 'Carlos Mendoza',
   company: 'Aduanas del Caribe C.A.',
   email: 'carlos@caribe.ve',
@@ -23,6 +23,11 @@ describe('validateLeadForm', () => {
     const errors = validateLeadForm(VALID_FORM);
     expect(hasLeadFormErrors(errors)).toBe(false);
     expect(errors).toEqual({});
+  });
+
+  it('requires at least one selected intent option', () => {
+    const errors = validateLeadForm({ ...VALID_FORM, intents: [] });
+    expect(errors.intents).toMatch(/al menos una opción/i);
   });
 
   it('requires name, company, and valid email', () => {
@@ -53,9 +58,12 @@ describe('validateLeadForm', () => {
   });
 
   it('formats notes with intent prefix and enforces max length', () => {
-    expect(formatLeadNotesPayload('enterprise', 'Multi-sucursal')).toBe(
+    expect(formatLeadNotesPayload(['enterprise'], 'Multi-sucursal')).toBe(
       '[Plan Enterprise] Multi-sucursal',
     );
-    expect(formatLeadNotesPayload('demo', '')).toBe('[Demo guiada]');
+    expect(formatLeadNotesPayload(['demo', 'enterprise'], 'Urgente')).toBe(
+      '[Demo guiada] [Plan Enterprise] Urgente',
+    );
+    expect(formatLeadNotesPayload(['demo'], '')).toBe('[Demo guiada]');
   });
 });

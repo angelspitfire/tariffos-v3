@@ -95,7 +95,7 @@ export function PricingSection({
           <div className="pt-2 flex justify-center">
             <fieldset
               aria-label="Ciclo de facturación"
-              className="inline-flex items-center gap-1 p-1.5 bg-white/75 dark:bg-white/[0.06] border border-black/[0.07] dark:border-white/[0.09] backdrop-blur-md rounded-full"
+              className="inline-flex items-center gap-1 p-1.5 bg-surface-panel border border-border-subtle rounded-full"
             >
               {(
                 [

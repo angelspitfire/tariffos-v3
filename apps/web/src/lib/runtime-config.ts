@@ -21,6 +21,11 @@ export function isCloudModeEnabled(): boolean {
   return isSupabaseConfigured();
 }
 
+export function isGoogleOAuthEnabled(isCloud = isCloudModeEnabled()): boolean {
+  if (!isCloud) return true;
+  return process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED === 'true';
+}
+
 export function getDualRuntimeConfig(): DualRuntimeConfig {
   const supabaseConfigured = isSupabaseConfigured();
   return {

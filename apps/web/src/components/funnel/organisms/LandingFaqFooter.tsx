@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react';
 const FAQ_ITEMS = [
   {
     q: '¿Quién asume la responsabilidad legal de la clasificación sugerida?',
-    a: 'TariffOS es una herramienta de soporte técnico y documental. El sistema fundamenta cada sugerencia con RGI 1–6 y Notas Legales, pero el Agente de Aduanas revisa, valida y suscribe el dictamen final con su patente.',
+    a: 'TariffOS es una herramienta de soporte técnico y documental. El sistema fundamenta cada sugerencia con RGI 1 a 6 y Notas Legales, pero el Agente de Aduanas revisa, valida y suscribe el dictamen final con su patente.',
   },
   {
     q: '¿Con qué frecuencia actualizan el Decreto 4.944, reformas y exoneraciones?',
@@ -16,7 +16,7 @@ const FAQ_ITEMS = [
   },
   {
     q: '¿En qué se diferencia TariffOS de un chat genérico con IA?',
-    a: 'Un chat genérico improvisa códigos sin verificar. TariffOS exige validación pericial de atributos merceológicos, aplica RGI 1–6 contra el arancel real, calcula impuestos CIF y genera un dictamen PDF firmable.',
+    a: 'Un chat genérico improvisa códigos sin verificar. TariffOS exige validación pericial de atributos merceológicos, aplica RGI 1 a 6 contra el arancel real, calcula impuestos CIF y genera un dictamen PDF firmable.',
   },
   {
     q: '¿Cómo funciona el Piloto Operativo de $150 y la activación de planes?',
@@ -43,7 +43,7 @@ export function LandingFaqFooter() {
             {FAQ_ITEMS.map((item) => (
               <div
                 key={item.q}
-                className="rounded-[24px] border border-black/[0.06] dark:border-white/[0.08] bg-white/75 dark:bg-white/[0.04] backdrop-blur-md p-6 space-y-2.5"
+                className="rounded-[24px] border border-border-subtle bg-surface-panel p-6 space-y-2.5"
               >
                 <h3 className="text-base font-semibold text-ink-primary leading-snug">
                   {item.q}
@@ -55,12 +55,7 @@ export function LandingFaqFooter() {
         </div>
       </section>
 
-      <footer className="relative overflow-hidden pt-20 pb-12 border-t border-black/[0.06] dark:border-white/[0.08]">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_75%_65%_at_50%_105%,rgba(37,99,235,0.22),rgba(56,189,248,0.14)_45%,transparent_75%)] dark:bg-[radial-gradient(ellipse_75%_65%_at_50%_105%,rgba(37,99,235,0.32),rgba(14,165,233,0.12)_45%,transparent_75%)]"
-        />
-
+      <footer className="relative overflow-hidden pt-20 pb-12 border-t border-border-subtle bg-surface-panel">
         <div className="relative z-10 max-w-[1280px] mx-auto px-4 sm:px-8 space-y-16">
           <div className="text-center max-w-2xl mx-auto space-y-5">
             <h2 className="text-[clamp(2rem,3.4vw+0.8rem,3.5rem)] font-medium tracking-[-0.03em] text-ink-primary leading-[1.06] [text-wrap:balance] mx-auto">
@@ -79,25 +74,25 @@ export function LandingFaqFooter() {
               </Link>
               <Link
                 href="/login"
-                className="inline-flex items-center min-h-[50px] rounded-full px-6 border border-border-strong bg-white/70 dark:bg-white/[0.05] hover:bg-white dark:hover:bg-white/[0.1] text-ink-primary text-sm font-semibold transition-colors whitespace-nowrap"
+                className="inline-flex items-center min-h-[50px] rounded-full px-6 border border-border-strong bg-surface-muted hover:bg-surface-hover text-ink-primary text-sm font-semibold transition-colors whitespace-nowrap"
               >
                 Ya tengo cuenta
               </Link>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 pt-8 border-t border-black/[0.07] dark:border-white/[0.08]">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 pt-8 border-t border-border-hairline">
             <div className="space-y-2">
               <div className="inline-flex items-center gap-3">
                 <span className="h-9 px-3 rounded-full bg-ink-primary text-ink-on-inverted inline-flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-current" />
-                  <span className="w-2 h-2 rounded-full bg-accent-brand dark:bg-sky-400" />
+                  <span className="w-2 h-2 rounded-full bg-accent-brand" />
                 </span>
                 <span className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink-primary">
                   TariffOS
                 </span>
-                <span className="px-2.5 py-1 rounded-md border border-black/[0.14] dark:border-white/[0.16] font-mono text-xs text-ink-muted whitespace-nowrap shrink-0">
-                  RGI 1–6 · VE
+                <span className="px-2.5 py-1 rounded-md border border-border-subtle font-mono text-xs text-ink-muted whitespace-nowrap shrink-0">
+                  RGI 1 a 6 · VE
                 </span>
               </div>
               <p className="text-xs text-ink-secondary">

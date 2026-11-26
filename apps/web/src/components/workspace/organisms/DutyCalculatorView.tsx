@@ -98,8 +98,8 @@ export function DutyCalculatorView({
 
       <section className="rounded-xl border border-border-subtle bg-surface-panel p-4 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
-            Parámetros de Valoración ({calculator.hsCode})
+          <h3 className="text-xs font-semibold text-ink-secondary">
+            Parámetros de valoración ({calculator.hsCode})
           </h3>
           <fieldset className="flex items-center gap-1 border-0 p-0">
             <legend className="sr-only">Seleccionar Incoterm</legend>
@@ -162,8 +162,8 @@ export function DutyCalculatorView({
       />
 
       <section className="rounded-xl border border-border-subtle bg-surface-panel p-4 shadow-xs">
-        <h3 className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
-          Desglose Determinista de Tributos
+        <h3 className="text-xs font-semibold text-ink-secondary">
+          Desglose determinista de tributos
         </h3>
         <dl className="mt-2.5 divide-y divide-border-hairline text-xs">
           <div className="flex justify-between py-1.5">

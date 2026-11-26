@@ -103,6 +103,7 @@ export function WorkspaceCanvasPane({
     (activeTab === 'calculator' && calculator) ||
     (activeTab === 'hierarchy' && hierarchy) ||
     (activeTab === 'comparison' && comparison) ||
+    (activeTab === 'rgi_comparator' && (dossier || comparison || hierarchy)) ||
     (activeTab === 'regulatory_diff' && dossier)
       ? activeTab
       : batch
@@ -185,6 +186,7 @@ export function WorkspaceCanvasPane({
             onSaveSku={onSaveSku}
             onSaveSignature={onSaveSignature}
             onExportPdf={onExportPdf}
+            onOpenRgi={() => onSelectTab('rgi_comparator')}
           />
         )}
 

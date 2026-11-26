@@ -26,9 +26,6 @@ export function WorkspaceEmptyState({
   return (
     <div className="my-auto max-w-2xl mx-auto flex flex-col justify-center py-6 space-y-7">
       <div className="text-center space-y-2.5">
-        <p className="font-mono text-[11px] tracking-[0.12em] text-ink-muted uppercase">
-          TARIFFOS · MOTOR ARANCELARIO AUDITABLE
-        </p>
         <h1 className="text-3xl sm:text-4xl font-medium tracking-[-0.03em] text-ink-primary [text-wrap:balance] mx-auto">
           ¿Qué mercancía clasificamos hoy?
         </h1>
@@ -41,7 +38,7 @@ export function WorkspaceEmptyState({
         <button
           type="button"
           onClick={onFocusComposer}
-          className="tos-rise text-left p-4 bg-surface-frost-strong backdrop-blur-md border border-line-frost hover:border-accent-brand rounded-surface shadow-elev-1 transition-colors group cursor-pointer space-y-2"
+          className="tos-rise text-left p-4 bg-surface-panel border border-border-subtle hover:border-accent-brand rounded-surface shadow-xs transition-colors group cursor-pointer space-y-2"
         >
           <div className="flex items-center justify-between gap-2">
             <Scale className="w-4 h-4 text-accent-ink shrink-0" />
@@ -51,14 +48,14 @@ export function WorkspaceEmptyState({
             Clasificar producto
           </div>
           <p className="text-[11px] text-ink-muted leading-relaxed">
-            Obtén partida HS, criterio RGI, ficha HITL y cálculo tributario.
+            Obtén partida HS, criterio RGI, validación pericial y cálculo tributario.
           </p>
         </button>
 
         <button
           type="button"
           onClick={onTriggerUpload}
-          className="tos-rise text-left p-4 bg-surface-frost-strong backdrop-blur-md border border-line-frost hover:border-accent-brand rounded-surface shadow-elev-1 transition-colors group cursor-pointer space-y-2"
+          className="tos-rise text-left p-4 bg-surface-panel border border-border-subtle hover:border-accent-brand rounded-surface shadow-xs transition-colors group cursor-pointer space-y-2"
         >
           <div className="flex items-center justify-between gap-2">
             <UploadCloud className="w-4 h-4 text-accent-ink shrink-0" />
@@ -76,7 +73,7 @@ export function WorkspaceEmptyState({
           <button
             type="button"
             onClick={() => onRunBatchSample(firstBatch)}
-            className="tos-rise text-left p-4 bg-surface-frost-strong backdrop-blur-md border border-line-frost hover:border-accent-brand rounded-surface shadow-elev-1 transition-colors group cursor-pointer space-y-2"
+            className="tos-rise text-left p-4 bg-surface-panel border border-border-subtle hover:border-accent-brand rounded-surface shadow-xs transition-colors group cursor-pointer space-y-2"
           >
             <div className="flex items-center justify-between gap-2">
               <FileSpreadsheet className="w-4 h-4 text-accent-ink shrink-0" />
@@ -93,7 +90,7 @@ export function WorkspaceEmptyState({
       </div>
 
       <div className="space-y-2.5 pt-1 text-center">
-        <div className="font-mono text-[10px] tracking-[0.08em] uppercase text-ink-muted">
+        <div className="text-xs font-medium text-ink-muted">
           Pruebas rápidas en 1 clic
         </div>
         <div className="flex flex-wrap justify-center gap-2">
@@ -102,7 +99,7 @@ export function WorkspaceEmptyState({
               key={sample.id}
               type="button"
               onClick={() => onRunSample(sample)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-border-subtle bg-surface-panel/80 backdrop-blur-sm hover:border-accent-brand hover:text-accent-ink text-xs text-ink-secondary transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-border-subtle bg-surface-panel hover:border-accent-brand hover:text-accent-ink text-xs text-ink-secondary transition-colors cursor-pointer"
             >
               <span className="font-medium text-ink-primary">{sample.label}</span>
               <span className="font-mono text-[10px] text-ink-muted">{sample.hsHint}</span>

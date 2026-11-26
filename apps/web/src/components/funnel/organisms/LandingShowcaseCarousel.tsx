@@ -37,10 +37,10 @@ export function LandingShowcaseCarousel() {
                   key={card.id}
                   type="button"
                   onClick={() => setActiveIndex(idx)}
-                  className={`text-left rounded-[26px] p-6 sm:p-7 border backdrop-blur-md transition-colors cursor-pointer flex flex-col justify-between gap-6 ${
+                  className={`text-left rounded-[24px] p-6 sm:p-7 border transition-colors cursor-pointer flex flex-col justify-between gap-6 ${
                     isFocused
-                      ? 'bg-white/90 dark:bg-white/[0.07] border-accent-brand/45 shadow-sm'
-                      : 'bg-white/70 dark:bg-white/[0.035] border-black/[0.06] dark:border-white/[0.08] hover:bg-white/85 dark:hover:bg-white/[0.06]'
+                      ? 'bg-surface-panel border-accent-brand/60 shadow-card'
+                      : 'bg-surface-panel border-border-subtle hover:border-border-strong'
                   }`}
                 >
                   <div className="space-y-4">
@@ -68,9 +68,9 @@ export function LandingShowcaseCarousel() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl bg-black/[0.03] dark:bg-black/25 border border-black/[0.04] dark:border-white/[0.06] p-4 flex items-end justify-between gap-4">
+                  <div className="pt-4 border-t border-border-hairline flex items-end justify-between gap-4">
                     <div className="space-y-1 min-w-0">
-                      <div className="font-mono text-[10px] tracking-[0.06em] text-ink-muted">
+                      <div className="text-xs font-medium text-ink-muted">
                         {card.metricLabel}
                       </div>
                       <div className="font-mono text-xl font-bold text-ink-primary tabular-nums">
@@ -125,10 +125,10 @@ export function LandingShowcaseCarousel() {
                   onClick={() => setActiveIndex(idx)}
                   aria-label={`Ver ${card.title}`}
                   aria-selected={idx === activeIndex}
-                  className={`h-2 rounded-full transition-all duration-200 cursor-pointer ${
+                  className={`h-2 rounded-full transition-colors duration-200 cursor-pointer ${
                     idx === activeIndex
                       ? 'w-6 bg-accent-brand'
-                      : 'w-2 bg-black/20 dark:bg-white/25 hover:bg-black/35 dark:hover:bg-white/40'
+                      : 'w-2 bg-border-strong hover:bg-ink-muted'
                   }`}
                 />
               ))}

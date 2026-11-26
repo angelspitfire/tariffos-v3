@@ -45,12 +45,12 @@ export function PlanCard({
 
   return (
     <div
-      className={`p-6 rounded-[24px] border backdrop-blur-md flex flex-col justify-between gap-6 transition-colors ${
+      className={`p-6 rounded-[24px] border flex flex-col justify-between gap-6 transition-colors ${
         isRecommended
-          ? 'border-accent-brand bg-white/95 dark:bg-white/[0.08] ring-2 ring-accent-brand'
+          ? 'border-accent-brand bg-surface-panel ring-2 ring-accent-brand'
           : isPopular
-            ? 'border-accent-brand/60 bg-white/90 dark:bg-white/[0.065] shadow-sm'
-            : 'border-black/[0.07] dark:border-white/[0.09] bg-white/75 dark:bg-white/[0.04]'
+            ? 'border-accent-brand/60 bg-surface-panel shadow-card'
+            : 'border-border-subtle bg-surface-panel'
       }`}
     >
       <div className="space-y-3">
@@ -87,20 +87,30 @@ export function PlanCard({
                   {oneTime ? 'USD · pago único' : `USD/${showAnnual ? 'año' : 'mes'}`}
                 </span>
               </div>
-              <div className="text-[11px] font-mono text-ink-muted tabular-nums mt-1">
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] font-mono text-ink-muted tabular-nums mt-1">
                 {oneTime ? (
                   <>
-                    {plan.monthlyQuota.toLocaleString('en-US')} clasif. · {plan.creditableDays ?? 30} días · 100% acreditable
+                    <span>{plan.monthlyQuota.toLocaleString('en-US')} clasif.</span>
+                    <span aria-hidden="true" className="h-3 w-px bg-border-subtle" />
+                    <span>{plan.creditableDays ?? 30} días</span>
+                    <span aria-hidden="true" className="h-3 w-px bg-border-subtle" />
+                    <span>100% acreditable</span>
                   </>
                 ) : monthlyEquiv !== null ? (
                   <>
-                    Equiv. ${monthlyEquiv.toLocaleString('en-US')}/mes · Hasta{' '}
-                    {plan.monthlyQuota.toLocaleString('en-US')} clasif./mes
+                    <span>Equiv. ${monthlyEquiv.toLocaleString('en-US')}/mes</span>
+                    <span aria-hidden="true" className="h-3 w-px bg-border-subtle" />
+                    <span>Hasta {plan.monthlyQuota.toLocaleString('en-US')} clasif./mes</span>
                   </>
                 ) : (
                   <>
-                    Hasta {plan.monthlyQuota.toLocaleString('en-US')} clasif./mes
-                    {unitCostUsd !== null ? ` · ~$${unitCostUsd.toFixed(2)}/clasif.` : ''}
+                    <span>Hasta {plan.monthlyQuota.toLocaleString('en-US')} clasif./mes</span>
+                    {unitCostUsd !== null ? (
+                      <>
+                        <span aria-hidden="true" className="h-3 w-px bg-border-subtle" />
+                        <span>~${unitCostUsd.toFixed(2)}/clasif.</span>
+                      </>
+                    ) : null}
                   </>
                 )}
               </div>

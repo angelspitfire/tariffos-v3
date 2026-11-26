@@ -1,7 +1,7 @@
 export type LeadInquiryIntent = 'demo' | 'enterprise';
 
 export interface LeadFormValues {
-  intent: LeadInquiryIntent;
+  intents: LeadInquiryIntent[];
   name: string;
   company: string;
   email: string;
@@ -12,6 +12,7 @@ export interface LeadFormValues {
 }
 
 export interface LeadFieldErrors {
+  intents?: string;
   name?: string;
   company?: string;
   email?: string;
@@ -48,6 +49,10 @@ const PHONE_ALLOWED_PATTERN = /^[+\d\s().-]+$/;
 
 export function validateLeadForm(values: LeadFormValues): LeadFieldErrors {
   const errors: LeadFieldErrors = {};
+
+  if (values.intents.length === 0) {
+    errors.intents = 'Selecciona al menos una opción (demo guiada o plan a medida).';
+  }
 
   const trimmedName = values.name.trim();
   if (trimmedName.length < 2) {
@@ -95,10 +100,16 @@ export function hasLeadFormErrors(errors: LeadFieldErrors): boolean {
   return Object.values(errors).some((msg) => Boolean(msg));
 }
 
-export function formatLeadNotesPayload(intent: LeadInquiryIntent, notes: string): string | undefined {
-  const prefix = intent === 'enterprise' ? '[Plan Enterprise]' : '[Demo guiada]';
+export function formatLeadNotesPayload(
+  intents: readonly LeadInquiryIntent[],
+  notes: string,
+): string | undefined {
+  const tags: string[] = [];
+  if (intents.includes('demo')) tags.push('[Demo guiada]');
+  if (intents.includes('enterprise')) tags.push('[Plan Enterprise]');
+  const prefix = tags.join(' ');
   const trimmed = notes.trim();
-  if (!trimmed) return prefix;
-  const combined = `${prefix} ${trimmed}`;
+  if (!trimmed) return prefix || undefined;
+  const combined = prefix ? `${prefix} ${trimmed}` : trimmed;
   return combined.slice(0, MAX_LEAD_NOTES_LENGTH);
 }

@@ -126,7 +126,7 @@ export function BatchManifestTriageView({
       <section className="overflow-hidden rounded-xl border border-border-subtle bg-surface-panel shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-border-subtle bg-surface-muted text-[11px] text-ink-muted uppercase">
+            <thead className="border-b border-border-subtle bg-surface-muted text-xs font-medium text-ink-muted">
               <tr>
                 <th className="px-3 py-2">#</th>
                 <th className="px-3 py-2">Mercancía / SKU</th>

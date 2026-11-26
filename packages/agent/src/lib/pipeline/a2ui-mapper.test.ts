@@ -192,4 +192,25 @@ describe('mapPayloadToA2UIEnvelope', () => {
     const calc = envelope.canvasComponents.find((c) => c.type === 'calculator');
     expect(calc?.type === 'calculator' && calc.hsCode).toBe('8471.30.90.90');
   });
+
+  it('produces a broker-grade Spanish assistantMessage with draft header, rationale, and unresolved next steps', () => {
+    const envelope = mapPayloadToA2UIEnvelope(
+      makeClassifiedPayload({
+        product: 'Compresor de aire de tornillo RTF-100',
+        hsCode: '8414.80.12.00',
+        confidenceLevel: 'Alto',
+        confidencePct: 90,
+        confidenceReason: 'Compresor de tornillo estacionario de 75 kW cubierto en RGI 1 y RGI 6.',
+        unresolved: [
+          { item: 'Confirmar ausencia de chasis remolcable con ruedas', source: 'Ficha técnica', resolved: false },
+        ],
+      }),
+    );
+
+    expect(envelope.assistantMessage).toContain('BORRADOR — REVISIÓN DE AGENTE ADUANAL');
+    expect(envelope.assistantMessage).toContain('8414.80.12.00');
+    expect(envelope.assistantMessage).toContain('Compresor de tornillo estacionario');
+    expect(envelope.assistantMessage).toContain('Pendiente por confirmar');
+    expect(envelope.assistantMessage).toContain('Confirmar ausencia de chasis remolcable');
+  });
 });

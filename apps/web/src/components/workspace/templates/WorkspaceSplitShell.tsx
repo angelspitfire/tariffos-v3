@@ -132,7 +132,7 @@ export function WorkspaceSplitShell() {
   };
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-[#E4E6EB] text-ink-primary dark:bg-[#0B0F19]">
+    <div className="flex h-dvh overflow-hidden bg-surface-app text-ink-primary">
       <WorkspaceSidebarSlot
         desktopOpen={sidebarOpen}
         mobileOpen={mobileDrawerOpen}

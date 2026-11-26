@@ -1,7 +1,7 @@
 const WORKFLOW_PANELS = [
   {
     step: '01',
-    category: 'ENTRADA DOCUMENTAL',
+    category: 'Entrada documental',
     title: 'Describe o adjunta el expediente',
     detail:
       'Escribe la mercancía o sube factura comercial, packing list, ficha técnica, foto o lote Excel/CSV.',
@@ -9,7 +9,7 @@ const WORKFLOW_PANELS = [
   },
   {
     step: '02',
-    category: 'VALIDACIÓN MERCEOLÓGICA',
+    category: 'Validación merceológica',
     title: 'Valida criterios merceológicos',
     detail:
       'Confirma composición, uso o especificaciones clave en la ficha pericial asistida con trazabilidad RGI 1 a 6.',
@@ -17,7 +17,7 @@ const WORKFLOW_PANELS = [
   },
   {
     step: '03',
-    category: 'ENTREGABLES AUDITABLES',
+    category: 'Entregables auditables',
     title: 'Emite dictamen y guarda en tu catálogo',
     detail:
       'Exporta el dictamen técnico PDF firmado, revisa impuestos y reutiliza el precedente en tu catálogo SKU.',
@@ -42,11 +42,11 @@ export function LandingWorkflowSection() {
           {WORKFLOW_PANELS.map((panel) => (
             <li
               key={panel.step}
-              className="rounded-[26px] border border-black/[0.06] dark:border-white/[0.08] bg-white/75 dark:bg-white/[0.04] backdrop-blur-md p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+              className="rounded-[24px] border border-border-subtle bg-surface-panel p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
             >
               <div className="space-y-2 max-w-xl">
-                <div className="flex items-center gap-2.5 font-mono text-[11px] tracking-[0.08em] text-accent-ink">
-                  <span>{panel.step}</span>
+                <div className="flex items-center gap-2 text-xs font-medium text-accent-ink">
+                  <span className="font-mono tabular-nums">{panel.step}</span>
                   <span aria-hidden="true">/</span>
                   <span>{panel.category}</span>
                 </div>
@@ -62,7 +62,7 @@ export function LandingWorkflowSection() {
                 {panel.items.map((item) => (
                   <span
                     key={item}
-                    className="px-3.5 py-2 rounded-full text-xs font-medium bg-white dark:bg-[#0f1626] border border-black/[0.06] dark:border-white/[0.09] text-ink-primary shadow-2xs"
+                    className="px-3.5 py-2 rounded-full text-xs font-medium bg-surface-muted border border-border-subtle text-ink-primary"
                   >
                     {item}
                   </span>

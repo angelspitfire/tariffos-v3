@@ -60,24 +60,24 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
     <>
       <section className="pt-10 sm:pt-14 pb-12 sm:pb-20 overflow-x-clip">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-8 text-center space-y-6">
-          <p className="font-mono text-xs tracking-[0.12em] text-ink-secondary uppercase">
-            CLASIFICACIÓN ARANCELARIA PARA AGENCIAS DE ADUANAS · VENEZUELA
-          </p>
-
           <h1 className="text-[clamp(2.4rem,4.8vw+0.8rem,4.35rem)] font-medium tracking-[-0.035em] text-ink-primary leading-[1.04] max-w-[20ch] mx-auto [text-wrap:balance]">
             Clasificación arancelaria auditable con respaldo RGI
           </h1>
 
-          <div className="pt-2 flex flex-col items-center justify-center gap-3">
+          <p className="text-base sm:text-lg text-ink-secondary max-w-[48ch] mx-auto leading-relaxed">
+            Valida fichas merceológicas, clasifica lotes Excel y emite dictámenes PDF firmables.
+          </p>
+
+          <div className="pt-1 flex flex-col items-center justify-center gap-4">
             <div className="flex flex-wrap items-center justify-center gap-4">
               <button
                 type="button"
                 onClick={handlePrimaryCta}
-                className="group relative inline-flex items-center gap-2.5 px-7 min-h-[52px] rounded-full text-sm font-semibold text-ink-primary dark:text-white bg-[linear-gradient(135deg,rgba(255,255,255,0.92)_0%,rgba(219,234,254,0.95)_48%,rgba(186,230,253,0.92)_100%)] dark:bg-[linear-gradient(135deg,rgba(37,99,235,0.92)_0%,rgba(29,78,216,0.95)_55%,rgba(14,165,233,0.88)_100%)] border border-white/80 dark:border-sky-300/30 shadow-[0_12px_32px_-8px_rgba(29,78,216,0.35)] hover:shadow-[0_16px_36px_-6px_rgba(29,78,216,0.45)] transition-shadow cursor-pointer active:translate-y-px"
+                className="group inline-flex items-center gap-2.5 px-7 min-h-[50px] rounded-full text-sm font-semibold text-white bg-accent-brand hover:bg-accent-brand-hover transition-colors cursor-pointer active:translate-y-px"
               >
                 <span>{isAuthenticated ? 'Ir al workspace' : 'Activar Piloto Operativo'}</span>
                 <ArrowRight
-                  className="w-4 h-4 text-accent-brand dark:text-white transition-transform duration-200 group-hover:translate-x-0.5"
+                  className="w-4 h-4 text-white transition-transform duration-200 group-hover:translate-x-0.5"
                   aria-hidden="true"
                 />
               </button>
@@ -90,14 +90,14 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
               </a>
             </div>
 
-            <p className="font-mono text-xs text-ink-muted">
-              Piloto Operativo $150 (250 clasif. acreditables) · Plan Agencia desde $300/mes · Enterprise a medida
-            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-ink-muted">
+              <span>Piloto Operativo $150 (250 clasif. acreditables)</span>
+              <span aria-hidden="true" className="hidden sm:inline-block h-3 w-px bg-border-strong" />
+              <span>Plan Agencia desde $300/mes</span>
+              <span aria-hidden="true" className="hidden sm:inline-block h-3 w-px bg-border-strong" />
+              <span>Enterprise a medida</span>
+            </div>
           </div>
-
-          <p className="text-base sm:text-lg text-ink-secondary max-w-[52ch] mx-auto leading-relaxed pt-1">
-            TariffOS valida fichas merceológicas, clasifica lotes Excel y emite dictámenes PDF firmados con respaldo RGI.
-          </p>
         </div>
 
         <div className="mt-4 sm:mt-6 px-2 sm:px-6">

@@ -15,10 +15,12 @@ describe('LandingLeadCaptureSection', () => {
 
     render(<LandingLeadCaptureSection />);
 
+    await user.click(screen.getByRole('checkbox', { name: /Demo con tu factura/i }));
     await user.type(screen.getByLabelText(/Correo electrónico/i), 'no-es-correo');
     await user.type(screen.getByLabelText(/Teléfono \/ WhatsApp/i), '123');
     await user.click(screen.getByRole('button', { name: /Solicitar contacto/i }));
 
+    expect(screen.getByText(/Selecciona al menos una opción/i)).toBeInTheDocument();
     expect(screen.getByText(/Ingresa tu nombre completo/i)).toBeInTheDocument();
     expect(screen.getByText(/Indica el nombre de tu agencia o empresa/i)).toBeInTheDocument();
     expect(screen.getByText(/Ingresa un correo electrónico válido/i)).toBeInTheDocument();
@@ -35,7 +37,7 @@ describe('LandingLeadCaptureSection', () => {
 
     render(<LandingLeadCaptureSection />);
 
-    await user.click(screen.getByRole('button', { name: /Plan Enterprise a medida/i }));
+    await user.click(screen.getByRole('checkbox', { name: /Plan Enterprise a medida/i }));
     await user.type(screen.getByLabelText(/Nombre completo/i), 'Carlos Mendoza');
     await user.type(screen.getByLabelText(/Empresa o agencia/i), 'Aduanas del Caribe');
     await user.type(screen.getByLabelText(/Correo electrónico/i), 'carlos@caribe.ve');

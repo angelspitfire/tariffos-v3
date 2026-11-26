@@ -36,9 +36,9 @@ export function VerdictCard({
   const hasHighRisk = summaryPoints.some((pt) => pt.severity === 'high');
 
   return (
-    <section className="@container tos-rise rounded-surface border border-line-frost bg-surface-frost-strong p-4 sm:p-5 shadow-elev-1 backdrop-blur-md">
+    <section className="@container tos-rise rounded-surface border border-border-subtle bg-surface-panel p-4 sm:p-5 shadow-card">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="font-mono text-[11px] font-semibold tracking-[0.08em] text-ink-muted uppercase">
+        <span className="text-xs font-semibold text-ink-muted">
           Clasificación sugerida
         </span>
         <ConfidenceBadge label={verdict.confidenceLabel} />
@@ -62,20 +62,20 @@ export function VerdictCard({
 
       <p className="mt-2 text-sm leading-relaxed text-ink-secondary">{verdict.description}</p>
 
-      <div className="mt-3 grid grid-cols-3 gap-2">
-        <div className="rounded-card border border-border-subtle bg-surface-muted px-3 py-2">
+      <div className="mt-3.5 grid grid-cols-3 divide-x divide-border-hairline border-y border-border-hairline py-2.5">
+        <div className="pr-3">
           <div className="text-[11px] text-ink-muted">Ad Valorem</div>
           <div className="mt-0.5 text-sm font-semibold text-ink-primary tabular-nums">
             {verdict.adValoremPercent}%
           </div>
         </div>
-        <div className="rounded-card border border-border-subtle bg-surface-muted px-3 py-2">
+        <div className="px-3">
           <div className="text-[11px] text-ink-muted">IVA</div>
           <div className="mt-0.5 text-sm font-semibold text-ink-primary tabular-nums">
             {verdict.vatPercent}%
           </div>
         </div>
-        <div className="rounded-card border border-border-subtle bg-surface-muted px-3 py-2">
+        <div className="pl-3 min-w-0">
           <div className="text-[11px] text-ink-muted">Régimen</div>
           <div className="mt-0.5 truncate text-sm font-semibold text-ink-primary" title={verdict.legalRegimeSummary}>
             {verdict.legalRegimeCode}

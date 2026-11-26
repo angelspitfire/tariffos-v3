@@ -3,15 +3,11 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Globe, Sparkles } from 'lucide-react';
-import { isCloudModeEnabled } from '@/lib/runtime-config';
+import { isCloudModeEnabled, isGoogleOAuthEnabled } from '@/lib/runtime-config';
 import { readPendingQuery, saveSelectedPlan } from '@/lib/funnel/funnel-storage';
 import {
-  executeEmailAuth,
-  executeGoogleAuth,
-  executePasswordReset,
-  parseBillingCycle,
-  resolvePostLoginDestination,
-  resolveSafeNext,
+  executeEmailAuth, executeGoogleAuth, executePasswordReset,
+  parseBillingCycle, resolvePostLoginDestination, resolveSafeNext,
   type AuthTab,
 } from '@/lib/funnel/login-actions';
 import { validateSignupCredentials } from '@/lib/funnel/password-policy';
@@ -23,6 +19,7 @@ import { LoginEmailForm } from '../molecules/LoginEmailForm';
 
 export interface LoginCardProps {
   cloudMode?: boolean;
+  googleOAuthEnabled?: boolean;
   initialMode?: AuthTab;
   nextPath?: string;
 }
@@ -32,10 +29,11 @@ const AUTH_TABS = [
   { id: 'signup', label: 'Crear cuenta' },
 ] as const;
 
-export function LoginCard({ cloudMode, initialMode = 'signin', nextPath }: LoginCardProps) {
+export function LoginCard({ cloudMode, googleOAuthEnabled, initialMode = 'signin', nextPath }: LoginCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isCloud = cloudMode ?? isCloudModeEnabled();
+  const showGoogleAuth = googleOAuthEnabled ?? isGoogleOAuthEnabled(isCloud);
 
   const [tab, setTab] = useState<AuthTab>(initialMode);
   const [fullName, setFullName] = useState('');
@@ -61,10 +59,7 @@ export function LoginCard({ cloudMode, initialMode = 'signin', nextPath }: Login
   }, [urlPlan, urlCycle, callbackError]);
 
   const destination = resolvePostLoginDestination({
-    urlNext,
-    urlPlan,
-    urlCycle,
-    isNewUser: tab === 'signup',
+    urlNext, urlPlan, urlCycle, isNewUser: tab === 'signup',
   });
 
   const handleGoogleSignIn = async () => {
@@ -165,15 +160,18 @@ export function LoginCard({ cloudMode, initialMode = 'signin', nextPath }: Login
           ))}
         </div>
 
-        <FunnelButton type="button" variant="outline" size="lg" className="w-full" isLoading={isLoading} leftIcon={<Globe className="w-4 h-4" />} onClick={handleGoogleSignIn}>
-          Continuar con Google
-        </FunnelButton>
-
-        <div className="relative flex items-center">
-          <div className="flex-1 border-t border-border-subtle" />
-          <span className="px-3 text-[11px] text-ink-muted">o con tu correo</span>
-          <div className="flex-1 border-t border-border-subtle" />
-        </div>
+        {showGoogleAuth ? (
+          <>
+            <FunnelButton type="button" variant="outline" size="lg" className="w-full" isLoading={isLoading} leftIcon={<Globe className="w-4 h-4" />} onClick={handleGoogleSignIn}>
+              Continuar con Google
+            </FunnelButton>
+            <div className="relative flex items-center">
+              <div className="flex-1 border-t border-border-subtle" />
+              <span className="px-3 text-[11px] text-ink-muted">o con tu correo</span>
+              <div className="flex-1 border-t border-border-subtle" />
+            </div>
+          </>
+        ) : null}
 
         <LoginEmailForm
           tab={tab}

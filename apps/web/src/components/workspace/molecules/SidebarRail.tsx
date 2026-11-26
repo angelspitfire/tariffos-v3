@@ -105,7 +105,7 @@ export function SidebarRail({
             type="button"
             onClick={onExpand}
             aria-label="Cuenta y ajustes"
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-accent-brand text-[11px] font-bold text-white transition-transform hover:scale-105"
+            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-accent-brand text-[11px] font-bold text-white transition-transform hover:scale-105 motion-reduce:transition-none motion-reduce:hover:scale-100"
           >
             {initials}
           </button>

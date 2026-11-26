@@ -144,9 +144,9 @@ export function WorkspaceComposer({
       />
 
       <ComposerPrimitive.Root
-        className={`bg-surface-panel/95 backdrop-blur-xl border rounded-[24px] shadow-[0_14px_36px_-18px_rgba(15,23,42,0.18)] transition-colors overflow-hidden ${
+        className={`bg-surface-panel border rounded-[24px] shadow-card transition-colors overflow-hidden ${
           dictating
-            ? 'border-red-500/60 ring-1 ring-red-500/30'
+            ? 'border-[var(--color-error)] ring-1 ring-[var(--color-error-border)]'
             : 'border-border-strong/75 focus-within:border-accent-brand focus-within:ring-2 focus-within:ring-accent-brand/25'
         }`}
       >

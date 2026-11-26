@@ -42,14 +42,14 @@ export function LandingHeroPreview({
     <div
       data-slot="hero"
       data-kind="product"
-      className="rounded-[28px] border border-black/[0.07] dark:border-white/[0.09] bg-white/80 dark:bg-white/[0.045] backdrop-blur-md p-5 sm:p-8 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.16)] space-y-6"
+      className="rounded-[24px] border border-border-subtle bg-surface-panel p-5 sm:p-8 shadow-card space-y-6"
     >
       <div className="space-y-3">
         <form
           onSubmit={onSubmitPrompt}
           className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5"
         >
-          <div className="flex-1 flex items-center gap-3 px-4 min-h-[52px] rounded-full border border-black/[0.10] dark:border-white/[0.12] bg-white dark:bg-[#0f1626] focus-within:outline-2 focus-within:outline-accent-brand focus-within:outline-offset-[-2px] min-w-0">
+          <div className="flex-1 flex items-center gap-3 px-4 min-h-[52px] rounded-full border border-border-subtle bg-surface-input focus-within:outline-2 focus-within:outline-accent-brand focus-within:outline-offset-[-2px] min-w-0">
             <Search className="w-4 h-4 text-accent-ink shrink-0" aria-hidden="true" />
             <input
               type="text"
@@ -100,9 +100,9 @@ export function LandingHeroPreview({
           animate={{ opacity: 1, y: 0 }}
           exit={prefersReducedMotion ? undefined : { opacity: 0, y: -6 }}
           transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-          className="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-2"
+          className="grid grid-cols-1 lg:grid-cols-12 pt-5 border-t border-border-hairline divide-y lg:divide-y-0 lg:divide-x divide-border-hairline"
         >
-          <div className="lg:col-span-7 rounded-[22px] bg-white/90 dark:bg-[#0e1424]/90 border border-black/[0.05] dark:border-white/[0.07] p-5 sm:p-6 flex flex-col justify-between gap-5">
+          <div className="lg:col-span-7 pb-6 lg:pb-0 lg:pr-7 flex flex-col justify-between gap-5">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2.5 font-mono text-xs text-ink-muted">
@@ -144,11 +144,11 @@ export function LandingHeroPreview({
             </div>
           </div>
 
-          <div className="lg:col-span-5 rounded-[22px] bg-white/90 dark:bg-[#0e1424]/90 border border-black/[0.05] dark:border-white/[0.07] p-5 sm:p-6 flex flex-col justify-between gap-5">
+          <div className="lg:col-span-5 p-5 sm:p-7 flex flex-col justify-between gap-5">
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-[11px] tracking-[0.06em] text-ink-muted">
-                  CARGA TRIBUTARIA
+                <span className="text-xs font-medium text-ink-muted">
+                  Carga tributaria
                 </span>
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-accent-ink">
                   <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
