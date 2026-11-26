@@ -41,7 +41,7 @@ export function WorkspaceEmptyState({
         <button
           type="button"
           onClick={onFocusComposer}
-          className="text-left p-4 bg-surface-panel/85 backdrop-blur-md border border-border-subtle hover:border-accent-brand rounded-[22px] shadow-[0_8px_24px_-16px_rgba(15,23,42,0.14)] transition-colors group cursor-pointer space-y-2"
+          className="tos-rise text-left p-4 bg-surface-frost-strong backdrop-blur-md border border-line-frost hover:border-accent-brand rounded-surface shadow-elev-1 transition-colors group cursor-pointer space-y-2"
         >
           <div className="flex items-center justify-between gap-2">
             <Scale className="w-4 h-4 text-accent-ink shrink-0" />
@@ -58,7 +58,7 @@ export function WorkspaceEmptyState({
         <button
           type="button"
           onClick={onTriggerUpload}
-          className="text-left p-4 bg-surface-panel/85 backdrop-blur-md border border-border-subtle hover:border-accent-brand rounded-[22px] shadow-[0_8px_24px_-16px_rgba(15,23,42,0.14)] transition-colors group cursor-pointer space-y-2"
+          className="tos-rise text-left p-4 bg-surface-frost-strong backdrop-blur-md border border-line-frost hover:border-accent-brand rounded-surface shadow-elev-1 transition-colors group cursor-pointer space-y-2"
         >
           <div className="flex items-center justify-between gap-2">
             <UploadCloud className="w-4 h-4 text-accent-ink shrink-0" />
@@ -76,7 +76,7 @@ export function WorkspaceEmptyState({
           <button
             type="button"
             onClick={() => onRunBatchSample(firstBatch)}
-            className="text-left p-4 bg-surface-panel/85 backdrop-blur-md border border-border-subtle hover:border-accent-brand rounded-[22px] shadow-[0_8px_24px_-16px_rgba(15,23,42,0.14)] transition-colors group cursor-pointer space-y-2"
+            className="tos-rise text-left p-4 bg-surface-frost-strong backdrop-blur-md border border-line-frost hover:border-accent-brand rounded-surface shadow-elev-1 transition-colors group cursor-pointer space-y-2"
           >
             <div className="flex items-center justify-between gap-2">
               <FileSpreadsheet className="w-4 h-4 text-accent-ink shrink-0" />

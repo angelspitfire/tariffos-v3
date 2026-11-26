@@ -2,60 +2,54 @@
 
 import { useEffect, useState } from 'react';
 import { FileText, MessageSquare } from 'lucide-react';
-import type {
-  A2UIDisambiguationOption,
-  A2UIMerceologicalSheet,
-  CanvasTabType,
-} from '@tariffos/shared-types';
-import type { WorkspaceMessage } from '@/lib/workspace/types';
+import type { CanvasTabType } from '@tariffos/shared-types';
+import { readSelectedPlan } from '@/lib/funnel/funnel-storage';
+import { buildWorkspaceInlineActions } from '@/lib/workspace/inline-actions';
+import { computePlanStatus } from '@/lib/workspace/plan-status';
 import { useWorkspaceState } from '@/lib/workspace/use-workspace-state';
 import { AnalyticsWorkspaceView } from '../organisms/AnalyticsWorkspaceView';
 import { AssistantThreadSurface } from '../organisms/AssistantThreadSurface';
 import { SkuCatalogModal } from '../organisms/SkuCatalogModal';
-import { WorkspaceSidebarSlot } from '../molecules/WorkspaceSidebarSlot';
-import type { InlineCardActions } from '../organisms/ThreadInlineCards';
 import { WorkspaceCanvasPane } from '../organisms/WorkspaceCanvasPane';
 import { WorkspaceHeader48 } from '../organisms/WorkspaceHeader48';
+import { WorkspaceSidebarSlot } from '../molecules/WorkspaceSidebarSlot';
 
 const MIN_CHAT_PCT = 32;
 const MAX_CHAT_PCT = 68;
+const WIDE_VIEWPORT_PX = 1280;
 
 export function WorkspaceSplitShell() {
   const ws = useWorkspaceState();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [canvasDismissed, setCanvasDismissed] = useState(false);
+  const [canvasFullscreen, setCanvasFullscreen] = useState(false);
   const [skuModalOpen, setSkuModalOpen] = useState(false);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [mobilePane, setMobilePane] = useState<'chat' | 'canvas'>('chat');
   const [chatWidthPct, setChatWidthPct] = useState(46);
   const [isDark, setIsDark] = useState(false);
+  const [planId, setPlanId] = useState('trial');
 
-  const showCanvas = ws.canvasComponents.length > 0 && !canvasDismissed;
+  const hasCanvas = ws.canvasComponents.length > 0;
+  const showCanvas = hasCanvas && !canvasDismissed;
+  const plan = computePlanStatus(ws.threads, planId);
+
+  useEffect(() => {
+    setPlanId(readSelectedPlan()?.planId ?? 'trial');
+  }, []);
 
   useEffect(() => {
     setCanvasDismissed(false);
-    if (ws.canvasComponents.length > 0 && typeof window !== 'undefined' && window.innerWidth < 1280) {
-      setSidebarOpen(false);
-    }
-  }, [ws.activeThreadId, ws.canvasComponents.length]);
+    if (hasCanvas && window.innerWidth < WIDE_VIEWPORT_PX) setSidebarOpen(false);
+  }, [ws.activeThreadId, hasCanvas]);
 
   useEffect(() => {
-    if (!showCanvas || typeof window === 'undefined') return;
-    const onResize = () => {
-      if (window.innerWidth < 1280) setSidebarOpen(false);
-    };
+    if (!showCanvas) return;
+    const onResize = () => window.innerWidth < WIDE_VIEWPORT_PX && setSidebarOpen(false);
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, [showCanvas]);
-
-  const handleToggleSidebar = () => {
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-      setMobileDrawerOpen((p) => !p);
-      return;
-    }
-    setSidebarOpen((p) => !p);
-  };
 
   useEffect(() => {
     const dark = ws.profile.themePreference === 'dark';
@@ -89,162 +83,190 @@ export function WorkspaceSplitShell() {
 
   const handleExportPdf = () => {
     ws.pushToast('Abriendo vista de impresión / exportación PDF...', 'info');
-    if (typeof window !== 'undefined' && typeof window.print === 'function') window.print();
+    if (typeof window.print === 'function') window.print();
   };
 
-  const inlineActions: InlineCardActions = {
-    onOpenCanvasTab: (msg: WorkspaceMessage, tab: CanvasTabType) => {
-      ws.setSelectedCanvasMsgId(msg.id);
-      ws.setActiveTab(tab);
+  const showCanvasFor = (messageId: string | null, tab: CanvasTabType) => {
+    ws.setSelectedCanvasMsgId(messageId);
+    ws.setActiveTab(tab);
+    setCanvasDismissed(false);
+    setMobilePane('canvas');
+  };
+
+  const inlineActions = buildWorkspaceInlineActions({
+    onSelectCanvasMessage: (messageId, tab) => showCanvasFor(messageId, tab),
+    onExportPdf: () => {
+      ws.setActiveTab('dossier');
       setCanvasDismissed(false);
       setMobilePane('canvas');
-    },
-    onExportPdf: () => {
-      setMobilePane('canvas');
-      ws.setActiveTab('dossier');
       handleExportPdf();
     },
     onSaveSku: (msg) => ws.saveSkuFromMessage(msg),
-    onSubmitSheet: (sheet: A2UIMerceologicalSheet) => {
-      const summary = sheet.attributes.filter((a) => a.value.trim()).map((a) => `${a.label}: ${a.value}`).join('; ');
-      void ws.sendClassification(`Ficha merceológica confirmada para ${sheet.productName}: ${summary}`);
-    },
-    onAcceptTentative: (hsCode) =>
-      void ws.sendClassification(`Confirmo adoptar la hipótesis preliminar ${hsCode} y emitir dictamen completo.`),
-    onSubmitQuestionnaire: (answers) => {
-      const text = Object.entries(answers).filter(([, v]) => v.trim()).map(([k, v]) => `${k}: ${v}`).join(', ');
-      void ws.sendClassification(`Especificaciones complementarias: ${text}`);
-    },
-    onSelectDisambiguation: (opt: A2UIDisambiguationOption) =>
-      void ws.sendClassification(`Opción seleccionada: ${opt.label}${opt.suggestedHsHint ? ` (${opt.suggestedHsHint})` : ''}`),
+    onClassify: (prompt) => void ws.sendClassification(prompt),
+  });
+
+  const goToChat = () => {
+    setAnalyticsOpen(false);
+    setMobilePane('chat');
   };
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-[#E4E6EB] dark:bg-[#0B0F19] text-ink-primary">
-      <WorkspaceHeader48
-        jurisdiction={ws.jurisdiction}
+    <div className="flex h-dvh overflow-hidden bg-[#E4E6EB] text-ink-primary dark:bg-[#0B0F19]">
+      <WorkspaceSidebarSlot
+        desktopOpen={sidebarOpen}
+        mobileOpen={mobileDrawerOpen}
+        threads={ws.threads}
+        activeThreadId={ws.activeThreadId}
         profile={ws.profile}
+        plan={plan}
         skuCount={ws.skuPrecedents.length}
-        analyticsOpen={analyticsOpen}
-        isDark={isDark}
-        onToggleSidebar={handleToggleSidebar}
-        onChangeJurisdiction={ws.setJurisdictionId}
+        dashboardActive={analyticsOpen}
+        onToggleDesktop={() => setSidebarOpen((p) => !p)}
+        onCloseMobile={() => setMobileDrawerOpen(false)}
+        onNewThread={() => {
+          ws.startNewThread();
+          goToChat();
+        }}
+        onSelectThread={(id) => {
+          ws.setActiveThreadId(id);
+          ws.setSelectedCanvasMsgId(null);
+          goToChat();
+        }}
+        onDeleteThread={ws.deleteThread}
+        onOpenDashboard={() => setAnalyticsOpen((p) => !p)}
         onOpenSkuCatalog={() => setSkuModalOpen(true)}
-        onToggleAnalytics={() => setAnalyticsOpen((p) => !p)}
-        onToggleTheme={handleToggleTheme}
         onChangeApprovalMode={ws.setApprovalWorkflowMode}
       />
 
-      <div className="relative flex min-h-0 flex-1 overflow-hidden">
-        <WorkspaceSidebarSlot
-          desktopOpen={sidebarOpen}
-          mobileOpen={mobileDrawerOpen}
-          threads={ws.threads}
-          activeThreadId={ws.activeThreadId}
-          onCloseMobile={() => setMobileDrawerOpen(false)}
-          onNewThread={ws.startNewThread}
-          onSelectThread={(id) => {
-            ws.setActiveThreadId(id);
-            ws.setSelectedCanvasMsgId(null);
-          }}
-          onDeleteThread={ws.deleteThread}
-          onRunSample={(s) => void ws.sendClassification(s.description)}
-          onRunBatchSample={(b) =>
-            void ws.sendClassification(b.promptText, { attachmentsText: b.documentText, isBatchHint: true })
-          }
+      <div className="flex min-w-0 flex-1 flex-col">
+        <WorkspaceHeader48
+          jurisdiction={ws.jurisdiction}
+          isDark={isDark}
+          canvasAvailable={hasCanvas && !analyticsOpen}
+          canvasVisible={showCanvas}
+          onOpenMobileSidebar={() => setMobileDrawerOpen(true)}
+          onChangeJurisdiction={ws.setJurisdictionId}
+          onToggleTheme={handleToggleTheme}
+          onToggleCanvas={() => setCanvasDismissed((p) => !p)}
         />
 
-        {analyticsOpen ? (
-          <main className="min-w-0 flex-1">
-            <AnalyticsWorkspaceView
-              threads={ws.threads}
-              skuPrecedents={ws.skuPrecedents}
-              onClose={() => setAnalyticsOpen(false)}
-            />
-          </main>
-        ) : (
-          <main className="flex min-w-0 flex-1 overflow-hidden">
-            <section
-              style={
-                showCanvas
-                  ? ({ '--chat-w': `${chatWidthPct}%` } as React.CSSProperties)
-                  : undefined
-              }
-              className={`min-w-0 flex-1 ${
-                showCanvas ? 'lg:w-[var(--chat-w)] lg:flex-none' : ''
-              } ${mobilePane === 'chat' || !showCanvas ? 'block' : 'hidden lg:block'}`}
-            >
-              <AssistantThreadSurface
-                messages={ws.activeThread?.messages ?? []}
-                isRunning={ws.isRunning}
-                liveProgress={ws.liveProgress}
+        <div className="relative flex min-h-0 flex-1 overflow-hidden">
+          {analyticsOpen ? (
+            <main className="min-w-0 flex-1">
+              <AnalyticsWorkspaceView
+                threads={ws.threads}
                 skuPrecedents={ws.skuPrecedents}
-                pendingAttachments={ws.pendingAttachments}
-                profile={ws.profile}
-                inlineActions={inlineActions}
-                onSendMessage={(text) => ws.sendClassification(text)}
-                onCancelRun={ws.cancelRun}
-                onAddFiles={(files) => void ws.addFiles(files)}
-                onRemoveAttachment={ws.removeAttachment}
-                onRunSample={(s) => void ws.sendClassification(s.description)}
-                onRunBatchSample={(b) =>
-                  void ws.sendClassification(b.promptText, { attachmentsText: b.documentText, isBatchHint: true })
-                }
-                onUpdateProfile={ws.updateProfile}
-                onNotifyUnavailableCamera={() =>
-                  ws.pushToast('Usa el botón + o pega una imagen con Ctrl+V para escanear documentos.', 'info')
-                }
+                onClose={() => setAnalyticsOpen(false)}
               />
-            </section>
-
-            {showCanvas ? (
-              <>
-                <button
-                  type="button"
-                  aria-label="Redimensionar panel de chat y dictamen"
-                  onMouseDown={handleStartResize}
-                  className="no-print hidden w-1.5 shrink-0 cursor-col-resize bg-transparent transition hover:bg-accent-brand/40 lg:block"
+            </main>
+          ) : (
+            <main className="flex min-w-0 flex-1 overflow-hidden">
+              <section
+                style={showCanvas && !canvasFullscreen ? ({ '--chat-w': `${chatWidthPct}%` } as React.CSSProperties) : undefined}
+                className={`min-w-0 flex-1 ${showCanvas && !canvasFullscreen ? 'lg:w-[var(--chat-w)] lg:flex-none' : ''} ${
+                  canvasFullscreen ? 'hidden' : mobilePane === 'chat' || !showCanvas ? 'block' : 'hidden lg:block'
+                }`}
+              >
+                <AssistantThreadSurface
+                  messages={ws.activeThread?.messages ?? []}
+                  isRunning={ws.isRunning}
+                  liveProgress={ws.liveProgress}
+                  skuPrecedents={ws.skuPrecedents}
+                  pendingAttachments={ws.pendingAttachments}
+                  profile={ws.profile}
+                  inlineActions={inlineActions}
+                  onSendMessage={(text) => ws.sendClassification(text)}
+                  onCancelRun={ws.cancelRun}
+                  onAddFiles={(files) => void ws.addFiles(files)}
+                  onRemoveAttachment={ws.removeAttachment}
+                  onRunSample={(s) => void ws.sendClassification(s.description)}
+                  onRunBatchSample={(b) =>
+                    void ws.sendClassification(b.promptText, { attachmentsText: b.documentText, isBatchHint: true })
+                  }
+                  onUpdateProfile={ws.updateProfile}
+                  onNotifyUnavailableCamera={() =>
+                    ws.pushToast('Usa el botón + o pega una imagen con Ctrl+V para escanear documentos.', 'info')
+                  }
                 />
+              </section>
 
-                <section
-                  className={`min-w-0 flex-1 lg:my-2.5 lg:mr-2.5 lg:rounded-[22px] lg:border lg:border-border-subtle lg:overflow-hidden lg:shadow-[0_14px_36px_-18px_rgba(15,23,42,0.16)] bg-surface-panel ${
-                    mobilePane === 'canvas' ? 'block' : 'hidden lg:block'
-                  }`}
-                >
-                  <WorkspaceCanvasPane
-                    components={ws.canvasComponents}
-                    activeTab={ws.activeTab}
-                    jurisdiction={ws.jurisdiction}
-                    profile={ws.profile}
-                    onSelectTab={ws.setActiveTab}
-                    onApproveDossier={ws.approveActiveDossier}
-                    onRequestDossierReview={ws.requestDossierReview}
-                    onSaveSku={() => ws.saveSkuFromMessage()}
-                    onSaveSignature={(p) =>
-                      ws.updateProfile({ fullName: p.fullName, brokerLicense: p.brokerLicense, brokerSignatureDataUrl: p.signatureDataUrl })
-                    }
-                    onExportPdf={handleExportPdf}
-                    onConfirmBatchItem={ws.confirmBatchItem}
-                    onCloseCanvas={() => {
-                      setCanvasDismissed(true);
-                      setMobilePane('chat');
-                    }}
-                  />
-                </section>
-              </>
-            ) : null}
-          </main>
-        )}
+              {showCanvas ? (
+                <>
+                  {!canvasFullscreen ? (
+                    <button
+                      type="button"
+                      aria-label="Redimensionar panel de chat y dictamen"
+                      onMouseDown={handleStartResize}
+                      className="no-print hidden w-1.5 shrink-0 cursor-col-resize bg-transparent transition hover:bg-accent-brand/40 lg:block"
+                    />
+                  ) : null}
+                  <section
+                    className={`min-w-0 flex-1 bg-surface-panel ${
+                      canvasFullscreen
+                        ? 'lg:m-2.5 lg:overflow-hidden lg:rounded-surface lg:border lg:border-line-frost lg:shadow-elev-2'
+                        : 'lg:my-2.5 lg:mr-2.5 lg:overflow-hidden lg:rounded-surface lg:border lg:border-line-frost lg:shadow-elev-2'
+                    } ${mobilePane === 'canvas' ? 'block' : 'hidden lg:block'}`}
+                  >
+                    <WorkspaceCanvasPane
+                      components={ws.canvasComponents}
+                      activeTab={ws.activeTab}
+                      jurisdiction={ws.jurisdiction}
+                      profile={ws.profile}
+                      onSelectTab={ws.setActiveTab}
+                      onApproveDossier={ws.approveActiveDossier}
+                      onRequestDossierReview={ws.requestDossierReview}
+                      onChangeWorkflowMode={ws.setApprovalWorkflowMode}
+                      onReevaluateSpecs={(specs) => {
+                        const summary = specs.map((s) => `${s.key}: ${s.value}`).join('; ');
+                        void ws.sendClassification(`Reevaluar dictamen con ficha actualizada: ${summary}`);
+                      }}
+                      onSaveSku={() => ws.saveSkuFromMessage()}
+                      onSaveSignature={(p) =>
+                        ws.updateProfile({
+                          fullName: p.fullName,
+                          brokerLicense: p.brokerLicense,
+                          brokerSignatureDataUrl: p.signatureDataUrl,
+                        })
+                      }
+                      onExportPdf={handleExportPdf}
+                      onConfirmBatchItem={ws.confirmBatchItem}
+                      isFullscreen={canvasFullscreen}
+                      onToggleFullscreen={() => setCanvasFullscreen((p) => !p)}
+                      onCloseCanvas={() => {
+                        setCanvasFullscreen(false);
+                        setCanvasDismissed(true);
+                        setMobilePane('chat');
+                      }}
+                    />
+                  </section>
+                </>
+              ) : null}
+            </main>
+          )}
+        </div>
+
+        {showCanvas && !analyticsOpen ? (
+          <nav aria-label="Cambiar vista móvil" className="no-print grid grid-cols-2 border-t border-line-frost bg-surface-frost lg:hidden">
+            {(
+              [
+                { id: 'chat', label: 'Chat', Icon: MessageSquare },
+                { id: 'canvas', label: 'Dictamen', Icon: FileText },
+              ] as const
+            ).map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setMobilePane(id)}
+                className={`flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium ${
+                  mobilePane === id ? 'text-accent-ink' : 'text-ink-muted'
+                }`}
+              >
+                <Icon className="h-4 w-4" aria-hidden="true" /> {label}
+              </button>
+            ))}
+          </nav>
+        ) : null}
       </div>
-
-      <nav aria-label="Cambiar vista móvil" className="no-print grid grid-cols-2 border-t border-border-subtle bg-surface-panel lg:hidden">
-        <button type="button" onClick={() => setMobilePane('chat')} className={`flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium ${mobilePane === 'chat' ? 'text-accent-ink' : 'text-ink-muted'}`}>
-          <MessageSquare className="h-4 w-4" aria-hidden="true" /> Chat
-        </button>
-        <button type="button" onClick={() => setMobilePane('canvas')} className={`flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium ${mobilePane === 'canvas' ? 'text-accent-ink' : 'text-ink-muted'}`}>
-          <FileText className="h-4 w-4" aria-hidden="true" /> Dictamen
-        </button>
-      </nav>
 
       <SkuCatalogModal
         open={skuModalOpen}

@@ -61,6 +61,10 @@
   --accent-border: oklch(45.7% 0.214 261.3 / 0.34);
   --scrollbar-thumb: oklch(74% 0.015 256 / 0.24);
   --scrollbar-thumb-hover: oklch(58% 0.024 257 / 0.45);
+  --surface-canvas: oklch(92.1% 0.006 264);
+  --surface-frost: oklch(100% 0 0 / 0.82);
+  --surface-frost-strong: oklch(100% 0 0 / 0.92);
+  --line-frost: oklch(19% 0.032 264 / 0.07);
   --space-3xs: 2px;
   --space-2xs: 4px;
   --space-xs: 8px;
@@ -117,6 +121,10 @@
   --accent-border: oklch(72% 0.16 254 / 0.42);
   --scrollbar-thumb: oklch(54% 0.04 257 / 0.45);
   --scrollbar-thumb-hover: oklch(69% 0.035 256 / 0.65);
+  --surface-canvas: oklch(15.6% 0.03 266);
+  --surface-frost: oklch(21.5% 0.032 264 / 0.82);
+  --surface-frost-strong: oklch(23% 0.034 264 / 0.94);
+  --line-frost: oklch(100% 0 0 / 0.09);
 }
 @media print {
   :root,

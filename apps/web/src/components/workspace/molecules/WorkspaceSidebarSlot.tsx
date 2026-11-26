@@ -1,6 +1,7 @@
 'use client';
 
-import type { SampleBatchDocument, SampleMerchandise } from '@/lib/workspace/jurisdictions';
+import type { ApprovalWorkflowMode, UserProfileSettings } from '@tariffos/shared-types';
+import type { WorkspacePlanStatus } from '@/lib/workspace/plan-status';
 import type { WorkspaceThread } from '@/lib/workspace/types';
 import { ThreadSidebar } from '../organisms/ThreadSidebar';
 
@@ -9,35 +10,54 @@ export interface WorkspaceSidebarSlotProps {
   mobileOpen: boolean;
   threads: readonly WorkspaceThread[];
   activeThreadId: string | null;
+  profile: UserProfileSettings;
+  plan: WorkspacePlanStatus;
+  skuCount: number;
+  dashboardActive: boolean;
+  onToggleDesktop: () => void;
   onCloseMobile: () => void;
   onNewThread: () => void;
   onSelectThread: (threadId: string) => void;
   onDeleteThread: (threadId: string) => void;
-  onRunSample: (sample: SampleMerchandise) => void;
-  onRunBatchSample: (batch: SampleBatchDocument) => void;
+  onOpenDashboard: () => void;
+  onOpenSkuCatalog: () => void;
+  onChangeApprovalMode: (mode: ApprovalWorkflowMode) => void;
 }
 
+/** Renders the persistent desktop sidebar (expanded or rail) and the mobile slide-over drawer. */
 export function WorkspaceSidebarSlot({
   desktopOpen,
   mobileOpen,
-  threads,
-  activeThreadId,
+  onToggleDesktop,
   onCloseMobile,
   onNewThread,
   onSelectThread,
-  onDeleteThread,
-  onRunSample,
-  onRunBatchSample,
+  onOpenDashboard,
+  onOpenSkuCatalog,
+  ...shared
 }: WorkspaceSidebarSlotProps) {
   return (
     <>
-      {mobileOpen && (
-        <div className="fixed inset-0 top-12 z-40 flex lg:hidden">
+      <div className="hidden h-full lg:block">
+        <ThreadSidebar
+          {...shared}
+          open={desktopOpen}
+          onToggle={onToggleDesktop}
+          onNewThread={onNewThread}
+          onSelectThread={onSelectThread}
+          onOpenDashboard={onOpenDashboard}
+          onOpenSkuCatalog={onOpenSkuCatalog}
+        />
+      </div>
+
+      {mobileOpen ? (
+        <div className="fixed inset-0 z-40 flex lg:hidden" aria-label="Chats de despacho">
           <div className="h-full shadow-2xl">
             <ThreadSidebar
+              {...shared}
               open
-              threads={threads}
-              activeThreadId={activeThreadId}
+              drawer
+              onToggle={onCloseMobile}
               onNewThread={() => {
                 onNewThread();
                 onCloseMobile();
@@ -46,14 +66,13 @@ export function WorkspaceSidebarSlot({
                 onSelectThread(id);
                 onCloseMobile();
               }}
-              onDeleteThread={onDeleteThread}
-              onRunSample={(s) => {
+              onOpenDashboard={() => {
+                onOpenDashboard();
                 onCloseMobile();
-                onRunSample(s);
               }}
-              onRunBatchSample={(b) => {
+              onOpenSkuCatalog={() => {
+                onOpenSkuCatalog();
                 onCloseMobile();
-                onRunBatchSample(b);
               }}
             />
           </div>
@@ -61,23 +80,10 @@ export function WorkspaceSidebarSlot({
             type="button"
             aria-label="Cerrar historial"
             onClick={onCloseMobile}
-            className="flex-1 bg-black/30 backdrop-blur-[1px]"
+            className="flex-1 bg-slate-950/40 backdrop-blur-[1px]"
           />
         </div>
-      )}
-
-      <div className="hidden h-full lg:block">
-        <ThreadSidebar
-          open={desktopOpen}
-          threads={threads}
-          activeThreadId={activeThreadId}
-          onNewThread={onNewThread}
-          onSelectThread={onSelectThread}
-          onDeleteThread={onDeleteThread}
-          onRunSample={onRunSample}
-          onRunBatchSample={onRunBatchSample}
-        />
-      </div>
+      ) : null}
     </>
   );
 }

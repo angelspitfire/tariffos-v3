@@ -8,7 +8,10 @@ import type {
   JurisdictionConfig,
   UserProfileSettings,
 } from '@tariffos/shared-types';
+import { CanvasStatusStrip } from '../molecules/CanvasStatusStrip';
+import { CanvasTitleBar } from '../molecules/CanvasTitleBar';
 import { ConsolidatedTabStrip } from '../molecules/ConsolidatedTabStrip';
+import type { TechnicalSpecItem } from '../molecules/MerceologicalSpecsCard';
 import type { BatchItemConfirmation } from './BatchItemInspector';
 import { BatchManifestTriageView } from './BatchManifestTriageView';
 import { DossierView } from './DossierView';
@@ -33,6 +36,10 @@ export interface WorkspaceCanvasPaneProps {
   }) => void;
   onExportPdf: () => void;
   onConfirmBatchItem: (lineNumber: number, update: BatchItemConfirmation) => void;
+  onChangeWorkflowMode?: (mode: ApprovalWorkflowMode) => void;
+  onReevaluateSpecs?: (updatedSpecs: TechnicalSpecItem[]) => void;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
   onCloseCanvas?: () => void;
 }
 
@@ -48,6 +55,10 @@ export function WorkspaceCanvasPane({
   onSaveSignature,
   onExportPdf,
   onConfirmBatchItem,
+  onChangeWorkflowMode,
+  onReevaluateSpecs,
+  isFullscreen,
+  onToggleFullscreen,
   onCloseCanvas,
 }: WorkspaceCanvasPaneProps) {
   const dossier = components.find((c) => c.type === 'dossier');
@@ -93,14 +104,29 @@ export function WorkspaceCanvasPane({
                 ? 'comparison'
                 : activeTab;
 
+  const titleLabel = dossier?.hsCode ?? calculator?.hsCode ?? (batch ? `Lote (${batch.items.length} ítems)` : 'Expediente');
+
   return (
     <div className="flex h-full flex-col overflow-hidden bg-surface-panel">
+      <CanvasTitleBar
+        codeLabel={titleLabel}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={onToggleFullscreen}
+        onClose={onCloseCanvas}
+      />
+
       <ConsolidatedTabStrip
         components={components}
         activeTab={effectiveTab}
         unreadAlertsCount={0}
         onSelectTab={onSelectTab}
-        onCloseCanvas={onCloseCanvas}
+      />
+
+      <CanvasStatusStrip
+        dossier={dossier}
+        calculator={calculator}
+        batch={batch}
+        onSelectTab={onSelectTab}
       />
 
       <div className="flex-1 overflow-y-auto">
@@ -120,6 +146,8 @@ export function WorkspaceCanvasPane({
             workflowMode={workflowMode}
             onApprove={onApproveDossier}
             onRequestReview={onRequestDossierReview}
+            onChangeWorkflowMode={onChangeWorkflowMode}
+            onReevaluateSpecs={onReevaluateSpecs}
             onSaveSku={onSaveSku}
             onSaveSignature={onSaveSignature}
             onExportPdf={onExportPdf}

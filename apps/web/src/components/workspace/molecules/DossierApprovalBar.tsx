@@ -16,12 +16,19 @@ export interface DossierApprovalBarProps {
   onApprove?: () => void;
   onRequestReview?: (note: string) => void;
   onChangeStatus?: (status: DossierReviewStatus, complianceNote?: string) => void;
+  onChangeWorkflowMode?: (mode: ApprovalWorkflowMode) => void;
 }
 
 const MODE_LABELS: Record<ApprovalWorkflowMode, string> = {
-  agent_decides: 'Modo: Agente decide',
-  direct_seal: 'Modo: Sellado directo',
-  always_review: 'Modo: Revisión obligatoria',
+  agent_decides: 'Política: Agente decide',
+  direct_seal: 'Política: Sellado directo',
+  always_review: 'Política: Revisión obligatoria',
+};
+
+const MODE_CYCLE: Record<ApprovalWorkflowMode, ApprovalWorkflowMode> = {
+  agent_decides: 'direct_seal',
+  direct_seal: 'always_review',
+  always_review: 'agent_decides',
 };
 
 export function DossierApprovalBar({
@@ -30,6 +37,7 @@ export function DossierApprovalBar({
   onApprove,
   onRequestReview,
   onChangeStatus,
+  onChangeWorkflowMode,
 }: DossierApprovalBarProps) {
   const resolved = resolveInitialDossierReview(dossier, workflowMode);
   const status = resolved.reviewStatus ?? 'draft_ai';
@@ -52,11 +60,28 @@ export function DossierApprovalBar({
   };
 
   return (
-    <section className="rounded-xl border border-border-subtle bg-surface-panel p-3.5 shadow-xs">
+    <section
+      className={`rounded-card border p-3.5 shadow-xs ${
+        status === 'approved'
+          ? 'border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20'
+          : 'border-amber-500/35 bg-amber-50/75 dark:bg-amber-950/25'
+      }`}
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <StatusPill variant={status} />
-          <span className="text-[11px] text-ink-muted">{MODE_LABELS[workflowMode]}</span>
+          {onChangeWorkflowMode ? (
+            <button
+              type="button"
+              onClick={() => onChangeWorkflowMode(MODE_CYCLE[workflowMode])}
+              title="Cambiar política de sellado"
+              className="cursor-pointer rounded-full border border-border-subtle bg-surface-panel px-2.5 py-0.5 text-[11px] font-medium text-ink-secondary transition-colors hover:border-accent-brand hover:text-ink-primary"
+            >
+              {MODE_LABELS[workflowMode]}
+            </button>
+          ) : (
+            <span className="text-[11px] text-ink-muted">{MODE_LABELS[workflowMode]}</span>
+          )}
           {resolved.approvalMeta?.approvedBy && status === 'approved' && (
             <span className="text-[11px] text-emerald-700 dark:text-emerald-300">
               · {resolved.approvalMeta.approvedBy}
@@ -66,24 +91,24 @@ export function DossierApprovalBar({
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setReviewFormOpen((prev) => !prev)}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle bg-surface-panel px-3 py-1.5 text-xs font-medium text-ink-primary transition hover:bg-surface-hover"
+          >
+            <ClipboardCheck className="h-3.5 w-3.5" aria-hidden="true" />
+            Dejar en revisión
+          </button>
           {status !== 'approved' && (
             <button
               type="button"
               onClick={handleApprove}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-emerald-700"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
             >
               <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
               Aprobar y sellar
             </button>
           )}
-          <button
-            type="button"
-            onClick={() => setReviewFormOpen((prev) => !prev)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-primary transition hover:bg-surface-hover"
-          >
-            <ClipboardCheck className="h-3.5 w-3.5" aria-hidden="true" />
-            Dejar en revisión
-          </button>
         </div>
       </div>
 
