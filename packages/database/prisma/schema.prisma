@@ -1052,3 +1052,19 @@ model AdminAuditLog {
   @@map("admin_audit_logs")
   @@schema("public")
 }
+
+/// Console-managed allowlist of internal platform administrators
+model PlatformAdmin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  role      String   @default("super_admin")
+  isActive  Boolean  @default(true) @map("is_active")
+  notes     String?
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive])
+  @@map("platform_admins")
+  @@schema("public")
+}

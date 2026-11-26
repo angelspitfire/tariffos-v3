@@ -8,6 +8,7 @@ export * from './generated/client';
 export * from './client';
 export * from './billing';
 export * from './admin-audit';
+export * from './platform-admins';
 export * from './country';
 export * from './derogation';
 export * from './arancel-tree';

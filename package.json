@@ -17,7 +17,8 @@
     "test": "pnpm -r --if-present test",
     "check": "node scripts/check.mjs",
     "check:quick": "node scripts/check.mjs --quick",
-    "smoke:llm": "node scripts/smoke-llm.mjs"
+    "smoke:llm": "node scripts/smoke-llm.mjs",
+    "admin:users": "pnpm --filter @tariffos/database exec tsx src/scripts/platform-admin.ts"
   },
   "devDependencies": {
     "@typescript/native": "npm:typescript@^7.0.2",

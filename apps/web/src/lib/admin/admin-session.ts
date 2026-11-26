@@ -44,12 +44,26 @@ export async function resolvePlatformAdminContext(
     return { ok: false, status: 401, error: 'Authentication required' };
   }
 
-  const profile = await prisma.userProfile.findUnique({
-    where: { id: user.id },
-    select: { role: true },
-  });
+  let role: PlatformRole = 'user';
 
-  let role = normalizePlatformRole(profile?.role);
+  if (user.email) {
+    const adminEntry = await prisma.platformAdmin.findUnique({
+      where: { email: user.email.trim().toLowerCase() },
+      select: { role: true, isActive: true },
+    });
+    if (adminEntry?.isActive) {
+      role = normalizePlatformRole(adminEntry.role);
+    }
+  }
+
+  if (role === 'user') {
+    const profile = await prisma.userProfile.findUnique({
+      where: { id: user.id },
+      select: { role: true },
+    });
+    role = normalizePlatformRole(profile?.role);
+  }
+
   if (role === 'user' && isBootstrapAdminEmail(user.email)) {
     role = 'super_admin';
   }
