@@ -14,7 +14,6 @@
     "dev:inngest": "npx -y inngest-cli@latest dev -u http://localhost:3003/api/inngest",
     "bootstrap": "pnpm --filter @tariffos/database... build",
     "build:packages": "pnpm bootstrap && pnpm -r --filter='./packages/*' --filter=!@tariffos/database build",
-    "postinstall": "node -e \"if (process.env.VERCEL) require('node:child_process').execSync('pnpm build:packages', { stdio: 'inherit' })\"",
     "build": "pnpm bootstrap && pnpm -r --filter=!@tariffos/database build",
     "typecheck": "pnpm -r --if-present typecheck",
     "lint": "oxlint apps packages",
