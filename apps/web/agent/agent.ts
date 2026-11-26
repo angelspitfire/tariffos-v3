@@ -1,7 +1,10 @@
 import { defineAgent } from 'eve';
-import { anthropic } from 'eve/models/anthropic';
+import { resolveEveModel } from './model-resolver';
+
+const DEFAULT_CONTEXT_WINDOW_TOKENS = 200_000;
 
 export default defineAgent({
-  model: anthropic('claude-sonnet-4'),
+  model: resolveEveModel(),
+  modelContextWindowTokens: DEFAULT_CONTEXT_WINDOW_TOKENS,
   reasoning: 'high',
 });

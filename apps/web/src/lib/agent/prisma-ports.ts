@@ -22,31 +22,44 @@ export function createPrismaPipelinePorts(): PipelinePorts {
   return {
     decisionProvider: process.env.TYPESAFE_API_KEY ? defaultProvider() : undefined,
 
-    async findSkuPrecedent(tenantId: string, skuOrDesc: string): Promise<SkuPrecedentRecord | null> {
+    async findSkuPrecedent(
+      tenantId: string,
+      skuOrDesc: string,
+    ): Promise<SkuPrecedentRecord | null> {
       const match = await prisma.productMaster.findFirst({
         where: {
           tenantId,
-          OR: [{ sku: skuOrDesc }, { description: skuOrDesc }],
+          description: { equals: skuOrDesc, mode: 'insensitive' },
         },
       });
       if (!match || !match.hsCode) return null;
       return {
         hsCode: match.hsCode,
         officialDescription: match.description,
-        confidencePct: 98,
+        confidencePct: Math.round((match.confidence ?? 0.98) * 100),
         approvedByBroker: true,
       };
     },
 
-    async searchTariffCandidates(countryCode: string, query: string): Promise<TariffCandidateRecord[]> {
-      const terms = query.trim().split(/\s+/).filter((t) => t.length > 2).slice(0, 4);
+    async searchTariffCandidates(
+      countryCode: string,
+      query: string,
+    ): Promise<TariffCandidateRecord[]> {
+      const terms = query
+        .trim()
+        .split(/\s+/)
+        .filter((t) => t.length > 2)
+        .slice(0, 4);
       const rows = await prisma.nationalTariff.findMany({
         where: {
           countryCode,
           isActive: true,
-          OR: terms.length > 0
-            ? terms.map((term) => ({ description: { contains: term, mode: 'insensitive' as const } }))
-            : undefined,
+          OR:
+            terms.length > 0
+              ? terms.map((term) => ({
+                  description: { contains: term, mode: 'insensitive' as const },
+                }))
+              : undefined,
         },
         take: MAX_SEARCH_CANDIDATES,
       });
@@ -77,14 +90,17 @@ export function createPrismaPipelinePorts(): PipelinePorts {
       }));
     },
 
-    async verifyHsCode(countryCode: string, hsCode: string): Promise<TariffCandidateRecord | null> {
+    async verifyHsCode(
+      countryCode: string,
+      hsCode: string,
+    ): Promise<TariffCandidateRecord | null> {
       const row = await prisma.nationalTariff.findFirst({
         where: { countryCode, hsCode, isActive: true },
       });
       if (!row) return null;
 
       const permits = await prisma.hsPermitRequirement.findMany({
-        where: { countryCode, hsCode },
+        where: { hsCode, permitType: { countryCode } },
         include: { permitType: true },
       });
 
