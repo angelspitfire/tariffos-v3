@@ -9,9 +9,11 @@ export default defineAgent({
       ['ai.runtime_config', ctx.turn?.id ?? null],
       readSystemLlmRuntimeOverride,
     );
-    return resolveEveModelFromOverride(override);
+    return {
+      model: resolveEveModelFromOverride(override),
+      modelContextWindowTokens: DEFAULT_CONTEXT_WINDOW_TOKENS,
+    };
   }),
-  modelContextWindowTokens: DEFAULT_CONTEXT_WINDOW_TOKENS,
   reasoning: 'high',
   build: {
     externalDependencies: ['@tariffos/database'],

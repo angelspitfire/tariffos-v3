@@ -81,15 +81,24 @@ describe('Eve swap-ready model resolver', () => {
   });
 
   it('resolves OpenRouter and NVIDIA Build specs from EVE_MODEL', () => {
-    process.env.EVE_MODEL = 'openrouter:nvidia/nemotron-3.5-super-vl-120b-a12b';
+    expect(parseEveModelSpec('openrouter:')).toEqual({
+      provider: 'openrouter',
+      modelId: 'nvidia/nemotron-3.5-super-vl',
+    });
+    expect(parseEveModelSpec('nvidia:')).toEqual({
+      provider: 'nvidia',
+      modelId: 'nvidia/nemotron-3.5-super-vl-120b-a12b',
+    });
+
+    process.env.EVE_MODEL = 'openrouter:nvidia/nemotron-3.5-super-vl';
     expect(parseEveModelSpec()).toEqual({
       provider: 'openrouter',
-      modelId: 'nvidia/nemotron-3.5-super-vl-120b-a12b',
+      modelId: 'nvidia/nemotron-3.5-super-vl',
     });
     const openrouterModel = resolveEveModel();
     expect(typeof openrouterModel).toBe('object');
     if (typeof openrouterModel !== 'string') {
-      expect(openrouterModel.modelId).toBe('nvidia/nemotron-3.5-super-vl-120b-a12b');
+      expect(openrouterModel.modelId).toBe('nvidia/nemotron-3.5-super-vl');
       expect(openrouterModel.provider.toLowerCase()).toContain('openrouter');
     }
 

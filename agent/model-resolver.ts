@@ -8,6 +8,7 @@ export const DEFAULT_ANTHROPIC_MODEL = 'claude-sonnet-5';
 export const DEFAULT_OPENAI_MODEL = 'gpt-4.1';
 const DEFAULT_GATEWAY_MODEL = 'anthropic/claude-sonnet-5';
 export const DEFAULT_NEMOTRON_MODEL = 'nvidia/nemotron-3.5-super-vl-120b-a12b';
+export const DEFAULT_OPENROUTER_NEMOTRON_MODEL = 'nvidia/nemotron-3.5-super-vl';
 export const DEFAULT_GOOGLE_MODEL = 'gemini-2.5-flash';
 export const DEFAULT_COMPAT_MODEL = 'gpt-4o-mini';
 
@@ -37,7 +38,7 @@ const DEFAULT_MODEL_BY_PROVIDER: Record<EveProviderName, string> = {
   anthropic: DEFAULT_ANTHROPIC_MODEL,
   openai: DEFAULT_OPENAI_MODEL,
   gateway: DEFAULT_GATEWAY_MODEL,
-  openrouter: DEFAULT_NEMOTRON_MODEL,
+  openrouter: DEFAULT_OPENROUTER_NEMOTRON_MODEL,
   nvidia: DEFAULT_NEMOTRON_MODEL,
   google: DEFAULT_GOOGLE_MODEL,
   'openai-compatible': DEFAULT_COMPAT_MODEL,

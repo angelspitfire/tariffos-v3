@@ -24,6 +24,7 @@
     "check:db": "node scripts/check-db-live.mjs",
     "check:db:static": "node scripts/check-db-static.mjs --schema",
     "smoke:llm": "node scripts/smoke-llm.mjs",
+    "llm:models": "node scripts/llm-models.mjs",
     "admin:users": "pnpm --filter @tariffos/database exec tsx src/scripts/platform-admin.ts"
   },
   "dependencies": {
