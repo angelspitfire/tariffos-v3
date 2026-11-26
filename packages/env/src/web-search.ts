@@ -17,7 +17,7 @@
  * `CONTEXT_DEV_API_KEY`. Values are read at call time, never cached.
  */
 
-export type WebSearchKind = 'serper' | 'context';
+export type WebSearchKind = 'parallel' | 'serper' | 'context';
 
 export interface WebSearchProviderConfig {
   kind: WebSearchKind;
@@ -26,15 +26,21 @@ export interface WebSearchProviderConfig {
   apiKey?: string;
 }
 
+/** Default Vercel AI Gateway model used to invoke Parallel Fast search. */
+export const DEFAULT_PARALLEL_SEARCH_MODEL = 'google/gemini-2.5-flash-lite';
+
 /** Results requested per query when the caller does not pass `limit`. */
 export const DEFAULT_WEB_SEARCH_LIMIT = 5;
 
 /** Per-call ceiling when the caller does not pass `timeoutMs`. */
 export const DEFAULT_WEB_SEARCH_TIMEOUT_MS = 8_000;
 
-const KNOWN_KINDS: readonly WebSearchKind[] = ['serper', 'context'];
+const KNOWN_KINDS: readonly WebSearchKind[] = ['parallel', 'serper', 'context'];
 
 const KIND_ALIASES: Record<string, WebSearchKind> = {
+  parallel: 'parallel',
+  'parallel-fast': 'parallel',
+  'vercel-parallel': 'parallel',
   serper: 'serper',
   context: 'context',
   'context.dev': 'context',
@@ -42,13 +48,15 @@ const KIND_ALIASES: Record<string, WebSearchKind> = {
 };
 
 const DEFAULT_BASE_URL: Record<WebSearchKind, string> = {
+  parallel: 'https://ai-gateway.vercel.sh',
   serper: 'https://google.serper.dev/search',
   context: 'https://api.context.dev/v1/web/search',
 };
 
-const CONVENTIONAL_API_KEY: Record<WebSearchKind, string> = {
-  serper: 'SERPER_API_KEY',
-  context: 'CONTEXT_DEV_API_KEY',
+const CONVENTIONAL_API_KEY_FALLBACKS: Record<WebSearchKind, readonly string[]> = {
+  parallel: ['AI_GATEWAY_API_KEY', 'VERCEL_OIDC_TOKEN'],
+  serper: ['SERPER_API_KEY'],
+  context: ['CONTEXT_DEV_API_KEY'],
 };
 
 function read(name: string): string | undefined {
@@ -82,11 +90,23 @@ export function webSearchProvider(): WebSearchProviderConfig | null {
 
   const kind = resolveKind(raw);
   const scoped = `WEB_SEARCH_${envName(kind)}`;
+  let apiKey = read(`${scoped}_API_KEY`);
+  if (!apiKey) {
+    for (const candidate of CONVENTIONAL_API_KEY_FALLBACKS[kind]) {
+      apiKey = read(candidate);
+      if (apiKey) break;
+    }
+  }
   return {
     kind,
     baseUrl: read(`${scoped}_BASE_URL`) ?? DEFAULT_BASE_URL[kind],
-    apiKey: read(`${scoped}_API_KEY`) ?? read(CONVENTIONAL_API_KEY[kind]),
+    apiKey,
   };
+}
+
+/** Gateway model id used for Vercel Parallel Fast web search. */
+export function webSearchParallelModel(): string {
+  return read('WEB_SEARCH_PARALLEL_MODEL') ?? DEFAULT_PARALLEL_SEARCH_MODEL;
 }
 
 function positiveInt(name: string, fallback: number): number {

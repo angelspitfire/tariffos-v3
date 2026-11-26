@@ -1,9 +1,15 @@
 import {
   webSearchLimit,
+  webSearchParallelModel,
   webSearchProvider,
   webSearchTimeoutMs,
   type WebSearchKind,
 } from '@tariffos/env';
+import {
+  searchParallelFast,
+  type ParallelSearchOptions,
+  type ParallelSearchResponse,
+} from './parallel-web-search.js';
 
 const MAX_FORMATTED_CHARS = 1500;
 
@@ -14,8 +20,13 @@ interface SearchItem {
   description?: string;
 }
 
+type ParallelSearchFn = (
+  query: string,
+  options?: ParallelSearchOptions,
+) => Promise<ParallelSearchResponse>;
+
 function buildRequestSpec(
-  kind: WebSearchKind,
+  kind: Exclude<WebSearchKind, 'parallel'>,
   apiKey: string,
   query: string,
   limit: number,
@@ -39,7 +50,7 @@ function buildRequestSpec(
   };
 }
 
-function extractItems(kind: WebSearchKind, payload: unknown): SearchItem[] {
+function extractItems(kind: Exclude<WebSearchKind, 'parallel'>, payload: unknown): SearchItem[] {
   if (!payload || typeof payload !== 'object') return [];
   const record = payload as Record<string, unknown>;
   const rawList = kind === 'serper' ? record.organic : record.results;
@@ -73,10 +84,11 @@ function formatSearchItems(items: SearchItem[], limit: number): string | null {
 
 /**
  * Creates a fail-closed web specs fetcher honoring `WEB_SEARCH_PROVIDER`
- * (`serper` or `context`), returning `null` cleanly when unconfigured or on errors.
+ * (`parallel`, `serper`, or `context`), returning `null` cleanly when unconfigured or on errors.
  */
 export function createWebSpecsFetcher(
   fetchImpl: typeof fetch = fetch,
+  parallelSearch: ParallelSearchFn = searchParallelFast,
 ): (query: string) => Promise<string | null> {
   return async (query: string): Promise<string | null> => {
     const trimmedQuery = query.trim();
@@ -95,6 +107,16 @@ export function createWebSpecsFetcher(
 
     const limit = webSearchLimit();
     const timeoutMs = webSearchTimeoutMs();
+
+    if (provider.kind === 'parallel') {
+      const result = await parallelSearch(trimmedQuery, {
+        limit,
+        timeoutMs,
+        modelId: webSearchParallelModel(),
+      });
+      return result.formattedSummary;
+    }
+
     const { headers, body } = buildRequestSpec(
       provider.kind,
       provider.apiKey,

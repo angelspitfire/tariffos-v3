@@ -84,4 +84,38 @@ describe('createWebSpecsFetcher', () => {
     });
     await expect(createWebSpecsFetcher(throwFetch as unknown as typeof fetch)('Motor')).resolves.toBeNull();
   });
+
+  it('delegates to Vercel Parallel Fast without calling HTTP fetch when WEB_SEARCH_PROVIDER=parallel', async () => {
+    process.env.WEB_SEARCH_PROVIDER = 'parallel';
+    process.env.VERCEL_OIDC_TOKEN = 'oidc-token-1';
+    process.env.WEB_SEARCH_LIMIT = '4';
+    process.env.WEB_SEARCH_TIMEOUT_MS = '5000';
+
+    const fetchMock = vi.fn();
+    const parallelMock = vi.fn(async () => ({
+      query: 'Bomba sumergible 2HP',
+      results: [
+        {
+          url: 'https://example.com/pump',
+          title: 'Bomba sumergible 2HP',
+          excerpts: ['Caudal 120 L/min, acero inoxidable AISI 304.'],
+        },
+      ],
+      formattedSummary: '- Bomba sumergible 2HP: Caudal 120 L/min, acero inoxidable AISI 304.',
+    }));
+
+    const fetcher = createWebSpecsFetcher(
+      fetchMock as unknown as typeof fetch,
+      parallelMock,
+    );
+    const result = await fetcher('Bomba sumergible 2HP');
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(parallelMock).toHaveBeenCalledWith('Bomba sumergible 2HP', {
+      limit: 4,
+      timeoutMs: 5000,
+      modelId: 'google/gemini-2.5-flash-lite',
+    });
+    expect(result).toBe('- Bomba sumergible 2HP: Caudal 120 L/min, acero inoxidable AISI 304.');
+  });
 });

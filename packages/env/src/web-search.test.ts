@@ -7,9 +7,11 @@
  */
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  DEFAULT_PARALLEL_SEARCH_MODEL,
   DEFAULT_WEB_SEARCH_LIMIT,
   DEFAULT_WEB_SEARCH_TIMEOUT_MS,
   webSearchLimit,
+  webSearchParallelModel,
   webSearchProvider,
   webSearchTimeoutMs,
 } from './web-search.js';
@@ -71,6 +73,52 @@ describe('webSearchProvider', () => {
     });
 
     expect(webSearchProvider()?.baseUrl).toBe('https://proxy.example/v1/web/search');
+  });
+
+  it('resolves parallel with scoped key, AI_GATEWAY_API_KEY, or VERCEL_OIDC_TOKEN', () => {
+    stubEnv({
+      WEB_SEARCH_PROVIDER: 'parallel',
+      WEB_SEARCH_PARALLEL_API_KEY: 'scoped-gateway-key',
+      AI_GATEWAY_API_KEY: 'gateway-key',
+      VERCEL_OIDC_TOKEN: 'oidc-token',
+    });
+    expect(webSearchProvider()).toEqual({
+      kind: 'parallel',
+      baseUrl: 'https://ai-gateway.vercel.sh',
+      apiKey: 'scoped-gateway-key',
+    });
+
+    stubEnv({
+      WEB_SEARCH_PROVIDER: 'parallel-fast',
+      WEB_SEARCH_PARALLEL_API_KEY: undefined,
+      AI_GATEWAY_API_KEY: 'gateway-key',
+      VERCEL_OIDC_TOKEN: 'oidc-token',
+    });
+    expect(webSearchProvider()).toEqual({
+      kind: 'parallel',
+      baseUrl: 'https://ai-gateway.vercel.sh',
+      apiKey: 'gateway-key',
+    });
+
+    stubEnv({
+      WEB_SEARCH_PROVIDER: 'vercel-parallel',
+      WEB_SEARCH_PARALLEL_API_KEY: undefined,
+      AI_GATEWAY_API_KEY: undefined,
+      VERCEL_OIDC_TOKEN: 'oidc-token',
+    });
+    expect(webSearchProvider()).toEqual({
+      kind: 'parallel',
+      baseUrl: 'https://ai-gateway.vercel.sh',
+      apiKey: 'oidc-token',
+    });
+  });
+
+  it('resolves webSearchParallelModel with default and override', () => {
+    stubEnv({ WEB_SEARCH_PARALLEL_MODEL: undefined });
+    expect(webSearchParallelModel()).toBe(DEFAULT_PARALLEL_SEARCH_MODEL);
+
+    stubEnv({ WEB_SEARCH_PARALLEL_MODEL: '  openai/gpt-5.4-nano  ' });
+    expect(webSearchParallelModel()).toBe('openai/gpt-5.4-nano');
   });
 
   it('rejects an unknown engine with a readable error', () => {

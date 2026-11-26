@@ -119,6 +119,11 @@ export {
 } from './adapters/rgi-llm-adapter.js';
 export { chapterToSectionPath } from './lib/pipeline/hs-sections.js';
 export {
+  searchParallelFast,
+  type ParallelSearchItem,
+  type ParallelSearchResponse,
+} from './adapters/parallel-web-search.js';
+export {
   createWebSpecsFetcher,
   fetchWebSpecsFromEnv,
 } from './adapters/web-search-adapter.js';

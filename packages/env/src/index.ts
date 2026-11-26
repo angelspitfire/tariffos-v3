@@ -175,9 +175,11 @@ export function shouldValidateEnv(): boolean {
 }
 
 export {
+  DEFAULT_PARALLEL_SEARCH_MODEL,
   DEFAULT_WEB_SEARCH_LIMIT,
   DEFAULT_WEB_SEARCH_TIMEOUT_MS,
   webSearchLimit,
+  webSearchParallelModel,
   webSearchProvider,
   webSearchTimeoutMs,
   type WebSearchKind,
