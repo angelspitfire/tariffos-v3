@@ -115,6 +115,16 @@ describe('OpenAICompatibleAdapter', () => {
     });
   });
 
+  it('embedText passes input_type for nvidia asymmetric embedding models', async () => {
+    vi.stubEnv('LLM_PROVIDER', 'nvidia');
+    mockedEmbed.mockResolvedValueOnce({ embedding: [0.1, 0.2] });
+    await adapter().embedText('tarifa', { dims: 2, inputType: 'passage' });
+    expect(mockedEmbed.mock.calls[0][0].providerOptions).toEqual({
+      [PROVIDER_NAME]: { dimensions: 2, input_type: 'passage' },
+    });
+    vi.unstubAllEnvs();
+  });
+
   it('embedText throws typed when the server returns an empty vector', async () => {
     mockedEmbed.mockResolvedValueOnce({ embedding: [] });
     await expect(adapter().embedText('t', { dims: 2 })).rejects.toThrow('no values');

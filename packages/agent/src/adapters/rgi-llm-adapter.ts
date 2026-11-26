@@ -1,4 +1,5 @@
 import { getLlmProvider } from '@tariffos/ai-client';
+import { rgiModel } from '@tariffos/env';
 import { z } from 'zod';
 import {
   ClassificationAlternativeSchema,
@@ -44,7 +45,7 @@ export async function runRgiWithLlm(input: {
   deepMode: boolean;
 }): Promise<RgiModelOutput> {
   const provider = getLlmProvider();
-  const modelId = process.env.RGI_MODEL ?? 'nvidia/nemotron-3.5-super-vl-120b-a12b';
+  const modelId = rgiModel(input.deepMode);
 
   const result = await provider.generateJson(
     `${RGI_SYSTEM_PROMPT}\n\nInput:\n${JSON.stringify({

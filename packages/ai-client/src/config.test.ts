@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   DEFAULT_EMBEDDING_MODEL,
   DEFAULT_MODEL,
+  GOOGLE_BASE_URL,
+  NVIDIA_BASE_URL,
   OPENROUTER_BASE_URL,
   resolveApiKey,
   resolveBaseUrl,
@@ -70,6 +72,49 @@ describe('resolveBaseUrl', () => {
     vi.stubEnv('LLM_PROVIDER', 'openrouter');
     vi.stubEnv('OPENROUTER_BASE_URL', '');
     expect(resolveBaseUrl()).toBe(OPENROUTER_BASE_URL);
+  });
+});
+
+describe('nvidia and google providers', () => {
+  it('nvidia talks to NVIDIA Build with no LLM_BASE_URL needed', () => {
+    vi.stubEnv('LLM_PROVIDER', 'nvidia');
+    vi.stubEnv('LLM_BASE_URL', '');
+    expect(resolveBaseUrl()).toBe(NVIDIA_BASE_URL);
+    expect(NVIDIA_BASE_URL).toBe('https://integrate.api.nvidia.com/v1');
+  });
+
+  it('nvidia reads NVIDIA_API_KEY', () => {
+    vi.stubEnv('LLM_PROVIDER', 'nvidia');
+    vi.stubEnv('LLM_API_KEY', '');
+    vi.stubEnv('NVIDIA_API_KEY', 'nvapi-1');
+    expect(resolveApiKey()).toBe('nvapi-1');
+  });
+
+  it('LLM_API_KEY still wins over the provider key', () => {
+    vi.stubEnv('LLM_PROVIDER', 'nvidia');
+    vi.stubEnv('LLM_API_KEY', 'override');
+    vi.stubEnv('NVIDIA_API_KEY', 'nvapi-1');
+    expect(resolveApiKey()).toBe('override');
+  });
+
+  it('google uses the Gemini OpenAI-compatible endpoint', () => {
+    vi.stubEnv('LLM_PROVIDER', 'google');
+    vi.stubEnv('LLM_BASE_URL', '');
+    expect(resolveBaseUrl()).toBe(GOOGLE_BASE_URL);
+    expect(GOOGLE_BASE_URL).toBe('https://generativelanguage.googleapis.com/v1beta/openai');
+  });
+
+  it('google reads GOOGLE_GENERATIVE_AI_API_KEY', () => {
+    vi.stubEnv('LLM_PROVIDER', 'google');
+    vi.stubEnv('LLM_API_KEY', '');
+    vi.stubEnv('GOOGLE_GENERATIVE_AI_API_KEY', 'AIza-1');
+    expect(resolveApiKey()).toBe('AIza-1');
+  });
+
+  it('an explicit LLM_BASE_URL overrides the provider default', () => {
+    vi.stubEnv('LLM_PROVIDER', 'nvidia');
+    vi.stubEnv('LLM_BASE_URL', 'http://127.0.0.1:8000/v1');
+    expect(resolveBaseUrl()).toBe('http://127.0.0.1:8000/v1');
   });
 });
 

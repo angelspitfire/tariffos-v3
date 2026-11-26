@@ -11,7 +11,13 @@
  * switch to a different one — a silent switch would send traffic somewhere
  * the operator did not choose.
  */
-export type LlmProvider = 'openrouter' | 'openai-compatible';
+export type LlmProvider = 'openrouter' | 'openai-compatible' | 'nvidia' | 'google';
+
+/** Reasoning model for the standard RGI pass (Nemotron 3.5 Super VL, 12B active). */
+export const DEFAULT_RGI_MODEL = 'nvidia/nemotron-3.5-super-vl-120b-a12b';
+
+/** Reasoning model for deep mode (Nemotron 3 Ultra, 55B active). */
+export const DEFAULT_RGI_DEEP_MODEL = 'nvidia/nemotron-3-ultra-550b-a55b';
 
 /** The provider used when `LLM_PROVIDER` is unset. */
 export const DEFAULT_LLM_PROVIDER: LlmProvider = 'openai-compatible';
@@ -46,8 +52,10 @@ export function llmProvider(): LlmProvider {
   if (!raw) return DEFAULT_LLM_PROVIDER;
   if (raw === 'openrouter') return 'openrouter';
   if (raw === 'openai-compatible') return 'openai-compatible';
+  if (raw === 'nvidia') return 'nvidia';
+  if (raw === 'google') return 'google';
   throw new Error(
-    `LLM_PROVIDER must be 'openrouter' | 'openai-compatible' (got "${raw}"). ` +
+    `LLM_PROVIDER must be 'openrouter' | 'openai-compatible' | 'nvidia' | 'google' (got "${raw}"). ` +
       `The retired provider was removed from the workspace.`,
   );
 }
@@ -72,6 +80,19 @@ export function llmApiKey(): string | undefined {
  */
 export function llmModel(): string {
   return trimmed('LLM_MODEL') ?? DEFAULT_MODEL;
+}
+
+/**
+ * Model for the Tier 2 RGI reasoning pass.
+ *
+ * Standard: `RGI_MODEL`. Deep mode: `RGI_DEEP_MODEL`, then `RGI_MODEL`, then
+ * the Ultra default. Independent of `LLM_MODEL` so the chat model and the
+ * classification model can move separately.
+ */
+export function rgiModel(deep: boolean): string {
+  const standard = trimmed('RGI_MODEL');
+  if (!deep) return standard ?? DEFAULT_RGI_MODEL;
+  return trimmed('RGI_DEEP_MODEL') ?? standard ?? DEFAULT_RGI_DEEP_MODEL;
 }
 
 /** Vision model for multimodal parsing; VISION_MODEL overrides the text model. */

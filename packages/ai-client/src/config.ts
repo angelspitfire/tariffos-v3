@@ -32,6 +32,12 @@ export { DEFAULT_EMBEDDING_MODEL, DEFAULT_EMBEDDING_DIMS, DEFAULT_MODEL, DEFAULT
 /** Where OpenRouter serves its OpenAI-compatible API. */
 export const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
+/** NVIDIA Build (NIM) OpenAI-compatible endpoint: the Nemotron family. */
+export const NVIDIA_BASE_URL = 'https://integrate.api.nvidia.com/v1';
+
+/** Gemini API's OpenAI-compatible endpoint (same adapter, no extra SDK). */
+export const GOOGLE_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai';
+
 /**
  * Resolve the provider from `LLM_PROVIDER`.
  *
@@ -46,10 +52,13 @@ export function resolveProvider(): LlmProvider {
 
 /** Base URL of the endpoint the provider is served from. */
 export function resolveBaseUrl(): string {
-  if (llmProvider() === 'openrouter') {
+  const provider = llmProvider();
+  if (provider === 'openrouter') {
     return process.env.OPENROUTER_BASE_URL?.trim() || OPENROUTER_BASE_URL;
   }
   const baseUrl = llmBaseUrl();
+  if (!baseUrl && provider === 'nvidia') return NVIDIA_BASE_URL;
+  if (!baseUrl && provider === 'google') return GOOGLE_BASE_URL;
   if (!baseUrl) {
     throw new Error(
       'openai-compatible provider requires LLM_BASE_URL (e.g. http://127.0.0.1:11434/v1)',
@@ -62,9 +71,10 @@ export function resolveBaseUrl(): string {
 export function resolveApiKey(): string | undefined {
   const key = llmApiKey();
   if (key) return key;
-  if (llmProvider() === 'openrouter') {
-    return process.env.OPENROUTER_API_KEY?.trim() || undefined;
-  }
+  const provider = llmProvider();
+  if (provider === 'openrouter') return process.env.OPENROUTER_API_KEY?.trim() || undefined;
+  if (provider === 'nvidia') return process.env.NVIDIA_API_KEY?.trim() || undefined;
+  if (provider === 'google') return process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim() || undefined;
   return undefined;
 }
 

@@ -94,6 +94,8 @@ export interface EmbedCallOptions {
    * response whose width differs — see the note at the top of this file.
    */
   dims?: number;
+  /** Asymmetric embedding role for providers that require it (e.g. NVIDIA NIM). */
+  inputType?: 'query' | 'passage';
 }
 
 /**

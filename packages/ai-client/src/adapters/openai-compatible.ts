@@ -47,6 +47,7 @@ import {
   resolveEmbeddingDims,
   resolveEmbeddingModel,
   resolveModel,
+  resolveProvider,
 } from '../config.js';
 
 /**
@@ -78,10 +79,13 @@ export class OpenAICompatibleAdapter implements LlmProviderPort {
   }
 
   private static defaultFactory(): ProviderLike {
+    const isNvidia = resolveProvider() === 'nvidia';
     return createOpenAICompatible({
       name: PROVIDER_NAME,
       baseURL: resolveBaseUrl(),
       apiKey: resolveApiKey(),
+      supportsStructuredOutputs: true,
+      ...(isNvidia ? { fetch: createNvidiaEmbedFetch() } : {}),
     });
   }
 
@@ -135,11 +139,15 @@ export class OpenAICompatibleAdapter implements LlmProviderPort {
 
   async embedText(text: string, options: EmbedCallOptions = {}): Promise<number[]> {
     const dims = options.dims ?? resolveEmbeddingDims();
+    const providerOpts: Record<string, unknown> = { dimensions: dims };
+    if (resolveProvider() === 'nvidia') {
+      providerOpts.input_type = options.inputType ?? 'query';
+    }
     const response = await embed({
       model: this.embeddingModel(options),
       value: text,
       maxRetries: EMBED_MAX_RETRIES,
-      providerOptions: { [PROVIDER_NAME]: { dimensions: dims } },
+      providerOptions: { [PROVIDER_NAME]: providerOpts as Record<string, never> },
     });
     const vector = response.embedding;
     if (!Array.isArray(vector) || vector.length === 0) {
@@ -167,6 +175,29 @@ export class OpenAICompatibleAdapter implements LlmProviderPort {
     });
     return result.textStream;
   }
+}
+
+/**
+ * NVIDIA NIM asymmetric embedding models require `input_type` ("query" | "passage")
+ * in the `/embeddings` JSON body, which `@ai-sdk/openai-compatible` strips from
+ * `providerOptions`. Inject it at the transport boundary when absent.
+ */
+function createNvidiaEmbedFetch(): typeof fetch {
+  return async (input, init) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    if (typeof init?.body === 'string' && url.includes('/embeddings')) {
+      try {
+        const parsed = JSON.parse(init.body) as Record<string, unknown>;
+        if (!parsed.input_type) {
+          parsed.input_type = 'query';
+        }
+        return fetch(input, { ...init, body: JSON.stringify(parsed) });
+      } catch {
+        // Fall through with original request if body is not JSON.
+      }
+    }
+    return fetch(input, init);
+  };
 }
 
 /**

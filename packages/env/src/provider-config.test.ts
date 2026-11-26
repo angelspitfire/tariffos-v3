@@ -34,6 +34,16 @@ describe('provider-agnostic AI configuration', () => {
       expect(llmProvider()).toBe('openai-compatible');
     });
 
+    it('selects nvidia (NVIDIA Build / NIM) on demand', () => {
+      stubEnv({ LLM_PROVIDER: 'nvidia' });
+      expect(llmProvider()).toBe('nvidia');
+    });
+
+    it('selects google (Gemini API) on demand', () => {
+      stubEnv({ LLM_PROVIDER: 'google' });
+      expect(llmProvider()).toBe('google');
+    });
+
     it('trims surrounding whitespace before matching', () => {
       stubEnv({ LLM_PROVIDER: '  openrouter  ' });
       expect(llmProvider()).toBe('openrouter');
@@ -47,7 +57,7 @@ describe('provider-agnostic AI configuration', () => {
     it('fails fast on an unknown provider name', () => {
       stubEnv({ LLM_PROVIDER: 'openai' });
       expect(() => llmProvider()).toThrow(
-        "LLM_PROVIDER must be 'openrouter' | 'openai-compatible' (got \"openai\").",
+        "LLM_PROVIDER must be 'openrouter' | 'openai-compatible' | 'nvidia' | 'google' (got \"openai\").",
       );
     });
 

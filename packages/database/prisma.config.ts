@@ -11,6 +11,6 @@ dotenv.config({ path: path.resolve(__dirname, '../../apps/web/.env') });
 export default defineConfig({
   earlyAccess: true,
   datasource: {
-    url: process.env.DATABASE_URL,
+    url: process.env.DIRECT_URL ?? process.env.DATABASE_URL,
   },
-} as any);
+} as Parameters<typeof defineConfig>[0]);

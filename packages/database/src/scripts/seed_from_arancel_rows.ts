@@ -28,6 +28,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as dotenv from 'dotenv';
+import { REGIMEN_REQUIREMENTS } from './ve-regimen-requirements.js';
 
 // The active apps (apps/filings, apps/agent) point at the current InsForge
 // project. Resolve the connection explicitly, in precedence order, and never
@@ -64,38 +65,6 @@ function parseAec(aec: string | null): { rate: number; isBK: boolean; isBIT: boo
   const match = raw.match(/^(\d+(?:\.\d+)?)/);
   return { rate: match ? Number.parseFloat(match[1]) : 0, isBK, isBIT };
 }
-
-/**
- * Requirements projection for the 21 régimen legal codes of Article 21.
- * The legal wording comes from the catalogue file; the agency/permit naming is
- * application vocabulary and lives here.
- */
-const REGIMEN_REQUIREMENTS: Record<
-  number,
-  { regulatoryEntity: string; permitType: string }
-> = {
-  1: { regulatoryEntity: 'Ministerio de Comercio Exterior', permitType: 'Importación o Exportación Prohibida' },
-  2: { regulatoryEntity: 'Ejecutivo Nacional', permitType: 'Importación o Exportación Reservada al Ejecutivo Nacional' },
-  3: { regulatoryEntity: 'MPPS (Salud)', permitType: 'Permiso Sanitario' },
-  4: { regulatoryEntity: 'MPP Industrias y Producción Nacional', permitType: 'Permiso de Importación' },
-  5: { regulatoryEntity: 'MPPS (Salud)', permitType: 'Certificado Sanitario del País de Origen' },
-  6: { regulatoryEntity: 'MPP Agricultura Productiva y Tierras', permitType: 'Permiso Sanitario' },
-  7: { regulatoryEntity: 'MPP Defensa', permitType: 'Permiso de Importación' },
-  8: { regulatoryEntity: 'MPP Alimentación', permitType: 'Licencia de Importación' },
-  9: { regulatoryEntity: 'MPP Comercio Exterior', permitType: 'Licencia de Importación' },
-  10: { regulatoryEntity: 'MPP Ecosocialismo', permitType: 'Permiso de Importación' },
-  11: { regulatoryEntity: 'MPP Petróleo', permitType: 'Permiso de Importación' },
-  12: { regulatoryEntity: 'MPPS (Salud)', permitType: 'Registro Sanitario' },
-  13: { regulatoryEntity: 'MPP Agricultura Productiva y Tierras', permitType: 'Registro Sanitario' },
-  14: { regulatoryEntity: 'MPP Alimentación', permitType: 'Permiso de Importación' },
-  15: { regulatoryEntity: 'MPP Ciencia, Tecnología e Innovación', permitType: 'Permiso de Importación' },
-  16: { regulatoryEntity: 'MPP Industrias y Producción Nacional', permitType: 'Licencia de Importación' },
-  17: { regulatoryEntity: 'MPP Energía Eléctrica', permitType: 'Permiso de Importación' },
-  18: { regulatoryEntity: 'MPP Pesca y Acuicultura', permitType: 'Permiso de Importación' },
-  19: { regulatoryEntity: 'MPP Comercio Exterior', permitType: 'Certificado del Proceso Kimberley' },
-  20: { regulatoryEntity: 'SENCAMER', permitType: 'Constancia de Registro COVENIN / Reglamento Técnico' },
-  21: { regulatoryEntity: 'SUNAQUIM', permitType: 'Permiso del Registro Nacional Único de Operadores de Sustancias Químicas Controladas' },
-};
 
 interface ArancelArtifactRow {
   code: string;
@@ -160,9 +129,9 @@ function main() {
   }
 
   const artifact: ArancelArtifact = JSON.parse(fs.readFileSync(artifactPath, 'utf8'));
-  const catalogue: { regimes: Array<{ code: number; text: string }> } = JSON.parse(
-    fs.readFileSync(cataloguePath, 'utf8'),
-  );
+  const catalogue: { regimes: Array<{ code: number; text: string }> } = fs.existsSync(cataloguePath)
+    ? JSON.parse(fs.readFileSync(cataloguePath, 'utf8'))
+    : { regimes: [] };
   const regimenText = new Map(catalogue.regimes.map((r) => [r.code, r.text]));
 
   // Deduplicate by digits (page-boundary repeats). Prefer the copy with the
@@ -181,8 +150,8 @@ function main() {
   const rows = [...best.values()];
 
   const VALID_FROM = new Date(`${artifact.publishedDate}T00:00:00.000Z`);
-  const tariffs: any[] = [];
-  const exemptions: any[] = [];
+  const tariffs: Array<Record<string, unknown>> = [];
+  const exemptions: Array<Record<string, unknown>> = [];
   const unknownRegimens = new Set<number>();
   let correctedRows = 0;
   let bkCount = 0;
@@ -196,7 +165,7 @@ function main() {
     const regimenCodes = KNOWN_REGIMEN_TYPOS[row.digits] ?? row.regimenImportacion;
     if (KNOWN_REGIMEN_TYPOS[row.digits]) correctedRows++;
 
-    const requirements: any[] = [];
+    const requirements: Array<Record<string, unknown>> = [];
     for (const code of [...new Set(regimenCodes)].sort((a, b) => a - b)) {
       const projection = REGIMEN_REQUIREMENTS[code];
       if (!projection) {
@@ -207,7 +176,7 @@ function main() {
         regulatoryEntity: projection.regulatoryEntity,
         permitType: projection.permitType,
         mandatoryForClearance: true,
-        friendlyExplanation: `Régimen Legal ${code}: ${regimenText.get(code) ?? ''}`.trim(),
+        friendlyExplanation: `Régimen Legal ${code}: ${regimenText.get(code) ?? projection.permitType}`.trim(),
       });
     }
 
