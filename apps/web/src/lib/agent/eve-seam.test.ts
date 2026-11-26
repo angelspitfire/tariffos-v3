@@ -1,9 +1,22 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AgentReviewTriggerSchema } from '@tariffos/shared-types';
+
+const mockFindUnique = vi.hoisted(() => vi.fn());
+
+vi.mock('@tariffos/database', () => ({
+  prisma: {
+    systemSetting: {
+      findUnique: mockFindUnique,
+    },
+  },
+}));
+
 import {
   DEFAULT_ANTHROPIC_MODEL,
   parseEveModelSpec,
+  readSystemLlmRuntimeOverride,
   resolveEveModel,
+  resolveEveModelFromOverride,
 } from '../../../../../agent/model-resolver';
 import requestDossierReviewTool, {
   executeRequestDossierReview,
@@ -95,6 +108,87 @@ describe('Eve swap-ready model resolver', () => {
 
   it('throws a clear error on unsupported provider prefixes', () => {
     expect(() => parseEveModelSpec('unsupported:foo-1')).toThrow(/Unsupported EVE_MODEL provider/);
+  });
+
+  it('resolves google and openai-compatible specs', () => {
+    vi.stubEnv('GOOGLE_GENERATIVE_AI_API_KEY', 'AIza-test');
+    vi.stubEnv('LLM_BASE_URL', 'http://127.0.0.1:11434/v1');
+
+    const googleModel = resolveEveModel('google:gemini-2.5-flash');
+    expect(typeof googleModel).toBe('object');
+    if (typeof googleModel !== 'string') {
+      expect(googleModel.modelId).toBe('gemini-2.5-flash');
+      expect(googleModel.provider.toLowerCase()).toContain('google');
+    }
+
+    const compatModel = resolveEveModel('openai-compatible:qwen3:8b');
+    expect(typeof compatModel).toBe('object');
+    if (typeof compatModel !== 'string') {
+      expect(compatModel.modelId).toBe('qwen3:8b');
+      expect(compatModel.provider.toLowerCase()).toContain('openai-compatible');
+    }
+    vi.unstubAllEnvs();
+  });
+});
+
+describe('Eve SystemSetting ai.runtime_config override', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.unstubAllEnvs();
+  });
+
+  it('returns null without querying DB when DATABASE_URL is unset', async () => {
+    vi.stubEnv('DATABASE_URL', '');
+    expect(await readSystemLlmRuntimeOverride()).toBeNull();
+    expect(mockFindUnique).not.toHaveBeenCalled();
+  });
+
+  it('reads and validates ai.runtime_config from SystemSetting when present', async () => {
+    vi.stubEnv('DATABASE_URL', 'postgresql://localhost/test');
+    mockFindUnique.mockResolvedValueOnce({
+      key: 'ai.runtime_config',
+      value: JSON.stringify({
+        provider: 'google',
+        model: 'gemini-2.5-flash',
+        deepModel: 'gemini-2.5-pro',
+      }),
+    });
+
+    const override = await readSystemLlmRuntimeOverride();
+    expect(override).toEqual({
+      provider: 'google',
+      model: 'gemini-2.5-flash',
+      baseUrl: null,
+    });
+  });
+
+  it('applies DB override when provider credentials exist and falls back to EVE_MODEL otherwise', () => {
+    vi.stubEnv('EVE_MODEL', 'nvidia:nvidia/nemotron-3.5-super-vl-120b-a12b');
+    vi.stubEnv('NVIDIA_API_KEY', 'nvapi-test');
+    vi.stubEnv('GOOGLE_GENERATIVE_AI_API_KEY', 'AIza-test');
+    vi.stubEnv('OPENROUTER_API_KEY', '');
+
+    const overridden = resolveEveModelFromOverride({
+      provider: 'google',
+      model: 'gemini-2.5-flash',
+      baseUrl: null,
+    });
+    expect(typeof overridden).toBe('object');
+    if (typeof overridden !== 'string') {
+      expect(overridden.modelId).toBe('gemini-2.5-flash');
+      expect(overridden.provider.toLowerCase()).toContain('google');
+    }
+
+    const fallback = resolveEveModelFromOverride({
+      provider: 'openrouter',
+      model: 'openai/gpt-4o-mini',
+      baseUrl: null,
+    });
+    expect(typeof fallback).toBe('object');
+    if (typeof fallback !== 'string') {
+      expect(fallback.modelId).toBe('nvidia/nemotron-3.5-super-vl-120b-a12b');
+      expect(fallback.provider.toLowerCase()).toContain('nvidia');
+    }
   });
 });
 

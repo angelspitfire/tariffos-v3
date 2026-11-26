@@ -342,6 +342,7 @@ Motor backend para mantener actualizada la tasa oficial del Banco Central de Ven
 
 - **Selector de Modelo de Trabajo (`/admin/settings`, solo `super_admin`, permiso `settings:manage`):**
   - Persiste `{ provider, model, deepModel?, baseUrl?, maxRpm? }` en `SystemSetting` (`key = 'ai.runtime_config'`) con cache en memoria de 30s (`apps/web/src/lib/admin/llm-settings.ts`), fallback automático a variables de entorno y auditoría `settings.llm_updated` en `AdminAuditLog`.
+  - Gobierna tanto el pipeline de clasificación (`classify-stream` e Inngest) como el agente Eve ([`agent/agent.ts`](file:///Users/afernandez/projects/tariffos-v3/agent/agent.ts) + [`agent/model-resolver.ts`](file:///Users/afernandez/projects/tariffos-v3/agent/model-resolver.ts) vía `defineDynamic` + `ctx.memo` por turno, con fallback automático a `EVE_MODEL`).
   - Las API keys nunca se almacenan en base de datos; solo se permiten proveedores cuya credencial exista en el entorno del servidor (`listConfiguredLlmProviders()`).
   - Los embeddings permanecen bloqueados a variables de entorno para proteger el índice `pgvector(768)`.
   - Endpoints: `GET`/`PUT /api/admin/settings/llm` y `POST /api/admin/settings/llm/test` (smoke test de latencia y JSON estructurado).
