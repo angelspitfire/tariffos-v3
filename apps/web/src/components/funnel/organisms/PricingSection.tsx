@@ -118,7 +118,7 @@ export function PricingSection({
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-xs text-ink-muted pt-2">
           <span className="inline-flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5 text-accent-ink shrink-0" aria-hidden="true" />
-            Activación manual en menos de 24 horas hábiles
+            Trial gratuito con activación inmediata · Planes comerciales en menos de 24 horas hábiles
           </span>
           <span>Zelle, Transferencia USD/EUR, Binance Pay (USDT) y Pago Móvil</span>
         </div>

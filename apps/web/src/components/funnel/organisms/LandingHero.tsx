@@ -72,26 +72,32 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
             Clasifica con precisión pericial
           </h1>
 
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={handlePrimaryCta}
-              className="group relative inline-flex items-center gap-2.5 px-7 min-h-[52px] rounded-full text-sm font-semibold text-ink-primary dark:text-white bg-[linear-gradient(135deg,rgba(255,255,255,0.92)_0%,rgba(219,234,254,0.95)_48%,rgba(186,230,253,0.92)_100%)] dark:bg-[linear-gradient(135deg,rgba(37,99,235,0.92)_0%,rgba(29,78,216,0.95)_55%,rgba(14,165,233,0.88)_100%)] border border-white/80 dark:border-sky-300/30 shadow-[0_12px_32px_-8px_rgba(29,78,216,0.35)] hover:shadow-[0_16px_36px_-6px_rgba(29,78,216,0.45)] transition-shadow cursor-pointer active:translate-y-px"
-            >
-              <span>{isAuthenticated ? 'Ir al workspace' : 'Empezar prueba gratis'}</span>
-              <ArrowRight
-                className="w-4 h-4 text-accent-brand dark:text-white transition-transform duration-200 group-hover:translate-x-0.5"
-                aria-hidden="true"
-              />
-            </button>
+          <div className="pt-2 flex flex-col items-center justify-center gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <button
+                type="button"
+                onClick={handlePrimaryCta}
+                className="group relative inline-flex items-center gap-2.5 px-7 min-h-[52px] rounded-full text-sm font-semibold text-ink-primary dark:text-white bg-[linear-gradient(135deg,rgba(255,255,255,0.92)_0%,rgba(219,234,254,0.95)_48%,rgba(186,230,253,0.92)_100%)] dark:bg-[linear-gradient(135deg,rgba(37,99,235,0.92)_0%,rgba(29,78,216,0.95)_55%,rgba(14,165,233,0.88)_100%)] border border-white/80 dark:border-sky-300/30 shadow-[0_12px_32px_-8px_rgba(29,78,216,0.35)] hover:shadow-[0_16px_36px_-6px_rgba(29,78,216,0.45)] transition-shadow cursor-pointer active:translate-y-px"
+              >
+                <span>{isAuthenticated ? 'Ir al workspace' : 'Empezar prueba gratis'}</span>
+                <ArrowRight
+                  className="w-4 h-4 text-accent-brand dark:text-white transition-transform duration-200 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </button>
 
-            <button
-              type="button"
-              onClick={scrollToDemo}
-              className="inline-flex items-center gap-2 px-5 min-h-[52px] rounded-full text-sm font-medium text-ink-secondary hover:text-ink-primary bg-white/55 dark:bg-white/[0.05] border border-black/[0.07] dark:border-white/[0.09] backdrop-blur-sm transition-colors cursor-pointer"
-            >
-              Probar con una mercancía
-            </button>
+              <button
+                type="button"
+                onClick={scrollToDemo}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-ink-secondary hover:text-ink-primary underline-offset-4 hover:underline transition-colors cursor-pointer"
+              >
+                Probar con una mercancía
+              </button>
+            </div>
+
+            <p className="font-mono text-xs text-ink-muted">
+              5 clasificaciones gratis · Sin tarjeta · Activación inmediata · Planes desde $49/mes
+            </p>
           </div>
 
           <p className="text-base sm:text-lg text-ink-secondary max-w-[52ch] mx-auto leading-relaxed pt-1">

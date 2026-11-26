@@ -54,4 +54,10 @@ describe('PricingSection', () => {
     expect(screen.getByText('$4,490')).toBeInTheDocument();
     expect(screen.getByText('$5,900')).toBeInTheDocument();
   });
+
+  it('distinguishes immediate Trial activation from 24h commercial plan verification', () => {
+    render(<PricingSection plans={SAAS_PLANS} />);
+    expect(screen.getByText(/Trial gratuito con activación inmediata/i)).toBeInTheDocument();
+    expect(screen.getByText(/Planes comerciales en menos de 24 horas hábiles/i)).toBeInTheDocument();
+  });
 });

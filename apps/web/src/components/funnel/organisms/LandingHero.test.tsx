@@ -48,4 +48,11 @@ describe('LandingHero', () => {
     expect(screen.getByText('8413.70.10.00')).toBeInTheDocument();
     expect(screen.getByText(/Decreto 4\.944/i)).toBeInTheDocument();
   });
+
+  it('displays risk-reversal and starting price microcopy below the primary CTA', () => {
+    render(<LandingHero requiresAuth={false} />);
+    expect(screen.getByText(/Sin tarjeta/i)).toBeInTheDocument();
+    expect(screen.getByText(/Activación inmediata/i)).toBeInTheDocument();
+    expect(screen.getByText(/\$49\/mes/i)).toBeInTheDocument();
+  });
 });

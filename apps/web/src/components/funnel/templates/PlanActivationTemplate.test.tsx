@@ -36,5 +36,7 @@ describe('PlanActivationTemplate', () => {
       expect(screen.getByText(/Solicitud de activación recibida/i)).toBeInTheDocument();
     });
     expect(screen.getAllByText('BIN-554433').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/soporte@tariffos\.com/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Ir al workspace/i })).toHaveAttribute('href', '/app');
   });
 });
