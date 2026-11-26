@@ -11,7 +11,7 @@
  * double must never be reachable by a stray env var in production.
  */
 import { resolveProvider } from './config.js';
-import { OpenAICompatibleAdapter } from './adapters/openai-compatible.js';
+import { OpenAICompatibleAdapter, type LlmRuntimeOverride } from './adapters/openai-compatible.js';
 import { createFakeProvider, type FakeProvider } from './adapters/fake.js';
 import type { LlmProviderPort } from './port.js';
 
@@ -41,13 +41,13 @@ export function resetProviderKind(): void {
  * worth sharing, and a fresh instance cannot leak one call's configuration
  * into the next.
  */
-export function getLlmProvider(): LlmProviderPort {
+export function getLlmProvider(runtimeOverride?: LlmRuntimeOverride): LlmProviderPort {
   if (override === 'fake') return createFakeProvider();
-  // Resolving the provider validates the env: an unknown value fails here,
-  // loudly, instead of silently talking to the wrong endpoint. The adapter
-  // stays lazy — the endpoint itself is only resolved on the first call.
-  resolveProvider();
-  return new OpenAICompatibleAdapter();
+  // Validate env provider when no explicit runtime override was supplied.
+  if (!runtimeOverride?.provider) {
+    resolveProvider();
+  }
+  return new OpenAICompatibleAdapter(undefined, runtimeOverride);
 }
 
 /**

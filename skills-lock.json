@@ -36,6 +36,13 @@
       "skillPath": "skills/hallmark/SKILL.md",
       "computedHash": "e5d4ee5cf0af2dcc81a23ef49b587fbfd71236ff9f9df9da12d3bf347e26e572"
     },
+    "improve-codebase-architecture": {
+      "source": "mattpocock/skills",
+      "commit": "6f7f7831a625f040a8e06a0e7954826b87ce775a",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/improve-codebase-architecture/SKILL.md",
+      "computedHash": "f0820b18426a7d9a6c823a890988ba0ac70bf0fd596d30d7ef07c88558728c23"
+    },
     "next-dev-loop": {
       "source": "vercel/next.js",
       "commit": "d635efd0ac8070f32aec7c65b87e0e841616d554",

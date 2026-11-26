@@ -50,32 +50,95 @@ export function resolveProvider(): LlmProvider {
   return llmProvider();
 }
 
-/** Base URL of the endpoint the provider is served from. */
-export function resolveBaseUrl(): string {
-  const provider = llmProvider();
+export interface LlmProviderAvailability {
+  provider: LlmProvider;
+  configured: boolean;
+  envVar: string;
+  defaultBaseUrl: string | null;
+}
+
+const ALL_LLM_PROVIDERS: readonly LlmProvider[] = [
+  'nvidia',
+  'google',
+  'openrouter',
+  'openai-compatible',
+];
+
+function currentEnvProviderOrNull(): LlmProvider | null {
+  try {
+    return llmProvider();
+  } catch {
+    return null;
+  }
+}
+
+/** Base URL for a specific provider, optionally overridden at runtime. */
+export function resolveBaseUrlForProvider(
+  provider: LlmProvider,
+  overrideBaseUrl?: string,
+): string {
+  const explicit = overrideBaseUrl?.trim();
+  if (explicit) return explicit;
   if (provider === 'openrouter') {
     return process.env.OPENROUTER_BASE_URL?.trim() || OPENROUTER_BASE_URL;
   }
-  const baseUrl = llmBaseUrl();
-  if (!baseUrl && provider === 'nvidia') return NVIDIA_BASE_URL;
-  if (!baseUrl && provider === 'google') return GOOGLE_BASE_URL;
-  if (!baseUrl) {
-    throw new Error(
-      'openai-compatible provider requires LLM_BASE_URL (e.g. http://127.0.0.1:11434/v1)',
-    );
-  }
-  return baseUrl;
+  const envBaseUrl = currentEnvProviderOrNull() === provider ? llmBaseUrl() : undefined;
+  if (envBaseUrl) return envBaseUrl;
+  if (provider === 'nvidia') return NVIDIA_BASE_URL;
+  if (provider === 'google') return GOOGLE_BASE_URL;
+  const fallbackBaseUrl = llmBaseUrl();
+  if (fallbackBaseUrl) return fallbackBaseUrl;
+  throw new Error(
+    'openai-compatible provider requires LLM_BASE_URL (e.g. http://127.0.0.1:11434/v1)',
+  );
+}
+
+/** Base URL of the endpoint the provider is served from. */
+export function resolveBaseUrl(): string {
+  return resolveBaseUrlForProvider(llmProvider());
+}
+
+/** Credential for a specific provider (never falls back across unrelated providers). */
+export function resolveApiKeyForProvider(provider: LlmProvider): string | undefined {
+  const isEnvMatch = currentEnvProviderOrNull() === provider;
+  const genericKey = llmApiKey();
+  if (isEnvMatch && genericKey) return genericKey;
+  if (provider === 'openrouter') return process.env.OPENROUTER_API_KEY?.trim() || undefined;
+  if (provider === 'nvidia') return process.env.NVIDIA_API_KEY?.trim() || undefined;
+  if (provider === 'google') return process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim() || undefined;
+  return genericKey;
 }
 
 /** Credential for the selected provider. */
 export function resolveApiKey(): string | undefined {
-  const key = llmApiKey();
-  if (key) return key;
-  const provider = llmProvider();
-  if (provider === 'openrouter') return process.env.OPENROUTER_API_KEY?.trim() || undefined;
-  if (provider === 'nvidia') return process.env.NVIDIA_API_KEY?.trim() || undefined;
-  if (provider === 'google') return process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim() || undefined;
-  return undefined;
+  return resolveApiKeyForProvider(llmProvider());
+}
+
+/** True when a specific provider has enough configuration for live calls. */
+export function canRunLiveLlmForProvider(
+  provider: LlmProvider,
+  overrideBaseUrl?: string,
+): boolean {
+  if (provider === 'openai-compatible') {
+    return Boolean(overrideBaseUrl?.trim() || llmBaseUrl());
+  }
+  return Boolean(resolveApiKeyForProvider(provider));
+}
+
+/** Lists every supported provider and whether server env credentials are ready. */
+export function listConfiguredLlmProviders(): LlmProviderAvailability[] {
+  const meta: Record<LlmProvider, { envVar: string; defaultBaseUrl: string | null }> = {
+    nvidia: { envVar: 'NVIDIA_API_KEY', defaultBaseUrl: NVIDIA_BASE_URL },
+    google: { envVar: 'GOOGLE_GENERATIVE_AI_API_KEY', defaultBaseUrl: GOOGLE_BASE_URL },
+    openrouter: { envVar: 'OPENROUTER_API_KEY', defaultBaseUrl: OPENROUTER_BASE_URL },
+    'openai-compatible': { envVar: 'LLM_BASE_URL', defaultBaseUrl: null },
+  };
+  return ALL_LLM_PROVIDERS.map((provider) => ({
+    provider,
+    configured: canRunLiveLlmForProvider(provider),
+    envVar: meta[provider].envVar,
+    defaultBaseUrl: meta[provider].defaultBaseUrl,
+  }));
 }
 
 /** Model for text generation. */

@@ -1,10 +1,11 @@
 import {
   SUPPORTED_LIVE_COUNTRIES,
-  canRunLiveLlm,
   classifyInvoiceBatch,
   isSupportedLiveCountry,
+  type RgiLlmRuntimeOverride,
 } from '@tariffos/agent';
 import type { StreamProgressEvent } from '@tariffos/shared-types';
+import { getActiveLlmRuntimeConfig } from '@/lib/admin/llm-settings';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 import {
   ClassifyStreamRequestSchema,
@@ -50,9 +51,10 @@ function buildFullDescription(input: ClassifyStreamRequest): string {
 async function runLiveClassificationLine(
   input: ClassifyStreamRequest,
   tenantId: string,
+  runtimeLlm: RgiLlmRuntimeOverride | undefined,
   onProgress: (event: StreamProgressEvent) => void,
 ) {
-  const ports = createPrismaPipelinePorts();
+  const ports = createPrismaPipelinePorts(runtimeLlm);
   const batch = await classifyInvoiceBatch(
     [
       {
@@ -131,8 +133,18 @@ export async function POST(request: Request): Promise<Response> {
     }
   }
 
+  const runtimeLlm = cloudMode ? await getActiveLlmRuntimeConfig() : null;
   const canRunLivePipeline =
-    cloudMode && Boolean(process.env.DATABASE_URL) && canRunLiveLlm();
+    cloudMode && Boolean(process.env.DATABASE_URL) && Boolean(runtimeLlm?.canRunLive);
+  const llmOverride: RgiLlmRuntimeOverride | undefined =
+    runtimeLlm?.source === 'database'
+      ? {
+          provider: runtimeLlm.provider,
+          model: runtimeLlm.model,
+          deepModel: runtimeLlm.deepModel,
+          baseUrl: runtimeLlm.baseUrl,
+        }
+      : undefined;
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
@@ -150,7 +162,7 @@ export async function POST(request: Request): Promise<Response> {
         }
 
         const line = canRunLivePipeline
-          ? await runLiveClassificationLine(input, tenantId, (event) =>
+          ? await runLiveClassificationLine(input, tenantId, llmOverride, (event) =>
               push(encodeProgressEvent(event)),
             )
           : (() => {
@@ -165,7 +177,7 @@ export async function POST(request: Request): Promise<Response> {
         const envelope = buildA2UIEnvelopeFromLine(line, input);
 
         if (cloudMode) {
-          await persistClassificationOutcome(tenantId, line, input.query);
+          await persistClassificationOutcome(tenantId, line, input.query, runtimeLlm?.provider);
         }
 
         push(encodeProgressEvent({ stage: 'complete', label: 'Dictamen arancelario listo', progressPct: 100 }));

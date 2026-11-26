@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Revisión de arquitectura — tariffos-v3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
+    </script>
+    <style>
+      .seam-line { stroke-dasharray: 5 4; }
+      .leak-stroke { stroke: #dc2626; }
+      .deep-module {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        box-shadow: 0 10px 25px -10px rgba(15, 23, 42, 0.45);
+      }
+    </style>
+  </head>
+  <body class="bg-stone-50 text-slate-900 font-sans antialiased">
+    <main class="max-w-5xl mx-auto px-6 py-12 space-y-12">
+      <!-- Header -->
+      <header class="border-b border-stone-300 pb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p class="text-xs uppercase tracking-widest text-slate-500 font-mono">2026-11-26 · Análisis arquitectónico</p>
+          <h1 class="text-3xl font-serif font-semibold tracking-tight text-slate-900 mt-1">tariffos-v3</h1>
+        </div>
+        <div class="flex flex-wrap items-center gap-4 text-xs text-slate-700 bg-white border border-stone-200 rounded-lg px-4 py-2.5">
+          <span class="inline-flex items-center gap-1.5">
+            <span class="inline-block w-3.5 h-3.5 rounded-sm border border-slate-400 bg-white"></span>
+            módulo
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <span class="inline-block w-5 border-t-2 border-dashed border-slate-500"></span>
+            seam
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <span class="inline-block w-5 border-t-2 border-red-600 relative">
+              <span class="absolute -right-0.5 -top-1 text-red-600 text-[10px] leading-none">▸</span>
+            </span>
+            fuga (leakage)
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <span class="inline-block w-3.5 h-3.5 rounded-sm bg-slate-900 border-2 border-slate-950"></span>
+            módulo profundo
+          </span>
+        </div>
+      </header>
+
+      <!-- Candidates -->
+      <section id="candidates" class="space-y-10">
+
+        <!-- CANDIDATE 1: Hand-built boxes-and-arrows -->
+        <article id="candidate-1" class="rounded-xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm space-y-6">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <h2 class="text-xl font-serif font-semibold text-slate-900">1. Consolidar los 4 módulos aduaneros y de política detrás de <code class="font-mono text-base">@tariffos/agent/domain</code></h2>
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">Strong</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-mono bg-stone-100 text-slate-700 border border-stone-200">in-process</span>
+            </div>
+          </div>
+
+          <div class="font-mono text-xs text-slate-600 bg-stone-50 border border-stone-200 rounded-lg px-3.5 py-2.5 space-y-1">
+            <div>packages/agent/package.json · packages/agent/src/index.ts</div>
+            <div>packages/agent/src/lib/pipeline/{duties,trade-preferences,trade-remedies,dossier-approval-policy,merceological-hitl}.ts</div>
+            <div>apps/web/src/lib/workspace/{duty-engine,trade-preferences,trade-preferences-data,dossier-approval-policy,merceological-helpers}.ts</div>
+          </div>
+
+          <!-- Before / After: Hand-built boxes-and-arrows -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <!-- BEFORE -->
+            <div class="rounded-lg border border-stone-200 bg-stone-50 p-4 flex flex-col justify-between min-h-[320px]">
+              <div class="text-xs uppercase tracking-wider font-semibold text-slate-500">Antes · Dos copias con drift activo</div>
+              <div class="relative flex-1 flex flex-col justify-center gap-4 py-3">
+                <div class="grid grid-cols-2 gap-3 items-stretch">
+                  <div class="rounded border border-slate-300 bg-white p-3 space-y-1.5">
+                    <div class="text-xs uppercase tracking-wider font-semibold text-slate-800">Módulos Servidor</div>
+                    <div class="text-[11px] font-mono text-slate-500">packages/agent</div>
+                    <ul class="text-[11px] text-slate-600 space-y-0.5 pt-1">
+                      <li>· duties + 5 TLC extra</li>
+                      <li>· 5 remedios (232, CBAM)</li>
+                      <li>· PA (Panamá) + umbrales</li>
+                      <li>· confianza por origen</li>
+                    </ul>
+                  </div>
+                  <div class="rounded border border-red-300 bg-red-50/40 p-3 space-y-1.5">
+                    <div class="text-xs uppercase tracking-wider font-semibold text-red-800">Copia Cliente (719 LOC)</div>
+                    <div class="text-[11px] font-mono text-red-600">apps/web/workspace</div>
+                    <ul class="text-[11px] text-red-700 space-y-0.5 pt-1">
+                      <li>· Faltan 5 TLC y PA</li>
+                      <li>· Faltan 5 remedios</li>
+                      <li>· Umbral 75 fijo</li>
+                      <li>· Penalización plana -18/-6</li>
+                    </ul>
+                  </div>
+                </div>
+                <svg class="w-full h-12" viewBox="0 0 360 48" fill="none" aria-hidden="true">
+                  <defs>
+                    <marker id="arrow-red-1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626" />
+                    </marker>
+                  </defs>
+                  <line x1="95" y1="8" x2="255" y2="8" class="leak-stroke" stroke-width="2" marker-end="url(#arrow-red-1)" />
+                  <line x1="255" y1="36" x2="95" y2="36" class="leak-stroke" stroke-width="2" marker-end="url(#arrow-red-1)" />
+                  <rect x="115" y="13" width="130" height="18" rx="4" fill="#fef2f2" stroke="#fca5a5" />
+                  <text x="180" y="25" text-anchor="middle" font-size="10" fill="#b91c1c" font-family="ui-monospace, monospace">barrel arrastra DB/LLM</text>
+                </svg>
+              </div>
+              <div class="text-[11px] text-red-700 font-medium">Fuga: cálculo divergente entre navegador y servidor</div>
+            </div>
+
+            <!-- AFTER -->
+            <div class="rounded-lg border border-stone-200 bg-stone-50 p-4 flex flex-col justify-between min-h-[320px]">
+              <div class="text-xs uppercase tracking-wider font-semibold text-emerald-700">Después · Módulo profundo único</div>
+              <div class="flex-1 flex flex-col justify-center gap-4 py-3">
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="rounded border border-slate-300 bg-white px-3 py-2 text-center">
+                    <div class="text-xs uppercase tracking-wider font-semibold text-slate-700">Navegador</div>
+                    <div class="text-[11px] font-mono text-slate-500">apps/web</div>
+                  </div>
+                  <div class="rounded border border-slate-300 bg-white px-3 py-2 text-center">
+                    <div class="text-xs uppercase tracking-wider font-semibold text-slate-700">Pipeline Servidor</div>
+                    <div class="text-[11px] font-mono text-slate-500">SSE / Inngest / Eve</div>
+                  </div>
+                </div>
+                <div class="border-t-2 border-dashed border-slate-400 relative">
+                  <span class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-stone-50 px-2 text-[10px] font-mono uppercase tracking-wider text-slate-600">seam browser-safe</span>
+                </div>
+                <div class="deep-module rounded-lg border-2 border-slate-950 p-4 text-stone-100">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs uppercase tracking-wider font-semibold text-emerald-300">@tariffos/agent/domain</span>
+                    <span class="text-[10px] font-mono text-slate-400">sin DB · sin LLM</span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-1.5 mt-3 text-[11px] text-slate-300 font-mono">
+                    <div class="bg-slate-800/80 rounded px-2 py-1">duties &amp; valuation</div>
+                    <div class="bg-slate-800/80 rounded px-2 py-1">trade-preferences &amp; remedies</div>
+                    <div class="bg-slate-800/80 rounded px-2 py-1">dossier-approval-policy</div>
+                    <div class="bg-slate-800/80 rounded px-2 py-1">merceological-hitl</div>
+                  </div>
+                </div>
+              </div>
+              <div class="text-[11px] text-emerald-800 font-medium">Una sola implementación pura detrás de una interfaz</div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div class="bg-stone-50 rounded-lg p-3.5 border border-stone-200">
+              <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 block mb-1">Problema</span>
+              El barrel raíz de <code class="font-mono text-xs">@tariffos/agent</code> arrastra módulos de servidor, obligando a <code class="font-mono text-xs">apps/web</code> a duplicar 719 LOC de cálculo arancelario y política que ya divergieron del motor canónico.
+            </div>
+            <div class="bg-stone-50 rounded-lg p-3.5 border border-stone-200">
+              <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 block mb-1">Solución</span>
+              Exponer un subpath puro y browser-safe en <code class="font-mono text-xs">@tariffos/agent</code> para tributos, preferencias, aprobación y confianza merceológica, y eliminar las 5 copias del cliente.
+            </div>
+          </div>
+
+          <ul class="grid sm:grid-cols-2 gap-2 text-xs text-slate-700 pt-1">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span><strong>locality:</strong> toda la lógica aduanera vive en un módulo</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span><strong>leverage:</strong> una interfaz sirve navegador y servidor</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Elimina 719 LOC y cierra drift de TLC</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Tests golpean una sola interfaz</span></li>
+          </ul>
+        </article>
+
+        <!-- CANDIDATE 2: Mermaid flowchart LR -->
+        <article id="candidate-2" class="rounded-xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm space-y-6">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <h2 class="text-xl font-serif font-semibold text-slate-900">2. Profundizar la ejecución de clasificación y unificar los dos motores offline</h2>
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">Strong</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-mono bg-stone-100 text-slate-700 border border-stone-200">ports &amp; adapters</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-mono bg-stone-100 text-slate-700 border border-stone-200">in-process</span>
+            </div>
+          </div>
+
+          <div class="font-mono text-xs text-slate-600 bg-stone-50 border border-stone-200 rounded-lg px-3.5 py-2.5 space-y-1">
+            <div>apps/web/src/app/api/{classify-stream,batch}/route.ts · apps/web/src/lib/inngest/functions.ts · apps/web/agent/tools/classify_item.ts</div>
+            <div>apps/web/src/lib/agent/{prisma-ports,cloud-session,offline-classifier,offline-catalog,hitl-envelope-builder,envelope-builder,sse-encoder}.ts</div>
+            <div>apps/web/src/lib/workspace/{classify-client,offline-classifier,offline-presets,offline-ambiguous}.ts</div>
+            <div>packages/ai-client/src/port.ts · packages/agent/src/adapters/rgi-llm-adapter.ts</div>
+          </div>
+
+          <!-- Before / After: Mermaid flowchart -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="rounded-lg border border-stone-200 bg-stone-50 p-4 flex flex-col justify-between min-h-[320px]">
+              <div class="text-xs uppercase tracking-wider font-semibold text-slate-500 mb-2">Antes · 4 caminos y fugas en seams</div>
+              <div class="rounded border border-stone-200 bg-white p-2 overflow-x-auto">
+                <pre class="mermaid">
+flowchart LR
+  UI["classify-client"] -->|"offline bypass"| C1["workspace/offline"]
+  UI -->|"POST"| SSE["classify-stream"]
+  SSE -.->|"regex antes de Cloud"| HITL["detectMissingCriticalInfo"]
+  SSE --> S1["agent/offline (distintos %)"]
+  SSE --> P["prisma-ports (sin vector/score)"]
+  BATCH["api/batch"] -.->|"sin country guard"| INN["Inngest (dedup x2)"]
+  EVE["Eve classify_item"] -.->|"sin cuota ni persistencia"| P
+  LLM["LlmPort"] -.->|"descarta tokenUsage"| P
+  classDef leak stroke:#dc2626,stroke-width:2px,color:#991b1b;
+  class C1,S1,HITL,BATCH,EVE,LLM leak;
+                </pre>
+              </div>
+              <div class="text-[11px] text-red-700 font-medium mt-2">Fuga: Tier-1 inalcanzable, tokenUsage en 0, tarifas offline distintas</div>
+            </div>
+
+            <div class="rounded-lg border border-stone-200 bg-stone-50 p-4 flex flex-col justify-between min-h-[320px]">
+              <div class="text-xs uppercase tracking-wider font-semibold text-emerald-700 mb-2">Después · Módulo profundo con 2 adaptadores</div>
+              <div class="rounded border border-stone-200 bg-white p-2 overflow-x-auto">
+                <pre class="mermaid">
+flowchart LR
+  UI["classify-client"] --> SSE["SSE"]
+  SSE --> EXEC["ClassificationExecution"]
+  BATCH["Batch HTTP"] --> EXEC
+  INN["Inngest"] --> EXEC
+  EVE["Eve tool"] --> EXEC
+  EXEC -. "seam" .-> LIVE["Adaptador Live (Prisma + Vector + LLM + Tokens)"]
+  EXEC -. "seam" .-> OFF["Adaptador Offline Determinista Único"]
+  classDef deep fill:#0f172a,stroke:#020617,color:#f8fafc,stroke-width:3px;
+  class EXEC deep;
+                </pre>
+              </div>
+              <div class="text-[11px] text-emerald-800 font-medium mt-2">Dos adaptadores reales detrás de un seam unificado</div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div class="bg-stone-50 rounded-lg p-3.5 border border-stone-200">
+              <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 block mb-1">Problema</span>
+              Clasificar atraviesa cuatro caminos paralelos (dos motores offline incompatibles, guardias divergentes entre SSE y Batch, y Eve desconectado) mientras el fast-path Tier-1 y el conteo de <code class="font-mono text-xs">tokenUsage</code> quedan muertos en producción.
+            </div>
+            <div class="bg-stone-50 rounded-lg p-3.5 border border-stone-200">
+              <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 block mb-1">Solución</span>
+              Concentrar cuota, país, gate HITL, captura de tokens y despacho live/offline en un módulo profundo usado por SSE, Inngest y Eve, eliminando el clasificador offline del navegador.
+            </div>
+          </div>
+
+          <ul class="grid sm:grid-cols-2 gap-2 text-xs text-slate-700 pt-1">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span><strong>locality:</strong> cuota, país, HITL y tokens juntos</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span><strong>leverage:</strong> SSE, lotes y Eve comparten interfaz</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Destraba Tier-1 y medición real de tokens</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Elimina ~450 LOC de offline duplicado</span></li>
+          </ul>
+        </article>
+
+        <!-- CANDIDATE 3: Mass diagram -->
+        <article id="candidate-3" class="rounded-xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm space-y-6">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <h2 class="text-xl font-serif font-semibold text-slate-900">3. Profundizar el controlador del workspace y la resolución de pestañas del Canvas</h2>
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">Strong</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-mono bg-stone-100 text-slate-700 border border-stone-200">in-process</span>
+            </div>
+          </div>
+
+          <div class="font-mono text-xs text-slate-600 bg-stone-50 border border-stone-200 rounded-lg px-3.5 py-2.5 space-y-1">
+            <div>apps/web/src/components/workspace/templates/WorkspaceSplitShell.tsx (353 LOC · supera límite 300)</div>
+            <div>apps/web/src/components/workspace/molecules/WorkspaceSidebarSlot.tsx (90 LOC · 17 props)</div>
+            <div>apps/web/src/components/workspace/organisms/{WorkspaceCanvasPane,AssistantThreadSurface,WorkspaceComposer,ThreadSidebar}.tsx</div>
+            <div>apps/web/src/lib/workspace/{use-workspace-state,use-workspace-classification,canvas-tabs,inline-actions,thread-mutations}.ts</div>
+          </div>
+
+          <!-- Before / After: Mass diagram -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <!-- BEFORE -->
+            <div class="rounded-lg border border-stone-200 bg-stone-50 p-4 flex flex-col justify-between min-h-[320px]">
+              <div class="text-xs uppercase tracking-wider font-semibold text-slate-500">Antes · Módulos superficiales (interfaz ≈ implementación)</div>
+              <div class="flex-1 flex flex-col justify-center gap-2.5 py-2">
+                <div class="rounded border border-slate-300 bg-white p-2.5">
+                  <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-xs uppercase tracking-wider font-semibold text-slate-800">WorkspaceSplitShell (353 LOC)</span>
+                    <span class="text-[10px] font-mono text-red-600">60+ props</span>
+                  </div>
+                  <div class="h-12 rounded bg-red-50 border border-red-200 px-2 py-1 text-[11px] text-red-800 flex items-center justify-between">
+                    <span>Interfaz ancha: 12 states + 8 hijos</span>
+                    <span class="font-mono text-[10px]">superficial</span>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                  <div class="rounded border border-slate-300 bg-white p-2">
+                    <div class="text-[10px] uppercase tracking-wider font-semibold text-slate-700">SidebarSlot</div>
+                    <div class="mt-1 h-10 bg-amber-50 border border-amber-200 rounded p-1 text-[10px] text-amber-900">17 props pasa-mano</div>
+                  </div>
+                  <div class="rounded border border-red-300 bg-white p-2">
+                    <div class="text-[10px] uppercase tracking-wider font-semibold text-red-700">CanvasPane</div>
+                    <div class="mt-1 h-10 bg-red-50 border border-red-200 rounded p-1 text-[10px] text-red-800">fuga tab: omite rgi_comparator</div>
+                  </div>
+                  <div class="rounded border border-slate-300 bg-white p-2">
+                    <div class="text-[10px] uppercase tracking-wider font-semibold text-slate-700">inline-actions</div>
+                    <div class="mt-1 h-10 bg-amber-50 border border-amber-200 rounded p-1 text-[10px] text-amber-900">aplana HITL a texto</div>
+                  </div>
+                </div>
+
+                <div class="rounded border border-red-300 bg-red-50 px-2.5 py-1.5 text-[11px] text-red-800">
+                  Fuga en montaje: <code class="font-mono">useWorkspaceState</code> envía query pendiente antes de hidratar perfil
+                </div>
+              </div>
+              <div class="text-[11px] text-red-700 font-medium">Sin tests en SplitShell, CanvasPane, useWorkspaceState</div>
+            </div>
+
+            <!-- AFTER -->
+            <div class="rounded-lg border border-stone-200 bg-stone-50 p-4 flex flex-col justify-between min-h-[320px]">
+              <div class="text-xs uppercase tracking-wider font-semibold text-emerald-700">Después · Interfaz corta sobre implementación profunda</div>
+              <div class="flex-1 flex flex-col justify-center gap-3 py-2">
+                <!-- Small interface box -->
+                <div class="rounded border border-slate-400 bg-white px-3 py-2">
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs uppercase tracking-wider font-semibold text-slate-800">Interfaz WorkspaceContext</span>
+                    <span class="text-[10px] font-mono text-emerald-700">estrecha</span>
+                  </div>
+                  <div class="text-[11px] font-mono text-slate-600 mt-0.5">classify(input) · submitHitl(answers) · selectTab · approveDossier · clearLocalData</div>
+                </div>
+
+                <!-- Tall deep implementation box -->
+                <div class="deep-module rounded-lg border-2 border-slate-950 p-4 text-stone-100 space-y-2.5">
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs uppercase tracking-wider font-semibold text-emerald-300">WorkspaceController + canvas-tabs</span>
+                    <span class="text-[10px] font-mono text-slate-400">implementación profunda</span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-300">
+                    <div class="bg-slate-800/80 rounded px-2.5 py-1.5">Hidratación ordenada + query pendiente</div>
+                    <div class="bg-slate-800/80 rounded px-2.5 py-1.5">HITL estructurado directo a stream</div>
+                    <div class="bg-slate-800/80 rounded px-2.5 py-1.5"><code class="font-mono">resolveEffectiveCanvasTab</code> único</div>
+                    <div class="bg-slate-800/80 rounded px-2.5 py-1.5">Layout hook (Shell ≈ 120 LOC)</div>
+                  </div>
+                </div>
+              </div>
+              <div class="text-[11px] text-emerald-800 font-medium">Elimina SidebarSlot (90 LOC) e inline-actions (47 LOC)</div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div class="bg-stone-50 rounded-lg p-3.5 border border-stone-200">
+              <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 block mb-1">Problema</span>
+              <code class="font-mono text-xs">WorkspaceSplitShell</code> (353 LOC) pasa 60+ props entre módulos superficiales mientras la resolución de pestañas se fuga a <code class="font-mono text-xs">WorkspaceCanvasPane</code> (dejando <code class="font-mono text-xs">rgi_comparator</code> inalcanzable), el HITL aplana respuestas a texto y el montaje usa un closure obsoleto.
+            </div>
+            <div class="bg-stone-50 rounded-lg p-3.5 border border-stone-200">
+              <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 block mb-1">Solución</span>
+              Concentrar transiciones de hilo, envío HITL estructurado y <code class="font-mono text-xs">resolveEffectiveCanvasTab</code> en un módulo controlador profundo expuesto por contexto estrecho, eliminando los pasamanos intermedios.
+            </div>
+          </div>
+
+          <ul class="grid sm:grid-cols-2 gap-2 text-xs text-slate-700 pt-1">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span><strong>locality:</strong> pestañas, HITL y estado en un módulo</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Interfaz baja de 60+ props a acciones</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Corrige pestaña rgi_comparator muerta</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Habilita tests de integración sobre controlador</span></li>
+          </ul>
+
+          <div class="rounded-lg border border-amber-300 bg-amber-50 px-3.5 py-2 text-xs text-amber-900">
+            <strong>Regla de tamaño (<code class="font-mono">scripts/check.mjs</code> warn &gt; 200 LOC):</strong> el tope incentivó cortes mecánicos superficiales (<code class="font-mono">WorkspaceSidebarSlot</code>, <code class="font-mono">inline-actions</code>, 22 props en <code class="font-mono">DutyCalculatorView</code>); un contexto estrecho profundiza sin superar 200 LOC por archivo.
+          </div>
+        </article>
+
+        <!-- CANDIDATE 4: Cross-section horizontal bands -->
+        <article id="candidate-4" class="rounded-xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm space-y-6">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <h2 class="text-xl font-serif font-semibold text-slate-900">4. Unificar administración, onboarding y facturación detrás de un seam con dos adaptadores</h2>
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">Strong</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-mono bg-stone-100 text-slate-700 border border-stone-200">ports &amp; adapters</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-mono bg-stone-100 text-slate-700 border border-stone-200">local-substitutable</span>
+            </div>
+          </div>
+
+          <div class="font-mono text-xs text-slate-600 bg-stone-50 border border-stone-200 rounded-lg px-3.5 py-2.5 space-y-1">
+            <div>apps/web/src/app/api/admin/**/route.ts (14 rutas · ~1,383 LOC) · apps/web/src/app/api/billing/payments/route.ts</div>
+            <div>apps/web/src/lib/admin/{payment-service,payment-verify-service,payment-mapper,offline-store,http-helpers}.ts</div>
+            <div>apps/web/src/lib/funnel/{billing-port,funnel-storage}.ts · apps/web/src/components/funnel/organisms/ExpressOnboardingCard.tsx</div>
+            <div>packages/database/src/{billing,client}.ts</div>
+          </div>
+
+          <!-- Before / After: Cross-section horizontal bands -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <!-- BEFORE -->
+            <div class="rounded-lg border border-stone-200 bg-stone-50 p-4 flex flex-col justify-between min-h-[320px]">
+              <div class="text-xs uppercase tracking-wider font-semibold text-slate-500">Antes · Bandas delgadas con lógica mezclada y fugas</div>
+              <div class="flex-1 flex flex-col justify-center gap-2 py-2">
+                <div class="h-11 border-l-4 border-red-500 bg-white rounded-r px-3 flex items-center justify-between text-xs">
+                  <span class="font-medium">ExpressOnboarding + FunnelStorage</span>
+                  <span class="font-mono text-[10px] text-red-600">mx-sat; pierde role/license</span>
+                </div>
+                <div class="h-11 border-l-4 border-red-500 bg-white rounded-r px-3 flex items-center justify-between text-xs">
+                  <span class="font-medium">billing-port.ts</span>
+                  <span class="font-mono text-[10px] text-red-600">fallback silencioso a localStorage</span>
+                </div>
+                <div class="h-11 border-l-4 border-red-500 bg-white rounded-r px-3 flex items-center justify-between text-xs">
+                  <span class="font-medium">POST /api/billing/payments</span>
+                  <span class="font-mono text-[10px] text-red-600">devuelve 2 campos; rompe cliente</span>
+                </div>
+                <div class="h-11 border-l-4 border-amber-500 bg-white rounded-r px-3 flex items-center justify-between text-xs">
+                  <span class="font-medium">14 rutas /api/admin/*</span>
+                  <span class="font-mono text-[10px] text-amber-700">repiten if cloudMode + Prisma tx</span>
+                </div>
+                <div class="h-11 border-l-4 border-red-500 bg-white rounded-r px-3 flex items-center justify-between text-xs">
+                  <span class="font-medium">database/billing.ts</span>
+                  <span class="font-mono text-[10px] text-red-600">catch fail-open + pools sin límite</span>
+                </div>
+              </div>
+              <div class="text-[11px] text-red-700 font-medium">Imposible testear reglas sin mockear HTTP y Prisma en cada ruta</div>
+            </div>
+
+            <!-- AFTER -->
+            <div class="rounded-lg border border-stone-200 bg-stone-50 p-4 flex flex-col justify-between min-h-[320px]">
+              <div class="text-xs uppercase tracking-wider font-semibold text-emerald-700">Después · Banda profunda detrás de un seam real</div>
+              <div class="flex-1 flex flex-col justify-center gap-3 py-2">
+                <div class="h-11 border-l-4 border-slate-400 bg-white rounded-r px-3 flex items-center justify-between text-xs">
+                  <span class="font-medium">Rutas HTTP delgadas + Onboarding</span>
+                  <span class="font-mono text-[10px] text-slate-500">solo validación Zod + catálogo único</span>
+                </div>
+                <div class="deep-module border-l-4 border-emerald-400 rounded-r-lg p-3.5 text-stone-100 space-y-1.5">
+                  <div class="text-xs uppercase tracking-wider font-semibold text-emerald-300">AdminBillingDomain (módulo profundo)</div>
+                  <div class="text-[11px] text-slate-300">· Transiciones de pagos y activación de tenant</div>
+                  <div class="text-[11px] text-slate-300">· Auditoría obligatoria + fail-closed en cuotas</div>
+                  <div class="text-[11px] text-slate-300">· Jurisdicciones únicas (<code class="font-mono">mx-tigie</code>) + errores explícitos</div>
+                </div>
+                <div class="border-t-2 border-dashed border-slate-400 relative my-0.5">
+                  <span class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-stone-50 px-2 text-[10px] font-mono uppercase tracking-wider text-slate-600">seam AdminStore</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2.5">
+                  <div class="h-12 border-l-4 border-slate-800 bg-white rounded-r px-2.5 flex flex-col justify-center">
+                    <span class="text-xs font-semibold">PrismaAdapter</span>
+                    <span class="text-[10px] font-mono text-slate-500">Postgres producción</span>
+                  </div>
+                  <div class="h-12 border-l-4 border-emerald-600 bg-white rounded-r px-2.5 flex flex-col justify-center">
+                    <span class="text-xs font-semibold">InMemoryAdapter</span>
+                    <span class="text-[10px] font-mono text-slate-500">Offline + tests</span>
+                  </div>
+                </div>
+              </div>
+              <div class="text-[11px] text-emerald-800 font-medium">Dos adaptadores reales justifican el seam</div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div class="bg-stone-50 rounded-lg p-3.5 border border-stone-200">
+              <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 block mb-1">Problema</span>
+              14 rutas repiten el bifurcador offline/Prisma en cada handler, <code class="font-mono text-xs">/api/billing/payments</code> devuelve un payload parcial que rompe <code class="font-mono text-xs">billing-port</code> con fallback silencioso, onboarding descarta <code class="font-mono text-xs">role</code>/<code class="font-mono text-xs">brokerLicense</code> con <code class="font-mono text-xs">mx-sat</code>, y <code class="font-mono text-xs">billing.ts</code> falla abierto ante errores de BD.
+            </div>
+            <div class="bg-stone-50 rounded-lg p-3.5 border border-stone-200">
+              <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 block mb-1">Solución</span>
+              Encapsular reglas de pagos, cuotas, auditoría y catálogo único de jurisdicciones en un módulo profundo detrás de un seam con dos adaptadores reales (Prisma e in-memory), propagando errores reales en modo Cloud.
+            </div>
+          </div>
+
+          <ul class="grid sm:grid-cols-2 gap-2 text-xs text-slate-700 pt-1">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Dos adaptadores reales justifican el seam</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span><strong>locality:</strong> auditoría, cuotas y catálogo juntos</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Corrige pagos Cloud y fallback silencioso</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Tests verifican dominio sin mockear Prisma</span></li>
+          </ul>
+        </article>
+
+        <!-- CANDIDATE 5: Hand-built seam diagram -->
+        <article id="candidate-5" class="rounded-xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm space-y-6">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <h2 class="text-xl font-serif font-semibold text-slate-900">5. Resolver el adaptador fantasma <code class="font-mono text-base">SupabaseCloudAdapter</code> y cerrar el seam de persistencia</h2>
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">Strong</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-mono bg-stone-100 text-slate-700 border border-stone-200">ports &amp; adapters</span>
+            </div>
+          </div>
+
+          <div class="font-mono text-xs text-slate-600 bg-stone-50 border border-stone-200 rounded-lg px-3.5 py-2.5 space-y-1">
+            <div>apps/web/src/lib/workspace/{persistence,indexeddb-adapter,supabase-cloud-adapter}.ts</div>
+            <div>packages/database/prisma/schema.prisma · apps/web/src/components/workspace/templates/WorkspaceSplitShell.tsx</div>
+          </div>
+
+          <!-- Before / After: Hand-built seam diagram -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <!-- BEFORE -->
+            <div class="rounded-lg border border-stone-200 bg-stone-50 p-4 flex flex-col justify-between min-h-[300px]">
+              <div class="text-xs uppercase tracking-wider font-semibold text-slate-500">Antes · Seam con un adaptador roto</div>
+              <div class="flex-1 flex flex-col justify-center gap-3 py-2">
+                <div class="rounded border border-slate-300 bg-white p-3 text-center">
+                  <div class="text-xs uppercase tracking-wider font-semibold text-slate-800">DualWritePersistence</div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">traga excepciones en silencio · sin <code class="font-mono">clearAll()</code></div>
+                </div>
+                <div class="border-t-2 border-dashed border-slate-400"></div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="rounded border border-emerald-300 bg-emerald-50/50 p-3">
+                    <div class="text-xs uppercase tracking-wider font-semibold text-emerald-900">IndexedDBAdapter</div>
+                    <div class="text-[11px] text-emerald-800 mt-1">Almacena hilos, SKUs y perfil. Nunca se limpia desde UI.</div>
+                  </div>
+                  <div class="rounded border-2 border-red-400 bg-red-50/60 p-3">
+                    <div class="text-xs uppercase tracking-wider font-semibold text-red-900">SupabaseCloudAdapter</div>
+                    <div class="text-[10px] font-mono text-red-700 mt-1">
+                      workspace_threads ✗<br/>
+                      sku_precedents ✗<br/>
+                      workspace_profiles ✗
+                    </div>
+                  </div>
+                </div>
+                <div class="rounded border border-red-200 bg-red-50 px-3 py-1.5 text-[11px] text-red-800 text-center">
+                  "Limpiar datos locales" llama <code class="font-mono">localStorage.clear()</code> y deja IndexedDB intacto
+                </div>
+              </div>
+              <div class="text-[11px] text-red-700 font-medium">Las 3 tablas consultadas no existen en Prisma</div>
+            </div>
+
+            <!-- AFTER -->
+            <div class="rounded-lg border border-stone-200 bg-stone-50 p-4 flex flex-col justify-between min-h-[300px]">
+              <div class="text-xs uppercase tracking-wider font-semibold text-emerald-700">Después · Seam honesto con limpieza completa</div>
+              <div class="flex-1 flex flex-col justify-center gap-3 py-2">
+                <div class="deep-module rounded-lg border-2 border-slate-950 p-3.5 text-stone-100 text-center">
+                  <div class="text-xs uppercase tracking-wider font-semibold text-emerald-300">WorkspacePersistence</div>
+                  <div class="text-[11px] text-slate-300 mt-1">expone <code class="font-mono">clearAll()</code> y reporta fallos reales en Cloud</div>
+                </div>
+                <div class="border-t-2 border-dashed border-slate-400 relative">
+                  <span class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-stone-50 px-2 text-[10px] font-mono uppercase tracking-wider text-slate-600">seam real o eliminado</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="rounded border border-slate-300 bg-white p-3">
+                    <div class="text-xs uppercase tracking-wider font-semibold text-slate-800">IndexedDBAdapter</div>
+                    <div class="text-[11px] text-slate-600 mt-1">Implementa <code class="font-mono">clearAll()</code> real sobre los stores locales.</div>
+                  </div>
+                  <div class="rounded border border-emerald-400 bg-emerald-50/40 p-3">
+                    <div class="text-xs uppercase tracking-wider font-semibold text-emerald-900">PrismaSyncAdapter</div>
+                    <div class="text-[10px] font-mono text-emerald-800 mt-1">
+                      ClassificationSession ✓<br/>
+                      ProductMaster ✓<br/>
+                      (o retirar hasta construirlo)
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="text-[11px] text-emerald-800 font-medium">Sin tráfico silencioso a tablas inexistentes</div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div class="bg-stone-50 rounded-lg p-3.5 border border-stone-200">
+              <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 block mb-1">Problema</span>
+              <code class="font-mono text-xs">IPersistence</code> declara un seam de dos adaptadores, pero <code class="font-mono text-xs">SupabaseCloudAdapter</code> consulta tres tablas ausentes en <code class="font-mono text-xs">schema.prisma</code>, ignora errores en silencio y omite <code class="font-mono text-xs">clearAll()</code>.
+            </div>
+            <div class="bg-stone-50 rounded-lg p-3.5 border border-stone-200">
+              <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 block mb-1">Solución</span>
+              Respaldar el adaptador Cloud con rutas Prisma reales (<code class="font-mono text-xs">ClassificationSession</code>, <code class="font-mono text-xs">ProductMaster</code>) o eliminar el adaptador hipotético hasta implementarlo, añadiendo <code class="font-mono text-xs">clearAll()</code> a la interfaz.
+            </div>
+          </div>
+
+          <ul class="grid sm:grid-cols-2 gap-2 text-xs text-slate-700 pt-1">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Un adaptador real = seam hipotético</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Corta escrituras fallidas en cada turno</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span><code class="font-mono">clearAll()</code> limpia IndexedDB de verdad</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Tests validan esquema real, no mocks</span></li>
+          </ul>
+        </article>
+
+        <!-- CANDIDATE 6: Footprint collapse -->
+        <article id="candidate-6" class="rounded-xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm space-y-6">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <h2 class="text-xl font-serif font-semibold text-slate-900">6. Podar las arquitecturas paralelas huérfanas (~10,900 LOC de código muerto)</h2>
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">Strong</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-mono bg-stone-100 text-slate-700 border border-stone-200">in-process</span>
+            </div>
+          </div>
+
+          <div class="font-mono text-xs text-slate-600 bg-stone-50 border border-stone-200 rounded-lg px-3.5 py-2.5 space-y-1">
+            <div>packages/agent/src/{domain/*,intake/*,countries/*} (~8,497 LOC · arrastra pdfjs-dist y unpdf)</div>
+            <div>packages/database/src/{filings,permits,country,derogation}.ts (672 LOC) · packages/shared-types/src/{merceological-sheet,schemas,...}.ts (405 LOC)</div>
+            <div>packages/ai-client/src/{prompts/registry,token-budget,util/with-timeout}.ts · packages/env/src/web-search.ts (352 LOC)</div>
+            <div>apps/web/src/{workspace-classify-action,hitl-envelope,billing-ops,funnel-auth,HeroPreviewCard,LandingCapabilities,...} (9 huérfanos · 1,044 LOC)</div>
+          </div>
+
+          <!-- Before / After: Footprint collapse -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <!-- BEFORE -->
+            <div class="rounded-lg border border-stone-200 bg-stone-50 p-4 flex flex-col justify-between min-h-[300px]">
+              <div class="text-xs uppercase tracking-wider font-semibold text-slate-500">Antes · El código muerto entierra el núcleo activo</div>
+              <div class="flex-1 flex flex-col justify-center gap-2 py-3">
+                <div class="rounded border border-red-300 bg-red-100/70 p-3 space-y-1.5">
+                  <div class="flex justify-between text-xs font-semibold text-red-900">
+                    <span>Módulos retirados / 0 llamadores</span>
+                    <span class="font-mono">~10,970 LOC</span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-1.5 text-[10px] font-mono text-red-800">
+                    <div class="bg-white/80 rounded px-2 py-1">agent/domain+intake+countries (8,497)</div>
+                    <div class="bg-white/80 rounded px-2 py-1">9 huérfanos apps/web (1,044)</div>
+                    <div class="bg-white/80 rounded px-2 py-1">database legacy (672)</div>
+                    <div class="bg-white/80 rounded px-2 py-1">shared-types v1 + utils (757)</div>
+                  </div>
+                </div>
+                <div class="rounded border-2 border-slate-800 bg-slate-900 text-stone-100 p-2.5 flex justify-between items-center text-xs">
+                  <span class="font-semibold text-emerald-300">Pipeline vivo v3 (packages/agent/lib/pipeline)</span>
+                  <span class="font-mono">~2,816 LOC</span>
+                </div>
+                <div class="text-[11px] text-red-700 font-medium">
+                  Trampa activa: cambios sin commit en el huérfano <code class="font-mono">workspace-classify-action.ts</code>
+                </div>
+              </div>
+              <div class="text-[11px] text-red-700 font-medium">Tipos sombra (<code class="font-mono">MerceologicalSheet</code> vs <code class="font-mono">A2UIMerceologicalSheet</code>)</div>
+            </div>
+
+            <!-- AFTER -->
+            <div class="rounded-lg border border-stone-200 bg-stone-50 p-4 flex flex-col justify-between min-h-[300px]">
+              <div class="text-xs uppercase tracking-wider font-semibold text-emerald-700">Después · Superficie limpia y navegable</div>
+              <div class="flex-1 flex flex-col justify-center gap-4 py-3">
+                <div class="deep-module rounded-lg border-2 border-slate-950 p-5 text-stone-100 space-y-2.5">
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs uppercase tracking-wider font-semibold text-emerald-300">Solo módulos vivos v3</span>
+                    <span class="text-xs font-mono text-slate-300">-10,970 LOC · -2 deps PDF</span>
+                  </div>
+                  <div class="text-[11px] text-slate-300 space-y-1">
+                    <div>· <code class="font-mono">packages/agent</code> queda solo con el pipeline RGI + submódulo puro</div>
+                    <div>· <code class="font-mono">packages/shared-types</code> conserva un único modelo A2UI/billing</div>
+                    <div>· <code class="font-mono">scripts/check.mjs</code> audita tamaño en todo el repo, no solo el diff</div>
+                  </div>
+                </div>
+              </div>
+              <div class="text-[11px] text-emerald-800 font-medium">Cero colisiones de nombres ni duplicados editables</div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div class="bg-stone-50 rounded-lg p-3.5 border border-stone-200">
+              <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 block mb-1">Problema</span>
+              Dos motores retirados en <code class="font-mono text-xs">packages/agent</code>, esquemas v1 que colisionan en nombre y 9 archivos huérfanos post-split suman ~10,900 LOC muertos, arrastran <code class="font-mono text-xs">pdfjs-dist</code>/<code class="font-mono text-xs">unpdf</code> y atrapan ediciones activas.
+            </div>
+            <div class="bg-stone-50 rounded-lg p-3.5 border border-stone-200">
+              <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 block mb-1">Solución</span>
+              Eliminar todos los módulos con cero llamadores, remover <code class="font-mono text-xs">pdfjs-dist</code>/<code class="font-mono text-xs">unpdf</code> de <code class="font-mono text-xs">@tariffos/agent</code> y extender <code class="font-mono text-xs">scripts/check.mjs</code> al árbol completo.
+            </div>
+          </div>
+
+          <ul class="grid sm:grid-cols-2 gap-2 text-xs text-slate-700 pt-1">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span><strong>locality:</strong> solo existen módulos vivos v3</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Evita editar duplicados muertos por error</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Remueve ~10,900 LOC y 2 deps PDF</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span>Elimina tipos sombra del modelo</span></li>
+          </ul>
+        </article>
+
+        <!-- CANDIDATE 7: Mermaid flowchart LR -->
+        <article id="candidate-7" class="rounded-xl border border-stone-200 bg-white p-6 md:p-8 shadow-sm space-y-6">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <h2 class="text-xl font-serif font-semibold text-slate-900">7. Invertir <code class="font-mono text-base">DecisionProvider</code> y centralizar proveedores LLM en <code class="font-mono text-base">@tariffos/env</code></h2>
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">Worth exploring</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-mono bg-stone-100 text-slate-700 border border-stone-200">ports &amp; adapters</span>
+            </div>
+          </div>
+
+          <div class="font-mono text-xs text-slate-600 bg-stone-50 border border-stone-200 rounded-lg px-3.5 py-2.5 space-y-1">
+            <div>packages/agent/src/lib/decision/{provider,typesafe-adapter}.ts · packages/agent/src/lib/pipeline/pre-gate.ts</div>
+            <div>packages/ai-client/src/config.ts · packages/env/src/index.ts · apps/web/agent/model-resolver.ts</div>
+          </div>
+
+          <!-- Before / After: Mermaid flowchart -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="rounded-lg border border-stone-200 bg-stone-50 p-4 flex flex-col justify-between min-h-[300px]">
+              <div class="text-xs uppercase tracking-wider font-semibold text-slate-500 mb-2">Antes · SDK externo y env filtrados por los seams</div>
+              <div class="rounded border border-stone-200 bg-white p-2 overflow-x-auto">
+                <pre class="mermaid">
+flowchart LR
+  SDK["@typesafe-ai/sdk"] -.->|"filtra tipos"| PROV["DecisionProvider (1 adaptador)"]
+  PROV -.->|"choice() + cast"| PRE["pre-gate.ts"]
+  ENV["@tariffos/env"] --> CFG["ai-client/config.ts"]
+  PROC["process.env directo"] -.->|"URLs/claves duplicadas"| CFG
+  PROC -.->|"URLs/claves duplicadas"| EVE["agent/model-resolver.ts"]
+  classDef leak stroke:#dc2626,stroke-width:2px,color:#991b1b;
+  class SDK,PROV,PROC leak;
+                </pre>
+              </div>
+              <div class="text-[11px] text-red-700 font-medium mt-2">Seam de 1 adaptador que no aísla el SDK; env disperso</div>
+            </div>
+
+            <div class="rounded-lg border border-stone-200 bg-stone-50 p-4 flex flex-col justify-between min-h-[300px]">
+              <div class="text-xs uppercase tracking-wider font-semibold text-emerald-700 mb-2">Después · Seam de dominio y env único</div>
+              <div class="rounded border border-stone-200 bg-white p-2 overflow-x-auto">
+                <pre class="mermaid">
+flowchart LR
+  PRE["pre-gate.ts"] -. "seam CompliancePreGate" .-> ADP["TypeSafePreGateAdapter"]
+  ADP --> SDK["@typesafe-ai/sdk (encapsulado)"]
+  ENV["@tariffos/env (profundo)"] --> CFG["ai-client"]
+  ENV --> EVE["agent/model-resolver"]
+  ENV --> ADP
+  classDef deep fill:#0f172a,stroke:#020617,color:#f8fafc,stroke-width:3px;
+  class ENV,ADP deep;
+                </pre>
+              </div>
+              <div class="text-[11px] text-emerald-800 font-medium mt-2">Tipos externos contenidos; una fuente para claves y URLs</div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div class="bg-stone-50 rounded-lg p-3.5 border border-stone-200">
+              <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 block mb-1">Problema</span>
+              <code class="font-mono text-xs">DecisionProvider</code> es un seam de un solo adaptador que filtra tipos de <code class="font-mono text-xs">@typesafe-ai/sdk</code> hacia <code class="font-mono text-xs">pre-gate.ts</code>, mientras URLs y claves LLM se duplican entre <code class="font-mono text-xs">@tariffos/env</code>, <code class="font-mono text-xs">ai-client/config.ts</code> y <code class="font-mono text-xs">model-resolver.ts</code>.
+            </div>
+            <div class="bg-stone-50 rounded-lg p-3.5 border border-stone-200">
+              <span class="text-xs uppercase tracking-wider font-semibold text-slate-500 block mb-1">Solución</span>
+              Estrechar el seam de pre-gate a resultados propios del dominio para encapsular el SDK en el adaptador y mover las URLs y claves por defecto de proveedores a <code class="font-mono text-xs">@tariffos/env</code>.
+            </div>
+          </div>
+
+          <ul class="grid sm:grid-cols-2 gap-2 text-xs text-slate-700 pt-1">
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span><span><code class="font-mono">@typesafe-ai/sdk</code> no cruza el seam</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span><span><strong>leverage:</strong> un módulo env sirve a todos</span></li>
+            <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span><span>Elimina pasamanos en <code class="font-mono">ai-client/config.ts</code></span></li>
+          </ul>
+        </article>
+
+      </section>
+
+      <!-- Top Recommendation -->
+      <section id="top-recommendation">
+        <div class="deep-module rounded-xl border-2 border-slate-950 p-7 md:p-8 text-stone-100 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div class="space-y-2 max-w-2xl">
+            <div class="text-xs uppercase tracking-widest text-emerald-300 font-semibold">Recomendación principal · Empezar aquí</div>
+            <h2 class="text-2xl font-serif font-semibold text-white">Candidato #1 — Consolidar los 4 módulos aduaneros y de política detrás de <code class="font-mono text-xl">@tariffos/agent/domain</code></h2>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Ofrece el mayor <span class="text-white font-medium">leverage</span> por esfuerzo: elimina 719 LOC duplicados y corrige de inmediato el drift activo en tratados TLC, remedios y confianza merceológica entre navegador y servidor, dejando listo el submódulo puro que destraba la unificación del clasificador en el candidato #2.
+            </p>
+          </div>
+          <a href="#candidate-1" class="shrink-0 inline-flex items-center justify-center rounded-lg bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-medium text-sm px-4 py-2.5 transition-colors">
+            Ver candidato #1 →
+          </a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

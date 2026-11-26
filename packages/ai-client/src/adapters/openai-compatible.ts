@@ -42,14 +42,22 @@ import {
   type TextStream,
 } from '../port.js';
 import {
-  resolveApiKey,
-  resolveBaseUrl,
+  resolveApiKeyForProvider,
+  resolveBaseUrlForProvider,
   resolveEmbeddingDims,
   resolveEmbeddingModel,
   resolveModel,
   resolveProvider,
+  type LlmProvider,
 } from '../config.js';
 import { createNvidiaTransportFetch } from './nvidia-fetch.js';
+
+/** Per-instance runtime override for generation calls (never mutates env). */
+export interface LlmRuntimeOverride {
+  provider?: LlmProvider;
+  baseUrl?: string;
+  apiKey?: string;
+}
 
 /**
  * The provider's `name`. It is both the SDK provider id and the
@@ -73,18 +81,26 @@ type EmbeddingModelLike = Parameters<typeof embed>[0]['model'];
 export class OpenAICompatibleAdapter implements LlmProviderPort {
   private provider: ProviderLike | null = null;
   private readonly providerFactory: () => ProviderLike;
+  private readonly runtimeOverride?: LlmRuntimeOverride;
 
   /** `providerFactory` exists for tests; production uses the default. */
-  constructor(providerFactory?: () => ProviderLike) {
-    this.providerFactory = providerFactory ?? (() => OpenAICompatibleAdapter.defaultFactory());
+  constructor(providerFactory?: () => ProviderLike, runtimeOverride?: LlmRuntimeOverride) {
+    this.runtimeOverride = runtimeOverride;
+    this.providerFactory =
+      providerFactory ?? (() => OpenAICompatibleAdapter.defaultFactory(runtimeOverride));
   }
 
-  private static defaultFactory(): ProviderLike {
-    const isNvidia = resolveProvider() === 'nvidia';
+  private activeProvider(): LlmProvider {
+    return this.runtimeOverride?.provider ?? resolveProvider();
+  }
+
+  private static defaultFactory(override?: LlmRuntimeOverride): ProviderLike {
+    const provider = override?.provider ?? resolveProvider();
+    const isNvidia = provider === 'nvidia';
     return createOpenAICompatible({
       name: PROVIDER_NAME,
-      baseURL: resolveBaseUrl(),
-      apiKey: resolveApiKey(),
+      baseURL: resolveBaseUrlForProvider(provider, override?.baseUrl),
+      apiKey: override?.apiKey ?? resolveApiKeyForProvider(provider),
       supportsStructuredOutputs: !isNvidia,
       ...(isNvidia ? { fetch: createNvidiaTransportFetch() } : {}),
     });
@@ -119,7 +135,7 @@ export class OpenAICompatibleAdapter implements LlmProviderPort {
     schema: ZodType<T>,
     options: GenerateCallOptions = {},
   ): Promise<T> {
-    if (resolveProvider() === 'nvidia') {
+    if (this.activeProvider() === 'nvidia') {
       const raw = await this.generateText(prompt, options);
       return validateJson(repairJson(raw), schema);
     }

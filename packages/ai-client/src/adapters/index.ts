@@ -2,6 +2,7 @@ export {
   OpenAICompatibleAdapter,
   PROVIDER_NAME,
   repairJson,
+  type LlmRuntimeOverride,
   type ProviderLike,
 } from './openai-compatible.js';
 export {

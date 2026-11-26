@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TariffOS — Tarjeta Erika Peña (90x50mm + 3mm sangrado)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --navy-950: #0b1120;
+      --navy-900: #0f172a;
+      --navy-800: #1e293b;
+      --cobalt-600: #2563eb;
+      --cobalt-500: #3b82f6;
+      --cobalt-400: #60a5fa;
+      --paper-50: #f8fafc;
+      --paper-100: #f1f5f9;
+      --ink-900: #0f172a;
+      --ink-600: #475569;
+      --ink-400: #64748b;
+      --border-200: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    @page {
+      size: 96mm 56mm;
+      margin: 0;
+    }
+
+    body {
+      font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #e2e8f0;
+      color: var(--ink-900);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10mm;
+      padding: 12mm;
+    }
+
+    .screen-note {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      color: #334155;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 8px 14px;
+      text-align: center;
+      max-width: 140mm;
+    }
+
+    /* 90x50mm trim + 3mm bleed on all sides = 96x56mm */
+    .sheet {
+      position: relative;
+      width: 96mm;
+      height: 56mm;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 0 14px 36px -12px rgba(15, 23, 42, 0.28);
+      page-break-after: always;
+      break-after: page;
+    }
+
+    .sheet:last-of-type {
+      page-break-after: auto;
+      break-after: auto;
+    }
+
+    /* Crop marks at 3mm inset (90x50mm trim box) - corner ticks only */
+    .crop-marks {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .mark {
+      position: absolute;
+      background: rgba(15, 23, 42, 0.55);
+    }
+    .mark-light {
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    .m-tl-h { top: 3mm; left: 0; width: 2.2mm; height: 0.2mm; }
+    .m-tr-h { top: 3mm; right: 0; width: 2.2mm; height: 0.2mm; }
+    .m-bl-h { bottom: 3mm; left: 0; width: 2.2mm; height: 0.2mm; }
+    .m-br-h { bottom: 3mm; right: 0; width: 2.2mm; height: 0.2mm; }
+    .m-tl-v { top: 0; left: 3mm; width: 0.2mm; height: 2.2mm; }
+    .m-tr-v { top: 0; right: 3mm; width: 0.2mm; height: 2.2mm; }
+    .m-bl-v { bottom: 0; left: 3mm; width: 0.2mm; height: 2.2mm; }
+    .m-br-v { bottom: 0; right: 3mm; width: 0.2mm; height: 2.2mm; }
+
+    /* ================= FRONT (ANVERSO) ================= */
+    .front {
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at 88% 18%, rgba(37, 99, 235, 0.32) 0%, rgba(37, 99, 235, 0) 52%),
+        radial-gradient(circle at 12% 92%, rgba(56, 189, 248, 0.14) 0%, rgba(56, 189, 248, 0) 45%),
+        linear-gradient(145deg, var(--navy-950) 0%, var(--navy-900) 60%, #111c36 100%);
+      color: #ffffff;
+      padding: 7.5mm 8mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .front-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+      background-size: 6mm 6mm;
+      pointer-events: none;
+    }
+
+    .front-top {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 2mm;
+    }
+
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 1.1mm;
+      height: 5.2mm;
+      padding: 0 2.1mm;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 0.2mm solid rgba(255, 255, 255, 0.18);
+    }
+
+    .dot-white {
+      width: 1.45mm;
+      height: 1.45mm;
+      border-radius: 50%;
+      background: #ffffff;
+    }
+
+    .dot-blue {
+      width: 1.45mm;
+      height: 1.45mm;
+      border-radius: 50%;
+      background: var(--cobalt-400);
+    }
+
+    .brand-name {
+      font-size: 11.5pt;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+
+    .rgi-badge {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 6pt;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: #cbd5e1;
+      border: 0.2mm solid rgba(148, 163, 184, 0.35);
+      border-radius: 1.2mm;
+      padding: 0.8mm 1.8mm;
+      background: rgba(15, 23, 42, 0.55);
+    }
+
+    .front-center {
+      position: relative;
+      z-index: 2;
+      margin-top: 1mm;
+    }
+
+    .eyebrow {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 5.8pt;
+      font-weight: 600;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: var(--cobalt-400);
+      margin-bottom: 1.5mm;
+    }
+
+    .headline {
+      font-size: 14.5pt;
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+      max-width: 68mm;
+    }
+
+    .subline {
+      margin-top: 1.8mm;
+      font-size: 7.2pt;
+      line-height: 1.38;
+      color: #cbd5e1;
+      max-width: 72mm;
+    }
+
+    .front-bottom {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2mm;
+      border-top: 0.2mm solid rgba(148, 163, 184, 0.2);
+      padding-top: 2.2mm;
+    }
+
+    .offer-pill {
+      display: inline-flex;
+      align-items: center;
+      background: var(--cobalt-600);
+      color: #ffffff;
+      font-size: 5.8pt;
+      font-weight: 600;
+      padding: 0.9mm 2.2mm;
+      border-radius: 999px;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+
+    .front-meta {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 5.4pt;
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    /* ================= BACK (REVERSO) ================= */
+    .back {
+      width: 100%;
+      height: 100%;
+      background: var(--paper-50);
+      color: var(--ink-900);
+      padding: 7.5mm 8mm;
+      display: grid;
+      grid-template-columns: 1fr 24.5mm;
+      gap: 4mm;
+      align-items: stretch;
+      position: relative;
+    }
+
+    .back-accent-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3.8mm;
+      background: linear-gradient(90deg, var(--navy-900) 0%, var(--cobalt-600) 100%);
+    }
+
+    .back-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding-top: 1.2mm;
+    }
+
+    .person-name {
+      font-size: 10.5pt;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink-900);
+    }
+
+    .person-role {
+      font-size: 6.8pt;
+      font-weight: 500;
+      color: var(--cobalt-600);
+      margin-top: 0.4mm;
+    }
+
+    .features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1.3mm;
+      margin: 2mm 0;
+    }
+
+    .features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.5mm;
+      font-size: 6.3pt;
+      line-height: 1.32;
+      color: var(--ink-600);
+    }
+
+    .features li strong {
+      color: var(--ink-900);
+      font-weight: 600;
+    }
+
+    .check-dot {
+      width: 2.6mm;
+      height: 2.6mm;
+      border-radius: 50%;
+      background: rgba(37, 99, 235, 0.12);
+      color: var(--cobalt-600);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 0.3mm;
+      font-size: 5pt;
+      font-weight: 700;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8mm 2.5mm;
+      border-top: 0.2mm solid var(--border-200);
+      padding-top: 1.8mm;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 5.7pt;
+      color: var(--ink-600);
+    }
+
+    .contact-item {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .contact-label {
+      color: var(--ink-400);
+      margin-right: 0.8mm;
+    }
+
+    .back-right {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      border: 0.25mm solid var(--border-200);
+      border-radius: 2.4mm;
+      padding: 2.2mm;
+      margin-top: 1.2mm;
+      text-align: center;
+    }
+
+    .qr-box {
+      width: 19mm;
+      height: 19mm;
+      border-radius: 1.2mm;
+      overflow: hidden;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-box svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .qr-caption {
+      margin-top: 1.6mm;
+      font-size: 5.6pt;
+      font-weight: 600;
+      line-height: 1.25;
+      color: var(--ink-900);
+    }
+
+    .qr-sub {
+      margin-top: 0.4mm;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 5pt;
+      color: var(--cobalt-600);
+    }
+
+    @media print {
+      body {
+        background: none;
+        padding: 0;
+        gap: 0;
+        display: block;
+      }
+      .screen-note {
+        display: none !important;
+      }
+      .sheet {
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="screen-note">
+    Tarjeta de <strong>Erika Peña</strong> · Formato de imprenta: <strong>90 × 50 mm</strong> + <strong>3 mm de sangrado</strong>.
+  </div>
+
+  <!-- PÁGINA 1: ANVERSO (FRONT) -->
+  <section class="sheet" aria-label="Anverso de la tarjeta TariffOS">
+    <div class="crop-marks">
+      <span class="mark mark-light m-tl-h"></span>
+      <span class="mark mark-light m-tr-h"></span>
+      <span class="mark mark-light m-bl-h"></span>
+      <span class="mark mark-light m-br-h"></span>
+      <span class="mark mark-light m-tl-v"></span>
+      <span class="mark mark-light m-tr-v"></span>
+      <span class="mark mark-light m-bl-v"></span>
+      <span class="mark mark-light m-br-v"></span>
+    </div>
+
+    <div class="front">
+      <div class="front-grid"></div>
+
+      <div class="front-top">
+        <div class="brand">
+          <span class="brand-pill">
+            <span class="dot-white"></span>
+            <span class="dot-blue"></span>
+          </span>
+          <span class="brand-name">TariffOS</span>
+        </div>
+        <span class="rgi-badge">IA ADUANERA</span>
+      </div>
+
+      <div class="front-center">
+        <p class="eyebrow">Clasificación Arancelaria Auditable</p>
+        <h1 class="headline">Clasifica con precisión pericial.</h1>
+        <p class="subline">
+          Clasifica mercancías en segundos, calcula tus impuestos de importación y genera dictámenes PDF listos para aduana.
+        </p>
+      </div>
+
+      <div class="front-bottom">
+        <span class="offer-pill">5 clasificaciones gratis</span>
+        <span class="front-meta">Sin tarjeta · Planes desde $49/mes</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PÁGINA 2: REVERSO (BACK) -->
+  <section class="sheet" aria-label="Reverso de la tarjeta Erika Peña">
+    <div class="crop-marks">
+      <span class="mark m-tl-h"></span>
+      <span class="mark m-tr-h"></span>
+      <span class="mark m-bl-h"></span>
+      <span class="mark m-br-h"></span>
+      <span class="mark m-tl-v"></span>
+      <span class="mark m-tr-v"></span>
+      <span class="mark m-bl-v"></span>
+      <span class="mark m-br-v"></span>
+    </div>
+
+    <div class="back">
+      <div class="back-accent-bar"></div>
+
+      <div class="back-left">
+        <div>
+          <div class="person-name">Erika Peña</div>
+          <div class="person-role">Co-fundadora · Logística y Ventas</div>
+        </div>
+
+        <ul class="features">
+          <li>
+            <span class="check-dot">✓</span>
+            <span><strong>Menos multas y demoras:</strong> valida cada producto con respaldo legal aduanero.</span>
+          </li>
+          <li>
+            <span class="check-dot">✓</span>
+            <span><strong>Documentos en minutos:</strong> sube facturas, packing list, BL, PDF o Excel.</span>
+          </li>
+          <li>
+            <span class="check-dot">✓</span>
+            <span><strong>Costos claros al importar:</strong> calcula aranceles, IVA, permisos y emite PDF.</span>
+          </li>
+        </ul>
+
+        <div class="contact-grid">
+          <div class="contact-item"><span class="contact-label">WA:</span>+58 414-2368702</div>
+          <div class="contact-item"><span class="contact-label">WEB:</span>tariffos.app</div>
+          <div class="contact-item" style="grid-column: 1 / -1;"><span class="contact-label">MAIL:</span>erika@tariffos.app</div>
+        </div>
+      </div>
+
+      <div class="back-right">
+        <div class="qr-box" aria-label="Código QR hacia https://tariffos.app">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h33v33H0z"/><path stroke="#0f172a" d="M4 4.5h7m2 0h1m2 0h1m3 0h1m1 0h7M4 5.5h1m5 0h1m3 0h1m1 0h1m2 0h1m2 0h1m5 0h1M4 6.5h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1M4 7.5h1m1 0h3m1 0h1m1 0h1m2 0h4m3 0h1m1 0h3m1 0h1M4 8.5h1m1 0h3m1 0h1m1 0h4m2 0h1m3 0h1m1 0h3m1 0h1M4 9.5h1m5 0h1m1 0h5m2 0h2m1 0h1m5 0h1M4 10.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M12 11.5h2m1 0h2M4 12.5h1m1 0h5m6 0h4m1 0h5M9 13.5h1m4 0h1m1 0h1m1 0h1m1 0h1m2 0h1m3 0h1M4 14.5h1m1 0h1m1 0h1m1 0h3m6 0h2m1 0h1m2 0h1m1 0h2M6 15.5h1m4 0h2m7 0h4m4 0h1M7 16.5h5m1 0h3m5 0h4m1 0h3M4 17.5h2m1 0h1m1 0h1m6 0h2m2 0h2m1 0h1m1 0h1m1 0h1M4 18.5h1m1 0h2m1 0h2m3 0h1m2 0h3m2 0h4m1 0h2M4 19.5h1m1 0h2m1 0h1m1 0h1m1 0h2m1 0h2m2 0h1m2 0h2m3 0h1M4 20.5h1m5 0h1m1 0h1m1 0h1m1 0h1m1 0h7m1 0h1M12 21.5h3m4 0h2m3 0h2M4 22.5h7m2 0h4m3 0h1m1 0h1m1 0h1m1 0h3M4 23.5h1m5 0h1m1 0h4m2 0h1m1 0h1m3 0h2m2 0h1M4 24.5h1m1 0h3m1 0h1m1 0h1m1 0h2m3 0h6m1 0h3M4 25.5h1m1 0h3m1 0h1m1 0h3m1 0h7m1 0h5M4 26.5h1m1 0h3m1 0h1m1 0h1m4 0h2m6 0h2m1 0h1M4 27.5h1m5 0h1m2 0h1m2 0h2m1 0h2m2 0h3m2 0h1M4 28.5h7m1 0h1m1 0h1m1 0h1m1 0h1m2 0h8"/></svg>
+        </div>
+        <div class="qr-caption">Prueba gratis en 30 seg</div>
+        <div class="qr-sub">5 clasificaciones</div>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

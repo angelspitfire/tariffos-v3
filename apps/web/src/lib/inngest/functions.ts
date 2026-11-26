@@ -7,6 +7,7 @@ import {
 } from '@tariffos/agent';
 import { billingService, prisma } from '@tariffos/database';
 import type { ClassificationLinePayload } from '@tariffos/shared-types';
+import { getActiveLlmRuntimeConfig } from '@/lib/admin/llm-settings';
 import { createPrismaPipelinePorts } from '@/lib/agent/prisma-ports';
 import {
   buildBatchSummary,
@@ -77,7 +78,17 @@ export const classifyInvoiceBatchFn = inngest.createFunction(
     for (let idx = 0; idx < chunks.length; idx += 1) {
       const chunk = chunks[idx];
       const chunkLines = await step.run(`classify-micro-batch-${idx}`, async () => {
-        const ports = createPrismaPipelinePorts();
+        const runtimeLlm = await getActiveLlmRuntimeConfig();
+        const ports = createPrismaPipelinePorts(
+          runtimeLlm.source === 'database'
+            ? {
+                provider: runtimeLlm.provider,
+                model: runtimeLlm.model,
+                deepModel: runtimeLlm.deepModel,
+                baseUrl: runtimeLlm.baseUrl,
+              }
+            : undefined,
+        );
         const result = await classifyInvoiceBatch(chunk, ports, {
           tenantId: data.tenantId,
           countryCode: data.countryCode,

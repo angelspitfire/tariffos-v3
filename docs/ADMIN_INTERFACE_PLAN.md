@@ -335,3 +335,16 @@ Motor backend para mantener actualizada la tasa oficial del Banco Central de Ven
 - **`GET /api/exchange-rates/latest`** ([`route.ts`](file:///Users/afernandez/projects/tariffos-v3/apps/web/src/app/api/exchange-rates/latest/route.ts)): devuelve `{ rates, fetchedAt }` con las tasas vigentes más recientes para consumo en cálculos.
 - **`GET /api/admin/exchange-rates/sync`** ([`route.ts`](file:///Users/afernandez/projects/tariffos-v3/apps/web/src/app/api/admin/exchange-rates/sync/route.ts), permiso `admin:read`): lista tasas recientes almacenadas para auditoría administrativa.
 - **`POST /api/admin/exchange-rates/sync`** ([`route.ts`](file:///Users/afernandez/projects/tariffos-v3/apps/web/src/app/api/admin/exchange-rates/sync/route.ts), permiso `tenants:manage`): permite disparar una sincronización en vivo o registrar una tasa manual (`{ manual: { pair, rate, valueDate?, reason } }`) dejando registro en `AdminAuditLog`.
+
+---
+
+### 3. Fase 2 Operativa — Selector LLM en Caliente (`/admin/settings`) e Inspector de Calidad IA (`/admin/ai-quality`)
+
+- **Selector de Modelo de Trabajo (`/admin/settings`, solo `super_admin`, permiso `settings:manage`):**
+  - Persiste `{ provider, model, deepModel?, baseUrl?, maxRpm? }` en `SystemSetting` (`key = 'ai.runtime_config'`) con cache en memoria de 30s (`apps/web/src/lib/admin/llm-settings.ts`), fallback automático a variables de entorno y auditoría `settings.llm_updated` en `AdminAuditLog`.
+  - Las API keys nunca se almacenan en base de datos; solo se permiten proveedores cuya credencial exista en el entorno del servidor (`listConfiguredLlmProviders()`).
+  - Los embeddings permanecen bloqueados a variables de entorno para proteger el índice `pgvector(768)`.
+  - Endpoints: `GET`/`PUT /api/admin/settings/llm` y `POST /api/admin/settings/llm/test` (smoke test de latencia y JSON estructurado).
+  - Incluye panel interno de tasas oficiales BCV conectado a `/api/admin/exchange-rates/sync`.
+- **Inspector de Calidad IA (`/admin/ai-quality`, permiso `ai_quality:read`):**
+  - Endpoints `GET /api/admin/ai-quality` y `GET /api/admin/ai-quality/[id]` sobre `DecisionArtifact`, con filtros por texto/HS, modelo y confianza máxima, tarjetas comparativas por modelo (`count`, confianza media, `% verificado en DB`) y drawer de inspección RGI + JSON técnico.

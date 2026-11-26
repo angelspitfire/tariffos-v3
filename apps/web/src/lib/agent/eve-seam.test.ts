@@ -4,11 +4,11 @@ import {
   DEFAULT_ANTHROPIC_MODEL,
   parseEveModelSpec,
   resolveEveModel,
-} from '../../../agent/model-resolver';
+} from '../../../../../agent/model-resolver';
 import requestDossierReviewTool, {
   executeRequestDossierReview,
   RequestDossierReviewInputSchema,
-} from '../../../agent/tools/request_dossier_review';
+} from '../../../../../agent/tools/request_dossier_review';
 
 describe('Eve swap-ready model resolver', () => {
   const originalEveModel = process.env.EVE_MODEL;

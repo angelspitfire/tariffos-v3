@@ -47,6 +47,7 @@ export async function persistClassificationOutcome(
   tenantId: string,
   line: ClassificationLinePayload,
   query: string,
+  provider?: string,
 ): Promise<void> {
   const classificationId = `cls_${Date.now()}_${line.lineId}`;
 
@@ -58,7 +59,11 @@ export async function persistClassificationOutcome(
         lineId: line.lineId,
         retrievalTrace: { query, tierUsed: line.tierUsed },
         promptSnapshot: { query },
-        modelMetadata: { modelUsed: line.modelUsed, verifiedAgainstDb: line.verifiedAgainstDb },
+        modelMetadata: {
+          modelUsed: line.modelUsed,
+          provider: provider ?? 'env',
+          verifiedAgainstDb: line.verifiedAgainstDb,
+        },
         rerankingScores: { confidencePct: line.confidencePct, confidenceLevel: line.confidenceLevel },
         sustento: { rgiSteps: line.rgiSteps, flags: line.flags },
         finalDecision: {

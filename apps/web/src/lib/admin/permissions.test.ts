@@ -44,5 +44,15 @@ describe('admin permissions RBAC matrix', () => {
     expect(hasAdminPermission('super_admin', 'plans:manage')).toBe(true);
     expect(hasAdminPermission('super_admin', 'admins:manage')).toBe(true);
     expect(hasAdminPermission('super_admin', 'tenants:deactivate')).toBe(true);
+    expect(hasAdminPermission('super_admin', 'settings:manage')).toBe(true);
+    expect(hasAdminPermission('super_admin', 'ai_quality:read')).toBe(true);
+  });
+
+  it('restricts settings:manage to super_admin while allowing ai_quality:read to ops and support', () => {
+    expect(hasAdminPermission('ops_billing', 'settings:manage')).toBe(false);
+    expect(hasAdminPermission('support', 'settings:manage')).toBe(false);
+    expect(hasAdminPermission('ops_billing', 'ai_quality:read')).toBe(true);
+    expect(hasAdminPermission('support', 'ai_quality:read')).toBe(true);
+    expect(hasAdminPermission('user', 'ai_quality:read')).toBe(false);
   });
 });

@@ -1,9 +1,11 @@
 import { prisma } from '@tariffos/database';
 import {
+  createRgiLlmRunner,
   defaultProvider,
   runRgiWithLlm,
   type LegalNoteRecord,
   type PipelinePorts,
+  type RgiLlmRuntimeOverride,
   type SkuPrecedentRecord,
   type TariffCandidateRecord,
 } from '@tariffos/agent';
@@ -31,7 +33,7 @@ function buildHsCodeLookupVariants(hsCode: string): string[] {
  * Hexagonal adapter wiring @tariffos/agent PipelinePorts to Prisma/Postgres
  * and hosted System One / @tariffos/ai-client providers.
  */
-export function createPrismaPipelinePorts(): PipelinePorts {
+export function createPrismaPipelinePorts(runtimeLlm?: RgiLlmRuntimeOverride): PipelinePorts {
   return {
     decisionProvider: process.env.TYPESAFE_API_KEY ? defaultProvider() : undefined,
 
@@ -108,6 +110,6 @@ export function createPrismaPipelinePorts(): PipelinePorts {
       };
     },
 
-    runRgiReasoning: runRgiWithLlm,
+    runRgiReasoning: runtimeLlm ? createRgiLlmRunner(runtimeLlm) : runRgiWithLlm,
   };
 }

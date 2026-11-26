@@ -41,6 +41,7 @@ export {
   repairJson,
   type FakeProvider,
   type FakeResponses,
+  type LlmRuntimeOverride,
   type ProviderLike,
   type RecordedCall,
 } from './adapters/index.js';
@@ -63,14 +64,19 @@ export {
   NVIDIA_BASE_URL,
   OPENROUTER_BASE_URL,
   canRunLiveLlm,
+  canRunLiveLlmForProvider,
+  listConfiguredLlmProviders,
   resolveApiKey,
+  resolveApiKeyForProvider,
   resolveBaseUrl,
+  resolveBaseUrlForProvider,
   resolveEmbeddingDims,
   resolveEmbeddingModel,
   resolveMaxRpm,
   resolveModel,
   resolveProvider,
   type LlmProvider,
+  type LlmProviderAvailability,
 } from './config.js';
 
 // Throttling

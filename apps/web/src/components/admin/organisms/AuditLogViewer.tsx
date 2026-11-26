@@ -51,6 +51,9 @@ export function AuditLogViewer() {
           <option value="payment.verified">payment.verified</option>
           <option value="tenant.deactivated">tenant.deactivated</option>
           <option value="user.offboarded">user.offboarded</option>
+          <option value="settings.llm_updated">settings.llm_updated</option>
+          <option value="exchange_rate.synced">exchange_rate.synced</option>
+          <option value="exchange_rate.manual_override">exchange_rate.manual_override</option>
         </select>
       </div>
 

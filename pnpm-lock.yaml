@@ -173,6 +173,31 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      '@ai-sdk/openai':
+        specifier: ^4.0.118
+        version: 4.0.122(zod@4.6.7)
+      '@supabase/ssr':
+        specifier: ^0.9.0
+        version: 0.9.0(@supabase/supabase-js@2.119.2(@opentelemetry/api@1.10.0))
+      '@supabase/supabase-js':
+        specifier: ^2.90.0
+        version: 2.119.2(@opentelemetry/api@1.10.0)
+      '@tariffos/agent':
+        specifier: workspace:*
+        version: link:packages/agent
+      '@tariffos/database':
+        specifier: workspace:*
+        version: link:packages/database
+      '@tariffos/shared-types':
+        specifier: workspace:*
+        version: link:packages/shared-types
+      eve:
+        specifier: ^1.4.0
+        version: 1.4.0(@opentelemetry/api@1.10.0)(ai@7.0.181(zod@4.6.7))(next@16.4.6(@babel/core@7.29.13)(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
+      zod:
+        specifier: ^4.6.6
+        version: 4.6.7
     devDependencies:
       '@typescript/native':
         specifier: npm:typescript@^7.0.2

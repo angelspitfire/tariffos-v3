@@ -10,6 +10,8 @@ import {
   Inbox,
   Layers,
   LayoutDashboard,
+  SlidersHorizontal,
+  Sparkles,
   UserPlus,
 } from 'lucide-react';
 
@@ -21,6 +23,8 @@ export const ADMIN_NAV_ITEMS = [
   { href: '/admin/billing', label: 'Pagos', icon: CreditCard, exact: false },
   { href: '/admin/tenants', label: 'Tenants', icon: Building2, exact: false },
   { href: '/admin/usage', label: 'Consumo', icon: Activity, exact: false },
+  { href: '/admin/ai-quality', label: 'Calidad IA', icon: Sparkles, exact: false },
+  { href: '/admin/settings', label: 'Configuración', icon: SlidersHorizontal, exact: false },
   { href: '/admin/audit', label: 'Auditoría', icon: ClipboardList, exact: false },
 ] as const;
 

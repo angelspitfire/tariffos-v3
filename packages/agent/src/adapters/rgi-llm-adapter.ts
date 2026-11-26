@@ -1,4 +1,4 @@
-import { getLlmProvider } from '@tariffos/ai-client';
+import { getLlmProvider, type LlmProvider } from '@tariffos/ai-client';
 import { rgiModel } from '@tariffos/env';
 import { z } from 'zod';
 import {
@@ -48,33 +48,55 @@ Rules:
   "unresolved": [{ "item": "text", "source": "text", "resolved": false }]
 }`;
 
-/**
- * Hexagonal adapter for Tier 2 RGI 1->6 reasoning via @tariffos/ai-client.
- */
-export async function runRgiWithLlm(input: {
+export interface RgiLlmRuntimeOverride {
+  provider: LlmProvider;
+  model: string;
+  deepModel?: string;
+  baseUrl?: string;
+}
+
+export interface RgiLlmInput {
   item: InvoiceItemInput;
   candidates: TariffCandidateRecord[];
   notes: LegalNoteRecord[];
   webContext?: string;
   deepMode: boolean;
-}): Promise<RgiModelOutput> {
-  const provider = getLlmProvider();
-  const modelId = rgiModel(input.deepMode);
+}
 
-  const result = await provider.generateJson(
-    `${RGI_SYSTEM_PROMPT}\n\nInput:\n${JSON.stringify({
-      item: input.item,
-      webContext: input.webContext ?? null,
-      candidates: input.candidates,
-      legalNotes: input.notes,
-      deepMode: input.deepMode,
-    })}`,
-    RgiResponseSchema,
-    { model: modelId, temperature: 0, timeoutMs: RGI_TIMEOUT_MS },
-  );
+/**
+ * Factory for Tier 2 RGI 1->6 reasoning runner with an optional runtime LLM override.
+ */
+export function createRgiLlmRunner(runtimeLlm?: RgiLlmRuntimeOverride) {
+  return async function runRgi(input: RgiLlmInput): Promise<RgiModelOutput> {
+    const provider = getLlmProvider(
+      runtimeLlm ? { provider: runtimeLlm.provider, baseUrl: runtimeLlm.baseUrl } : undefined,
+    );
+    const modelId = runtimeLlm
+      ? input.deepMode
+        ? (runtimeLlm.deepModel ?? runtimeLlm.model)
+        : runtimeLlm.model
+      : rgiModel(input.deepMode);
 
-  return {
-    ...result,
-    modelUsed: modelId,
+    const result = await provider.generateJson(
+      `${RGI_SYSTEM_PROMPT}\n\nInput:\n${JSON.stringify({
+        item: input.item,
+        webContext: input.webContext ?? null,
+        candidates: input.candidates,
+        legalNotes: input.notes,
+        deepMode: input.deepMode,
+      })}`,
+      RgiResponseSchema,
+      { model: modelId, temperature: 0, timeoutMs: RGI_TIMEOUT_MS },
+    );
+
+    return {
+      ...result,
+      modelUsed: modelId,
+    };
   };
 }
+
+/**
+ * Hexagonal adapter for Tier 2 RGI 1->6 reasoning via @tariffos/ai-client.
+ */
+export const runRgiWithLlm = createRgiLlmRunner();

@@ -99,5 +99,21 @@ export {
   isSupportedLiveCountry,
   type SupportedLiveCountry,
 } from './lib/pipeline/thresholds.js';
-export { canRunLiveLlm } from '@tariffos/ai-client';
-export { runRgiWithLlm } from './adapters/rgi-llm-adapter.js';
+export {
+  canRunLiveLlm,
+  canRunLiveLlmForProvider,
+  getLlmProvider,
+  listConfiguredLlmProviders,
+  resolveEmbeddingDims,
+  resolveEmbeddingModel,
+  resolveMaxRpm,
+  resolveProvider,
+  type LlmProvider,
+  type LlmProviderAvailability,
+} from '@tariffos/ai-client';
+export { rgiModel } from '@tariffos/env';
+export {
+  createRgiLlmRunner,
+  runRgiWithLlm,
+  type RgiLlmRuntimeOverride,
+} from './adapters/rgi-llm-adapter.js';

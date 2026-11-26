@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TariffOS — Flyer Promocional Media Carta (139.7x215.9mm + 3mm sangrado)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --navy-950: #0b1120;
+      --navy-900: #0f172a;
+      --navy-800: #1e293b;
+      --cobalt-600: #2563eb;
+      --cobalt-500: #3b82f6;
+      --cobalt-400: #60a5fa;
+      --paper-50: #f8fafc;
+      --paper-100: #f1f5f9;
+      --ink-900: #0f172a;
+      --ink-600: #475569;
+      --ink-400: #64748b;
+      --border-200: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* Media Carta (5.5 x 8.5 in = 139.7 x 215.9 mm) + 3mm bleed = 145.7 x 221.9 mm */
+    @page {
+      size: 145.7mm 221.9mm;
+      margin: 0;
+    }
+
+    body {
+      font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #e2e8f0;
+      color: var(--ink-900);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8mm;
+      padding: 10mm;
+    }
+
+    .screen-note {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      color: #334155;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 8px 14px;
+      text-align: center;
+      max-width: 145mm;
+    }
+
+    .sheet {
+      position: relative;
+      width: 145.7mm;
+      height: 221.9mm;
+      overflow: hidden;
+      background: var(--paper-50);
+      box-shadow: 0 18px 44px -14px rgba(15, 23, 42, 0.28);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Corner crop marks at 3mm inset */
+    .crop-marks {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 30;
+    }
+    .mark {
+      position: absolute;
+      background: rgba(15, 23, 42, 0.55);
+    }
+    .mark-light {
+      background: rgba(255, 255, 255, 0.5);
+    }
+    .m-tl-h { top: 3mm; left: 0; width: 2.3mm; height: 0.2mm; }
+    .m-tr-h { top: 3mm; right: 0; width: 2.3mm; height: 0.2mm; }
+    .m-bl-h { bottom: 3mm; left: 0; width: 2.3mm; height: 0.2mm; }
+    .m-br-h { bottom: 3mm; right: 0; width: 2.3mm; height: 0.2mm; }
+    .m-tl-v { top: 0; left: 3mm; width: 0.2mm; height: 2.3mm; }
+    .m-tr-v { top: 0; right: 3mm; width: 0.2mm; height: 2.3mm; }
+    .m-bl-v { bottom: 0; left: 3mm; width: 0.2mm; height: 2.3mm; }
+    .m-br-v { bottom: 0; right: 3mm; width: 0.2mm; height: 2.3mm; }
+
+    /* ================= HERO HEADER ================= */
+    .hero {
+      position: relative;
+      flex-shrink: 0;
+      background:
+        radial-gradient(circle at 88% 18%, rgba(37, 99, 235, 0.36) 0%, rgba(37, 99, 235, 0) 54%),
+        radial-gradient(circle at 10% 90%, rgba(56, 189, 248, 0.16) 0%, rgba(56, 189, 248, 0) 48%),
+        linear-gradient(150deg, var(--navy-950) 0%, var(--navy-900) 62%, #111c36 100%);
+      color: #ffffff;
+      padding: 8mm 11mm 6.2mm;
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+      background-size: 7mm 7mm;
+      pointer-events: none;
+    }
+
+    .hero-top {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 3.5mm;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 2.5mm;
+    }
+
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 1.3mm;
+      height: 6.2mm;
+      padding: 0 2.6mm;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 0.2mm solid rgba(255, 255, 255, 0.2);
+    }
+
+    .dot-white {
+      width: 1.7mm;
+      height: 1.7mm;
+      border-radius: 50%;
+      background: #ffffff;
+    }
+
+    .dot-blue {
+      width: 1.7mm;
+      height: 1.7mm;
+      border-radius: 50%;
+      background: var(--cobalt-400);
+    }
+
+    .brand-name {
+      font-size: 14pt;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: #ffffff;
+    }
+
+    .hero-badge {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 7pt;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #cbd5e1;
+      border: 0.25mm solid rgba(148, 163, 184, 0.35);
+      border-radius: 1.5mm;
+      padding: 1.1mm 2.4mm;
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .eyebrow {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 7pt;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--cobalt-400);
+      margin-bottom: 2.2mm;
+    }
+
+    .headline {
+      font-size: 18.5pt;
+      font-weight: 700;
+      line-height: 1.07;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+      max-width: 118mm;
+    }
+
+    .subline {
+      margin-top: 2.2mm;
+      font-size: 8.6pt;
+      line-height: 1.4;
+      color: #cbd5e1;
+      max-width: 118mm;
+    }
+
+    .hero-cta-row {
+      margin-top: 3.6mm;
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      flex-wrap: wrap;
+    }
+
+    .offer-pill {
+      display: inline-flex;
+      align-items: center;
+      background: var(--cobalt-600);
+      color: #ffffff;
+      font-size: 8.2pt;
+      font-weight: 600;
+      padding: 1.6mm 3.8mm;
+      border-radius: 999px;
+      letter-spacing: -0.01em;
+    }
+
+    .hero-meta {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 7.2pt;
+      color: #94a3b8;
+    }
+
+    /* ================= BODY ================= */
+    .body-section {
+      flex: 1;
+      padding: 4.5mm 11mm 4mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 3mm;
+    }
+
+    .section-label {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 6.6pt;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--cobalt-600);
+      margin-bottom: 2mm;
+    }
+
+    .benefits-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 2.2mm;
+    }
+
+    .benefit-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 3mm;
+      background: #ffffff;
+      border: 0.25mm solid var(--border-200);
+      border-radius: 2.6mm;
+      padding: 2.6mm 3.4mm;
+    }
+
+    .benefit-icon {
+      width: 6.5mm;
+      height: 6.5mm;
+      border-radius: 1.8mm;
+      background: rgba(37, 99, 235, 0.1);
+      color: var(--cobalt-600);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 9pt;
+      font-weight: 700;
+    }
+
+    .benefit-title {
+      font-size: 9.2pt;
+      font-weight: 700;
+      color: var(--ink-900);
+      letter-spacing: -0.015em;
+    }
+
+    .benefit-desc {
+      margin-top: 0.6mm;
+      font-size: 7.8pt;
+      line-height: 1.38;
+      color: var(--ink-600);
+    }
+
+    /* 3 Steps */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2.8mm;
+    }
+
+    .step-box {
+      background: var(--paper-100);
+      border: 0.2mm solid #e2e8f0;
+      border-radius: 2.4mm;
+      padding: 2.8mm 3mm;
+    }
+
+    .step-num {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 7pt;
+      font-weight: 700;
+      color: var(--cobalt-600);
+    }
+
+    .step-title {
+      margin-top: 0.8mm;
+      font-size: 7.8pt;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--ink-900);
+    }
+
+    .step-desc {
+      margin-top: 0.7mm;
+      font-size: 6.8pt;
+      line-height: 1.32;
+      color: var(--ink-600);
+    }
+
+    /* ================= FOOTER / QR ================= */
+    .footer-card {
+      flex-shrink: 0;
+      background: #ffffff;
+      border-top: 0.6mm solid var(--cobalt-600);
+      padding: 4.2mm 11mm 6.5mm;
+      display: grid;
+      grid-template-columns: 1fr 29mm;
+      gap: 5mm;
+      align-items: center;
+    }
+
+    .footer-title {
+      font-size: 10pt;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink-900);
+    }
+
+    .footer-sub {
+      margin-top: 0.6mm;
+      font-size: 7.5pt;
+      color: var(--ink-600);
+    }
+
+    .contacts-list {
+      margin-top: 2.8mm;
+      display: flex;
+      flex-direction: column;
+      gap: 1.4mm;
+    }
+
+    .contact-person {
+      font-size: 7.4pt;
+      line-height: 1.35;
+      color: var(--ink-900);
+    }
+
+    .contact-person strong {
+      font-weight: 700;
+    }
+
+    .contact-person span {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 6.8pt;
+      color: var(--ink-600);
+    }
+
+    .web-line {
+      margin-top: 1.5mm;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 7.2pt;
+      font-weight: 600;
+      color: var(--cobalt-600);
+    }
+
+    .qr-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      background: var(--paper-50);
+      border: 0.25mm solid var(--border-200);
+      border-radius: 2.6mm;
+      padding: 2.5mm;
+    }
+
+    .qr-box {
+      width: 22mm;
+      height: 22mm;
+      background: #ffffff;
+      border-radius: 1.4mm;
+      overflow: hidden;
+    }
+
+    .qr-box svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .qr-caption {
+      margin-top: 1.4mm;
+      font-size: 6.5pt;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--ink-900);
+    }
+
+    .qr-sub {
+      margin-top: 0.4mm;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 5.8pt;
+      color: var(--cobalt-600);
+    }
+
+    @media print {
+      body {
+        background: none;
+        padding: 0;
+        gap: 0;
+        display: block;
+      }
+      .screen-note {
+        display: none !important;
+      }
+      .sheet {
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="screen-note">
+    Flyer Media Carta: <strong>139.7 × 215.9 mm</strong> (5.5 × 8.5") + <strong>3 mm de sangrado</strong> (145.7 × 221.9 mm total) con marcas de corte.
+  </div>
+
+  <main class="sheet" aria-label="Flyer promocional TariffOS">
+    <div class="crop-marks">
+      <span class="mark mark-light m-tl-h"></span>
+      <span class="mark mark-light m-tr-h"></span>
+      <span class="mark m-bl-h"></span>
+      <span class="mark m-br-h"></span>
+      <span class="mark mark-light m-tl-v"></span>
+      <span class="mark mark-light m-tr-v"></span>
+      <span class="mark m-bl-v"></span>
+      <span class="mark m-br-v"></span>
+    </div>
+
+    <!-- HERO -->
+    <header class="hero">
+      <div class="hero-grid"></div>
+      <div class="hero-top">
+        <div class="brand">
+          <span class="brand-pill">
+            <span class="dot-white"></span>
+            <span class="dot-blue"></span>
+          </span>
+          <span class="brand-name">TariffOS</span>
+        </div>
+        <span class="hero-badge">IA ADUANERA</span>
+      </div>
+
+      <div class="hero-content">
+        <p class="eyebrow">Para importadores, aduanas y logística</p>
+        <h1 class="headline">Clasifica mercancías y calcula impuestos de aduana en segundos.</h1>
+        <p class="subline">
+          Evita multas, demoras en puerto y errores de clasificación. Obtén el código arancelario exacto, cálculo de aranceles e IVA, y dictamen PDF listo para presentar.
+        </p>
+        <div class="hero-cta-row">
+          <span class="offer-pill">5 clasificaciones gratis · Sin tarjeta</span>
+          <span class="hero-meta">Activación inmediata · Planes desde $49/mes</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- BODY -->
+    <section class="body-section">
+      <div>
+        <div class="section-label">Por qué elegir TariffOS</div>
+        <div class="benefits-grid">
+          <div class="benefit-card">
+            <div class="benefit-icon">✓</div>
+            <div>
+              <div class="benefit-title">Menos multas, retenciones y demoras</div>
+              <div class="benefit-desc">
+                Valida los datos críticos de cada mercancía con respaldo legal aduanero y criterios oficiales vigentes.
+              </div>
+            </div>
+          </div>
+
+          <div class="benefit-card">
+            <div class="benefit-icon">⚡</div>
+            <div>
+              <div class="benefit-title">Facturas y manifiestos completos en minutos</div>
+              <div class="benefit-desc">
+                Sube tus documentos —facturas comerciales, packing list, BL o Excel/CSV, incluso en PDF— y clasifica decenas o cientos de ítems de una sola vez.
+              </div>
+            </div>
+          </div>
+
+          <div class="benefit-card">
+            <div class="benefit-icon">$</div>
+            <div>
+              <div class="benefit-title">Costos claros antes de importar + Dictamen PDF</div>
+              <div class="benefit-desc">
+                Calcula al instante Ad Valorem, IVA, tasas aduaneras y permisos requeridos, y descarga un informe técnico firmable.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">Cómo funciona en 3 pasos</div>
+        <div class="steps-grid">
+          <div class="step-box">
+            <div class="step-num">01</div>
+            <div class="step-title">Describe o sube tu factura</div>
+            <div class="step-desc">Escribe el producto o carga tu Excel/CSV o PDF comercial.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-num">02</div>
+            <div class="step-title">Confirma datos clave</div>
+            <div class="step-desc">La plataforma verifica material, uso y especificaciones.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-num">03</div>
+            <div class="step-title">Descarga tu dictamen</div>
+            <div class="step-desc">Obtén partida, impuestos y PDF listo para aduana.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER / CONTACT & QR -->
+    <footer class="footer-card">
+      <div>
+        <div class="footer-title">Pruébalo hoy con 5 clasificaciones gratis</div>
+        <div class="footer-sub">Escríbenos para una demo en vivo para tu empresa o agencia:</div>
+
+        <div class="contacts-list">
+          <div class="contact-person">
+            <strong>Angel Fernandez</strong> · <span>+58 424-1638786 · angel@tariffos.app</span>
+          </div>
+          <div class="contact-person">
+            <strong>Erika Peña</strong> · <span>+58 414-2368702 · erika@tariffos.app</span>
+          </div>
+        </div>
+
+        <div class="web-line">https://tariffos.app</div>
+      </div>
+
+      <div class="qr-panel">
+        <div class="qr-box" aria-label="Código QR hacia https://tariffos.app">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h33v33H0z"/><path stroke="#0f172a" d="M4 4.5h7m2 0h1m2 0h1m3 0h1m1 0h7M4 5.5h1m5 0h1m3 0h1m1 0h1m2 0h1m2 0h1m5 0h1M4 6.5h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1M4 7.5h1m1 0h3m1 0h1m1 0h1m2 0h4m3 0h1m1 0h3m1 0h1M4 8.5h1m1 0h3m1 0h1m1 0h4m2 0h1m3 0h1m1 0h3m1 0h1M4 9.5h1m5 0h1m1 0h5m2 0h2m1 0h1m5 0h1M4 10.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M12 11.5h2m1 0h2M4 12.5h1m1 0h5m6 0h4m1 0h5M9 13.5h1m4 0h1m1 0h1m1 0h1m1 0h1m2 0h1m3 0h1M4 14.5h1m1 0h1m1 0h1m1 0h3m6 0h2m1 0h1m2 0h1m1 0h2M6 15.5h1m4 0h2m7 0h4m4 0h1M7 16.5h5m1 0h3m5 0h4m1 0h3M4 17.5h2m1 0h1m1 0h1m6 0h2m2 0h2m1 0h1m1 0h1m1 0h1M4 18.5h1m1 0h2m1 0h2m3 0h1m2 0h3m2 0h4m1 0h2M4 19.5h1m1 0h2m1 0h1m1 0h1m1 0h2m1 0h2m2 0h1m2 0h2m3 0h1M4 20.5h1m5 0h1m1 0h1m1 0h1m1 0h1m1 0h7m1 0h1M12 21.5h3m4 0h2m3 0h2M4 22.5h7m2 0h4m3 0h1m1 0h1m1 0h1m1 0h3M4 23.5h1m5 0h1m1 0h4m2 0h1m1 0h1m3 0h2m2 0h1M4 24.5h1m1 0h3m1 0h1m1 0h1m1 0h2m3 0h6m1 0h3M4 25.5h1m1 0h3m1 0h1m1 0h3m1 0h7m1 0h5M4 26.5h1m1 0h3m1 0h1m1 0h1m4 0h2m6 0h2m1 0h1M4 27.5h1m5 0h1m2 0h1m2 0h2m1 0h2m2 0h3m2 0h1M4 28.5h7m1 0h1m1 0h1m1 0h1m1 0h1m2 0h8"/></svg>
+        </div>
+        <div class="qr-caption">Escanea y prueba gratis</div>
+        <div class="qr-sub">en 30 segundos</div>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>
