@@ -19,13 +19,10 @@ import {
 } from 'lucide-react';
 import type { SkuPrecedent, UserProfileSettings } from '@tariffos/shared-types';
 import type { WorkspaceAttachment } from '@/lib/workspace/types';
-import {
-  ComposerDictationBar,
-  createSpeechRecognition,
-  type SpeechRecognitionLike,
-} from '../molecules/ComposerDictationBar';
+import { ComposerDictationBar, createSpeechRecognition, type SpeechRecognitionLike } from '../molecules/ComposerDictationBar';
 import { ComposerMenus, type ComposerMenuKind } from '../molecules/ComposerMenus';
 import { PredictiveSkuList } from '../molecules/PredictiveSkuList';
+import { CameraScannerModal } from './CameraScannerModal';
 
 export interface WorkspaceComposerProps {
   skuPrecedents: readonly SkuPrecedent[];
@@ -54,6 +51,7 @@ export function WorkspaceComposer({
   const [dictating, setDictating] = useState(false);
   const [speechLang, setSpeechLang] = useState<'es-ES' | 'en-US'>('es-ES');
   const [composerMenu, setComposerMenu] = useState<ComposerMenuKind>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [predictiveDismissed, setPredictiveDismissed] = useState(false);
 
   useEffect(() => {
@@ -119,7 +117,20 @@ export function WorkspaceComposer({
         onClose={() => setComposerMenu(null)}
         onTriggerUpload={() => fileInputRef.current?.click()}
         onUpdateProfile={onUpdateProfile}
-        onNotifyUnavailableCamera={() => onNotifyUnavailableCamera?.()}
+        onNotifyUnavailableCamera={() => {
+          setCameraOpen(true);
+          onNotifyUnavailableCamera?.();
+        }}
+      />
+
+      <CameraScannerModal
+        open={cameraOpen}
+        onClose={() => setCameraOpen(false)}
+        onCaptureFile={(file) => {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          onAddFiles(dt.files);
+        }}
       />
 
       <PredictiveSkuList
