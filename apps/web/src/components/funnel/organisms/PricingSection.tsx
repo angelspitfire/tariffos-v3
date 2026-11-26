@@ -36,13 +36,21 @@ export function PricingSection({
 
   const visiblePlans = [...plans]
     .filter((p) => p.published)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+    .sort((a, b) => {
+      const aCustom = isPlanCustomPricing(a) ? 1 : 0;
+      const bCustom = isPlanCustomPricing(b) ? 1 : 0;
+      if (aCustom !== bCustom) return aCustom - bCustom;
+      const aCorp = a.planId === 'corporate' ? 1 : 0;
+      const bCorp = b.planId === 'corporate' ? 1 : 0;
+      if (aCorp !== bCorp) return aCorp - bCorp;
+      return a.sortOrder - b.sortOrder;
+    });
 
   const pilotOrFreePlan = visiblePlans.find((p) => isPlanOneTime(p) || isPlanFree(p));
   const allPaidPlans = visiblePlans.filter((p) => !isPlanOneTime(p) && !isPlanFree(p));
   const shouldSplitCorporate = allPaidPlans.length > 4;
   const corporatePlan = shouldSplitCorporate
-    ? allPaidPlans.find((p) => isPlanAnnualOnly(p))
+    ? allPaidPlans.find((p) => p.planId === 'corporate' || isPlanAnnualOnly(p))
     : undefined;
   const gridPlans = corporatePlan
     ? allPaidPlans.filter((p) => p.planId !== corporatePlan.planId)
@@ -148,7 +156,7 @@ export function PricingSection({
           <CorporatePlanBanner
             plan={corporatePlan}
             isRecommended={recommendedPlanId === corporatePlan.planId}
-            onSelect={() => handleSelectPlan(corporatePlan.planId, 'annual')}
+            onSelect={() => handleSelectPlan(corporatePlan.planId, 'custom')}
           />
         ) : null}
 

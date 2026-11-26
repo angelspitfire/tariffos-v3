@@ -31,7 +31,7 @@ export function PlanCard({
   const price = showAnnual ? plan.annualPriceUsd : plan.monthlyPriceUsd;
   const monthlyEquiv =
     showAnnual && plan.annualPriceUsd > 0 ? Math.round(plan.annualPriceUsd / 12) : null;
-  const isPopular = plan.planId === 'agencia';
+  const isPopular = plan.planId === 'agencia' || plan.planId === 'pro';
 
   return (
     <div
@@ -62,7 +62,7 @@ export function PlanCard({
             <>
               <div className="text-2xl font-bold text-ink-primary tracking-tight">A medida</div>
               <div className="text-[11px] text-ink-muted mt-0.5">
-                Volumen y usuarios según tu operación
+                Según tipo de cliente y operación
               </div>
             </>
           ) : (
@@ -112,7 +112,7 @@ export function PlanCard({
           )
         }
       >
-        {customPricing ? 'Solicitar cotización' : `Elegir ${plan.name}`}
+        {customPricing ? 'Contactar' : `Elegir ${plan.name}`}
       </FunnelButton>
     </div>
   );

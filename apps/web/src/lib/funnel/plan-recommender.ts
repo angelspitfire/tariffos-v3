@@ -61,7 +61,7 @@ export function isPlanOneTime(plan: SubscriptionPlanConfig): boolean {
 }
 
 export function isPlanCustomPricing(plan: SubscriptionPlanConfig): boolean {
-  return Boolean(plan.customPricing);
+  return Boolean(plan.customPricing) || plan.planId === 'corporate';
 }
 
 export function isPlanFree(plan: SubscriptionPlanConfig): boolean {

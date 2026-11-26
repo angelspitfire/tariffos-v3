@@ -14,8 +14,6 @@ export function CorporatePlanBanner({
   isRecommended = false,
   onSelect,
 }: CorporatePlanBannerProps) {
-  const monthlyEquiv = Math.round(plan.annualPriceUsd / 12);
-
   return (
     <div
       className={`p-6 rounded-[24px] border backdrop-blur-md flex flex-col lg:flex-row lg:items-center justify-between gap-5 transition-colors ${
@@ -31,7 +29,7 @@ export function CorporatePlanBanner({
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-base font-bold text-ink-primary">{plan.name}</h3>
-            <FunnelBadge variant="neutral">Solo anual</FunnelBadge>
+            <FunnelBadge variant="neutral">Corporativo</FunnelBadge>
             {isRecommended ? (
               <FunnelBadge variant="accent">Recomendado para ti</FunnelBadge>
             ) : null}
@@ -50,14 +48,9 @@ export function CorporatePlanBanner({
 
       <div className="flex flex-wrap lg:flex-col items-center lg:items-end justify-between gap-3 shrink-0">
         <div className="lg:text-right">
-          <div className="flex items-baseline gap-1 font-mono tabular-nums lg:justify-end">
-            <span className="text-2xl font-bold text-ink-primary">
-              ${plan.annualPriceUsd.toLocaleString('en-US')}
-            </span>
-            <span className="text-xs text-ink-muted">/año</span>
-          </div>
-          <div className="text-[11px] font-mono text-ink-muted tabular-nums">
-            Equiv. ${monthlyEquiv.toLocaleString('en-US')}/mes
+          <div className="text-2xl font-bold text-ink-primary tracking-tight">A medida</div>
+          <div className="text-[11px] text-ink-muted">
+            Según tipo de cliente y operación
           </div>
         </div>
 
@@ -68,7 +61,7 @@ export function CorporatePlanBanner({
           onClick={onSelect}
           className="min-h-[44px] rounded-full px-5 whitespace-nowrap"
         >
-          Solicitar Corporate
+          Contactar
         </FunnelButton>
       </div>
     </div>

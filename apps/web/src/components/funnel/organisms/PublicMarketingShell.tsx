@@ -109,7 +109,7 @@ export function PublicMarketingShell({
                   <span className="hidden sm:inline">Iniciar sesión</span>
                 </Link>
                 <Link
-                  href="/onboarding?plan=trial&cycle=monthly"
+                  href="/onboarding?plan=pilot&cycle=monthly"
                   className="px-3 sm:px-4 min-h-[36px] sm:min-h-[38px] inline-flex items-center rounded-full text-xs font-semibold bg-accent-brand hover:bg-accent-brand-hover text-white transition-colors whitespace-nowrap"
                 >
                   Activar Piloto
