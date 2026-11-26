@@ -1,6 +1,7 @@
-import type {
-  A2UICalculatorComponent,
-  A2UIComparisonCandidate,
+import {
+  formatHsCode,
+  type A2UICalculatorComponent,
+  type A2UIComparisonCandidate,
   A2UIDossierComponent,
   A2UILegalNoticeComponent,
   A2UIMerceologicalSheet,
@@ -66,14 +67,14 @@ export function buildLegalNoticeComponent(
     severity,
     authority: options.authority ?? 'SENIAT / OGA',
     title: primaryFlag?.title ?? `Régimen Legal (${options.legalRegimeCode ?? 'OGA'})`,
-    summary: primaryFlag?.text ?? options.legalRegimeSummary ?? `Verificación regulatoria para ${payload.hsCode}.`,
+    summary: primaryFlag?.text ?? options.legalRegimeSummary ?? `Verificación regulatoria para ${formatHsCode(payload.hsCode)}.`,
     requiredPermits: permits,
   };
 }
 
 export function buildComparisonCandidates(payload: ClassificationLinePayload): A2UIComparisonCandidate[] {
   const primary: A2UIComparisonCandidate = {
-    hsCode: payload.hsCode,
+    hsCode: formatHsCode(payload.hsCode),
     title: payload.officialDescription,
     adValoremPercent: payload.duties.adValoremRate,
     vatPercent: payload.duties.ivaRate,
@@ -90,7 +91,7 @@ export function buildComparisonCandidates(payload: ClassificationLinePayload): A
   return [
     primary,
     ...payload.alternatives.map((alt) => ({
-      hsCode: alt.code,
+      hsCode: formatHsCode(alt.code),
       title: alt.desc,
       adValoremPercent: payload.duties.adValoremRate,
       vatPercent: payload.duties.ivaRate,
@@ -123,7 +124,7 @@ export function buildDossierComponent(
     type: 'dossier',
     id: `dossier-${payload.lineId}`,
     title: `Dictamen · ${payload.product}`,
-    hsCode: payload.hsCode,
+    hsCode: formatHsCode(payload.hsCode),
     officialDescription: payload.officialDescription,
     jurisdictionName: options.jurisdictionName ?? 'Venezuela (SENIAT · Decreto 4.944)',
     confidenceLevel: payload.confidenceLevel,
@@ -140,7 +141,7 @@ export function buildDossierComponent(
     technicalSpecs: options.technicalSpecs ?? [],
     permits: permits.map((p) => ({ code: p.code, name: p.name, organism: p.organism })),
     ...(payload.rejected.length > 0
-      ? { rejectedAlternatives: payload.rejected.map((r) => ({ hsCode: r.code, reason: r.reason, rule: r.rule })) }
+      ? { rejectedAlternatives: payload.rejected.map((r) => ({ hsCode: formatHsCode(r.code), reason: r.reason, rule: r.rule })) }
       : {}),
     ...(dossierFlags.length > 0 ? { flags: dossierFlags } : {}),
     ...(payload.unresolved.length > 0 ? { unresolved: payload.unresolved.map((u) => u.item) } : {}),
@@ -156,11 +157,12 @@ export function buildCalculatorComponent(
   payload: ClassificationLinePayload,
   options: MapPayloadToA2UIOptions,
 ): A2UICalculatorComponent {
+  const formattedHsCode = formatHsCode(payload.hsCode);
   return {
     type: 'calculator',
     id: `calc-${payload.lineId}`,
-    title: `Tributos CIF · ${payload.hsCode}`,
-    hsCode: payload.hsCode,
+    title: `Tributos CIF · ${formattedHsCode}`,
+    hsCode: formattedHsCode,
     adValoremPercent: payload.duties.adValoremRate,
     vatPercent: payload.duties.ivaRate,
     customsServiceFeePercent: options.customsFeePercent ?? DEFAULT_CUSTOMS_FEE_PERCENT,

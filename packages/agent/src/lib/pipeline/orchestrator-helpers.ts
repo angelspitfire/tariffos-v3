@@ -1,4 +1,4 @@
-import type { ClassificationLinePayload, ComplianceFlag, UnresolvedItem } from '@tariffos/shared-types';
+import { formatHsCode, type ClassificationLinePayload, type ComplianceFlag, type UnresolvedItem } from '@tariffos/shared-types';
 import { calculateDeterministicDuties } from './duties.js';
 import type { TariffAuditResult } from './tariff-validator.js';
 import {
@@ -60,19 +60,20 @@ export function mergeTariffFlags(
   verified: TariffCandidateRecord,
   audit?: TariffAuditResult,
 ): ComplianceFlag[] {
+  const formattedCode = formatHsCode(verified.hsCode);
   const flags = [...baseFlags];
   if (verified.prohibited) {
     flags.unshift({
       type: 'blocking',
       title: 'Prohibited Tariff Code',
-      text: `Official tariff marks ${verified.hsCode} as prohibited/restricted.`,
+      text: `Official tariff marks ${formattedCode} as prohibited/restricted.`,
     });
   }
   for (const permit of verified.permits ?? []) {
     flags.push({
       type: 'warn',
       title: `OGA Permit: ${permit}`,
-      text: `Required regulatory clearance (${permit}) for ${verified.hsCode}.`,
+      text: `Required regulatory clearance (${permit}) for ${formattedCode}.`,
     });
   }
   if (audit && !audit.matched) {
@@ -90,7 +91,7 @@ export function buildTier0Payload(
   return {
     lineId: item.lineId,
     product: item.description,
-    hsCode: verified.hsCode,
+    hsCode: formatHsCode(verified.hsCode),
     officialDescription: verified.description,
     originCountry: item.originCountry,
     confidenceLevel: 'Alto',
@@ -114,17 +115,18 @@ export function buildTier1Payload(
   verified: TariffCandidateRecord,
   audit: TariffAuditResult,
 ): ClassificationLinePayload {
+  const formattedCode = formatHsCode(verified.hsCode);
   return {
     lineId: item.lineId,
     product: item.description,
-    hsCode: verified.hsCode,
+    hsCode: formattedCode,
     officialDescription: verified.description,
     originCountry: item.originCountry,
     confidenceLevel: 'Alto',
     confidencePct: Math.round((topCandidate.score ?? 0.9) * 100),
     confidenceReason: 'Clear retrieval match verified against national tariff.',
     rgiSteps: [
-      { rule: 'RGI 1', note: 'Direct tariff text match', items: [verified.description], conclusion: verified.hsCode },
+      { rule: 'RGI 1', note: 'Direct tariff text match', items: [verified.description], conclusion: formattedCode },
     ],
     alternatives: [],
     rejected: [],

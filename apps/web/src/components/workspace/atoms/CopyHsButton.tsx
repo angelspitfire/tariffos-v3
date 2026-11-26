@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { formatHsCode } from '@tariffos/shared-types';
 import { Check, Copy } from 'lucide-react';
 
 interface CopyHsButtonProps {
@@ -19,10 +20,11 @@ const COPIED_RESET_MS = 1800;
 
 export function CopyHsButton({ hsCode, size = 'md', className = '' }: CopyHsButtonProps) {
   const [copied, setCopied] = useState(false);
+  const formattedCode = formatHsCode(hsCode);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard?.writeText(hsCode);
+      await navigator.clipboard?.writeText(formattedCode);
     } catch {
       // Clipboard write may fail in restricted contexts; still surface feedback.
     }
@@ -34,10 +36,10 @@ export function CopyHsButton({ hsCode, size = 'md', className = '' }: CopyHsButt
     <button
       type="button"
       onClick={handleCopy}
-      aria-label={`Copiar código ${hsCode}`}
+      aria-label={`Copiar código ${formattedCode}`}
       className={`group inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-lg border border-border-subtle bg-surface-muted font-mono font-semibold tracking-tight text-ink-primary transition hover:border-accent-border hover:bg-accent-soft hover:text-accent-ink ${SIZE_CLASSES[size]} ${className}`}
     >
-      <span className="truncate">{hsCode}</span>
+      <span className="truncate">{formattedCode}</span>
       {copied ? (
         <span className="inline-flex shrink-0 items-center gap-0.5 font-sans text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
           <Check className="h-3.5 w-3.5" aria-hidden="true" />

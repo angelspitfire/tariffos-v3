@@ -1,4 +1,4 @@
-import type { ClassificationLinePayload } from '@tariffos/shared-types';
+import { formatHsCode, type ClassificationLinePayload } from '@tariffos/shared-types';
 import { calculateDeterministicDuties } from './duties.js';
 import { deduplicateInvoiceItems } from './dedup.js';
 import { filterLegalNotesByChapter, retrieveHybridCandidates } from './hybrid-retrieval.js';
@@ -106,8 +106,9 @@ async function classifyUniqueItem(
     unit: item.unit ?? 'u',
   };
 
+  const formattedHsCode = formatHsCode(fallbackRecord.hsCode);
   const flags = mergeTariffFlags(rgi.flags, fallbackRecord, audit);
-  const unresolved = appendAuditUnresolved(rgi.unresolved, rgi.hsCode, audit);
+  const unresolved = appendAuditUnresolved(rgi.unresolved, formattedHsCode, audit);
   const isVerified = Boolean(verified && audit.codeDigitsMatch);
   const confidencePct = isVerified
     ? rgi.confidencePct
@@ -116,15 +117,15 @@ async function classifyUniqueItem(
   return {
     lineId: item.lineId,
     product: item.description,
-    hsCode: fallbackRecord.hsCode,
+    hsCode: formattedHsCode,
     officialDescription: fallbackRecord.description,
     originCountry: item.originCountry,
     confidenceLevel: isVerified ? rgi.confidenceLevel : 'Medio',
     confidencePct,
     confidenceReason: rgi.confidenceReason,
     rgiSteps: rgi.rgiSteps,
-    alternatives: rgi.alternatives,
-    rejected: rgi.rejected,
+    alternatives: rgi.alternatives.map((alt) => ({ ...alt, code: formatHsCode(alt.code) })),
+    rejected: rgi.rejected.map((rej) => ({ ...rej, code: formatHsCode(rej.code) })),
     flags,
     unresolved,
     duties: calculateDeterministicDuties(item.cifValue, fallbackRecord),

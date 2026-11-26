@@ -1,5 +1,7 @@
+import { extractHsDigits, formatHsCode } from '@tariffos/shared-types';
+
 export function digits(hs: string): string {
-  return hs.replace(/[^0-9]/g, '');
+  return extractHsDigits(hs);
 }
 
 /**
@@ -8,10 +10,7 @@ export function digits(hs: string): string {
  * dots exactly the digits present instead of padding to ten.
  */
 export function formatCode(digitsText: string): string {
-  if (digitsText.length <= 4) return digitsText;
-  const parts = [digitsText.slice(0, 4)];
-  for (let i = 4; i < digitsText.length; i += 2) parts.push(digitsText.slice(i, i + 2));
-  return parts.join('.');
+  return formatHsCode(digitsText);
 }
 
 /** Alias for backward compatibility */

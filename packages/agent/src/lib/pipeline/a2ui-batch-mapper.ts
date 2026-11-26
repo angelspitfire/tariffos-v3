@@ -1,6 +1,7 @@
 import {
   A2UIBatchManifestComponentSchema,
   A2UIEnvelopeSchema,
+  formatHsCode,
   type A2UIBatchItem,
   type A2UIBatchManifestComponent,
   type A2UIEnvelope,
@@ -30,7 +31,7 @@ export interface MapBatchToA2UIOptions {
 function buildCandidates(line: ClassificationLinePayload): BatchItemCandidate[] {
   return [
     {
-      hsCode: line.hsCode,
+      hsCode: formatHsCode(line.hsCode),
       title: line.officialDescription,
       adValoremPercent: line.duties.adValoremRate,
       vatPercent: line.duties.ivaRate,
@@ -42,7 +43,7 @@ function buildCandidates(line: ClassificationLinePayload): BatchItemCandidate[] 
       recommended: true,
     },
     ...line.alternatives.map((alt) => ({
-      hsCode: alt.code,
+      hsCode: formatHsCode(alt.code),
       title: alt.desc,
       adValoremPercent: line.duties.adValoremRate,
       vatPercent: line.duties.ivaRate,
@@ -72,7 +73,7 @@ function buildItemQuestions(
     }));
   const combined = [...gateQuestions, ...unresolvedQuestions];
   if (combined.length > 0) return combined;
-  return [{ id: `q-review-${line.lineId}`, fieldKey: 'technical_confirmation', question: `Confirmar especificaciones técnicas para validar ${line.hsCode}`, inputType: 'text', critical: true }];
+  return [{ id: `q-review-${line.lineId}`, fieldKey: 'technical_confirmation', question: `Confirmar especificaciones técnicas para validar ${formatHsCode(line.hsCode)}`, inputType: 'text', critical: true }];
 }
 
 function mapLineToBatchItem(
@@ -104,7 +105,7 @@ function mapLineToBatchItem(
     quantityText: `1 ${line.duties.unit}`,
     fobValue: line.duties.cif,
     currencyCode: options.currencyCode ?? 'USD',
-    hsCode: line.hsCode,
+    hsCode: formatHsCode(line.hsCode),
     adValoremPercent: line.duties.adValoremRate,
     vatPercent: line.duties.ivaRate,
     legalRegime: permits.length > 0 ? permits.join(' / ') : 'Libre',
@@ -123,7 +124,7 @@ function mapLineToBatchItem(
       application: s.items.join('; ') || s.note,
       conclusion: s.conclusion,
     })),
-    rejectedAlternatives: line.rejected.map((r) => ({ hsCode: r.code, reason: r.reason, rule: r.rule })),
+    rejectedAlternatives: line.rejected.map((r) => ({ hsCode: formatHsCode(r.code), reason: r.reason, rule: r.rule })),
     flags: line.flags.map((f) => ({ type: f.type === 'info' ? 'info' : 'warn', title: f.title, text: f.text })),
   };
 }

@@ -1,5 +1,6 @@
 import {
   A2UIEnvelopeSchema,
+  formatHsCode,
   type A2UICanvasComponent,
   type A2UIEnvelope,
   type A2UIInlineComponent,
@@ -27,6 +28,7 @@ export function mapPayloadToA2UIEnvelope(
   options: MapPayloadToA2UIOptions = {},
 ): A2UIEnvelope {
   const isBlocked = payload.tierUsed === 'pre_gate_blocked';
+  const formattedHsCode = formatHsCode(payload.hsCode);
   const permits = extractPermitsFromFlags(payload);
   const legalNotice = buildLegalNoticeComponent(payload, permits, options);
 
@@ -35,7 +37,7 @@ export function mapPayloadToA2UIEnvelope(
     inlineComponents.push({
       type: 'verdict',
       id: `verdict-${payload.lineId}`,
-      hsCode: payload.hsCode,
+      hsCode: formattedHsCode,
       description: payload.officialDescription,
       adValoremPercent: payload.duties.adValoremRate,
       vatPercent: payload.duties.ivaRate,
@@ -58,7 +60,7 @@ export function mapPayloadToA2UIEnvelope(
     canvasComponents.push({
       type: 'comparison',
       id: `comp-${payload.lineId}`,
-      title: `Comparador RGI · ${payload.hsCode}`,
+      title: `Comparador RGI · ${formattedHsCode}`,
       candidates: buildComparisonCandidates(payload),
     });
   }
@@ -69,7 +71,7 @@ export function mapPayloadToA2UIEnvelope(
   const envelope: A2UIEnvelope = {
     assistantMessage: isBlocked
       ? `BORRADOR — Mercancía bloqueada en Pre-Gate Compliance para ${payload.product}. Requiere revisión legal.`
-      : `BORRADOR — Clasificación sugerida ${payload.hsCode} (${payload.confidenceLevel} ${payload.confidencePct}%) para ${payload.product}.`,
+      : `BORRADOR — Clasificación sugerida ${formattedHsCode} (${payload.confidenceLevel} ${payload.confidencePct}%) para ${payload.product}.`,
     classificationStatus: isBlocked ? 'needs_details' : 'classified',
     workflowState: isBlocked ? 'proposed_review' : 'classified',
     inlineComponents,

@@ -160,4 +160,36 @@ describe('mapPayloadToA2UIEnvelope', () => {
     const notice = blocked.inlineComponents.find((c) => c.type === 'legal_notice');
     expect(notice?.type === 'legal_notice' && notice.severity).toBe('restricted');
   });
+
+  it('always formats unformatted tariff codes with dots in A2UI outputs', () => {
+    const envelope = mapPayloadToA2UIEnvelope(
+      makeClassifiedPayload({
+        hsCode: '8471309090',
+        alternatives: [
+          {
+            code: '8471301990',
+            desc: 'Alt',
+            confLevel: 'medio',
+            confPct: 20,
+            whyApply: 'Alt',
+            whyNot: 'Less specific',
+          },
+        ],
+      }),
+      { includeCalculator: true },
+    );
+
+    expect(envelope.assistantMessage).toContain('8471.30.90.90');
+    const verdict = envelope.inlineComponents.find((c) => c.type === 'verdict');
+    expect(verdict?.type === 'verdict' && verdict.hsCode).toBe('8471.30.90.90');
+    const dossier = envelope.canvasComponents.find((c) => c.type === 'dossier');
+    expect(dossier?.type === 'dossier' && dossier.hsCode).toBe('8471.30.90.90');
+    const comp = envelope.canvasComponents.find((c) => c.type === 'comparison');
+    expect(comp?.type === 'comparison' && comp.candidates.map((c) => c.hsCode)).toEqual([
+      '8471.30.90.90',
+      '8471.30.19.90',
+    ]);
+    const calc = envelope.canvasComponents.find((c) => c.type === 'calculator');
+    expect(calc?.type === 'calculator' && calc.hsCode).toBe('8471.30.90.90');
+  });
 });

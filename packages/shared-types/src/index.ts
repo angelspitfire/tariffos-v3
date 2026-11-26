@@ -1,4 +1,5 @@
 export * from './merceological-sheet.js';
+export * from './hs-code.js';
 export * from './classification-session.js';
 export * from './classification-diagnostic.js';
 export * from './description-part.js';

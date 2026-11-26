@@ -251,4 +251,45 @@ describe('classifyInvoiceBatch', () => {
 
     expect(result.lines[0]?.tokenUsage).toEqual({ inputTokens: 4200, outputTokens: 980 });
   });
+
+  it('always formats tariff codes with dots across hsCode, alternatives, and rejected', async () => {
+    const ports = createBasePorts({
+      searchTariffCandidates: vi.fn().mockResolvedValue([
+        { ...LAPTOP_TARIFF, hsCode: '8471309090', score: 0.72 },
+        { ...LAPTOP_TARIFF, hsCode: '8471301990', score: 0.68 },
+      ]),
+      verifyHsCode: vi.fn().mockResolvedValue({ ...LAPTOP_TARIFF, hsCode: '8471309090' }),
+      runRgiReasoning: vi.fn().mockResolvedValue({
+        hsCode: '8471309090',
+        confidenceLevel: 'Alto',
+        confidencePct: 95,
+        confidenceReason: 'Verified',
+        rgiSteps: [],
+        alternatives: [
+          {
+            code: '8471301990',
+            desc: 'Alt',
+            confLevel: 'medio',
+            confPct: 20,
+            whyApply: 'Alt',
+            whyNot: 'Less specific',
+          },
+        ],
+        rejected: [{ code: '8517624100', reason: 'Not telecom' }],
+        flags: [],
+        unresolved: [],
+        modelUsed: 'test-model',
+      }),
+    });
+
+    const result = await classifyInvoiceBatch(
+      [{ lineId: 'L1', description: 'Laptop computer 14 inch aluminum', originCountry: 'CN', cifValue: 1200 }],
+      ports,
+      { tenantId: 't1', countryCode: 'VE' },
+    );
+
+    expect(result.lines[0]?.hsCode).toBe('8471.30.90.90');
+    expect(result.lines[0]?.alternatives[0]?.code).toBe('8471.30.19.90');
+    expect(result.lines[0]?.rejected[0]?.code).toBe('8517.62.41.00');
+  });
 });
