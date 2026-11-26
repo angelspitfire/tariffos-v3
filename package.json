@@ -9,11 +9,14 @@
   ],
   "scripts": {
     "dev": "pnpm --filter web dev",
+    "dev:inngest": "npx -y inngest-cli@latest dev -u http://localhost:3003/api/inngest",
     "bootstrap": "pnpm --filter @tariffos/database... build",
     "build": "pnpm bootstrap && pnpm -r --filter=!@tariffos/database build",
     "typecheck": "pnpm -r --if-present typecheck",
     "lint": "oxlint apps packages",
-    "test": "pnpm -r --if-present test"
+    "test": "pnpm -r --if-present test",
+    "check": "node scripts/check.mjs",
+    "check:quick": "node scripts/check.mjs --quick"
   },
   "devDependencies": {
     "@typescript/native": "npm:typescript@^7.0.2",

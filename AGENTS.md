@@ -1,0 +1,27 @@
+# TariffOS v3 — Agent Rules
+
+## Stack & Context
+- **Monorepo:** `apps/web` (Next.js 16 + React 19 + Tailwind v4) + `packages/*` (`agent`, `database`, `ai-client`, `shared-types`, `env`, `logger`).
+- **Chat & Agentic UI:** **`assistant-ui`** (`@assistant-ui/react` 0.15.x, `@assistant-ui/ai-sdk`, `@assistant-ui/eve`, `@assistant-ui/generative-ui`) powering the Thread, Composer, ThreadList sidebar, inline Tool UIs, and HitL Approval Cards — styled with the mockup's tokens and coupled to the right-hand Canvas (`src/components/canvas/*` + `BatchManifestView`).
+- **Backend & Data:** **Supabase** (PostgreSQL + `pgvector` + Auth + Storage + Realtime) accessed via Prisma (`@tariffos/database`) for server queries/migrations and `@supabase/ssr` for auth/session/realtime.
+- **Orchestration & Hosting:** **Vercel** (Next.js Route Handlers + Eve / AI SDK streaming) + **Inngest v4** (`/api/inngest` for durable high-volume invoice batches with per-tenant `concurrency` and `throttle`). No InsForge, no local Laya server, no Firebase.
+- **Decision & AI Engine (`@tariffos/agent`):**
+  - **Pre-Gate & Fast-Path:** Hosted **TypeSafe System One** (`@typesafe-ai/sdk`).
+  - **Tier 2 RGI Reasoning:** Reasoning LLM via `@tariffos/ai-client` applying strict RGI 1→6 rules and verified against `NationalTariff` + `LegalKnowledgeChunk`.
+  - **Deterministic Calculations:** Pure TypeScript duty/tax calculation (never delegated to an LLM).
+
+## Reference Repositories (Read-Only)
+- **Clean-Slate Rule in `apps/web` (Keep Harness & Skills Only):** All legacy `filings-v2` files in `apps/web/src/`, `apps/web/utils/`, and `apps/web/middleware.ts` are discarded and must be deleted in Phase 0 (`docs/PIPELINE_AND_UI_PLAN.md`) — never adapt or reuse them. Keep **`scripts/check.mjs`, `.oxlintrc.jsonc`, `.agents/skills/*`, `.claude/*`, and `skills-lock.json` 100% intact**, and preserve/evolve `packages/*` (`database`, `agent`, `ai-client`, `shared-types`, `env`, `logger`). Always read the relevant `.agents/skills/<skill>/SKILL.md` (and `apps/web/node_modules/next/dist/docs/` for Next.js 16 `proxy.ts` / App Router conventions) before implementing each phase.
+- **UI & UX Source of Truth to Port (Decomposed <= 200 LOC):** `/Users/afernandez/projects/tariffos-new-mockup` (branch `atomic/batch-manifest-view-extract`) — source of truth for the public SaaS funnel (`LandingPage`, `PlanRecommender`, `OnboardingStepExpress`, manual billing activation), the unified 48px workspace header, the Dynamic A2UI contract (mandatory core vs. agent-invoked contextual components, `ApprovalWorkflowMode` + `AgentReviewTrigger`), `dutyEngine.ts`, `dossierApprovalPolicy.ts`, and low-friction inline/canvas components. Decompose every ported view into Atomic Design modules (`<= 200` lines) and do NOT port deprecated views (`TopBar`, `ExecutiveSummaryCardView`, `TechnicalSummaryView`, `ComparativeHistoryReportView`).
+- **Legacy Platform Reference:** `/Users/afernandez/projects/tariffsos` — read-only reference for existing `pgvector` hybrid retrieval (`apps/agent/src/lib/retrieve.ts`, `embeddings.ts`, `candidates.ts`), tariff seeding (`packages/database/src/scripts/`), country rules (`apps/agent/src/countries/`), Inngest batch patterns (`apps/filings/src/lib/inngest/`), and SaaS API handlers (`apps/filings/src/app/api/`). Do NOT copy `.harness`, `insforge`, or `laya`.
+- **Domain & RGI Reference:** `/Users/afernandez/projects/tariffsos/.agents/skills/venezuela-tariff-classification/SKILL.md` — reference for Venezuela 10-digit NCM (Decreto 4.944) RGI 1→6 rules and output structure.
+
+## Hard Engineering Rules
+1. **Strict TDD (Red → Green → Refactor):** Always write a focused failing Vitest test defining the exact behavioral contract *before* writing implementation code, then write only the minimal code needed to make the test pass (load the `tdd` skill when needed). Never write speculative or unscoped code beyond what the test requires.
+2. **Atomic Design in `apps/web`:** Organize UI into `atoms/`, `molecules/`, `organisms/`, `templates/` (and narrow hooks/selectors). Never create monolithic components.
+3. **Hexagonal Architecture in `packages/agent`:** Keep domain logic pure behind narrow ports (`domain/ports/`, `lib/pipeline/types.ts`) with infrastructure adapters (`adapters/`).
+4. **Small Modules (~200 lines max):** Target <= 200 lines per file (warn > 200, hard fail > 300 in `pnpm check`). Split large files before adding features.
+5. **Strict TypeScript:** `strict: true`, no `any` in non-test code (use `unknown` + Zod validation), no inline magic thresholds (use named constants).
+6. **Code Language:** English for identifiers, types, comments, and commits; UI copy in Spanish/i18n as required by the product.
+7. **Verification Gate:** Run `pnpm check:quick` during rapid edits and `pnpm check` (`typecheck` + `oxlint` + module size + `vitest`) before finishing any task.
+8. **Package Manager (`pnpm` only):** This repository exclusively uses `pnpm` (and `pnpm dlx` / `pnpm exec` for one-off CLIs). Never use `npm`, `npx`, `yarn`, or `bun`, and never commit `package-lock.json` or `yarn.lock`.

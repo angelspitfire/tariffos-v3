@@ -1,6 +1,62 @@
 {
   "version": 2,
   "skills": {
+    "ai-sdk": {
+      "source": "vercel/ai",
+      "commit": "f3512646c7bd8742f735ed26e31aa57a1f5ec59e",
+      "sourceType": "github",
+      "skillPath": "skills/ai-sdk/SKILL.md",
+      "computedHash": "59cd2dc82c5458f2819992fc3d27204ed16edfc9170870c6f8f04c44bac17772"
+    },
+    "eve": {
+      "source": "vercel/eve",
+      "commit": "c21dc9f80e63c19aec122b42c3b3db46d5f73402",
+      "sourceType": "github",
+      "skillPath": "skills/eve/SKILL.md",
+      "computedHash": "9c1eaa91f1aa5a1733b90937ee5186bc14f43e88ef6524a956750e535b0e2a60"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "commit": "57217cf86ba38148a57af9e90d14a4c049558330",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "7bc223e2aafbdbf6e50ea243ba6ef67fe432bb069ab439fea0390795dac0bf7f"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "commit": "e4bb5d960d87126ff3b3a8af1a104b7db67560ba",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "83485963700bcf11d5bf78118facb301676b69d918fee2e45a95e7f1a2840f6c"
+    },
+    "next-dev-loop": {
+      "source": "vercel/next.js",
+      "commit": "d635efd0ac8070f32aec7c65b87e0e841616d554",
+      "sourceType": "github",
+      "skillPath": "skills/next-dev-loop/SKILL.md",
+      "computedHash": "78ebafaabaa8fd170da34957943f5845436f66c04daf85a93fc759f38a50a4ca"
+    },
+    "prisma-cli": {
+      "source": "prisma/skills",
+      "commit": "a6f192959cf43b08aa330fe1ffca090267215812",
+      "sourceType": "github",
+      "skillPath": "prisma-cli/SKILL.md",
+      "computedHash": "5867232acad55272d7278be9144b2cb8dcadd500d5a60a89260a2332bf70bd62"
+    },
+    "prisma-client-api": {
+      "source": "prisma/skills",
+      "commit": "a6f192959cf43b08aa330fe1ffca090267215812",
+      "sourceType": "github",
+      "skillPath": "prisma-client-api/SKILL.md",
+      "computedHash": "a4810158b4b436a69e782e6fab95a0ed5e5e0b2786c2ed00322051d29c4c2b64"
+    },
+    "prisma-driver-adapter-implementation": {
+      "source": "prisma/skills",
+      "commit": "a6f192959cf43b08aa330fe1ffca090267215812",
+      "sourceType": "github",
+      "skillPath": "prisma-driver-adapter-implementation/SKILL.md",
+      "computedHash": "6786760df68cf983505e8ea085c2ffa5253a0aa70c7b9ed72031d5f106d7d44f"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "commit": "c9be0e931b7930f7d02126d04774d904c381e7d7",
@@ -14,6 +70,48 @@
       "sourceType": "github",
       "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
       "computedHash": "3eb972c2d7c818e544e35cc33ea8d7147d4d78ae08142ef40037b0fbac7a2505"
+    },
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
+      "commit": "5a37a6329fbad3666c3207392a6a7c0110e92efb",
+      "sourceType": "github",
+      "skillPath": "skills/composition-patterns/SKILL.md",
+      "computedHash": "f711ed8b16162eaa712abbcdbbae6c926f86c57e60127735fecc3ad0dd85b3fa"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "commit": "5a37a6329fbad3666c3207392a6a7c0110e92efb",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "7991ed4fbecdac23f47c1a40c243e00a212a9e7f3604db93959b3ae11dffe299"
+    },
+    "vercel-react-view-transitions": {
+      "source": "vercel-labs/agent-skills",
+      "commit": "5a37a6329fbad3666c3207392a6a7c0110e92efb",
+      "sourceType": "github",
+      "skillPath": "skills/react-view-transitions/SKILL.md",
+      "computedHash": "d5bdffc1f132ae0d6d9260c260ae206d48cd83cb148e3e3b75fc1a3b94b249fa"
+    },
+    "vitest": {
+      "source": "antfu/skills",
+      "commit": "4a6bb39e7b45e26402eb215393c51ccf5df1ca4c",
+      "sourceType": "github",
+      "skillPath": "skills/vitest/SKILL.md",
+      "computedHash": "bd95e41d66d76da9008893c9bc48c30f0a68f352cd2b00017767f5e4c129501d"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "commit": "5a37a6329fbad3666c3207392a6a7c0110e92efb",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "5994e4cfd86144903d2ba750f862b9e36af15e3297aac983679e347b99f6cb71"
+    },
+    "webapp-testing": {
+      "source": "anthropics/skills",
+      "commit": "e4bb5d960d87126ff3b3a8af1a104b7db67560ba",
+      "sourceType": "github",
+      "skillPath": "skills/webapp-testing/SKILL.md",
+      "computedHash": "48cd9a742a59250edec6db89cf081ef5465f365e2133f6d6c5e29c380b754b7d"
     }
   }
 }

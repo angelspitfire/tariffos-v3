@@ -47,11 +47,22 @@
     "typescript/ban-ts-comment": "off"
   },
 
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**", "**/__mocks__/**"],
+      "rules": {
+        "typescript/no-explicit-any": "off"
+      }
+    }
+  ],
+
   "ignorePatterns": [
     ".next/**",
     "out/**",
     "build/**",
     "dist/**",
+    "**/generated/**",
+    "**/seed-data/**",
     "**/*.tsbuildinfo"
   ]
 }

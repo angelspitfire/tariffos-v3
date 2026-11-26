@@ -2,7 +2,6 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ─── Mockup Look & Feel Tokens (Light default + .dark) ─── */
 :root {
   color-scheme: light;
   --surface-app: #f8fafc;
@@ -14,56 +13,20 @@
   --surface-inverted: #0f172a;
   --surface-inverted-hover: #1e293b;
   --surface-tooltip: #0f172a;
-
   --ink-primary: #0f172a;
   --ink-secondary: #334155;
   --ink-muted: #64748b;
   --ink-subtle: #94a3b8;
   --ink-on-inverted: #ffffff;
   --ink-tooltip: #ffffff;
-
   --border-subtle: #e2e8f0;
   --border-hairline: #f1f5f9;
   --border-strong: #cbd5e1;
-
   --accent-brand: #1d4ed8;
   --accent-brand-hover: #1e40af;
   --accent-ink: #1d4ed8;
   --accent-soft: rgba(29, 78, 216, 0.08);
   --accent-border: rgba(29, 78, 216, 0.35);
-
-  /* Compatibility aliases for filings-v2 components */
-  --canvas: var(--surface-app);
-  --surface: var(--surface-panel);
-  --surface-raised: var(--surface-subtle);
-  --surface-active: var(--surface-hover);
-  --surface-elevated: var(--surface-panel);
-  --surface-overlay: var(--surface-panel);
-  --surface-card: var(--surface-panel);
-  --border: var(--border-subtle);
-  --border-mid: var(--border-strong);
-  --border-divider: var(--border-hairline);
-  --border-card: var(--border-subtle);
-  --border-brand: var(--accent-border);
-  --text-hi: var(--ink-primary);
-  --text-mid: var(--ink-secondary);
-  --text-lo: var(--ink-muted);
-  --text-muted: var(--ink-muted);
-  --text-placeholder: var(--ink-subtle);
-  --brand: var(--accent-brand);
-  --brand-hover: var(--accent-brand-hover);
-  --brand-glow: var(--accent-soft);
-
-  --cleared: #10b981;
-  --cleared-subtle: rgba(16, 185, 129, 0.1);
-  --review: #f59e0b;
-  --review-subtle: rgba(245, 158, 11, 0.1);
-  --disputed: #f43f5e;
-  --disputed-subtle: rgba(244, 63, 94, 0.1);
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #f43f5e;
-  --info: #1d4ed8;
 }
 
 .dark {
@@ -77,18 +40,15 @@
   --surface-inverted: #f8fafc;
   --surface-inverted-hover: #e2e8f0;
   --surface-tooltip: #1e293b;
-
   --ink-primary: #f8fafc;
   --ink-secondary: #cbd5e1;
   --ink-muted: #94a3b8;
   --ink-subtle: #64748b;
   --ink-on-inverted: #0f172a;
   --ink-tooltip: #f8fafc;
-
   --border-subtle: #1e293b;
   --border-hairline: #172033;
   --border-strong: #334155;
-
   --accent-brand: #2563eb;
   --accent-brand-hover: #3b82f6;
   --accent-ink: #60a5fa;
@@ -97,8 +57,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --color-surface-app: var(--surface-app);
   --color-surface-panel: var(--surface-panel);
@@ -107,12 +67,20 @@
   --color-surface-hover: var(--surface-hover);
   --color-surface-input: var(--surface-input);
   --color-surface-inverted: var(--surface-inverted);
+  --color-surface-inverted-hover: var(--surface-inverted-hover);
+  --color-surface-tooltip: var(--surface-tooltip);
+
   --color-ink-primary: var(--ink-primary);
   --color-ink-secondary: var(--ink-secondary);
   --color-ink-muted: var(--ink-muted);
   --color-ink-subtle: var(--ink-subtle);
+  --color-ink-on-inverted: var(--ink-on-inverted);
+  --color-ink-tooltip: var(--ink-tooltip);
+
   --color-border-subtle: var(--border-subtle);
+  --color-border-hairline: var(--border-hairline);
   --color-border-strong: var(--border-strong);
+
   --color-accent-brand: var(--accent-brand);
   --color-accent-brand-hover: var(--accent-brand-hover);
   --color-accent-ink: var(--accent-ink);
@@ -132,20 +100,58 @@
   body {
     background-color: var(--surface-app);
     color: var(--ink-primary);
-    font-size: 14px;
-    line-height: 1.5;
   }
 
-  .tabular,
   .tabular-nums {
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums lining-nums;
+    font-variant-numeric: tabular-nums;
   }
 }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 ::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.55);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.45);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.65);
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  :root,
+  .dark {
+    color-scheme: light;
+    --surface-app: #ffffff;
+    --surface-panel: #ffffff;
+    --surface-muted: #f8fafc;
+    --surface-subtle: #f1f5f9;
+    --surface-input: #ffffff;
+    --ink-primary: #0f172a;
+    --ink-secondary: #334155;
+    --ink-muted: #64748b;
+    --border-subtle: #e2e8f0;
+    --border-hairline: #f1f5f9;
+    --border-strong: #cbd5e1;
+    --accent-ink: #1d4ed8;
+  }
 }
