@@ -1,45 +1,86 @@
 /**
- * Embedding provider for the backfill scripts (PR 5).
+ * Embedding provider for tariff backfill scripts.
  *
- * The backfill writes the vectors the retrieval path reads, so the two must
- * agree on the space. The port is the single place that knows how to ask
- * for a vector of a given width: it passes `providerOptions.dimensions`, so
- * the server returns the width that was requested, and it rejects a
- * response whose width differs.
- *
- * The model is read from `EMBEDDING_MODEL`, the width from
- * `EMBEDDING_DIMS` — the same two variables the reader filters on. A
- * mismatch between the two is not a silent degradation here: the width
- * check in the port throws.
+ * Uses native NVIDIA Build (`integrate.api.nvidia.com/v1/embeddings`) batch
+ * requests with `input_type: 'passage'` and `dimensions: 768` when running
+ * against NVIDIA NIM, and falls back to `@tariffos/ai-client` single-item
+ * `embedText` for other OpenAI-compatible providers.
  */
-import { getLlmProvider } from '@tariffos/ai-client';
+import { getLlmProvider, NVIDIA_BASE_URL } from '@tariffos/ai-client';
 
-/** The model the vectors are produced with. */
+const DEFAULT_MODEL_ID = 'nvidia/nemotron-3.5-embed-1b';
+const DEFAULT_DIMS = 768;
+
 export function embeddingModel(): string {
-  return process.env.EMBEDDING_MODEL?.trim() || 'text-embedding-3-small';
+  return process.env.EMBEDDING_MODEL?.trim() || DEFAULT_MODEL_ID;
 }
 
-/** The width of the vectors. Must match the index column (`vector(768)`). */
 export function embeddingDims(): number {
   const raw = Number(process.env.EMBEDDING_DIMS);
-  return Number.isFinite(raw) && raw > 0 ? raw : 768;
+  return Number.isFinite(raw) && raw > 0 ? raw : DEFAULT_DIMS;
 }
 
-/**
- * Embed a batch of documents.
- *
- * The batch is embedded one document at a time: the port exposes a single
- * embedding, and a local server takes one text per call. The pacing
- * between batches is the caller's business.
- */
+interface NvidiaEmbeddingResponse {
+  data?: Array<{ index: number; embedding: number[] }>;
+}
+
+async function embedNvidiaBatch(
+  documents: string[],
+  model: string,
+  dims: number,
+  apiKey: string,
+  inputType: 'passage' | 'query' = 'passage',
+): Promise<number[][]> {
+  const baseUrl = (process.env.NVIDIA_BASE_URL?.trim() || NVIDIA_BASE_URL).replace(/\/+$/, '');
+  const res = await fetch(`${baseUrl}/embeddings`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      input: documents,
+      input_type: inputType,
+      dimensions: dims,
+      truncate: 'END',
+    }),
+  });
+
+  if (!res.ok) {
+    const bodyText = await res.text();
+    throw new Error(`NVIDIA embeddings HTTP ${res.status}: ${bodyText.slice(0, 240)}`);
+  }
+
+  const parsed = (await res.json()) as NvidiaEmbeddingResponse;
+  const rows = [...(parsed.data ?? [])].sort((a, b) => a.index - b.index);
+  if (rows.length !== documents.length) {
+    throw new Error(`Expected ${documents.length} embeddings, received ${rows.length}`);
+  }
+  for (const row of rows) {
+    if (row.embedding.length !== dims) {
+      throw new Error(`Expected ${dims}-dim vector, received ${row.embedding.length}`);
+    }
+  }
+  return rows.map((r) => r.embedding);
+}
+
 export async function embedDocuments(documents: string[]): Promise<number[][]> {
-  const provider = getLlmProvider();
+  if (documents.length === 0) return [];
+  const safeDocuments = documents.map((d) => d.trim() || 'Partida arancelaria nacional');
+  const model = embeddingModel();
   const dims = embeddingDims();
+  const nvidiaKey = process.env.NVIDIA_API_KEY?.trim();
+  const providerPref = process.env.LLM_PROVIDER?.trim() || 'nvidia';
+
+  if (nvidiaKey && (providerPref === 'nvidia' || model.startsWith('nvidia/'))) {
+    return embedNvidiaBatch(safeDocuments, model, dims, nvidiaKey, 'passage');
+  }
+
+  const provider = getLlmProvider();
   const vectors: number[][] = [];
-  for (const document of documents) {
-    vectors.push(
-      await provider.embedText(document, { model: embeddingModel(), dims }),
-    );
+  for (const document of safeDocuments) {
+    vectors.push(await provider.embedText(document, { model, dims }));
   }
   return vectors;
 }

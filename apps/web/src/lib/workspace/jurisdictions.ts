@@ -6,7 +6,7 @@ export const JURISDICTIONS: readonly JurisdictionConfig[] = [
     countryCode: 'VE',
     country: 'Venezuela',
     authority: 'SENIAT',
-    nomenclature: 'Arancel de Aduanas (Decreto 4.944 · SA + NCM + Nacional)',
+    nomenclature: 'Arancel de Aduanas Consolidado 2026 (Decreto 4.944 y reformas 5.103–5.198)',
     codeDigits: '10 dígitos (XXXX.XX.XX.XX)',
     pilot: true,
     defaultVatPercent: 16,
@@ -15,7 +15,7 @@ export const JURISDICTIONS: readonly JurisdictionConfig[] = [
     localCurrencyCode: 'VES',
     defaultExchangeRate: 46.5,
     legalRegimeNotes:
-      'Arancel NCM 10 dígitos (Decreto 4.944 GOE 6.804). Regímenes Legales y OGA/PGA (SACS, INSAI, SENCAMER, CONATEL). Tasa Aduanera 1% CIF · IVA 16%.',
+      'Arancel NCM 10 dígitos Consolidado 2026 (Decreto 4.944 + Decretos 5.103, 5.122, 5.147 y 5.198). Regímenes Legales 1–21 y OGA/PGA (SACS, INSAI, SENCAMER, CONATEL). Tasa Aduanera 1% CIF · IVA 16%.',
   },
   {
     id: 'co-dian',

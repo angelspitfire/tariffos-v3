@@ -26,12 +26,12 @@ const STORAGE_KEY = 'tariffos_regulatory_prefs_v1';
 
 export const SEED_REGULATORY_ALERTS: readonly RegulatoryAlertItem[] = [
   {
-    id: 'alert-ve-4944-ex',
+    id: 'alert-ve-consolidado-2026',
     jurisdictionId: 've-seniat',
-    title: 'Reforma parcial de exoneraciones Decreto 4.944 (Cap. 84 y 85)',
-    summary: 'Actualización de códigos elegibles para exoneración parcial de bienes de capital e inversores solares.',
-    gazetteRef: 'Gaceta Oficial 6.812 Ext.',
-    effectiveDate: '2026-09-01',
+    title: 'Arancel Consolidado 2026 activo (Decretos 4.944, 5.103, 5.122, 5.147 y 5.198)',
+    summary: '12,046 subpartidas nacionales indexadas (+377 aperturas nuevas, 270 ajustes AEC y 883 cambios de Régimen Legal).',
+    gazetteRef: 'Decreto N° 5.198 (31/12/2025)',
+    effectiveDate: '2026-01-01',
     severity: 'high',
     read: false,
   },

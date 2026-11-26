@@ -2,6 +2,7 @@ import { prisma } from '@tariffos/database';
 import {
   createRgiLlmRunner,
   defaultProvider,
+  fuseHybridTariffCandidates,
   runRgiWithLlm,
   type LegalNoteRecord,
   type PipelinePorts,
@@ -10,6 +11,7 @@ import {
   type TariffCandidateRecord,
 } from '@tariffos/agent';
 import { searchTariffCandidatesFts } from './tariff-fts';
+import { searchTariffCandidatesVector } from './tariff-vector';
 
 const DEFAULT_AD_VALOREM_FALLBACK = 0;
 const DEFAULT_IVA_FALLBACK = 16;
@@ -31,7 +33,7 @@ function buildHsCodeLookupVariants(hsCode: string): string[] {
 
 /**
  * Hexagonal adapter wiring @tariffos/agent PipelinePorts to Prisma/Postgres
- * and hosted System One / @tariffos/ai-client providers.
+ * (hybrid `TariffNodeEmbedding` vector + `NationalTariff` FTS) and `@tariffos/ai-client`.
  */
 export function createPrismaPipelinePorts(runtimeLlm?: RgiLlmRuntimeOverride): PipelinePorts {
   return {
@@ -60,21 +62,34 @@ export function createPrismaPipelinePorts(runtimeLlm?: RgiLlmRuntimeOverride): P
       countryCode: string,
       query: string,
     ): Promise<TariffCandidateRecord[]> {
-      return searchTariffCandidatesFts(countryCode, query, MAX_SEARCH_CANDIDATES);
+      const [vectorCandidates, lexicalCandidates] = await Promise.all([
+        searchTariffCandidatesVector(countryCode, query, MAX_SEARCH_CANDIDATES),
+        searchTariffCandidatesFts(countryCode, query, MAX_SEARCH_CANDIDATES),
+      ]);
+      if (vectorCandidates.length === 0) return lexicalCandidates;
+      if (lexicalCandidates.length === 0) return vectorCandidates;
+      return fuseHybridTariffCandidates(vectorCandidates, lexicalCandidates, {
+        limit: MAX_SEARCH_CANDIDATES,
+      });
     },
 
     async getLegalNotes(countryCode: string, hsPrefix: string): Promise<LegalNoteRecord[]> {
+      const chapter = hsPrefix.replace(/[^0-9]/g, '').slice(0, 2);
+      if (!chapter) return [];
       const chunks = await prisma.legalKnowledgeChunk.findMany({
         where: {
-          parent: { countryCode },
-          heading: { startsWith: hsPrefix.slice(0, 2) },
+          parent: {
+            countryCode,
+            hierarchyPath: { startsWith: chapter },
+          },
         },
         take: MAX_LEGAL_NOTES,
       });
 
       return chunks.map((chunk) => ({
-        ref: chunk.ruleNumber ? `${chunk.heading} (${chunk.ruleNumber})` : chunk.heading,
+        ref: chunk.ruleNumber ? `${chunk.heading} (Nota ${chunk.ruleNumber})` : chunk.heading,
         text: chunk.content,
+        chapter,
       }));
     },
 
@@ -104,9 +119,12 @@ export function createPrismaPipelinePorts(runtimeLlm?: RgiLlmRuntimeOverride): P
         adValoremRate: row.adValorem ?? DEFAULT_AD_VALOREM_FALLBACK,
         ivaRate: row.iva ?? DEFAULT_IVA_FALLBACK,
         unit: DEFAULT_UNIT,
-        legalRegime: row.legalNotes,
-        prohibited: row.legalNotes?.toLowerCase().includes('prohibid') ?? false,
-        permits: permits.map((p) => p.permitType.name),
+        legalRegime: row.legalNotes ?? undefined,
+        prohibited: false,
+        permits: permits.map(
+          (p: { permitType: { code: string; name: string } }) =>
+            `${p.permitType.code}: ${p.permitType.name}`,
+        ),
       };
     },
 

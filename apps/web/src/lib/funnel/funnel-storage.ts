@@ -45,7 +45,7 @@ export const FUNNEL_JURISDICTIONS: readonly FunnelJurisdictionOption[] = [
     id: 've-seniat',
     country: 'Venezuela',
     authority: 'SENIAT',
-    nomenclature: 'NCM 10 dígitos · Decreto 4.944',
+    nomenclature: 'NCM 10 dígitos · Consolidado 2026 (Decreto 4.944 / 5.198)',
   },
   {
     id: 'co-dian',
