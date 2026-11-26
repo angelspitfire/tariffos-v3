@@ -10,6 +10,7 @@ import { computePlanStatus } from '@/lib/workspace/plan-status';
 import { useWorkspaceState } from '@/lib/workspace/use-workspace-state';
 import { AnalyticsWorkspaceView } from '../organisms/AnalyticsWorkspaceView';
 import { AssistantThreadSurface } from '../organisms/AssistantThreadSurface';
+import { ChatFilesPanel } from '../organisms/ChatFilesPanel';
 import { SkuCatalogModal } from '../organisms/SkuCatalogModal';
 import { WorkspaceCanvasPane } from '../organisms/WorkspaceCanvasPane';
 import { WorkspaceHeader48 } from '../organisms/WorkspaceHeader48';
@@ -28,6 +29,7 @@ export function WorkspaceSplitShell() {
   const [canvasFullscreen, setCanvasFullscreen] = useState(false);
   const [skuModalOpen, setSkuModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [filesPanelOpen, setFilesPanelOpen] = useState(false);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [mobilePane, setMobilePane] = useState<'chat' | 'canvas'>('chat');
   const [chatWidthPct, setChatWidthPct] = useState(46);
@@ -35,6 +37,9 @@ export function WorkspaceSplitShell() {
   const [planId, setPlanId] = useState('trial');
 
   const hasCanvas = ws.canvasComponents.length > 0;
+  const filesCount =
+    ws.pendingAttachments.length +
+    (ws.activeThread?.messages.reduce((acc, m) => acc + (m.attachments?.length ?? 0), 0) ?? 0);
   const showCanvas = hasCanvas && !canvasDismissed;
   const plan = computePlanStatus(ws.threads, planId);
 
@@ -148,10 +153,12 @@ export function WorkspaceSplitShell() {
           isDark={isDark}
           canvasAvailable={hasCanvas && !analyticsOpen}
           canvasVisible={showCanvas}
+          filesCount={filesCount}
           onOpenMobileSidebar={() => setMobileDrawerOpen(true)}
           onChangeJurisdiction={ws.setJurisdictionId}
           onToggleTheme={handleToggleTheme}
           onToggleCanvas={() => setCanvasDismissed((p) => !p)}
+          onOpenFilesPanel={() => setFilesPanelOpen(true)}
         />
 
         <div className="relative flex min-h-0 flex-1 overflow-hidden">
@@ -280,6 +287,18 @@ export function WorkspaceSplitShell() {
         onSave={ws.saveSku}
         onDelete={ws.deleteSku}
         onApplyToChat={(item) => void ws.sendClassification(`Clasificar precedente SKU ${item.sku}: ${item.title}`)}
+      />
+
+      <ChatFilesPanel
+        open={filesPanelOpen}
+        messages={ws.activeThread?.messages ?? []}
+        pendingAttachments={ws.pendingAttachments}
+        onClose={() => setFilesPanelOpen(false)}
+        onReclassifyFile={(att) =>
+          void ws.sendClassification(
+            att.extractedText ? `Clasificar documento adjunto (${att.name}):\n${att.extractedText}` : `Clasificar archivo ${att.name}`,
+          )
+        }
       />
 
       <WorkspaceSettingsModal

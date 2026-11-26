@@ -1,6 +1,6 @@
 'use client';
 
-import { Globe, LayoutGrid, Moon, PanelLeft, Sun } from 'lucide-react';
+import { FolderOpen, Globe, LayoutGrid, Moon, PanelLeft, Sun } from 'lucide-react';
 import type { JurisdictionConfig } from '@tariffos/shared-types';
 import { BrandMark } from '@/components/funnel/atoms/BrandMark';
 import { JURISDICTIONS } from '@/lib/workspace/jurisdictions';
@@ -10,10 +10,12 @@ export interface WorkspaceHeader48Props {
   isDark: boolean;
   canvasAvailable: boolean;
   canvasVisible: boolean;
+  filesCount?: number;
   onOpenMobileSidebar: () => void;
   onChangeJurisdiction: (jurisdictionId: string) => void;
   onToggleTheme: () => void;
   onToggleCanvas: () => void;
+  onOpenFilesPanel?: () => void;
 }
 
 const ICON_BTN =
@@ -25,10 +27,12 @@ export function WorkspaceHeader48({
   isDark,
   canvasAvailable,
   canvasVisible,
+  filesCount = 0,
   onOpenMobileSidebar,
   onChangeJurisdiction,
   onToggleTheme,
   onToggleCanvas,
+  onOpenFilesPanel,
 }: WorkspaceHeader48Props) {
   return (
     <header className="no-print flex h-12 shrink-0 items-center justify-between gap-2 border-b border-line-frost bg-surface-frost px-3 backdrop-blur-xl sm:px-4">
@@ -63,6 +67,22 @@ export function WorkspaceHeader48({
       </div>
 
       <div className="flex shrink-0 items-center gap-1">
+        {onOpenFilesPanel ? (
+          <button
+            type="button"
+            onClick={onOpenFilesPanel}
+            aria-label={`Archivos del expediente (${filesCount})`}
+            title="Archivos del expediente"
+            className="relative inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary"
+          >
+            <FolderOpen className="h-4 w-4" aria-hidden="true" />
+            {filesCount > 0 ? (
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent-brand px-1 font-mono text-[9px] font-bold text-white">
+                {filesCount}
+              </span>
+            ) : null}
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={onToggleTheme}
