@@ -122,7 +122,7 @@ export function LandingHeroPreview({
                   <Scale className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                   Partida arancelaria determinada
                 </div>
-                <div className="font-mono text-3xl sm:text-4xl font-bold tracking-tight text-ink-primary tabular-nums">
+                <div className="font-mono text-2xl sm:text-4xl font-bold tracking-tight text-ink-primary tabular-nums break-words">
                   {activeCase.hsCode}
                 </div>
                 <p className="text-sm text-ink-secondary">{activeCase.hsDescription}</p>

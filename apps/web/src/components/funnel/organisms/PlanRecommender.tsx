@@ -67,7 +67,7 @@ export function PlanRecommender({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="w-full px-4 py-3 flex items-center justify-between gap-3 text-left hover:bg-accent-soft/70 transition-colors cursor-pointer"
+        className="w-full px-4 py-3 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 sm:gap-3 text-left hover:bg-accent-soft/70 transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-7 h-7 rounded-lg bg-accent-brand/15 text-accent-ink flex items-center justify-center shrink-0">
@@ -77,7 +77,7 @@ export function PlanRecommender({
             <div className="text-xs font-semibold text-ink-primary">
               ¿No sabes qué plan elegir? Usa el recomendador rápido
             </div>
-            <div className="text-[11px] text-ink-muted truncate">
+            <div className="text-[11px] text-ink-muted leading-snug">
               Indica volumen, equipo y necesidades de lotes para sugerirte el plan óptimo.
             </div>
           </div>

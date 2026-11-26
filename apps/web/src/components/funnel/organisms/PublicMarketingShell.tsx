@@ -47,11 +47,11 @@ export function PublicMarketingShell({
         Ir al contenido
       </a>
 
-      <header className="sticky top-0 z-[300] px-4 sm:px-8 pt-4 pb-2 pointer-events-none">
+      <header className="sticky top-0 z-[300] px-3 sm:px-8 pt-4 pb-2 pointer-events-none">
         <div
-          className={`pointer-events-auto mx-auto flex items-center justify-between gap-4 rounded-full px-4 sm:px-5 h-14 backdrop-blur-xl transition-colors duration-200 ${
+          className={`pointer-events-auto mx-auto flex items-center justify-between gap-2 sm:gap-4 rounded-full px-3 sm:px-5 min-h-14 py-1.5 backdrop-blur-xl transition-colors duration-200 ${
             isScrolled
-              ? 'max-w-4xl bg-white/88 dark:bg-[#111827]/90 border border-black/[0.08] dark:border-white/[0.12] shadow-[0_10px_30px_-14px_rgba(15,23,42,0.22)]'
+              ? 'max-w-5xl bg-white/88 dark:bg-[#111827]/90 border border-black/[0.08] dark:border-white/[0.12] shadow-[0_10px_30px_-14px_rgba(15,23,42,0.22)]'
               : 'max-w-[1280px] bg-white/70 dark:bg-[#111827]/75 border border-black/[0.06] dark:border-white/[0.08]'
           }`}
         >
@@ -59,7 +59,7 @@ export function PublicMarketingShell({
 
           <nav
             aria-label="Navegación principal"
-            className="hidden lg:flex items-center gap-5 text-xs font-medium text-ink-secondary"
+            className="hidden lg:flex items-center gap-4 xl:gap-5 text-xs font-medium text-ink-secondary"
           >
             <a href="#demo" className="hover:text-ink-primary transition-colors whitespace-nowrap py-2">
               Demo en vivo
@@ -78,12 +78,12 @@ export function PublicMarketingShell({
             </a>
           </nav>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             <button
               type="button"
               onClick={toggleTheme}
               aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-              className="w-9 h-9 inline-flex items-center justify-center rounded-full text-ink-secondary hover:text-ink-primary hover:bg-black/[0.06] dark:hover:bg-white/[0.08] transition-colors cursor-pointer"
+              className="w-8 h-8 sm:w-9 sm:h-9 inline-flex items-center justify-center rounded-full text-ink-secondary hover:text-ink-primary hover:bg-black/[0.06] dark:hover:bg-white/[0.08] transition-colors cursor-pointer"
             >
               {isDark ? (
                 <Sun className="w-4 h-4" aria-hidden="true" />
@@ -94,7 +94,7 @@ export function PublicMarketingShell({
             {hasSession ? (
               <Link
                 href="/app"
-                className="px-4 min-h-[38px] inline-flex items-center gap-1.5 rounded-full text-xs font-semibold bg-accent-brand hover:bg-accent-brand-hover text-white transition-colors whitespace-nowrap"
+                className="px-3.5 sm:px-4 min-h-[36px] sm:min-h-[38px] inline-flex items-center gap-1.5 rounded-full text-xs font-semibold bg-accent-brand hover:bg-accent-brand-hover text-white transition-colors whitespace-nowrap"
               >
                 <span>Ir al workspace</span>
                 <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
@@ -103,13 +103,14 @@ export function PublicMarketingShell({
               <>
                 <Link
                   href="/login"
-                  className="px-3 py-1.5 rounded-full text-xs font-semibold text-ink-secondary hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink-primary transition-colors whitespace-nowrap"
+                  className="px-2 sm:px-3 py-1.5 rounded-full text-xs font-semibold text-ink-secondary hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink-primary transition-colors whitespace-nowrap"
                 >
-                  Iniciar sesión
+                  <span className="sm:hidden">Entrar</span>
+                  <span className="hidden sm:inline">Iniciar sesión</span>
                 </Link>
                 <Link
-                  href="/onboarding?plan=pilot&cycle=monthly"
-                  className="px-4 min-h-[38px] inline-flex items-center rounded-full text-xs font-semibold bg-accent-brand hover:bg-accent-brand-hover text-white transition-colors whitespace-nowrap"
+                  href="/onboarding?plan=trial&cycle=monthly"
+                  className="px-3 sm:px-4 min-h-[36px] sm:min-h-[38px] inline-flex items-center rounded-full text-xs font-semibold bg-accent-brand hover:bg-accent-brand-hover text-white transition-colors whitespace-nowrap"
                 >
                   Activar Piloto
                 </Link>

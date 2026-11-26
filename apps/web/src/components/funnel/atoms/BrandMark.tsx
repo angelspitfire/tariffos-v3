@@ -34,7 +34,7 @@ export function BrandMark({ href = '/', showBadge = true, size = 'md' }: BrandMa
         TariffOS
       </span>
       {showBadge ? (
-        <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md border border-border-subtle font-mono text-[10px] text-ink-muted">
+        <span className="hidden xl:inline-flex items-center px-2 py-0.5 rounded-md border border-border-subtle font-mono text-[10px] text-ink-muted">
           RGI 1–6 · VE
         </span>
       ) : null}
