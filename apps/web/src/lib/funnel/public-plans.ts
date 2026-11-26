@@ -1,4 +1,4 @@
-import { prisma } from '@tariffos/database';
+import { isInternalTariffosPlanSlug, prisma } from '@tariffos/database';
 import {
   DEFAULT_PAYMENT_INSTRUCTIONS,
   SAAS_PLANS,
@@ -65,6 +65,7 @@ export async function loadPublicPlans(): Promise<SubscriptionPlanConfig[]> {
     for (let i = 0; i < rows.length; i += 1) {
       const row = rows[i];
       const meta = extractPlanFeaturesMeta(row.features);
+      if (meta.internalOnly || isInternalTariffosPlanSlug(row.name)) continue;
       if (!meta.isPublic || meta.isArchived) continue;
       if (LEGACY_HIDDEN_SLUGS.has(row.name) && !isExplicitlyPublicInJson(row.features)) {
         continue;

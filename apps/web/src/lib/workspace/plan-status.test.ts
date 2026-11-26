@@ -125,4 +125,31 @@ describe('plan status', () => {
     expect(merged.billingStatus).toBe('CANCELED');
     expect(merged.isTrial).toBe(false);
   });
+
+  it('marks TariffOS internal unlimited plan as isUnlimited without nearLimit or exhaustion', () => {
+    const local = computePlanStatus([], 'pilot');
+    const snapshot = {
+      tenantId: 'ten-tariffos',
+      tenantName: 'TariffOS',
+      planId: 'tariffos_internal',
+      planName: 'TariffOS Interno (Ilimitado)',
+      billingStatus: 'ACTIVE' as const,
+      allowOverage: true,
+      unlimited: true,
+      allowBatch: true,
+      month: 11,
+      year: 2026,
+      used: 250000,
+      limit: 0,
+      percentUsed: 0,
+      inputTokens: 900000,
+      outputTokens: 300000,
+    };
+    const merged = mergeCloudUsageIntoPlanStatus(local, snapshot);
+    expect(merged.isUnlimited).toBe(true);
+    expect(merged.nearLimit).toBe(false);
+    expect(merged.exhausted).toBe(false);
+    expect(merged.usagePct).toBe(0);
+    expect(resolveWorkspaceReadOnlyReason(snapshot)).toBeNull();
+  });
 });

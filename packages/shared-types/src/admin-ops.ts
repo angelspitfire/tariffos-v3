@@ -119,6 +119,7 @@ export interface ClientCurrentUsageSnapshot {
   planName: string;
   billingStatus: TenantBillingStatus;
   allowOverage: boolean;
+  unlimited?: boolean;
   oneTimeOnly?: boolean;
   allowBatch?: boolean;
   month: number;

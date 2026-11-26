@@ -1,5 +1,6 @@
 import { SAAS_PLANS } from '@tariffos/shared-types';
 import type { PrismaClient } from '../generated/client';
+import { ensureInternalTariffosPlan } from '../internal-plan';
 
 const LEGACY_HIDDEN_PLAN_SLUGS = ['trial', 'basico', 'profesional', 'pro', 'corporate'] as const;
 
@@ -61,6 +62,8 @@ export async function seedCommercialPlans(prisma: PrismaClient): Promise<number>
       },
     });
   }
+
+  await ensureInternalTariffosPlan(prisma);
 
   return SAAS_PLANS.length;
 }

@@ -21,18 +21,22 @@ vi.mock('@/lib/supabase/admin', () => ({
   }),
 }));
 
-vi.mock('@tariffos/database', () => ({
-  prisma: {
-    plan: { findUnique: mocks.planFindUnique },
-    $transaction: async <T>(fn: (tx: unknown) => Promise<T>) =>
-      fn({
-        tenant: { create: mocks.tenantCreate },
-        userProfile: { upsert: mocks.userProfileUpsert },
-        waitlistLead: { update: mocks.waitlistLeadUpdate },
-      }),
-  },
-  recordAdminAudit: mocks.recordAdminAudit,
-}));
+vi.mock('@tariffos/database', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tariffos/database')>();
+  return {
+    ...actual,
+    prisma: {
+      plan: { findUnique: mocks.planFindUnique },
+      $transaction: async <T>(fn: (tx: unknown) => Promise<T>) =>
+        fn({
+          tenant: { create: mocks.tenantCreate },
+          userProfile: { upsert: mocks.userProfileUpsert },
+          waitlistLead: { update: mocks.waitlistLeadUpdate },
+        }),
+    },
+    recordAdminAudit: mocks.recordAdminAudit,
+  };
+});
 
 import { getOfflineAdminState, resetOfflineAdminState } from '@/lib/admin/offline-store';
 import { POST } from './route';

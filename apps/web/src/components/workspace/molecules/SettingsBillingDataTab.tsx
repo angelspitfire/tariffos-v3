@@ -27,7 +27,7 @@ export function SettingsBillingTab({ plan, onClose }: SettingsBillingTabProps) {
             {plan.planName}
           </span>
           <span className="rounded-full border border-border-subtle bg-surface-panel px-2.5 py-0.5 font-mono text-[11px] font-semibold text-ink-primary tabular-nums">
-            {plan.quotaUsed} / {plan.quotaLimit} clasif.
+            {plan.quotaUsed} / {plan.isUnlimited ? '∞' : plan.quotaLimit} clasif.
           </span>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-surface-subtle">

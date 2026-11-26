@@ -8,11 +8,9 @@ import { PdfDocumentBuilder } from './pdf-writer';
 import type { WorkspaceToast } from './types';
 
 const REVIEW_STATUS_LABELS: Record<NonNullable<A2UIDossierComponent['reviewStatus']>, string> = {
-  auto_approved: 'Aprobado automáticamente',
+  draft_ai: 'Borrador IA',
   approved: 'Aprobado por agente aduanal',
   in_review: 'En revisión técnica',
-  pending_review: 'Pendiente de revisión',
-  changes_requested: 'Cambios solicitados',
 };
 
 export function buildDossierPdfFilename(dossier: A2UIDossierComponent): string {

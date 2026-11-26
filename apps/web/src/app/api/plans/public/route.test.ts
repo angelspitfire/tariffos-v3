@@ -4,11 +4,15 @@ const mocks = vi.hoisted(() => ({
   planFindMany: vi.fn<() => Promise<unknown[]>>(),
 }));
 
-vi.mock('@tariffos/database', () => ({
-  prisma: {
-    plan: { findMany: mocks.planFindMany },
-  },
-}));
+vi.mock('@tariffos/database', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tariffos/database')>();
+  return {
+    ...actual,
+    prisma: {
+      plan: { findMany: mocks.planFindMany },
+    },
+  };
+});
 
 import { getOfflineAdminState, resetOfflineAdminState } from '@/lib/admin/offline-store';
 import { GET } from './route';

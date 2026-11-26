@@ -9,6 +9,8 @@ export * from './client';
 export * from './billing';
 export * from './admin-audit';
 export * from './platform-admins';
+export * from './internal-plan';
+export * from './admin-credentials-email';
 export * from './country';
 export * from './derogation';
 export * from './arancel-tree';

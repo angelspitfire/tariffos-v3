@@ -1,8 +1,12 @@
+import { randomBytes } from 'node:crypto';
 import * as path from 'node:path';
 import * as dotenv from 'dotenv';
+import { sendSuperAdminCredentialsEmail } from '../admin-credentials-email';
+import { provisionInternalAdminWorkspace } from '../internal-plan';
 import {
   grantPlatformAdmin,
   listPlatformAdmins,
+  normalizeAdminEmail,
   revokePlatformAdmin,
   VALID_PLATFORM_ADMIN_ROLES,
 } from '../platform-admins';
@@ -13,36 +17,84 @@ dotenv.config({ path: path.join(rootDir, '.env') });
 
 function getFlagValue(args: readonly string[], flag: string): string | undefined {
   const idx = args.indexOf(flag);
-  if (idx === -1) return undefined;
-  return args[idx + 1];
+  return idx === -1 ? undefined : args[idx + 1];
 }
 
-function hasFlag(args: readonly string[], flag: string): boolean {
-  return args.includes(flag);
+function generateTemporaryPassword(): string {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  const bytes = randomBytes(16);
+  let core = '';
+  for (const b of bytes) core += alphabet[b % alphabet.length];
+  return `TfOS!${core.slice(0, 6)}-${core.slice(6, 12)}#${core.slice(12, 16)}9a`;
 }
 
-async function sendSupabaseInvite(email: string): Promise<void> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
+async function upsertSupabaseAuthUser(params: {
+  email: string;
+  password: string;
+  fullName: string;
+  role: string;
+}): Promise<{ userId: string; action: 'created' | 'updated' }> {
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL)?.replace(/\/+$/, '');
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
-    console.warn('⚠️  --invite omitido: falta NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY.');
-    return;
+    throw new Error('Faltan NEXT_PUBLIC_SUPABASE_URL/SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY.');
   }
-  const res = await fetch(`${url}/auth/v1/invite`, {
+  const headers = {
+    apikey: key,
+    Authorization: `Bearer ${key}`,
+    'Content-Type': 'application/json',
+  };
+
+  const listRes = await fetch(`${url}/auth/v1/admin/users?page=1&per_page=200`, { headers });
+  if (!listRes.ok) {
+    throw new Error(`Supabase listUsers respondió ${listRes.status}: ${await listRes.text()}`);
+  }
+  const listJson = (await listRes.json()) as {
+    users?: Array<{
+      id: string;
+      email?: string;
+      user_metadata?: Record<string, unknown>;
+      app_metadata?: Record<string, unknown>;
+    }>;
+  };
+  const existing = (listJson.users ?? []).find(
+    (u) => u.email?.trim().toLowerCase() === params.email,
+  );
+
+  if (existing) {
+    const upd = await fetch(`${url}/auth/v1/admin/users/${existing.id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({
+        password: params.password,
+        email_confirm: true,
+        ban_duration: 'none',
+        user_metadata: { ...(existing.user_metadata ?? {}), full_name: params.fullName },
+        app_metadata: { ...(existing.app_metadata ?? {}), platform_role: params.role },
+      }),
+    });
+    if (!upd.ok) {
+      throw new Error(`Supabase updateUser respondió ${upd.status}: ${await upd.text()}`);
+    }
+    return { userId: existing.id, action: 'updated' };
+  }
+
+  const crt = await fetch(`${url}/auth/v1/admin/users`, {
     method: 'POST',
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email }),
+    headers,
+    body: JSON.stringify({
+      email: params.email,
+      password: params.password,
+      email_confirm: true,
+      user_metadata: { full_name: params.fullName },
+      app_metadata: { platform_role: params.role },
+    }),
   });
-  if (!res.ok) {
-    const body = await res.text();
-    console.warn(`⚠️  Invitación Supabase Auth respondió ${res.status}: ${body}`);
-    return;
+  if (!crt.ok) {
+    throw new Error(`Supabase createUser respondió ${crt.status}: ${await crt.text()}`);
   }
-  console.log(`✉️  Invitación Supabase Auth enviada a ${email}`);
+  const created = (await crt.json()) as { id: string };
+  return { userId: created.id, action: 'created' };
 }
 
 function printHelp(): void {
@@ -51,14 +103,14 @@ Uso: pnpm admin:users <comando> [opciones]
 
 Comandos:
   list
-      Lista todos los correos administradores registrados en platform_admins.
-
-  grant <email> [--role super_admin|ops_billing|support] [--notes "texto"] [--invite]
-      Crea o reactiva un correo administrador en la tabla platform_admins.
-      Roles válidos: ${VALID_PLATFORM_ADMIN_ROLES.join(', ')}
-
+      Lista los correos administradores en platform_admins.
+  provision <email> [--name "Nombre"] [--company "TariffOS"] [--role super_admin|ops_billing|support] [--password "..."]
+      Crea/actualiza el usuario en Supabase Auth con clave temporal, asigna el plan infinito
+      exclusivo "tariffos_internal" sin paso de pago y envía las credenciales por correo.
+  grant <email> [--role ${VALID_PLATFORM_ADMIN_ROLES.join('|')}] [--notes "texto"]
+      Registra o reactiva un correo en platform_admins.
   revoke <email> [--reason "texto"]
-      Revoca el acceso de un correo administrador (is_active = false).
+      Revoca el acceso de un correo administrador.
 `);
 }
 
@@ -71,63 +123,95 @@ async function main(): Promise<void> {
 
   const { getUnscopedSystemPrisma } = await import('../client');
   const prisma = getUnscopedSystemPrisma();
+  const actor = `cli:${process.env.USER ?? 'console'}`;
+
   try {
     if (command === 'list') {
       const rows = await listPlatformAdmins(prisma);
-      if (rows.length === 0) {
-        console.log('No hay administradores registrados en platform_admins.');
-        return;
-      }
+      if (rows.length === 0) return console.log('No hay administradores en platform_admins.');
       console.table(
         rows.map((r) => ({
           email: r.email,
           role: r.role,
           estado: r.isActive ? 'ACTIVO' : 'REVOCADO',
           notas: r.notes ?? '—',
-          actualizado: r.updatedAt ? r.updatedAt.toISOString().slice(0, 19) : '—',
         })),
+      );
+      return;
+    }
+
+    if (command === 'provision' || command === 'create') {
+      const rawEmail = rest[0];
+      if (!rawEmail || rawEmail.startsWith('--')) {
+        throw new Error('Debes indicar el correo. Ej: pnpm admin:users provision admin@tariffos.app');
+      }
+      const email = normalizeAdminEmail(rawEmail);
+      const role = getFlagValue(rest, '--role') ?? 'super_admin';
+      const fullName = getFlagValue(rest, '--name') ?? email.split('@')[0] ?? 'Super Admin';
+      const companyName = getFlagValue(rest, '--company') ?? 'TariffOS';
+      const temporaryPassword = getFlagValue(rest, '--password') ?? generateTemporaryPassword();
+
+      const auth = await upsertSupabaseAuthUser({ email, password: temporaryPassword, fullName, role });
+      const ws = await prisma.$transaction((tx) =>
+        provisionInternalAdminWorkspace(tx, {
+          userId: auth.userId,
+          email,
+          fullName,
+          companyName,
+          role,
+          actor,
+        }),
+      );
+      const mail = await sendSuperAdminCredentialsEmail({
+        recipientEmail: email,
+        recipientName: fullName,
+        temporaryPassword,
+        role,
+      });
+
+      console.log(
+        JSON.stringify(
+          {
+            ok: true,
+            email,
+            userId: auth.userId,
+            authAction: auth.action,
+            temporaryPassword,
+            ...ws,
+            emailDelivery: mail,
+          },
+          null,
+          2,
+        ),
       );
       return;
     }
 
     if (command === 'grant') {
       const email = rest[0];
-      if (!email || email.startsWith('--')) {
-        console.error('Error: debes indicar el correo. Ej: pnpm admin:users grant usuario@dominio.com');
-        process.exit(1);
-      }
-      const role = getFlagValue(rest, '--role') ?? 'super_admin';
-      const notes = getFlagValue(rest, '--notes');
+      if (!email || email.startsWith('--')) throw new Error('Debes indicar el correo.');
       const row = await grantPlatformAdmin(prisma, {
         email,
-        role,
-        notes,
-        actor: `cli:${process.env.USER ?? 'console'}`,
+        role: getFlagValue(rest, '--role') ?? 'super_admin',
+        notes: getFlagValue(rest, '--notes'),
+        actor,
       });
       console.log(`✅ Admin activo: ${row.email} (rol: ${row.role})`);
-      if (hasFlag(rest, '--invite')) {
-        await sendSupabaseInvite(row.email);
-      }
       return;
     }
 
     if (command === 'revoke') {
       const email = rest[0];
-      if (!email || email.startsWith('--')) {
-        console.error('Error: debes indicar el correo a revocar.');
-        process.exit(1);
-      }
-      const reason = getFlagValue(rest, '--reason');
+      if (!email || email.startsWith('--')) throw new Error('Debes indicar el correo a revocar.');
       const row = await revokePlatformAdmin(prisma, {
         email,
-        reason,
-        actor: `cli:${process.env.USER ?? 'console'}`,
+        reason: getFlagValue(rest, '--reason'),
+        actor,
       });
       console.log(`🛑 Acceso admin revocado para: ${row.email}`);
       return;
     }
 
-    console.error(`Comando desconocido: ${command}`);
     printHelp();
     process.exit(1);
   } finally {
@@ -135,7 +219,9 @@ async function main(): Promise<void> {
   }
 }
 
-void main().catch((err: unknown) => {
-  console.error('❌ Error:', err instanceof Error ? err.message : String(err));
-  process.exit(1);
-});
+void main()
+  .then(() => process.exit(0))
+  .catch((err: unknown) => {
+    console.error('❌ Error:', err instanceof Error ? err.message : String(err));
+    process.exit(1);
+  });

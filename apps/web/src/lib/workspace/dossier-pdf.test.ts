@@ -37,12 +37,17 @@ const sampleDossier: A2UIDossierComponent = {
 
 const sampleProfile: UserProfileSettings = {
   fullName: 'María José Pérez',
+  email: 'maria@aduanas.ve',
+  role: 'Agente Aduanal',
+  companyName: 'Aduanas del Caribe C.A.',
   brokerLicense: 'SENIAT-AG-1420',
   defaultJurisdictionId: 've-seniat',
   defaultIncoterm: 'CIF',
-  approvalWorkflowMode: 'require_review_on_low_confidence',
+  preferredCurrency: 'USD',
+  approvalWorkflowMode: 'agent_decides',
   detailLevel: 'standard',
   themePreference: 'light',
+  autoOpenCanvas: true,
   updatedAt: '2026-11-26T12:00:00.000Z',
 };
 

@@ -1,4 +1,4 @@
-import { prisma, recordAdminAudit } from '@tariffos/database';
+import { isInternalTariffosPlanSlug, prisma, recordAdminAudit } from '@tariffos/database';
 import { AdminOnboardTenantInputSchema } from '@tariffos/shared-types';
 import { parseJsonBody, requireAdmin } from '@/lib/admin/http-helpers';
 import {
@@ -118,6 +118,18 @@ export async function POST(request: Request): Promise<Response> {
     (await prisma.plan.findUnique({ where: { name: input.planId } }));
   if (!plan) {
     return Response.json({ error: `Plan ${input.planId} not found` }, { status: 404 });
+  }
+  if (isInternalTariffosPlanSlug(plan.name)) {
+    const targetAdmin = await prisma.platformAdmin?.findUnique({
+      where: { email: ownerEmail },
+      select: { isActive: true },
+    });
+    if (!targetAdmin?.isActive) {
+      return Response.json(
+        { error: 'El plan TariffOS Interno es exclusivo para cuentas internas de TariffOS.' },
+        { status: 403 },
+      );
+    }
   }
 
   const provisioned = await resolveOrInviteCloudUser(

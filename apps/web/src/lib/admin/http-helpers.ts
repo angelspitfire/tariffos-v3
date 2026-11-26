@@ -32,6 +32,8 @@ export function extractPlanFeaturesMeta(features: unknown): {
   oneTimeOnly: boolean;
   customPricing: boolean;
   allowBatch: boolean;
+  unlimited: boolean;
+  internalOnly: boolean;
   creditableDays?: number;
   maxUsers: number;
   sortOrder?: number;
@@ -45,6 +47,8 @@ export function extractPlanFeaturesMeta(features: unknown): {
       oneTimeOnly: false,
       customPricing: false,
       allowBatch: true,
+      unlimited: false,
+      internalOnly: false,
       maxUsers: 1,
       sortOrder: undefined,
       isPublic: true,
@@ -63,6 +67,8 @@ export function extractPlanFeaturesMeta(features: unknown): {
     oneTimeOnly: Boolean(obj.oneTimeOnly),
     customPricing: Boolean(obj.customPricing),
     allowBatch: obj.allowBatch === undefined ? true : Boolean(obj.allowBatch),
+    unlimited: Boolean(obj.unlimited),
+    internalOnly: Boolean(obj.internalOnly),
     creditableDays: typeof obj.creditableDays === 'number' ? obj.creditableDays : undefined,
     maxUsers: typeof obj.maxUsers === 'number' && obj.maxUsers > 0 ? obj.maxUsers : 1,
     sortOrder: typeof obj.sortOrder === 'number' ? obj.sortOrder : undefined,

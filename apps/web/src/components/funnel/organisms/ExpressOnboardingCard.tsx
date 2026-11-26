@@ -92,7 +92,7 @@ export function ExpressOnboardingCard({
       );
       if (!result.ok) return setError(result.error);
       router.push(
-        isPaidPlan
+        isPaidPlan && !result.skipPaymentActivation
           ? `/activate-plan?plan=${encodeURIComponent(selectedPlanId)}&cycle=${effectiveCycle}`
           : '/app',
       );

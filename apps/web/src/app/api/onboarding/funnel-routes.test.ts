@@ -17,24 +17,28 @@ vi.mock('@/lib/supabase/server', () => ({
   getAuthenticatedUser: () => mockGetAuthenticatedUser(),
 }));
 
-vi.mock('@tariffos/database', () => ({
-  prisma: {
-    userProfile: { upsert: (...args: unknown[]) => mockProfileUpsert(...args) },
-    membership: {
-      findFirst: (...args: unknown[]) => mockMembershipFindFirst(...args),
-      create: vi.fn(),
+vi.mock('@tariffos/database', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tariffos/database')>();
+  return {
+    ...actual,
+    prisma: {
+      userProfile: { upsert: (...args: unknown[]) => mockProfileUpsert(...args) },
+      membership: {
+        findFirst: (...args: unknown[]) => mockMembershipFindFirst(...args),
+        create: vi.fn(),
+      },
+      tenant: {
+        update: (...args: unknown[]) => mockTenantUpdate(...args),
+        create: vi.fn(),
+      },
+      payment: {
+        findMany: (...args: unknown[]) => mockPaymentFindMany(...args),
+        create: (...args: unknown[]) => mockPaymentCreate(...args),
+        update: (...args: unknown[]) => mockPaymentUpdate(...args),
+      },
     },
-    tenant: {
-      update: (...args: unknown[]) => mockTenantUpdate(...args),
-      create: vi.fn(),
-    },
-    payment: {
-      findMany: (...args: unknown[]) => mockPaymentFindMany(...args),
-      create: (...args: unknown[]) => mockPaymentCreate(...args),
-      update: (...args: unknown[]) => mockPaymentUpdate(...args),
-    },
-  },
-}));
+  };
+});
 
 import { POST as postOnboarding } from '../onboarding/route';
 import {

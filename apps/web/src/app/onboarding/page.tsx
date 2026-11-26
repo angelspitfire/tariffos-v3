@@ -1,7 +1,11 @@
 import { Suspense } from 'react';
+import { redirect } from 'next/navigation';
 import type { SubscriptionBillingCycle } from '@tariffos/shared-types';
 import { BrandMark } from '@/components/funnel/atoms/BrandMark';
 import { ExpressOnboardingCard } from '@/components/funnel/organisms/ExpressOnboardingCard';
+import { resolveCloudFunnelGateRedirect } from '@/lib/funnel/server-account-gate';
+
+export const dynamic = 'force-dynamic';
 
 interface OnboardingPageProps {
   searchParams: Promise<{
@@ -12,6 +16,13 @@ interface OnboardingPageProps {
 
 async function OnboardingContent({ searchParams }: OnboardingPageProps) {
   const params = await searchParams;
+  const redirectTarget = await resolveCloudFunnelGateRedirect({
+    route: 'onboarding',
+    hasFunnelPlanParam: Boolean(params.plan),
+  });
+  if (redirectTarget) {
+    redirect(redirectTarget);
+  }
   const cycle: SubscriptionBillingCycle | undefined =
     params.cycle === 'annual' || params.cycle === 'monthly' ? params.cycle : undefined;
 

@@ -7,11 +7,7 @@ import { extractThreadArtifacts } from '@/lib/workspace/artifact-versions';
 import { exportWorkspaceDossierPdf } from '@/lib/workspace/dossier-pdf';
 import { buildWorkspaceInlineActions } from '@/lib/workspace/inline-actions';
 import { JURISDICTIONS } from '@/lib/workspace/jurisdictions';
-import {
-  computePlanStatus,
-  mergeCloudUsageIntoPlanStatus,
-  resolveWorkspaceReadOnlyReason,
-} from '@/lib/workspace/plan-status';
+import { computePlanStatus, mergeCloudUsageIntoPlanStatus, resolveWorkspaceReadOnlyReason } from '@/lib/workspace/plan-status';
 import { useCloudUsageSnapshot } from '@/lib/workspace/use-cloud-usage';
 import { useWorkspaceState } from '@/lib/workspace/use-workspace-state';
 import { AnalyticsWorkspaceView } from '../organisms/AnalyticsWorkspaceView';

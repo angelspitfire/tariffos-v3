@@ -11,15 +11,19 @@ vi.mock('@/lib/agent/cloud-session', () => ({
   resolveCloudTenantContext: mocks.resolveCloudTenantContext,
 }));
 
-vi.mock('@tariffos/database', () => ({
-  prisma: {
-    tenant: { findUnique: mocks.tenantFindUnique },
-  },
-  billingService: {
-    getCurrentMonthUsage: mocks.getCurrentMonthUsage,
-    getEffectiveUsage: mocks.getEffectiveUsage,
-  },
-}));
+vi.mock('@tariffos/database', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tariffos/database')>();
+  return {
+    ...actual,
+    prisma: {
+      tenant: { findUnique: mocks.tenantFindUnique },
+    },
+    billingService: {
+      getCurrentMonthUsage: mocks.getCurrentMonthUsage,
+      getEffectiveUsage: mocks.getEffectiveUsage,
+    },
+  };
+});
 
 import { GET } from './route';
 
@@ -126,5 +130,57 @@ describe('GET /api/usage/current', () => {
     expect(body.usage.billingStatus).toBe('PAST_DUE');
     expect(body.usage.oneTimeOnly).toBe(true);
     expect(body.usage.allowBatch).toBe(true);
+  });
+
+  it('returns unlimited=true and percentUsed=0 for TariffOS internal unlimited plan', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+
+    mocks.resolveCloudTenantContext.mockResolvedValue({
+      ok: true,
+      context: {
+        userId: 'u-admin',
+        userEmail: 'angel.alberto.fernandez@gmail.com',
+        tenantId: 'ten-tariffos',
+        role: 'OWNER',
+      },
+    });
+    mocks.tenantFindUnique.mockResolvedValue({
+      id: 'ten-tariffos',
+      name: 'TariffOS',
+      planId: 'plan-internal-1',
+      billingLimit: 1_000_000_000,
+      billingStatus: 'ACTIVE',
+      allowOverage: true,
+      plan: {
+        name: 'tariffos_internal',
+        classificationLimit: 1_000_000_000,
+        features: {
+          displayName: 'TariffOS Interno (Ilimitado)',
+          unlimited: true,
+          internalOnly: true,
+          isPublic: false,
+          allowBatch: true,
+        },
+      },
+    });
+    mocks.getEffectiveUsage.mockResolvedValue({
+      month: 11,
+      year: 2026,
+      count: 4200,
+      inputTokens: 120000,
+      outputTokens: 45000,
+    });
+
+    const res = await GET();
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      usage: { unlimited?: boolean; percentUsed: number; planName: string; allowOverage: boolean };
+    };
+    expect(body.usage.unlimited).toBe(true);
+    expect(body.usage.percentUsed).toBe(0);
+    expect(body.usage.planName).toBe('TariffOS Interno (Ilimitado)');
+    expect(body.usage.allowOverage).toBe(true);
   });
 });

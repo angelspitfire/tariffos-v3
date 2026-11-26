@@ -73,9 +73,10 @@ export async function GET(request: Request): Promise<Response> {
     .map((t) => {
       const usage = t.usageRecords[0];
       const used = usage?.count ?? 0;
-      const limit = t.billingLimit > 0 ? t.billingLimit : (t.plan?.classificationLimit ?? 100);
-      const percentUsed = limit > 0 ? Math.round((used / limit) * 100) : 0;
       const meta = extractPlanFeaturesMeta(t.plan?.features);
+      const isUnlimited = meta.unlimited || t.plan?.name === 'tariffos_internal';
+      const limit = t.billingLimit > 0 ? t.billingLimit : (t.plan?.classificationLimit ?? 100);
+      const percentUsed = isUnlimited ? 0 : limit > 0 ? Math.round((used / limit) * 100) : 0;
       const inputTokens = usage?.inputTokens ?? 0;
       const outputTokens = usage?.outputTokens ?? 0;
       return {

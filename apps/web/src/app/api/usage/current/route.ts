@@ -1,4 +1,4 @@
-import { billingService, prisma } from '@tariffos/database';
+import { billingService, isInternalTariffosPlanSlug, prisma } from '@tariffos/database';
 import { SAAS_PLANS, type ClientCurrentUsageSnapshot } from '@tariffos/shared-types';
 import { resolveCloudTenantContext } from '@/lib/agent/cloud-session';
 import { extractPlanFeaturesMeta } from '@/lib/admin/http-helpers';
@@ -53,16 +53,21 @@ export async function GET(): Promise<Response> {
   }
 
   const planMeta = extractPlanFeaturesMeta(tenant.plan?.features);
-  const isOneTime = planMeta.oneTimeOnly || tenant.billingStatus === 'TRIALING';
+  const isUnlimited = planMeta.unlimited || isInternalTariffosPlanSlug(tenant.plan?.name);
+  const isOneTime = !isUnlimited && (planMeta.oneTimeOnly || tenant.billingStatus === 'TRIALING');
   const monthly = await billingService.getEffectiveUsage(tenant.id, isOneTime);
   const isPendingInitialActivation =
-    tenant.billingStatus === 'PAST_DUE' && tenant.billingLimit === 0;
+    !isUnlimited && tenant.billingStatus === 'PAST_DUE' && tenant.billingLimit === 0;
   const limit = isPendingInitialActivation
     ? 0
     : tenant.billingLimit > 0
       ? tenant.billingLimit
       : (tenant.plan?.classificationLimit ?? 0);
-  const percentUsed = limit > 0 ? Math.min(100, Math.round((monthly.count / limit) * 100)) : 0;
+  const percentUsed = isUnlimited
+    ? 0
+    : limit > 0
+      ? Math.min(100, Math.round((monthly.count / limit) * 100))
+      : 0;
 
   const fallbackPlanName =
     SAAS_PLANS.find((p) => p.planId === tenant.planId || p.planId === tenant.plan?.name)?.name ??
@@ -75,9 +80,10 @@ export async function GET(): Promise<Response> {
     planId: tenant.planId ?? tenant.plan?.name ?? 'pilot',
     planName: planMeta.displayName ?? fallbackPlanName,
     billingStatus: tenant.billingStatus,
-    allowOverage: tenant.allowOverage,
-    oneTimeOnly: planMeta.oneTimeOnly,
-    allowBatch: planMeta.allowBatch,
+    allowOverage: isUnlimited || tenant.allowOverage,
+    ...(isUnlimited ? { unlimited: true } : {}),
+    oneTimeOnly: isOneTime,
+    allowBatch: isUnlimited || planMeta.allowBatch,
     month: monthly.month,
     year: monthly.year,
     used: monthly.count,

@@ -91,10 +91,10 @@ export function SidebarRail({
       </div>
 
       <div className="flex w-full shrink-0 flex-col items-center gap-2 border-t border-line-frost p-2.5">
-        <RailTooltip label={`${plan.planName} · ${plan.quotaUsed}/${plan.quotaLimit}`}>
+        <RailTooltip label={`${plan.planName} · ${plan.quotaUsed}/${plan.isUnlimited ? '∞' : plan.quotaLimit}`}>
           <Link
-            href="/activate-plan"
-            aria-label={`${plan.planName} (${plan.quotaUsed}/${plan.quotaLimit})`}
+            href={plan.isUnlimited ? '/admin' : '/activate-plan'}
+            aria-label={`${plan.planName} (${plan.quotaUsed}/${plan.isUnlimited ? '∞' : plan.quotaLimit})`}
             className={`inline-flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${planTone(plan)}`}
           >
             <CreditCard className="h-4 w-4" aria-hidden="true" />

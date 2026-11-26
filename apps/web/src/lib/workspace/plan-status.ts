@@ -20,6 +20,7 @@ export interface WorkspacePlanStatus {
   usagePct: number;
   isTrial: boolean;
   isPilot: boolean;
+  isUnlimited?: boolean;
   nearLimit: boolean;
   exhausted: boolean;
   billingStatus?: TenantBillingStatus;
@@ -91,6 +92,21 @@ export function mergeCloudUsageIntoPlanStatus(
   cloud: ClientCurrentUsageSnapshot | null,
 ): WorkspacePlanStatus {
   if (!cloud) return localPlan;
+  if (cloud.unlimited) {
+    return {
+      planId: cloud.planId,
+      planName: cloud.planName,
+      quotaUsed: cloud.used,
+      quotaLimit: cloud.limit,
+      usagePct: 0,
+      isTrial: false,
+      isPilot: false,
+      isUnlimited: true,
+      nearLimit: false,
+      exhausted: cloud.billingStatus === 'CANCELED',
+      billingStatus: cloud.billingStatus,
+    };
+  }
   const limit = Math.max(cloud.limit, 0);
   const ratio = limit > 0 ? cloud.used / limit : 1;
   return {
@@ -116,6 +132,9 @@ export function resolveWorkspaceReadOnlyReason(
   if (!cloud) return null;
   if (cloud.billingStatus === 'CANCELED') {
     return 'Cuenta dada de baja. Puedes consultar tus dictámenes históricos en modo lectura.';
+  }
+  if (cloud.unlimited) {
+    return null;
   }
   if (cloud.billingStatus === 'PAST_DUE' && cloud.limit === 0) {
     return 'Activa tu Piloto Operativo ($150 · 250 clasificaciones) o Plan Agencia ($300/mes) para clasificar con IA.';

@@ -113,7 +113,7 @@ export function SidebarAccountFooter({
                 {effectivePlan.planName}
               </span>
               <span className="font-mono text-[10px] text-ink-muted tabular-nums">
-                {effectivePlan.quotaUsed} / {effectivePlan.quotaLimit} clasif.
+                {effectivePlan.quotaUsed} / {effectivePlan.isUnlimited ? '∞' : effectivePlan.quotaLimit} clasif.
               </span>
             </div>
             <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-subtle">
@@ -123,14 +123,16 @@ export function SidebarAccountFooter({
               />
             </div>
             <Link
-              href="/activate-plan"
+              href={effectivePlan.isUnlimited ? '/admin' : '/activate-plan'}
               onClick={() => setMenuOpen(false)}
               className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-full bg-surface-inverted px-3 py-1.5 text-[11px] font-semibold text-ink-on-inverted transition-colors hover:bg-surface-inverted-hover"
             >
               <CreditCard className="h-3.5 w-3.5" aria-hidden="true" />
-              {effectivePlan.isTrial || effectivePlan.isPilot || effectivePlan.billingStatus === 'PAST_DUE'
-                ? 'Activar plan'
-                : 'Gestionar plan'}
+              {effectivePlan.isUnlimited
+                ? 'Consola Admin'
+                : effectivePlan.isTrial || effectivePlan.isPilot || effectivePlan.billingStatus === 'PAST_DUE'
+                  ? 'Activar plan'
+                  : 'Gestionar plan'}
             </Link>
           </section>
 

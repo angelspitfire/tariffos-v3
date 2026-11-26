@@ -1,5 +1,6 @@
 import type { Prisma } from './generated/client';
 import { getTenantClient, getUnscopedSystemPrisma } from './client';
+import { isInternalTariffosPlanSlug } from './internal-plan';
 
 export interface CurrentMonthUsageSnapshot {
   month: number;
@@ -22,14 +23,16 @@ function getCurrentMonthYear(): { month: number; year: number } {
 function extractBillingPlanFlags(features: unknown): {
   oneTimeOnly: boolean;
   allowBatch: boolean;
+  unlimited: boolean;
 } {
   if (!features || typeof features !== 'object' || Array.isArray(features)) {
-    return { oneTimeOnly: false, allowBatch: true };
+    return { oneTimeOnly: false, allowBatch: true, unlimited: false };
   }
   const record = features as Record<string, unknown>;
   return {
     oneTimeOnly: Boolean(record.oneTimeOnly),
     allowBatch: record.allowBatch === undefined ? true : Boolean(record.allowBatch),
+    unlimited: Boolean(record.unlimited),
   };
 }
 
@@ -67,6 +70,10 @@ class BillingService {
       const planFlags = extractBillingPlanFlags(tenant.plan?.features);
       if (options?.isBatch && (!planFlags.allowBatch || tenant.billingStatus === 'TRIALING')) {
         return { allowed: false, reason: 'BATCH_NOT_IN_PLAN' };
+      }
+
+      if (planFlags.unlimited || isInternalTariffosPlanSlug(tenant.plan?.name)) {
+        return { allowed: true };
       }
 
       const planLimit = tenant.plan?.classificationLimit ?? tenant.plan?.maxClassifications ?? 0;

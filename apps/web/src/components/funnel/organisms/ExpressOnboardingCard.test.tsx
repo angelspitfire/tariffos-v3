@@ -93,6 +93,30 @@ describe('ExpressOnboardingCard', () => {
     vi.unstubAllGlobals();
   });
 
+  it('skips /activate-plan and routes directly to /app when cloud onboarding returns skipPaymentActivation: true', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        mode: 'cloud',
+        skipPaymentActivation: true,
+        tenant: { billingStatus: 'ACTIVE' },
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    mockSearchParams = new URLSearchParams('plan=pilot&cycle=monthly');
+
+    render(<ExpressOnboardingCard cloudMode />);
+
+    await user.type(screen.getByLabelText(/Nombre completo/i), 'Angel Fernandez');
+    await user.type(screen.getByLabelText(/Empresa o agencia/i), 'TariffOS');
+    await user.click(screen.getByRole('button', { name: /Continuar a activación/i }));
+
+    expect(mockPush).toHaveBeenCalledWith('/app');
+    vi.unstubAllGlobals();
+  });
+
   it('renders PlanRecommender inside onboarding when choosing a plan and applies recommendation', async () => {
     const user = userEvent.setup();
     render(<ExpressOnboardingCard cloudMode={false} />);

@@ -32,14 +32,27 @@ export function resolveInitialOnboardingPlan(params: {
   return { planId: 'pilot', billingCycle: 'monthly', preselected: false };
 }
 
+export interface PersistOnboardingResult {
+  ok: boolean;
+  error: string | null;
+  skipPaymentActivation?: boolean;
+}
+
+interface OnboardingApiPayload {
+  skipPaymentActivation?: boolean;
+  tenant?: {
+    billingStatus?: string;
+  };
+}
+
 export async function persistOnboardingProfile(
   profile: OnboardingProfileDraft,
   isCloud: boolean,
-): Promise<{ ok: boolean; error: string | null }> {
+): Promise<PersistOnboardingResult> {
   saveMockProfile(profile);
   saveSelectedPlan(profile.selectedPlanId, profile.selectedBillingCycle);
 
-  if (!isCloud) return { ok: true, error: null };
+  if (!isCloud) return { ok: true, error: null, skipPaymentActivation: false };
 
   const res = await fetch('/api/onboarding', {
     method: 'POST',
@@ -63,5 +76,13 @@ export async function persistOnboardingProfile(
       error: 'No pudimos guardar tu perfil en el servidor. Intenta nuevamente.',
     };
   }
-  return { ok: true, error: null };
+
+  const payload = (await res.json().catch(() => null)) as OnboardingApiPayload | null;
+  const skipPaymentActivation = Boolean(
+    payload?.skipPaymentActivation ||
+      payload?.tenant?.billingStatus === 'ACTIVE' ||
+      payload?.tenant?.billingStatus === 'TRIALING',
+  );
+
+  return { ok: true, error: null, skipPaymentActivation };
 }

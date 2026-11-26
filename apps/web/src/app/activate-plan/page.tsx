@@ -1,7 +1,11 @@
 import { Suspense } from 'react';
+import { redirect } from 'next/navigation';
 import type { SubscriptionBillingCycle } from '@tariffos/shared-types';
 import { PlanActivationTemplate } from '@/components/funnel/templates/PlanActivationTemplate';
 import { loadPublicPlans } from '@/lib/funnel/public-plans';
+import { resolveCloudFunnelGateRedirect } from '@/lib/funnel/server-account-gate';
+
+export const dynamic = 'force-dynamic';
 
 interface ActivatePlanPageProps {
   searchParams: Promise<{
@@ -11,7 +15,15 @@ interface ActivatePlanPageProps {
 }
 
 async function ActivatePlanContent({ searchParams }: ActivatePlanPageProps) {
-  const [params, plans] = await Promise.all([searchParams, loadPublicPlans()]);
+  const params = await searchParams;
+  const redirectTarget = await resolveCloudFunnelGateRedirect({
+    route: 'activate-plan',
+    hasFunnelPlanParam: Boolean(params.plan),
+  });
+  if (redirectTarget) {
+    redirect(redirectTarget);
+  }
+  const plans = await loadPublicPlans();
   const cycle: SubscriptionBillingCycle =
     params.cycle === 'annual' ? 'annual' : 'monthly';
 
