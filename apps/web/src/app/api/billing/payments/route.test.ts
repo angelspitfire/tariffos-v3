@@ -42,7 +42,7 @@ describe('/api/billing/payments', () => {
     else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = originalKey;
   });
 
-  it('supports offline create, list, and verify/reject lifecycle', async () => {
+  it('supports offline create and list while blocking PATCH on public client route', async () => {
     process.env.NEXT_PUBLIC_CLOUD_MODE = 'false';
 
     const createRes = await POST(
@@ -68,63 +68,17 @@ describe('/api/billing/payments', () => {
     const listed = (await listRes.json()) as { payments: Array<{ paymentId: string }> };
     expect(listed.payments.some((p) => p.paymentId === created.payment.paymentId)).toBe(true);
 
-    const patchRes = await PATCH(
-      new Request('http://localhost/api/billing/payments', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          paymentId: created.payment.paymentId,
-          action: 'verify',
-        }),
-      }),
-    );
-    expect(patchRes.status).toBe(200);
-    const patched = (await patchRes.json()) as { payment: { status: string } };
-    expect(patched.payment.status).toBe('verified');
+    const patchRes = await PATCH();
+    expect(patchRes.status).toBe(403);
   });
 
-  it('verifies a payment in cloud mode and activates the tenant', async () => {
+  it('rejects PATCH in cloud mode even for authenticated tenant owners', async () => {
     process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
 
-    mocks.getAuthenticatedUser.mockResolvedValue({ id: 'admin-1', email: 'admin@tariffos.app' });
-    mocks.membershipFindFirst.mockResolvedValue({ tenantId: 'ten-1', role: 'OWNER' });
-    mocks.paymentUpdate.mockResolvedValue({
-      id: 'pay-1',
-      tenantId: 'ten-1',
-      planId: 'pro',
-      status: 'CONFIRMED',
-      amount: 299,
-      currency: 'USD',
-      billingCycle: 'monthly',
-      method: 'zelle',
-      referenceCode: 'ZELLE-1',
-      createdAt: new Date('2026-11-25T10:00:00Z'),
-      verifiedBy: 'admin-1',
-      verifiedAt: new Date('2026-11-25T11:00:00Z'),
-    });
-    mocks.tenantUpdate.mockResolvedValue({ id: 'ten-1', billingStatus: 'ACTIVE' });
-
-    const res = await PATCH(
-      new Request('http://localhost/api/billing/payments', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId: 'pay-1', action: 'verify' }),
-      }),
-    );
-    expect(res.status).toBe(200);
-    expect(mocks.paymentUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: 'pay-1' },
-        data: expect.objectContaining({ status: 'CONFIRMED' }),
-      }),
-    );
-    expect(mocks.tenantUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: 'ten-1' },
-        data: expect.objectContaining({ billingStatus: 'ACTIVE' }),
-      }),
-    );
+    const res = await PATCH();
+    expect(res.status).toBe(403);
+    expect(mocks.paymentUpdate).not.toHaveBeenCalled();
   });
 });

@@ -23,12 +23,6 @@ const CreatePaymentSchema = z.object({
   notes: z.string().trim().optional(),
 });
 
-const PatchPaymentSchema = z.object({
-  paymentId: z.string().trim().min(1),
-  action: z.enum(['verify', 'reject']),
-  rejectionReason: z.string().trim().optional(),
-});
-
 const offlinePaymentsStore = new Map<string, ManualPaymentRecord>();
 
 function mapStatus(status: string): ManualPaymentStatus {
@@ -151,50 +145,9 @@ export async function POST(request: Request): Promise<Response> {
   );
 }
 
-export async function PATCH(request: Request): Promise<Response> {
-  const rawBody = await parseJsonBody(request);
-  if (rawBody === null) return Response.json({ error: 'Invalid JSON payload' }, { status: 400 });
-  const parsed = PatchPaymentSchema.safeParse(rawBody);
-  if (!parsed.success) {
-    return Response.json({ error: 'Validation failed', issues: parsed.error.issues }, { status: 400 });
-  }
-  const input = parsed.data;
-
-  if (!isCloudModeEnabled()) {
-    const existing = offlinePaymentsStore.get(input.paymentId);
-    if (!existing) return Response.json({ error: 'Payment not found' }, { status: 404 });
-    const updated: ManualPaymentRecord = {
-      ...existing,
-      status: input.action === 'verify' ? 'verified' : 'rejected',
-      verifiedBy: 'offline-admin',
-      verifiedAt: new Date().toISOString(),
-      rejectionReason: input.action === 'reject' ? (input.rejectionReason ?? 'Rechazado por administración') : undefined,
-    };
-    offlinePaymentsStore.set(updated.paymentId, updated);
-    return Response.json({ mode: 'offline', payment: updated }, { status: 200 });
-  }
-
-  const auth = await resolveCloudTenantContext();
-  if (!auth.ok) return Response.json({ error: auth.error }, { status: auth.status });
-
-  const isVerify = input.action === 'verify';
-  const updated = await prisma.payment.update({
-    where: { id: input.paymentId },
-    data: {
-      status: isVerify ? 'CONFIRMED' : 'REJECTED',
-      verifiedBy: auth.context.userId,
-      verifiedAt: new Date(),
-      rejectionReason: isVerify ? null : (input.rejectionReason ?? 'Comprobante rechazado'),
-    },
-  });
-  if (isVerify) {
-    await prisma.tenant.update({
-      where: { id: updated.tenantId },
-      data: { billingStatus: 'ACTIVE', planId: updated.planId ?? undefined },
-    });
-  }
+export async function PATCH(): Promise<Response> {
   return Response.json(
-    { mode: 'cloud', payment: { paymentId: updated.id, status: mapStatus(updated.status) } },
-    { status: 200 },
+    { error: 'Payment verification requires platform admin privileges via /api/admin/billing/payments' },
+    { status: 403 },
   );
 }

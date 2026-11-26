@@ -10,3 +10,5 @@ export * from './a2ui-batch.js';
 export * from './a2ui-canvas.js';
 export * from './a2ui-envelope.js';
 export * from './billing.js';
+export * from './admin.js';
+export * from './admin-ops.js';

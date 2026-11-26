@@ -1,4 +1,8 @@
-import { SAAS_PLANS, type ManualPaymentRecord } from '@tariffos/shared-types';
+import {
+  SAAS_PLANS,
+  type ClientCurrentUsageSnapshot,
+  type ManualPaymentRecord,
+} from '@tariffos/shared-types';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 import {
   deriveWorkspacePlanStatus,
@@ -42,16 +46,19 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T | null> 
 
 export function createBillingActivationAdapter(options?: {
   cloudMode?: boolean;
+  adminMode?: boolean;
 }): IBillingActivationPort {
   const cloudMode = options?.cloudMode ?? isCloudModeEnabled();
+  const paymentsEndpoint = options?.adminMode
+    ? '/api/admin/billing/payments'
+    : '/api/billing/payments';
 
   return {
     async listPayments(): Promise<ManualPaymentRecord[]> {
       if (cloudMode) {
-        const data = await fetchJson<{ payments?: ManualPaymentRecord[] }>(
-          '/api/billing/payments',
-          { method: 'GET' },
-        );
+        const data = await fetchJson<{ payments?: ManualPaymentRecord[] }>(paymentsEndpoint, {
+          method: 'GET',
+        });
         if (data && Array.isArray(data.payments)) return data.payments;
       }
       return readStoredPayments();
@@ -94,11 +101,11 @@ export function createBillingActivationAdapter(options?: {
     async approvePayment(paymentId: string): Promise<ManualPaymentRecord> {
       if (cloudMode) {
         const data = await fetchJson<{ payment?: ManualPaymentRecord }>(
-          '/api/billing/payments',
+          '/api/admin/billing/payments',
           {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId, action: 'approve' }),
+            body: JSON.stringify({ paymentId, action: 'verify' }),
           },
         );
         if (data?.payment) return data.payment;
@@ -130,11 +137,11 @@ export function createBillingActivationAdapter(options?: {
       const cleanReason = reason.trim() || 'Referencia no localizada en estado de cuenta.';
       if (cloudMode) {
         const data = await fetchJson<{ payment?: ManualPaymentRecord }>(
-          '/api/billing/payments',
+          '/api/admin/billing/payments',
           {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId, action: 'reject', reason: cleanReason }),
+            body: JSON.stringify({ paymentId, action: 'reject', rejectionReason: cleanReason }),
           },
         );
         if (data?.payment) return data.payment;
@@ -160,6 +167,22 @@ export function createBillingActivationAdapter(options?: {
     },
 
     async getWorkspacePlanStatus(quotaUsed = 0): Promise<WorkspacePlanStatusSnapshot> {
+      if (cloudMode) {
+        const data = await fetchJson<{ usage?: ClientCurrentUsageSnapshot }>('/api/usage/current', {
+          method: 'GET',
+        });
+        if (data?.usage) {
+          const u = data.usage;
+          const reached = !u.allowOverage && u.limit > 0 && u.used >= u.limit;
+          return {
+            planId: u.planId,
+            planName: u.planName,
+            status: reached ? 'quota_reached' : u.billingStatus === 'ACTIVE' ? 'active' : 'trial',
+            quotaUsed: u.used,
+            quotaLimit: u.limit,
+          };
+        }
+      }
       return deriveWorkspacePlanStatus(readStoredBillingState(), quotaUsed, SAAS_PLANS);
     },
   };

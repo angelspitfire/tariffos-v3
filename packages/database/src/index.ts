@@ -7,6 +7,7 @@ export type { PermitType, HsPermitRequirement } from './permits';
 export * from './generated/client';
 export * from './client';
 export * from './billing';
+export * from './admin-audit';
 export * from './country';
 export * from './derogation';
 export * from './arancel-tree';

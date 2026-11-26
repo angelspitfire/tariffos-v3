@@ -98,17 +98,7 @@ describe('Funnel cloud API routes (/api/onboarding & /api/billing/payments)', ()
     const listed = (await listRes.json()) as { payments: Array<{ paymentId: string }> };
     expect(listed.payments.some((p) => p.paymentId === created.payment.paymentId)).toBe(true);
 
-    const verifyReq = new Request('http://localhost/api/billing/payments', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        paymentId: created.payment.paymentId,
-        action: 'verify',
-      }),
-    });
-    const verifyRes = await patchPayment(verifyReq);
-    expect(verifyRes.status).toBe(200);
-    const verified = (await verifyRes.json()) as { payment: { status: string } };
-    expect(verified.payment.status).toBe('verified');
+    const verifyRes = await patchPayment();
+    expect(verifyRes.status).toBe(403);
   });
 });

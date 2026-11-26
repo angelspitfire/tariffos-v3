@@ -73,4 +73,15 @@ export async function persistClassificationOutcome(
   }
 
   await billingService.incrementUsage(tenantId, 'classification', 1);
+  if (
+    line.tokenUsage &&
+    (line.tokenUsage.inputTokens > 0 || line.tokenUsage.outputTokens > 0) &&
+    typeof billingService.incrementTokenUsage === 'function'
+  ) {
+    await billingService.incrementTokenUsage(
+      tenantId,
+      line.tokenUsage.inputTokens,
+      line.tokenUsage.outputTokens,
+    );
+  }
 }

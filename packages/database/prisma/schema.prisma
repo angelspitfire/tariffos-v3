@@ -395,17 +395,21 @@ model BatchJobItem {
 }
 
 model WaitlistLead {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  country     String?  @default("VE")
+  id          String    @id @default(uuid())
+  email       String    @unique
+  name        String?
+  company     String?
+  phone       String?
+  notes       String?
+  country     String?   @default("VE")
   volume      String?
   source      String?
   clickId     String?
   referrer    String?
   landingPath String?
-  status      String   @default("PENDING")
+  status      String    @default("PENDING")
   approvedAt  DateTime?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 
   @@index([clickId])
   @@schema("public")
@@ -1024,5 +1028,27 @@ model Webhook {
   updatedAt     DateTime @updatedAt
 
   @@index([isActive])
+  @@schema("public")
+}
+
+/// Append-only audit trail for platform administration actions
+model AdminAuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String   @map("actor_user_id")
+  actorEmail  String?  @map("actor_email")
+  actorRole   String   @map("actor_role")
+  action      String
+  targetType  String   @map("target_type")
+  targetId    String   @map("target_id")
+  tenantId    String?  @map("tenant_id")
+  beforeState Json?    @map("before_state")
+  afterState  Json?    @map("after_state")
+  reason      String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([actorUserId, createdAt(sort: Desc)])
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([action, createdAt(sort: Desc)])
+  @@map("admin_audit_logs")
   @@schema("public")
 }

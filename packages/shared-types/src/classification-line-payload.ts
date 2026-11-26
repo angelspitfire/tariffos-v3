@@ -61,6 +61,12 @@ export const ClassificationLinePayloadSchema = z.object({
   tierUsed: z.enum(['pre_gate_blocked', 'tier0_sku', 'tier1_fast', 'tier2_rgi']),
   verifiedAgainstDb: z.boolean(),
   modelUsed: z.string(),
+  tokenUsage: z
+    .object({
+      inputTokens: z.number().int().nonnegative(),
+      outputTokens: z.number().int().nonnegative(),
+    })
+    .optional(),
 });
 
 export type RgiStep = z.infer<typeof RgiStepSchema>;
