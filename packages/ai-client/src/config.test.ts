@@ -5,6 +5,7 @@ import {
   GOOGLE_BASE_URL,
   NVIDIA_BASE_URL,
   OPENROUTER_BASE_URL,
+  canRunLiveLlm,
   resolveApiKey,
   resolveBaseUrl,
   resolveEmbeddingDims,
@@ -199,5 +200,53 @@ describe('resolveMaxRpm', () => {
   it('reads the configured value', () => {
     vi.stubEnv('LLM_MAX_RPM', '120');
     expect(resolveMaxRpm()).toBe(120);
+  });
+});
+
+describe('canRunLiveLlm', () => {
+  it('returns true for nvidia when NVIDIA_API_KEY is set', () => {
+    vi.stubEnv('LLM_PROVIDER', 'nvidia');
+    vi.stubEnv('LLM_API_KEY', '');
+    vi.stubEnv('NVIDIA_API_KEY', 'nvapi-test');
+    expect(canRunLiveLlm()).toBe(true);
+  });
+
+  it('returns false for nvidia when no API key is configured', () => {
+    vi.stubEnv('LLM_PROVIDER', 'nvidia');
+    vi.stubEnv('LLM_API_KEY', '');
+    vi.stubEnv('NVIDIA_API_KEY', '');
+    expect(canRunLiveLlm()).toBe(false);
+  });
+
+  it('returns true for google when GOOGLE_GENERATIVE_AI_API_KEY is set', () => {
+    vi.stubEnv('LLM_PROVIDER', 'google');
+    vi.stubEnv('LLM_API_KEY', '');
+    vi.stubEnv('GOOGLE_GENERATIVE_AI_API_KEY', 'AIza-test');
+    expect(canRunLiveLlm()).toBe(true);
+  });
+
+  it('returns true for openrouter when OPENROUTER_API_KEY is set', () => {
+    vi.stubEnv('LLM_PROVIDER', 'openrouter');
+    vi.stubEnv('LLM_API_KEY', '');
+    vi.stubEnv('OPENROUTER_API_KEY', 'sk-or-test');
+    expect(canRunLiveLlm()).toBe(true);
+  });
+
+  it('returns true for openai-compatible when LLM_BASE_URL is set even without API key', () => {
+    vi.stubEnv('LLM_PROVIDER', 'openai-compatible');
+    vi.stubEnv('LLM_BASE_URL', 'http://127.0.0.1:11434/v1');
+    vi.stubEnv('LLM_API_KEY', '');
+    expect(canRunLiveLlm()).toBe(true);
+  });
+
+  it('returns false for openai-compatible when LLM_BASE_URL is missing', () => {
+    vi.stubEnv('LLM_PROVIDER', 'openai-compatible');
+    vi.stubEnv('LLM_BASE_URL', '');
+    expect(canRunLiveLlm()).toBe(false);
+  });
+
+  it('returns false instead of throwing for an invalid provider', () => {
+    vi.stubEnv('LLM_PROVIDER', 'unknown-provider');
+    expect(canRunLiveLlm()).toBe(false);
   });
 });

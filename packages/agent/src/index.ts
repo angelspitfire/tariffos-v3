@@ -92,4 +92,12 @@ export {
   type SystemOneBatchFn,
 } from './lib/decision/provider.js';
 export { typesafeProvider } from './lib/decision/typesafe-adapter.js';
+export {
+  AUTO_APPROVE_CONFIDENCE_THRESHOLD,
+  REVIEW_CONFIDENCE_THRESHOLD,
+  SUPPORTED_LIVE_COUNTRIES,
+  isSupportedLiveCountry,
+  type SupportedLiveCountry,
+} from './lib/pipeline/thresholds.js';
+export { canRunLiveLlm } from '@tariffos/ai-client';
 export { runRgiWithLlm } from './adapters/rgi-llm-adapter.js';

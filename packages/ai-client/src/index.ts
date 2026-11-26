@@ -62,6 +62,7 @@ export {
   GOOGLE_BASE_URL,
   NVIDIA_BASE_URL,
   OPENROUTER_BASE_URL,
+  canRunLiveLlm,
   resolveApiKey,
   resolveBaseUrl,
   resolveEmbeddingDims,

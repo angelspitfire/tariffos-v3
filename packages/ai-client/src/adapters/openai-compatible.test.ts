@@ -53,6 +53,11 @@ describe('repairJson', () => {
     const repaired = repairJson('{"ok":false,}');
     expect(JSON.parse(repaired)).toEqual({ ok: false });
   });
+
+  it('extracts a JSON object wrapped in reasoning prose or think tags', () => {
+    const raw = '<think>analyzing RGI 1 and 6</think>\nAquí está el resultado:\n```json\n{"ok":true}\n```';
+    expect(JSON.parse(repairJson(raw))).toEqual({ ok: true });
+  });
 });
 
 describe('OpenAICompatibleAdapter', () => {
@@ -73,9 +78,10 @@ describe('OpenAICompatibleAdapter', () => {
     });
   });
 
-  it('generateJson takes the generateObject fast path', async () => {
+  it('generateJson takes the generateObject fast path with maxRetries: 0', async () => {
     mockedObject.mockResolvedValueOnce({ object: { ok: true } });
     expect(await adapter().generateJson('hi', schema)).toEqual({ ok: true });
+    expect(mockedObject.mock.calls[0][0]).toMatchObject({ maxRetries: 0 });
     expect(mockedText).not.toHaveBeenCalled();
   });
 
@@ -96,6 +102,15 @@ describe('OpenAICompatibleAdapter', () => {
     mockedObject.mockRejectedValueOnce(new Error('json_object unsupported'));
     mockedText.mockResolvedValueOnce({ text: '```json\n{"ok":true}\n```' });
     expect(await adapter().generateJson('hi', schema)).toEqual({ ok: true });
+  });
+
+  it('uses direct generateText + repairJson when LLM_PROVIDER is nvidia', async () => {
+    vi.stubEnv('LLM_PROVIDER', 'nvidia');
+    mockedText.mockResolvedValueOnce({ text: '<think>reasoning</think>{"ok":true}' });
+    expect(await adapter().generateJson('hi', schema)).toEqual({ ok: true });
+    expect(mockedObject).not.toHaveBeenCalled();
+    expect(mockedText).toHaveBeenCalledTimes(1);
+    vi.unstubAllEnvs();
   });
 
   it('embedText posts the embedding model', async () => {

@@ -38,12 +38,14 @@ async function classifyUniqueItem(
   budget: GroundingBudget,
 ): Promise<ClassificationLinePayload> {
   // 1. Pre-Gate Compliance (System One)
+  options.onProgress?.({ stage: 'pre_gate', label: 'Validación Compliance Pre-Gate', progressPct: 15 });
   const preGate = await runCompliancePreGate(item, options.countryCode, ports.decisionProvider);
   if (preGate.blocked && preGate.flag) {
     return buildProhibitedPayload(item, preGate.flag, preGate.confidence);
   }
 
   // 2. Tier 0: Exact SKU / approved precedent lookup
+  options.onProgress?.({ stage: 'sku_lookup', label: 'Consultando precedentes SKU', progressPct: 30 });
   const precedentKey = item.sku?.trim() || item.description;
   const precedent = await ports.findSkuPrecedent(options.tenantId, precedentKey);
   if (precedent?.approvedByBroker) {
@@ -55,6 +57,7 @@ async function classifyUniqueItem(
   }
 
   // 3. Hybrid Retrieval (pgvector + FTS lexical) + Tier 1 Fast-Path check
+  options.onProgress?.({ stage: 'hybrid_retrieval', label: 'Recuperando candidatas NCM oficiales', progressPct: 50 });
   const candidates = await retrieveHybridCandidates(ports, options.countryCode, item.description);
   const topCandidate = candidates[0];
   if (topCandidate && canUseTier1FastPath(candidates)) {
@@ -75,6 +78,7 @@ async function classifyUniqueItem(
   }
 
   // 5. Tier 2: RGI 1 -> 6 Reasoning + Chapter-Filtered Legal Notes + Official Audit
+  options.onProgress?.({ stage: 'rgi_reasoning', label: 'Aplicando recorrido RGI 1 → 6', progressPct: 72 });
   const topCandidates = candidates.slice(0, MAX_CANDIDATES_FOR_NOTES);
   const prefixes = [...new Set(topCandidates.map((c) => c.hsCode.slice(0, 4)))];
   const noteBatches = await Promise.all(prefixes.map((p) => ports.getLegalNotes(options.countryCode, p)));
@@ -91,6 +95,7 @@ async function classifyUniqueItem(
     deepMode: Boolean(options.deepMode),
   });
 
+  options.onProgress?.({ stage: 'verifying_tariff', label: 'Verificando código en Arancel Oficial y tributos', progressPct: 90 });
   const verified = await ports.verifyHsCode(options.countryCode, rgi.hsCode);
   const audit = auditTariffAgainstOfficialSchedule({ proposedHsCode: rgi.hsCode }, verified);
   const fallbackRecord = verified ?? topCandidate ?? {

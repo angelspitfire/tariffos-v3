@@ -1,4 +1,5 @@
 import {
+  AUTO_APPROVE_CONFIDENCE_THRESHOLD,
   calculateDeterministicDuties,
   classifyInvoiceBatch,
   deduplicateInvoiceItems,
@@ -18,7 +19,7 @@ import { inngest } from './client';
 const PER_TENANT_CONCURRENCY_LIMIT = 3;
 const GLOBAL_BATCH_CONCURRENCY_LIMIT = 15;
 const BATCH_THROTTLE_LIMIT = 60;
-const AUTO_STATUS_CONFIDENCE_THRESHOLD = 85;
+const AUTO_STATUS_CONFIDENCE_THRESHOLD = AUTO_APPROVE_CONFIDENCE_THRESHOLD;
 
 export interface ClassifyBatchEventData {
   filingId: string;
@@ -149,6 +150,20 @@ export const classifyInvoiceBatchFn = inngest.createFunction(
 
       if (allLines.length > 0) {
         await billingService.incrementUsage(data.tenantId, 'classification', allLines.length);
+        const totalInput = allLines.reduce(
+          (sum, line) => sum + (line.tokenUsage?.inputTokens ?? 0),
+          0,
+        );
+        const totalOutput = allLines.reduce(
+          (sum, line) => sum + (line.tokenUsage?.outputTokens ?? 0),
+          0,
+        );
+        if (
+          (totalInput > 0 || totalOutput > 0) &&
+          typeof billingService.incrementTokenUsage === 'function'
+        ) {
+          await billingService.incrementTokenUsage(data.tenantId, totalInput, totalOutput);
+        }
       }
       return { persisted: allLines.length };
     });

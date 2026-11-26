@@ -4,14 +4,14 @@ import type {
   RgiStep,
   ClassificationAlternative,
   RejectedAlternative,
+  StreamProgressEvent,
   UnresolvedItem,
 } from '@tariffos/shared-types';
 import type { DecisionProvider } from '../decision/provider.js';
+export { HIGH_CONFIDENCE_THRESHOLD, MEDIUM_CONFIDENCE_THRESHOLD } from './thresholds.js';
 
 export const DEFAULT_MAX_WEB_GROUNDING_STANDARD = 12;
 export const SHORT_DESCRIPTION_WORD_THRESHOLD = 4;
-export const HIGH_CONFIDENCE_THRESHOLD = 85;
-export const MEDIUM_CONFIDENCE_THRESHOLD = 60;
 
 export interface InvoiceItemInput {
   lineId: string;
@@ -85,6 +85,7 @@ export interface PipelineRunOptions {
   countryCode: string;
   deepMode?: boolean;
   maxWebGrounding?: number;
+  onProgress?: (event: StreamProgressEvent) => void;
 }
 
 export interface BatchPipelineResult {

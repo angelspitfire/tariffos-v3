@@ -104,6 +104,23 @@ export function resolveFilesBaseUrl(): string {
 }
 
 /**
+ * True when the active `LLM_PROVIDER` has enough configuration to run live
+ * model calls without falling back or failing on missing credentials.
+ */
+export function canRunLiveLlm(): boolean {
+  let provider: LlmProvider;
+  try {
+    provider = llmProvider();
+  } catch {
+    return false;
+  }
+  if (provider === 'openai-compatible') {
+    return Boolean(llmBaseUrl());
+  }
+  return Boolean(resolveApiKey());
+}
+
+/**
  * Requests per minute allowed before pacing kicks in.
  *
  * 0 (or absent) disables pacing, which is the production default. The

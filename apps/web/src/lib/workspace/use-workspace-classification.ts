@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 import type {
   ApprovalWorkflowMode,
   CanvasTabType,
+  IncotermCode,
   JurisdictionConfig,
   StreamProgressEvent,
 } from '@tariffos/shared-types';
@@ -17,6 +18,8 @@ interface UseWorkspaceClassificationParams {
   activeThreadId: string | null;
   jurisdiction: JurisdictionConfig;
   approvalWorkflowMode: ApprovalWorkflowMode;
+  defaultIncoterm?: IncotermCode;
+  deepMode?: boolean;
   setActiveThreadId: (id: string | null) => void;
   setSelectedCanvasMsgId: (id: string | null) => void;
   setActiveTab: (tab: CanvasTabType) => void;
@@ -29,6 +32,8 @@ export function useWorkspaceClassification({
   activeThreadId,
   jurisdiction,
   approvalWorkflowMode,
+  defaultIncoterm,
+  deepMode,
   setActiveThreadId,
   setSelectedCanvasMsgId,
   setActiveTab,
@@ -95,6 +100,9 @@ export function useWorkspaceClassification({
         const rawEnvelope = await classifyStream({
           query: clean,
           jurisdiction,
+          approvalWorkflowMode,
+          incoterm: defaultIncoterm,
+          deepMode,
           attachmentsText: combinedAttachments || undefined,
           isBatchHint: options?.isBatchHint || attachments.length > 0,
           onProgress: setLiveProgress,
@@ -124,7 +132,11 @@ export function useWorkspaceClassification({
         }
       } catch (err) {
         if (!(err instanceof DOMException && err.name === 'AbortError')) {
-          pushToast('No se pudo completar la clasificación.', 'warning');
+          const message =
+            err instanceof Error && err.message
+              ? err.message
+              : 'No se pudo completar la clasificación.';
+          pushToast(message, 'warning');
         }
       } finally {
         setIsRunning(false);
@@ -135,6 +147,8 @@ export function useWorkspaceClassification({
     [
       activeThreadId,
       approvalWorkflowMode,
+      deepMode,
+      defaultIncoterm,
       jurisdiction,
       pendingAttachments,
       persistThread,

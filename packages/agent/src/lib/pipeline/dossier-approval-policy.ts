@@ -5,8 +5,9 @@ import {
   type AgentReviewTrigger,
   type ApprovalWorkflowMode,
 } from '@tariffos/shared-types';
+import { REVIEW_CONFIDENCE_THRESHOLD } from './thresholds.js';
 
-export const LOW_CONFIDENCE_REVIEW_THRESHOLD = 75;
+export const LOW_CONFIDENCE_REVIEW_THRESHOLD = REVIEW_CONFIDENCE_THRESHOLD;
 
 /**
  * Helper for the `request_dossier_review` agent/skill tool to construct a

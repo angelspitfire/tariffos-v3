@@ -56,6 +56,8 @@ export function useWorkspaceState() {
   const runner = useWorkspaceClassification({
     threads, activeThreadId, jurisdiction,
     approvalWorkflowMode: profile.approvalWorkflowMode,
+    defaultIncoterm: profile.defaultIncoterm,
+    deepMode: profile.detailLevel === 'exhaustive',
     setActiveThreadId, setSelectedCanvasMsgId, setActiveTab, persistThread, pushToast,
   });
 

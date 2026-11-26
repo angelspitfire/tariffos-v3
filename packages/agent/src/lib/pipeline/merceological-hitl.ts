@@ -16,9 +16,10 @@ import {
   computeMerceologicalConfidence,
   isMissingAttributeText,
 } from './merceological-specs.js';
+import { REVIEW_CONFIDENCE_THRESHOLD } from './thresholds.js';
 
 export { CANONICAL_MERCEOLOGICAL_ATTRIBUTES, computeMerceologicalConfidence };
-export const HITL_CONFIDENCE_THRESHOLD = 75;
+export const HITL_CONFIDENCE_THRESHOLD = REVIEW_CONFIDENCE_THRESHOLD;
 
 const TEXT_EXTRACTORS: Array<[MerceologicalAttributeKey, RegExp]> = [
   ['naturaleza_materia', /\b(acero(?:\s+inoxidable)?|aluminio|cobre|bronce|lat[oó]n|hierro|titanio|pl[aá]stico|policarbonato|polipropileno|polietileno|pvc|abs|silicona|caucho|vidrio|cer[aá]mica|madera|cart[oó]n|papel|algod[oó]n|poli[eé]ster|nylon|cuero|litio|aleaci[oó]n)\b/i],

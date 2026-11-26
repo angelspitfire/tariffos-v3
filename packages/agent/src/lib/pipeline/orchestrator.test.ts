@@ -202,4 +202,27 @@ describe('classifyInvoiceBatch', () => {
     expect(result.lines[0]?.verifiedAgainstDb).toBe(false);
     expect(result.lines[0]?.flags.some((f) => f.title.includes('Auditoría'))).toBe(true);
   });
+
+  it('emits real stage progress events in order during Tier 2 classification', async () => {
+    const ports = createBasePorts();
+    const stages: string[] = [];
+
+    await classifyInvoiceBatch(
+      [{ lineId: 'L1', description: 'Laptop computer 14 inch aluminum', originCountry: 'CN', cifValue: 1200 }],
+      ports,
+      {
+        tenantId: 't1',
+        countryCode: 'VE',
+        onProgress: (event) => stages.push(event.stage),
+      },
+    );
+
+    expect(stages).toEqual([
+      'pre_gate',
+      'sku_lookup',
+      'hybrid_retrieval',
+      'rgi_reasoning',
+      'verifying_tariff',
+    ]);
+  });
 });

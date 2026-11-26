@@ -1,8 +1,8 @@
-import type { InvoiceItemInput } from '@tariffos/agent';
+import { AUTO_APPROVE_CONFIDENCE_THRESHOLD, type InvoiceItemInput } from '@tariffos/agent';
 import type { ClassificationLinePayload } from '@tariffos/shared-types';
 
 export const DEFAULT_MICRO_BATCH_SIZE = 10;
-const AUTO_CLASSIFY_CONFIDENCE_THRESHOLD = 85;
+const AUTO_CLASSIFY_CONFIDENCE_THRESHOLD = AUTO_APPROVE_CONFIDENCE_THRESHOLD;
 
 export interface BatchSummary {
   totalLines: number;

@@ -2,6 +2,8 @@ import {
   A2UIEnvelopeSchema,
   StreamProgressEventSchema,
   type A2UIEnvelope,
+  type ApprovalWorkflowMode,
+  type IncotermCode,
   type JurisdictionConfig,
   type StreamProgressEvent,
 } from '@tariffos/shared-types';
@@ -11,6 +13,13 @@ import { classifyOffline } from './offline-classifier';
 export interface ClassifyStreamRequest {
   query: string;
   jurisdiction: JurisdictionConfig;
+  approvalWorkflowMode?: ApprovalWorkflowMode;
+  incoterm?: IncotermCode;
+  cifValue?: number;
+  originCountry?: string;
+  hitlAnswers?: Record<string, string>;
+  deepMode?: boolean;
+  sku?: string;
   attachmentsText?: string;
   isBatchHint?: boolean;
   onProgress?: (event: StreamProgressEvent) => void;
@@ -59,6 +68,15 @@ function parseSseBlock(block: string): { event: string; data: string } | null {
   return { event: eventName, data: dataLines.join('\n') };
 }
 
+async function readServerErrorMessage(response: Response): Promise<string> {
+  try {
+    const payload = (await response.json()) as { error?: string; message?: string };
+    return payload.error ?? payload.message ?? `Error de clasificación (HTTP ${response.status})`;
+  } catch {
+    return `Error de clasificación (HTTP ${response.status})`;
+  }
+}
+
 export async function classifyStream(
   input: ClassifyStreamRequest
 ): Promise<A2UIEnvelope> {
@@ -66,69 +84,82 @@ export async function classifyStream(
     return runOfflineWithStages(input);
   }
 
-  try {
-    const response = await fetch('/api/classify-stream', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: input.signal,
-      body: JSON.stringify({
-        query: input.query,
-        jurisdictionId: input.jurisdiction.id,
-        attachmentsText: input.attachmentsText,
-        isBatchHint: input.isBatchHint,
-      }),
-    });
+  const response = await fetch('/api/classify-stream', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    signal: input.signal,
+    body: JSON.stringify({
+      query: input.query,
+      jurisdictionId: input.jurisdiction.id,
+      countryCode: input.jurisdiction.countryCode,
+      approvalWorkflowMode: input.approvalWorkflowMode,
+      incoterm: input.incoterm,
+      cifValue: input.cifValue,
+      originCountry: input.originCountry,
+      hitlAnswers: input.hitlAnswers,
+      deepMode: input.deepMode,
+      sku: input.sku,
+      attachmentsText: input.attachmentsText,
+      isBatchHint: input.isBatchHint,
+    }),
+  });
 
-    if (!response.ok || !response.body) {
-      return runOfflineWithStages(input);
-    }
+  if (!response.ok) {
+    throw new Error(await readServerErrorMessage(response));
+  }
+  if (!response.body) {
+    throw new Error('La respuesta del servidor no incluyó un stream válido.');
+  }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let finalEnvelope: A2UIEnvelope | null = null;
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let finalEnvelope: A2UIEnvelope | null = null;
+  let streamError: string | null = null;
 
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const blocks = buffer.split('\n\n');
-      buffer = blocks.pop() ?? '';
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const blocks = buffer.split('\n\n');
+    buffer = blocks.pop() ?? '';
 
-      for (const rawBlock of blocks) {
-        const parsed = parseSseBlock(rawBlock);
-        if (!parsed) continue;
-        let json: unknown;
-        try {
-          json = JSON.parse(parsed.data);
-        } catch {
-          continue;
-        }
-        const progress = StreamProgressEventSchema.safeParse(json);
-        if (progress.success && parsed.event !== 'result') {
-          input.onProgress?.(progress.data);
-          continue;
-        }
-        const candidateEnvelope =
-          typeof json === 'object' && json !== null && 'envelope' in json
-            ? (json as { envelope: unknown }).envelope
-            : json;
-        const envelopeRes = A2UIEnvelopeSchema.safeParse(candidateEnvelope);
-        if (envelopeRes.success) {
-          finalEnvelope = envelopeRes.data;
-        }
+    for (const rawBlock of blocks) {
+      const parsed = parseSseBlock(rawBlock);
+      if (!parsed) continue;
+      let json: unknown;
+      try {
+        json = JSON.parse(parsed.data);
+      } catch {
+        continue;
+      }
+      if (parsed.event === 'error') {
+        const errPayload = json as { message?: string; error?: string };
+        streamError = errPayload.message ?? errPayload.error ?? 'Error en el motor de clasificación.';
+        continue;
+      }
+      const progress = StreamProgressEventSchema.safeParse(json);
+      if (progress.success && parsed.event !== 'result') {
+        input.onProgress?.(progress.data);
+        continue;
+      }
+      const candidateEnvelope =
+        typeof json === 'object' && json !== null && 'envelope' in json
+          ? (json as { envelope: unknown }).envelope
+          : json;
+      const envelopeRes = A2UIEnvelopeSchema.safeParse(candidateEnvelope);
+      if (envelopeRes.success) {
+        finalEnvelope = envelopeRes.data;
       }
     }
-
-    if (finalEnvelope) {
-      input.onProgress?.({ stage: 'complete', label: 'Clasificación completada', progressPct: 100 });
-      return finalEnvelope;
-    }
-    return runOfflineWithStages(input);
-  } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      throw error;
-    }
-    return runOfflineWithStages(input);
   }
+
+  if (streamError) {
+    throw new Error(streamError);
+  }
+  if (!finalEnvelope) {
+    throw new Error('El flujo de clasificación cerró sin emitir un dictamen.');
+  }
+  input.onProgress?.({ stage: 'complete', label: 'Clasificación completada', progressPct: 100 });
+  return finalEnvelope;
 }

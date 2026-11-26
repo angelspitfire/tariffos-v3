@@ -7,12 +7,25 @@ import {
   type SkuPrecedentRecord,
   type TariffCandidateRecord,
 } from '@tariffos/agent';
+import { searchTariffCandidatesFts } from './tariff-fts';
 
 const DEFAULT_AD_VALOREM_FALLBACK = 0;
 const DEFAULT_IVA_FALLBACK = 16;
 const DEFAULT_UNIT = 'u';
 const MAX_SEARCH_CANDIDATES = 12;
 const MAX_LEGAL_NOTES = 8;
+
+function buildHsCodeLookupVariants(hsCode: string): string[] {
+  const trimmed = hsCode.trim();
+  const compact = trimmed.replace(/[^0-9]/g, '');
+  const variants = new Set<string>();
+  if (trimmed) variants.add(trimmed);
+  if (compact) variants.add(compact);
+  if (compact.length === 10) {
+    variants.add(`${compact.slice(0, 4)}.${compact.slice(4, 6)}.${compact.slice(6, 8)}.${compact.slice(8, 10)}`);
+  }
+  return Array.from(variants);
+}
 
 /**
  * Hexagonal adapter wiring @tariffos/agent PipelinePorts to Prisma/Postgres
@@ -45,34 +58,7 @@ export function createPrismaPipelinePorts(): PipelinePorts {
       countryCode: string,
       query: string,
     ): Promise<TariffCandidateRecord[]> {
-      const terms = query
-        .trim()
-        .split(/\s+/)
-        .filter((t) => t.length > 2)
-        .slice(0, 4);
-      const rows = await prisma.nationalTariff.findMany({
-        where: {
-          countryCode,
-          isActive: true,
-          OR:
-            terms.length > 0
-              ? terms.map((term) => ({
-                  description: { contains: term, mode: 'insensitive' as const },
-                }))
-              : undefined,
-        },
-        take: MAX_SEARCH_CANDIDATES,
-      });
-
-      return rows.map((row) => ({
-        hsCode: row.hsCode,
-        description: row.description,
-        adValoremRate: row.adValorem ?? DEFAULT_AD_VALOREM_FALLBACK,
-        ivaRate: row.iva ?? DEFAULT_IVA_FALLBACK,
-        unit: DEFAULT_UNIT,
-        legalRegime: row.legalNotes,
-        prohibited: row.legalNotes?.toLowerCase().includes('prohibid') ?? false,
-      }));
+      return searchTariffCandidatesFts(countryCode, query, MAX_SEARCH_CANDIDATES);
     },
 
     async getLegalNotes(countryCode: string, hsPrefix: string): Promise<LegalNoteRecord[]> {
@@ -94,13 +80,19 @@ export function createPrismaPipelinePorts(): PipelinePorts {
       countryCode: string,
       hsCode: string,
     ): Promise<TariffCandidateRecord | null> {
+      const variants = buildHsCodeLookupVariants(hsCode);
       const row = await prisma.nationalTariff.findFirst({
-        where: { countryCode, hsCode, isActive: true },
+        where: {
+          countryCode,
+          hsCode: { in: variants },
+          isActive: true,
+          isDerogated: false,
+        },
       });
       if (!row) return null;
 
       const permits = await prisma.hsPermitRequirement.findMany({
-        where: { hsCode, permitType: { countryCode } },
+        where: { hsCode: { in: variants }, permitType: { countryCode } },
         include: { permitType: true },
       });
 

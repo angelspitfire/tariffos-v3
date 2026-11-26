@@ -1,4 +1,10 @@
-import { classifyInvoiceBatch } from '@tariffos/agent';
+import {
+  SUPPORTED_LIVE_COUNTRIES,
+  canRunLiveLlm,
+  classifyInvoiceBatch,
+  isSupportedLiveCountry,
+} from '@tariffos/agent';
+import type { StreamProgressEvent } from '@tariffos/shared-types';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 import {
   ClassifyStreamRequestSchema,
@@ -24,43 +30,52 @@ import {
   encodeResultEvent,
 } from '@/lib/agent/sse-encoder';
 
-async function runClassificationLine(
+function buildFullDescription(input: ClassifyStreamRequest): string {
+  const parts = [input.query];
+  if (input.attachmentsText) {
+    parts.push(`Contexto adjunto: ${input.attachmentsText}`);
+  }
+  if (input.hitlAnswers) {
+    const answerSummary = Object.entries(input.hitlAnswers)
+      .filter(([, val]) => val.trim().length > 0)
+      .map(([key, val]) => `${key}: ${val.trim()}`)
+      .join('; ');
+    if (answerSummary) {
+      parts.push(`Especificaciones confirmadas: ${answerSummary}`);
+    }
+  }
+  return parts.join('\n');
+}
+
+async function runLiveClassificationLine(
   input: ClassifyStreamRequest,
   tenantId: string,
-  cloudMode: boolean,
+  onProgress: (event: StreamProgressEvent) => void,
 ) {
-  const canRunLivePipeline =
-    cloudMode &&
-    Boolean(process.env.DATABASE_URL) &&
-    Boolean(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY);
-
-  if (!canRunLivePipeline) {
-    return classifyRequestOffline(input);
-  }
-
-  try {
-    const ports = createPrismaPipelinePorts();
-    const batch = await classifyInvoiceBatch(
-      [
-        {
-          lineId: 'interactive-1',
-          sku: input.sku,
-          description: input.query,
-          originCountry: input.originCountry,
-          cifValue: input.cifValue,
-        },
-      ],
-      ports,
+  const ports = createPrismaPipelinePorts();
+  const batch = await classifyInvoiceBatch(
+    [
       {
-        tenantId,
-        countryCode: input.countryCode,
-        deepMode: input.deepMode,
+        lineId: 'interactive-1',
+        sku: input.sku,
+        description: buildFullDescription(input),
+        originCountry: input.originCountry,
+        cifValue: input.cifValue,
       },
-    );
-    return batch.lines[0] ?? classifyRequestOffline(input);
-  } catch {
-    return classifyRequestOffline(input);
+    ],
+    ports,
+    {
+      tenantId,
+      countryCode: input.countryCode,
+      deepMode: input.deepMode,
+      onProgress,
+    },
+  );
+  const line = batch.lines[0];
+  if (!line) {
+    throw new Error('Live classification pipeline returned no result line.');
   }
+  return line;
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -92,12 +107,32 @@ export async function POST(request: Request): Promise<Response> {
 
     const quota = await checkTenantQuota(tenantId);
     if (!quota.allowed) {
+      const isCanceled = quota.reason === 'ACCOUNT_CANCELED';
       return Response.json(
-        { error: 'Classification quota reached', reason: quota.reason ?? 'LIMIT_REACHED' },
-        { status: 402 },
+        {
+          error: isCanceled
+            ? 'Cuenta dada de baja. Contacta a soporte.'
+            : 'Classification quota reached',
+          reason: quota.reason ?? 'LIMIT_REACHED',
+        },
+        { status: isCanceled ? 403 : 402 },
+      );
+    }
+
+    if (!isSupportedLiveCountry(input.countryCode)) {
+      return Response.json(
+        {
+          error: `La jurisdicción ${input.countryCode} aún no tiene arancel cargado en modo Cloud. Disponible actualmente: ${SUPPORTED_LIVE_COUNTRIES.join(', ')}.`,
+          countryCode: input.countryCode,
+          supportedCountries: [...SUPPORTED_LIVE_COUNTRIES],
+        },
+        { status: 422 },
       );
     }
   }
+
+  const canRunLivePipeline =
+    cloudMode && Boolean(process.env.DATABASE_URL) && canRunLiveLlm();
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
@@ -105,21 +140,28 @@ export async function POST(request: Request): Promise<Response> {
       const push = (frame: string) => controller.enqueue(encoder.encode(frame));
 
       try {
-        push(encodeProgressEvent({ stage: 'pre_gate', label: 'Validación Compliance Pre-Gate', progressPct: 15 }));
         const hitl = detectMissingCriticalInfo(input.query, input.hitlAnswers);
-
-        push(encodeProgressEvent({ stage: 'sku_lookup', label: 'Consultando precedentes SKU', progressPct: 30 }));
         if (hitl.needsHitl) {
+          push(encodeProgressEvent({ stage: 'pre_gate', label: 'Validación Compliance Pre-Gate', progressPct: 15 }));
+          push(encodeProgressEvent({ stage: 'sku_lookup', label: 'Consultando precedentes SKU', progressPct: 30 }));
           push(encodeProgressEvent({ stage: 'complete', label: 'Requiere validación técnica HITL', progressPct: 100 }));
           push(encodeResultEvent(buildHitlEnvelope(input, hitl)));
           return;
         }
 
-        push(encodeProgressEvent({ stage: 'hybrid_retrieval', label: 'Recuperando candidatas NCM oficiales', progressPct: 50 }));
-        push(encodeProgressEvent({ stage: 'rgi_reasoning', label: 'Aplicando recorrido RGI 1 → 6', progressPct: 70 }));
-        const line = await runClassificationLine(input, tenantId, cloudMode);
+        const line = canRunLivePipeline
+          ? await runLiveClassificationLine(input, tenantId, (event) =>
+              push(encodeProgressEvent(event)),
+            )
+          : (() => {
+              push(encodeProgressEvent({ stage: 'pre_gate', label: 'Validación Compliance Pre-Gate', progressPct: 15 }));
+              push(encodeProgressEvent({ stage: 'sku_lookup', label: 'Consultando precedentes SKU', progressPct: 30 }));
+              push(encodeProgressEvent({ stage: 'hybrid_retrieval', label: 'Recuperando candidatas NCM oficiales', progressPct: 50 }));
+              push(encodeProgressEvent({ stage: 'rgi_reasoning', label: 'Aplicando recorrido RGI 1 → 6', progressPct: 70 }));
+              push(encodeProgressEvent({ stage: 'verifying_tariff', label: 'Verificando código en Decreto 4.944 y tributos', progressPct: 88 }));
+              return classifyRequestOffline(input);
+            })();
 
-        push(encodeProgressEvent({ stage: 'verifying_tariff', label: 'Verificando código en Decreto 4.944 y tributos', progressPct: 88 }));
         const envelope = buildA2UIEnvelopeFromLine(line, input);
 
         if (cloudMode) {
@@ -130,7 +172,8 @@ export async function POST(request: Request): Promise<Response> {
         push(encodeResultEvent(envelope));
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unexpected classification stream error';
-        push(encodeErrorEvent(message));
+        console.error('[classify-stream] Classification failed:', err);
+        push(encodeErrorEvent(message, canRunLivePipeline ? 'LIVE_PIPELINE_ERROR' : 'CLASSIFICATION_ERROR'));
       } finally {
         controller.close();
       }

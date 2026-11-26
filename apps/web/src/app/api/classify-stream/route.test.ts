@@ -12,7 +12,16 @@ const mocks = vi.hoisted(() => ({
   incrementUsage: vi.fn(),
   membershipFindFirst: vi.fn(),
   decisionArtifactCreate: vi.fn(),
+  classifyInvoiceBatch: vi.fn(),
 }));
+
+vi.mock('@tariffos/agent', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tariffos/agent')>();
+  return {
+    ...actual,
+    classifyInvoiceBatch: mocks.classifyInvoiceBatch,
+  };
+});
 
 vi.mock('@/lib/supabase/server', () => ({
   getAuthenticatedUser: mocks.getAuthenticatedUser,
@@ -58,6 +67,7 @@ describe('POST /api/classify-stream', () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    vi.unstubAllEnvs();
     if (originalCloudMode === undefined) delete process.env.NEXT_PUBLIC_CLOUD_MODE;
     else process.env.NEXT_PUBLIC_CLOUD_MODE = originalCloudMode;
     if (originalSupabaseUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -205,5 +215,63 @@ describe('POST /api/classify-stream', () => {
     expect(dossier?.type === 'dossier' && dossier.reviewStatus).toBe('draft_ai');
     expect(mocks.decisionArtifactCreate).toHaveBeenCalledTimes(1);
     expect(mocks.incrementUsage).toHaveBeenCalledWith('tenant-1', 'classification', 1);
+  });
+
+  it('rejects non-VE jurisdictions in cloud mode with 422', async () => {
+    vi.stubEnv('NEXT_PUBLIC_CLOUD_MODE', 'true');
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'anon-key');
+
+    mocks.getAuthenticatedUser.mockResolvedValue({ id: 'user-1', email: 'broker@example.com' });
+    mocks.membershipFindFirst.mockResolvedValue({ tenantId: 'tenant-1', role: 'OWNER' });
+    mocks.checkBillingLimit.mockResolvedValue({ allowed: true });
+
+    const req = new Request('http://localhost/api/classify-stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: 'Laptop 14 inch',
+        jurisdictionId: 'us-htsus',
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(422);
+    const json = (await res.json()) as { countryCode?: string; supportedCountries?: string[] };
+    expect(json.countryCode).toBe('US');
+    expect(json.supportedCountries).toEqual(['VE']);
+  });
+
+  it('runs the live pipeline with NVIDIA_API_KEY and emits SSE error instead of mock fallback on failure', async () => {
+    vi.stubEnv('NEXT_PUBLIC_CLOUD_MODE', 'true');
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'anon-key');
+    vi.stubEnv('DATABASE_URL', 'postgresql://user:pass@host:6543/postgres');
+    vi.stubEnv('LLM_PROVIDER', 'nvidia');
+    vi.stubEnv('NVIDIA_API_KEY', 'nvapi-live');
+
+    mocks.getAuthenticatedUser.mockResolvedValue({ id: 'user-1', email: 'broker@example.com' });
+    mocks.membershipFindFirst.mockResolvedValue({ tenantId: 'tenant-1', role: 'OWNER' });
+    mocks.checkBillingLimit.mockResolvedValue({ allowed: true });
+    mocks.classifyInvoiceBatch.mockRejectedValueOnce(new Error('NVIDIA rate limit'));
+
+    const req = new Request('http://localhost/api/classify-stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: 'Apple Watch Series 9',
+        jurisdictionId: 've-seniat',
+        attachmentsText: 'GPS + Cellular, caja aluminio 45mm',
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const frames = parseSseFrames(await res.text());
+    expect(mocks.classifyInvoiceBatch).toHaveBeenCalledTimes(1);
+    const passedItem = mocks.classifyInvoiceBatch.mock.calls[0]?.[0]?.[0] as { description: string };
+    expect(passedItem.description).toContain('GPS + Cellular');
+    expect(frames.some((f) => f.event === 'error')).toBe(true);
+    expect(frames.some((f) => f.event === 'result')).toBe(false);
   });
 });

@@ -71,6 +71,7 @@ export async function runWorkspaceClassification(
   const rawEnvelope = await classifyStream({
     query: params.query,
     jurisdiction: params.jurisdiction,
+    approvalWorkflowMode: params.approvalWorkflowMode,
     attachmentsText: combinedAttachments || undefined,
     isBatchHint: params.isBatchHint || params.attachments.length > 0,
     onProgress: params.onProgress,
