@@ -2,6 +2,7 @@
 
 import { Monitor, Moon, Sun } from 'lucide-react';
 import type { UserProfileSettings } from '@tariffos/shared-types';
+import { BrokerSignaturePad } from './BrokerSignaturePad';
 
 const ROLE_OPTIONS = [
   'Agente de Aduanas',
@@ -126,6 +127,13 @@ export function SettingsProfileTab({ draft, onChange }: SettingsProfileTabProps)
             className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 font-mono text-xs text-ink-primary focus:border-accent-brand focus:outline-none"
           />
         </label>
+
+        <BrokerSignaturePad
+          value={draft.brokerSignatureDataUrl}
+          onChange={(dataUrl) => onChange({ brokerSignatureDataUrl: dataUrl })}
+          signerName={draft.fullName}
+          brokerLicense={draft.brokerLicense}
+        />
       </div>
     </div>
   );

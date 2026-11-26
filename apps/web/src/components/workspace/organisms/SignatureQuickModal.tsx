@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import { PenTool, X } from 'lucide-react';
+import { BrokerSignaturePad } from '../molecules/BrokerSignaturePad';
 
 interface SignatureQuickModalProps {
   open: boolean;
   defaultName: string;
   defaultLicense: string;
+  defaultSignatureDataUrl?: string;
   onClose: () => void;
   onSaveAndExport: (payload: {
     fullName: string;
@@ -26,11 +28,13 @@ export function SignatureQuickModal({
   open,
   defaultName,
   defaultLicense,
+  defaultSignatureDataUrl,
   onClose,
   onSaveAndExport,
 }: SignatureQuickModalProps) {
   const [fullName, setFullName] = useState(defaultName);
   const [brokerLicense, setBrokerLicense] = useState(defaultLicense);
+  const [signatureDataUrl, setSignatureDataUrl] = useState<string | undefined>(defaultSignatureDataUrl);
 
   if (!open) return null;
 
@@ -39,7 +43,7 @@ export function SignatureQuickModal({
       <dialog
         open
         aria-label="Firma rápida de agente aduanal"
-        className="static m-0 w-full max-w-md rounded-2xl border border-border-subtle bg-surface-panel p-5 text-ink-primary shadow-xl"
+        className="static m-0 w-full max-w-lg rounded-2xl border border-border-subtle bg-surface-panel p-5 text-ink-primary shadow-xl"
       >
         <form
           onSubmit={(e) => {
@@ -49,7 +53,7 @@ export function SignatureQuickModal({
             onSaveAndExport({
               fullName: cleanName,
               brokerLicense: cleanLicense,
-              signatureDataUrl: buildTextSignatureDataUrl(cleanName, cleanLicense),
+              signatureDataUrl: signatureDataUrl || buildTextSignatureDataUrl(cleanName, cleanLicense),
             });
           }}
         >
@@ -69,10 +73,10 @@ export function SignatureQuickModal({
           </div>
 
           <p className="mt-1.5 text-xs text-ink-muted">
-            Configura tu nombre y credencial aduanera una sola vez para sellar y exportar el PDF oficial.
+            Configura tu nombre, credencial y rúbrica manuscrita para sellar y exportar el PDF oficial.
           </p>
 
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <label className="block text-xs">
               <span className="font-medium text-ink-secondary">Nombre del agente / clasificador</span>
               <input
@@ -94,6 +98,13 @@ export function SignatureQuickModal({
                 className="mt-1 w-full rounded-lg border border-border-subtle bg-surface-input px-3 py-2 font-mono text-xs text-ink-primary outline-none focus:border-accent-brand"
               />
             </label>
+
+            <BrokerSignaturePad
+              value={signatureDataUrl}
+              onChange={setSignatureDataUrl}
+              signerName={fullName}
+              brokerLicense={brokerLicense}
+            />
           </div>
 
           <div className="mt-5 flex justify-end gap-2">
