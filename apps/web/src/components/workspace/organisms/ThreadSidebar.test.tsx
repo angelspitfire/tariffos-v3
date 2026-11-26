@@ -49,26 +49,26 @@ describe('ThreadSidebar (mockup shell)', () => {
     expect(props.onOpenSkuCatalog).toHaveBeenCalledTimes(1);
   });
 
-  it('highlights plan usage with a large "Activar plan" CTA while on Trial', () => {
+  it('keeps the footer compact by default and reveals plan usage + Activar plan inside the profile menu', async () => {
+    const user = userEvent.setup();
     renderSidebar();
+
+    expect(screen.queryByLabelText(/Consumo del plan/i)).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Cuenta y ajustes/i }));
+
     expect(screen.getByLabelText(/Consumo del plan/i)).toBeInTheDocument();
     expect(screen.getByText(/0 \/ 5 clasif\./i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Activar plan/i })).toHaveAttribute('href', '/activate-plan');
-  });
-
-  it('hides the plan card on a healthy paid plan and keeps usage in the account row', () => {
-    renderSidebar({ plan: computePlanStatus([], 'basico') });
-    expect(screen.queryByLabelText(/Consumo del plan/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /Activar plan/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Cuenta y ajustes/i })).toBeInTheDocument();
-  });
-
-  it('opens the account menu with sealing policy and billing link', async () => {
-    const user = userEvent.setup();
-    renderSidebar();
-    await user.click(screen.getByRole('button', { name: /Cuenta y ajustes/i }));
     expect(screen.getByLabelText(/Política de sellado/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Plan y facturación/i })).toBeInTheDocument();
+  });
+
+  it('shows Gestionar plan inside the profile menu when on a paid plan', async () => {
+    const user = userEvent.setup();
+    renderSidebar({ plan: computePlanStatus([], 'basico') });
+
+    await user.click(screen.getByRole('button', { name: /Cuenta y ajustes/i }));
+    expect(screen.getByLabelText(/Consumo del plan/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Gestionar plan/i })).toHaveAttribute('href', '/activate-plan');
   });
 
   it('collapses to a 56px rail with accessible icon buttons', async () => {
