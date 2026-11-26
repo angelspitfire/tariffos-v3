@@ -1,5 +1,6 @@
 import { ArrowRight, Sparkles } from 'lucide-react';
 import type { SubscriptionPlanConfig } from '@tariffos/shared-types';
+import { isPlanFree } from '@/lib/funnel/plan-recommender';
 import { FunnelBadge } from '../atoms/FunnelBadge';
 import { FunnelButton } from '../atoms/FunnelButton';
 
@@ -14,6 +15,8 @@ export function TrialPlanBanner({
   isRecommended = false,
   onSelect,
 }: TrialPlanBannerProps) {
+  const free = isPlanFree(plan);
+
   return (
     <div
       className={`px-5 py-4 rounded-[20px] border backdrop-blur-md flex flex-wrap items-center justify-between gap-4 transition-colors ${
@@ -32,7 +35,9 @@ export function TrialPlanBanner({
               {plan.name} — {plan.monthlyQuota.toLocaleString('en-US')} clasificaciones completas
             </span>
             <FunnelBadge variant="success">
-              ${plan.monthlyPriceUsd} USD · Pago único · 100% acreditable
+              {free
+                ? 'Gratis · Cortesía'
+                : `$${plan.monthlyPriceUsd} USD · Pago único · 100% acreditable`}
             </FunnelBadge>
             {isRecommended ? (
               <FunnelBadge variant="accent">Recomendado para ti</FunnelBadge>
@@ -49,7 +54,7 @@ export function TrialPlanBanner({
         onClick={onSelect}
         className="min-h-[40px] rounded-full px-5 whitespace-nowrap"
       >
-        Activar Piloto Operativo
+        {free ? `Empezar con ${plan.name}` : `Activar ${plan.name}`}
       </FunnelButton>
     </div>
   );

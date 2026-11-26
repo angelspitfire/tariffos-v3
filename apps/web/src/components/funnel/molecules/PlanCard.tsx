@@ -31,7 +31,17 @@ export function PlanCard({
   const price = showAnnual ? plan.annualPriceUsd : plan.monthlyPriceUsd;
   const monthlyEquiv =
     showAnnual && plan.annualPriceUsd > 0 ? Math.round(plan.annualPriceUsd / 12) : null;
-  const isPopular = plan.planId === 'agencia' || plan.planId === 'pro';
+  const isPopular = plan.planId === 'agencia';
+  const unitCostUsd =
+    !customPricing && !oneTime && plan.monthlyQuota > 0 && price > 0
+      ? (showAnnual ? price / 12 : price) / plan.monthlyQuota
+      : null;
+
+  const ctaLabel = customPricing
+    ? 'Contactar'
+    : oneTime
+      ? `Activar ${plan.name}`
+      : `Elegir ${plan.name}`;
 
   return (
     <div
@@ -45,11 +55,13 @@ export function PlanCard({
     >
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-2 min-h-[24px]">
-          <h3 className="text-sm font-bold text-ink-primary">{plan.name}</h3>
+          <h3 className="text-base font-bold text-ink-primary">{plan.name}</h3>
           {isRecommended ? (
             <FunnelBadge variant="accent">Recomendado</FunnelBadge>
           ) : isPopular ? (
             <FunnelBadge variant="accent">Más popular</FunnelBadge>
+          ) : oneTime ? (
+            <FunnelBadge variant="success">100% acreditable</FunnelBadge>
           ) : customPricing ? (
             <FunnelBadge variant="neutral">Corporativo</FunnelBadge>
           ) : annualOnly ? (
@@ -60,31 +72,38 @@ export function PlanCard({
         <div>
           {customPricing ? (
             <>
-              <div className="text-2xl font-bold text-ink-primary tracking-tight">A medida</div>
-              <div className="text-[11px] text-ink-muted mt-0.5">
-                Según tipo de cliente y operación
+              <div className="text-3xl font-bold text-ink-primary tracking-tight">A medida</div>
+              <div className="text-[11px] text-ink-muted mt-1">
+                Volumen, usuarios y sucursales según tu operación
               </div>
             </>
           ) : (
             <>
-              <div className="flex items-baseline gap-1 font-mono tabular-nums">
-                <span className="text-2xl font-bold text-ink-primary">
+              <div className="flex items-baseline gap-1.5 font-mono tabular-nums">
+                <span className="text-3xl font-bold text-ink-primary">
                   ${price.toLocaleString('en-US')}
                 </span>
                 <span className="text-xs text-ink-muted">
-                  {oneTime ? 'pago único' : `/${showAnnual ? 'año' : 'mes'}`}
+                  {oneTime ? 'USD · pago único' : `USD/${showAnnual ? 'año' : 'mes'}`}
                 </span>
               </div>
-              {monthlyEquiv !== null ? (
-                <div className="text-[11px] font-mono text-ink-muted tabular-nums mt-0.5">
-                  Equiv. ${monthlyEquiv.toLocaleString('en-US')}/mes
-                </div>
-              ) : (
-                <div className="text-[11px] text-ink-muted mt-0.5">
-                  Hasta {plan.monthlyQuota.toLocaleString('en-US')} clasif.
-                  {oneTime ? ' (30 días)' : '/mes'}
-                </div>
-              )}
+              <div className="text-[11px] font-mono text-ink-muted tabular-nums mt-1">
+                {oneTime ? (
+                  <>
+                    {plan.monthlyQuota.toLocaleString('en-US')} clasif. · {plan.creditableDays ?? 30} días · 100% acreditable
+                  </>
+                ) : monthlyEquiv !== null ? (
+                  <>
+                    Equiv. ${monthlyEquiv.toLocaleString('en-US')}/mes · Hasta{' '}
+                    {plan.monthlyQuota.toLocaleString('en-US')} clasif./mes
+                  </>
+                ) : (
+                  <>
+                    Hasta {plan.monthlyQuota.toLocaleString('en-US')} clasif./mes
+                    {unitCostUsd !== null ? ` · ~$${unitCostUsd.toFixed(2)}/clasif.` : ''}
+                  </>
+                )}
+              </div>
             </>
           )}
         </div>
@@ -112,7 +131,7 @@ export function PlanCard({
           )
         }
       >
-        {customPricing ? 'Contactar' : `Elegir ${plan.name}`}
+        {ctaLabel}
       </FunnelButton>
     </div>
   );

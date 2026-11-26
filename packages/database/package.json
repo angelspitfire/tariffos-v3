@@ -9,6 +9,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:seed": "npx tsx prisma/seed.ts",
+    "plans:seed": "pnpm exec tsx src/scripts/seed_plans_only.ts",
     "prisma:seed:portable": "npx tsx src/scripts/seed_from_portable.ts",
     "laws:seniat": "npx tsx src/scripts/fetch_seniat_normativa.ts",
     "build": "prisma generate && tsc && rm -rf dist/generated && cp -R src/generated dist/generated",

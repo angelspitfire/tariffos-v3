@@ -8,13 +8,21 @@ import { extractPlanFeaturesMeta } from '@/lib/admin/http-helpers';
 import { getOfflineAdminState } from '@/lib/admin/offline-store';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 
+const LEGACY_HIDDEN_SLUGS = new Set(['trial', 'basico', 'profesional', 'pro', 'corporate']);
+
+function isExplicitlyPublicInJson(rawFeatures: unknown): boolean {
+  if (!rawFeatures || typeof rawFeatures !== 'object' || Array.isArray(rawFeatures)) {
+    return false;
+  }
+  return (rawFeatures as Record<string, unknown>).isPublic === true;
+}
+
 function buildSortOrder(
   slug: string,
   fallbackIdx: number,
   options?: { isCustomPricing?: boolean; metaSortOrder?: number },
 ): number {
-  if (slug === 'corporate') return 2000 + fallbackIdx;
-  if (options?.isCustomPricing) return 1000 + fallbackIdx;
+  if (options?.isCustomPricing) return 1000 + (options.metaSortOrder ?? fallbackIdx);
   if (typeof options?.metaSortOrder === 'number') return options.metaSortOrder;
   const staticIdx = SAAS_PLANS.findIndex((p) => p.planId === slug);
   return staticIdx >= 0 ? staticIdx + 1 : 100 + fallbackIdx;
@@ -27,9 +35,8 @@ export async function loadPublicPlans(): Promise<SubscriptionPlanConfig[]> {
       .map((p, idx) => {
         const fallback = SAAS_PLANS.find((s) => s.planId === p.name);
         const hasPrice = p.basePrice > 0 || p.annualPriceUsd > 0;
-        const customPricing =
-          p.name === 'corporate' || (!hasPrice && Boolean(fallback?.customPricing));
-        const annualOnly = p.annualOnly || (p.name === 'enterprise' && hasPrice);
+        const customPricing = !hasPrice && Boolean(fallback?.customPricing);
+        const annualOnly = p.annualOnly;
         return {
           planId: p.name,
           name: p.displayName,
@@ -39,11 +46,12 @@ export async function loadPublicPlans(): Promise<SubscriptionPlanConfig[]> {
           annualOnly,
           oneTimeOnly: Boolean(fallback?.oneTimeOnly),
           customPricing,
+          creditableDays: fallback?.creditableDays,
           maxUsers: p.maxUsers,
           currency: 'USD' as const,
           monthlyQuota: p.classificationLimit,
           features: p.features,
-          paymentInstructions: DEFAULT_PAYMENT_INSTRUCTIONS,
+          paymentInstructions: fallback?.paymentInstructions ?? DEFAULT_PAYMENT_INSTRUCTIONS,
           published: true,
           sortOrder: buildSortOrder(p.name, idx, { isCustomPricing: customPricing }),
         };
@@ -58,16 +66,14 @@ export async function loadPublicPlans(): Promise<SubscriptionPlanConfig[]> {
       const row = rows[i];
       const meta = extractPlanFeaturesMeta(row.features);
       if (!meta.isPublic || meta.isArchived) continue;
+      if (LEGACY_HIDDEN_SLUGS.has(row.name) && !isExplicitlyPublicInJson(row.features)) {
+        continue;
+      }
       const fallback = SAAS_PLANS.find((p) => p.planId === row.name);
       const hasDbPrice = row.basePrice > 0 || (meta.annualPriceUsd ?? 0) > 0;
-      const customPricing =
-        row.name === 'corporate' ||
-        meta.customPricing ||
-        (!hasDbPrice && Boolean(fallback?.customPricing));
-      const annualOnly =
-        meta.annualOnly ||
-        Boolean(fallback?.annualOnly) ||
-        (row.name === 'enterprise' && hasDbPrice && !customPricing);
+      const customPricing = meta.customPricing || (!hasDbPrice && Boolean(fallback?.customPricing));
+      const annualOnly = !customPricing && (meta.annualOnly || Boolean(fallback?.annualOnly));
+      const oneTimeOnly = meta.oneTimeOnly || Boolean(fallback?.oneTimeOnly);
       mapped.push({
         planId: row.name,
         name: meta.displayName ?? fallback?.name ?? row.name,
@@ -77,9 +83,9 @@ export async function loadPublicPlans(): Promise<SubscriptionPlanConfig[]> {
           ? 0
           : (meta.annualPriceUsd ??
             fallback?.annualPriceUsd ??
-            (meta.oneTimeOnly ? 0 : row.basePrice * 10)),
+            (oneTimeOnly ? 0 : row.basePrice * 10)),
         annualOnly,
-        oneTimeOnly: meta.oneTimeOnly || Boolean(fallback?.oneTimeOnly),
+        oneTimeOnly,
         customPricing,
         allowBatch: meta.allowBatch,
         creditableDays: meta.creditableDays ?? fallback?.creditableDays,

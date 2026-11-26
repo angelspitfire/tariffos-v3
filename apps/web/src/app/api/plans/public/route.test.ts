@@ -110,4 +110,53 @@ describe('GET /api/plans/public', () => {
     const fallbackBody = (await fallbackRes.json()) as { plans: Array<{ planId: string }> };
     expect(fallbackBody.plans.map((p) => p.planId)).toEqual(['pilot', 'agencia', 'enterprise']);
   });
+
+  it('filters unseeded legacy slugs (trial, basico, pro, corporate) unless explicitly marked isPublic: true', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+
+    mocks.planFindMany.mockResolvedValueOnce([
+      {
+        id: 'legacy-1',
+        name: 'basico',
+        description: 'Legacy $49',
+        basePrice: 49,
+        classificationLimit: 40,
+        features: { displayName: 'Básico', sortOrder: 2 },
+      },
+      {
+        id: 'b2b-1',
+        name: 'pilot',
+        description: 'Piloto Operativo',
+        basePrice: 150,
+        classificationLimit: 250,
+        features: { displayName: 'Piloto Operativo', oneTimeOnly: true, isPublic: true, sortOrder: 1 },
+      },
+      {
+        id: 'b2b-2',
+        name: 'agencia',
+        description: 'Agencia',
+        basePrice: 300,
+        classificationLimit: 1000,
+        features: { displayName: 'Agencia', annualPriceUsd: 3000, isPublic: true, sortOrder: 2 },
+      },
+      {
+        id: 'b2b-3',
+        name: 'enterprise',
+        description: 'Enterprise',
+        basePrice: 0,
+        classificationLimit: 5000,
+        features: { displayName: 'Enterprise', customPricing: true, isPublic: true, sortOrder: 3 },
+      },
+    ]);
+
+    const res = await GET();
+    const body = (await res.json()) as {
+      plans: Array<{ planId: string; customPricing?: boolean; annualOnly?: boolean }>;
+    };
+    expect(body.plans.map((p) => p.planId)).toEqual(['pilot', 'agencia', 'enterprise']);
+    expect(body.plans[2]?.customPricing).toBe(true);
+    expect(body.plans[2]?.annualOnly).toBe(false);
+  });
 });

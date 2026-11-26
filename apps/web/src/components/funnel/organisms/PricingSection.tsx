@@ -13,7 +13,6 @@ import {
   isPlanAnnualOnly,
   isPlanCustomPricing,
   isPlanFree,
-  isPlanOneTime,
   type PlanRecommendation,
 } from '@/lib/funnel/plan-recommender';
 import { CorporatePlanBanner } from '../molecules/CorporatePlanBanner';
@@ -40,26 +39,23 @@ export function PricingSection({
       const aCustom = isPlanCustomPricing(a) ? 1 : 0;
       const bCustom = isPlanCustomPricing(b) ? 1 : 0;
       if (aCustom !== bCustom) return aCustom - bCustom;
-      const aCorp = a.planId === 'corporate' ? 1 : 0;
-      const bCorp = b.planId === 'corporate' ? 1 : 0;
-      if (aCorp !== bCorp) return aCorp - bCorp;
       return a.sortOrder - b.sortOrder;
     });
 
-  const pilotOrFreePlan = visiblePlans.find((p) => isPlanOneTime(p) || isPlanFree(p));
-  const allPaidPlans = visiblePlans.filter((p) => !isPlanOneTime(p) && !isPlanFree(p));
-  const shouldSplitCorporate = allPaidPlans.length > 4;
-  const corporatePlan = shouldSplitCorporate
-    ? allPaidPlans.find((p) => p.planId === 'corporate' || isPlanAnnualOnly(p))
+  const freeBannerPlan = visiblePlans.find((p) => isPlanFree(p));
+  const ladderPlans = visiblePlans.filter((p) => !isPlanFree(p));
+  const shouldSplitCorporate = ladderPlans.length > 4;
+  const corporateBannerPlan = shouldSplitCorporate
+    ? ladderPlans.find((p) => isPlanCustomPricing(p) || isPlanAnnualOnly(p))
     : undefined;
-  const gridPlans = corporatePlan
-    ? allPaidPlans.filter((p) => p.planId !== corporatePlan.planId)
-    : allPaidPlans;
+  const gridPlans = corporateBannerPlan
+    ? ladderPlans.filter((p) => p.planId !== corporateBannerPlan.planId)
+    : ladderPlans;
   const gridColsClass =
     gridPlans.length <= 2
-      ? 'grid-cols-1 sm:grid-cols-2'
+      ? 'grid-cols-1 md:grid-cols-2'
       : gridPlans.length === 3
-        ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+        ? 'grid-cols-1 md:grid-cols-3'
         : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4';
 
   const handleSelectPlan = (planId: string, cycle: SubscriptionBillingCycle) => {
@@ -93,7 +89,7 @@ export function PricingSection({
             Invierte en precisión arancelaria, no en multas evitables
           </h2>
           <p className="text-base text-ink-secondary leading-relaxed">
-            Valida TariffOS en operación real con el Piloto Operativo de $150 (100% acreditable) o activa tu estación de agencia mediante facturación manual asistida.
+            Valida TariffOS en operación real con el Piloto Operativo de $150 (100% acreditable al Plan Agencia) o activa tu estación de agencia con facturación manual asistida.
           </p>
 
           <div className="pt-2 flex justify-center">
@@ -132,15 +128,15 @@ export function PricingSection({
           />
         </div>
 
-        {pilotOrFreePlan ? (
+        {freeBannerPlan ? (
           <TrialPlanBanner
-            plan={pilotOrFreePlan}
-            isRecommended={recommendedPlanId === pilotOrFreePlan.planId}
-            onSelect={() => handleSelectPlan(pilotOrFreePlan.planId, 'monthly')}
+            plan={freeBannerPlan}
+            isRecommended={recommendedPlanId === freeBannerPlan.planId}
+            onSelect={() => handleSelectPlan(freeBannerPlan.planId, 'monthly')}
           />
         ) : null}
 
-        <div className={`grid ${gridColsClass} gap-5`}>
+        <div className={`grid ${gridColsClass} gap-6 items-stretch`}>
           {gridPlans.map((plan) => (
             <PlanCard
               key={plan.planId}
@@ -152,11 +148,11 @@ export function PricingSection({
           ))}
         </div>
 
-        {corporatePlan ? (
+        {corporateBannerPlan ? (
           <CorporatePlanBanner
-            plan={corporatePlan}
-            isRecommended={recommendedPlanId === corporatePlan.planId}
-            onSelect={() => handleSelectPlan(corporatePlan.planId, 'custom')}
+            plan={corporateBannerPlan}
+            isRecommended={recommendedPlanId === corporateBannerPlan.planId}
+            onSelect={() => handleSelectPlan(corporateBannerPlan.planId, 'custom')}
           />
         ) : null}
 
