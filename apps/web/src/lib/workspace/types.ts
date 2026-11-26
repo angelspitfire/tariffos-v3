@@ -78,7 +78,7 @@ export interface WorkspaceToast {
   variant: 'success' | 'info' | 'warning';
 }
 
-export type AnalyticsTabId = 'summary' | 'hs_distribution' | 'hitl_timings';
+export type AnalyticsTabId = 'summary' | 'hs_distribution' | 'hitl_timings' | 'recent_compare';
 
 export const DEFAULT_USER_PROFILE: UserProfileSettings = {
   fullName: 'Agente Aduanal',

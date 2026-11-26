@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { BookMarked, Plus, Search, Trash2, X } from 'lucide-react';
+import { BookMarked, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import type { SkuPrecedent } from '@tariffos/shared-types';
 import { normalizeSkuKey } from '@/lib/workspace/persistence';
 import { CopyHsButton } from '../atoms/CopyHsButton';
@@ -28,10 +28,20 @@ export function SkuCatalogModal({
 }: SkuCatalogModalProps) {
   const [search, setSearch] = useState('');
   const [adding, setAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [sku, setSku] = useState('');
   const [title, setTitle] = useState('');
   const [hsCode, setHsCode] = useState('');
   const [adValorem, setAdValorem] = useState('10');
+
+  const startEdit = (item: SkuPrecedent) => {
+    setEditingId(item.id);
+    setSku(item.sku);
+    setTitle(item.title);
+    setHsCode(item.hsCode);
+    setAdValorem(String(item.adValoremPercent));
+    setAdding(true);
+  };
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -50,22 +60,24 @@ export function SkuCatalogModal({
     e.preventDefault();
     if (!sku.trim() || !hsCode.trim()) return;
     const now = new Date().toISOString();
+    const existing = editingId ? precedents.find((p) => p.id === editingId) : undefined;
     onSave({
-      id: `sku-${Date.now()}`,
+      id: existing?.id ?? `sku-${Date.now()}`,
       sku: sku.trim(),
       normalizedSku: normalizeSkuKey(sku),
       title: title.trim() || sku.trim(),
       description: title.trim() || sku.trim(),
       hsCode: hsCode.trim(),
-      jurisdictionId,
+      jurisdictionId: existing?.jurisdictionId ?? jurisdictionId,
       adValoremPercent: Number(adValorem) || 0,
-      vatPercent: 16,
-      legalRegime: 'Libre',
-      reviewStatus: 'approved',
-      usageCount: 1,
-      createdAt: now,
+      vatPercent: existing?.vatPercent ?? 16,
+      legalRegime: existing?.legalRegime ?? 'Libre',
+      reviewStatus: existing?.reviewStatus ?? 'approved',
+      usageCount: existing?.usageCount ?? 1,
+      createdAt: existing?.createdAt ?? now,
       updatedAt: now,
     });
+    setEditingId(null);
     setSku('');
     setTitle('');
     setHsCode('');
@@ -160,6 +172,14 @@ export function SkuCatalogModal({
                       className="rounded-lg border border-border-subtle bg-surface-panel px-2.5 py-1 text-xs font-medium text-ink-primary hover:bg-surface-hover"
                     >
                       Clasificar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => startEdit(item)}
+                      aria-label={`Editar SKU ${item.sku}`}
+                      className="rounded-lg p-1.5 text-ink-muted hover:bg-surface-hover hover:text-accent-ink"
+                    >
+                      <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                     </button>
                     <button
                       type="button"

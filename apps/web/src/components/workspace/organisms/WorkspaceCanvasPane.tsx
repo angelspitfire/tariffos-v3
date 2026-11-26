@@ -10,6 +10,7 @@ import type {
   UserProfileSettings,
 } from '@tariffos/shared-types';
 import type { ThreadArtifactSummary } from '@/lib/workspace/artifact-versions';
+import { ArtifactDirectoryDrawer } from '../molecules/ArtifactDirectoryDrawer';
 import { CanvasStatusStrip } from '../molecules/CanvasStatusStrip';
 import { CanvasTitleBar } from '../molecules/CanvasTitleBar';
 import { ConsolidatedTabStrip } from '../molecules/ConsolidatedTabStrip';
@@ -72,6 +73,7 @@ export function WorkspaceCanvasPane({
   onCloseCanvas,
 }: WorkspaceCanvasPaneProps) {
   const [timelineOpen, setTimelineOpen] = useState(false);
+  const [directoryOpen, setDirectoryOpen] = useState(false);
   const dossier = components.find((c) => c.type === 'dossier');
   const calculator = components.find((c) => c.type === 'calculator');
   const hierarchy = components.find((c) => c.type === 'hierarchy');
@@ -129,11 +131,22 @@ export function WorkspaceCanvasPane({
       />
 
       {onSelectArtifact ? (
-        <OpenArtifactTabsStrip
-          artifacts={artifacts}
-          activeArtifactId={activeArtifactId}
-          onSelectArtifact={onSelectArtifact}
-        />
+        <>
+          <OpenArtifactTabsStrip
+            artifacts={artifacts}
+            activeArtifactId={activeArtifactId}
+            directoryOpen={directoryOpen}
+            onSelectArtifact={onSelectArtifact}
+            onToggleDirectory={() => setDirectoryOpen((prev) => !prev)}
+          />
+          <ArtifactDirectoryDrawer
+            open={directoryOpen}
+            artifacts={artifacts}
+            activeArtifactId={activeArtifactId}
+            onSelectArtifact={onSelectArtifact}
+            onClose={() => setDirectoryOpen(false)}
+          />
+        </>
       ) : null}
 
       <ConsolidatedTabStrip
