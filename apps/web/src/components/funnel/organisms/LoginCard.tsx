@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowRight, Globe, Lock, Mail, Sparkles, User } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Globe, Lock, Mail, ShieldCheck, Sparkles, User } from 'lucide-react';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 import { readPendingQuery, saveSelectedPlan } from '@/lib/funnel/funnel-storage';
 import {
   executeEmailAuth,
   executeGoogleAuth,
+  executePasswordReset,
   parseBillingCycle,
   resolvePostLoginDestination,
   resolveSafeNext,
@@ -41,6 +43,7 @@ export function LoginCard({ cloudMode, initialMode = 'signin', nextPath }: Login
   const [pendingQuery, setPendingQuery] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   const urlNext = resolveSafeNext(nextPath ?? searchParams.get('next'));
   const urlPlan = searchParams.get('plan');
@@ -87,8 +90,22 @@ export function LoginCard({ cloudMode, initialMode = 'signin', nextPath }: Login
     }
   };
 
+  const handlePasswordReset = async () => {
+    setError(null);
+    setInfo(null);
+    setIsLoading(true);
+    try {
+      const result = await executePasswordReset({ isCloud, email });
+      if (result.error) setError(result.error);
+      if (result.info) setInfo(result.info);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <FunnelCard padding="p-6" className="space-y-5 shadow-xs">
+    <div className="space-y-4">
+      <FunnelCard padding="p-6" className="space-y-5 shadow-xs">
       <div className="space-y-1.5">
         <FunnelBadge variant="accent">
           {isCloud ? 'Acceso seguro · Supabase Auth' : 'Acceso rápido · Modo local'}
@@ -177,12 +194,48 @@ export function LoginCard({ cloudMode, initialMode = 'signin', nextPath }: Login
           required
         />
 
+        {tab === 'signin' ? (
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handlePasswordReset}
+              className="text-[11px] font-medium text-accent-ink hover:underline cursor-pointer"
+            >
+              ¿Olvidaste tu contraseña?
+            </button>
+          </div>
+        ) : null}
+
         {error ? <p role="alert" className="text-xs font-medium text-rose-600 dark:text-rose-400">{error}</p> : null}
+        {info ? <p className="rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/35 p-2.5 text-xs font-medium text-emerald-800 dark:text-emerald-300">{info}</p> : null}
 
         <FunnelButton type="submit" variant="primary" size="lg" className="w-full" isLoading={isLoading} rightIcon={<ArrowRight className="w-4 h-4" />}>
           {tab === 'signin' ? 'Ingresar con correo' : 'Crear cuenta gratis'}
         </FunnelButton>
       </form>
     </FunnelCard>
+
+      <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[11px] text-ink-muted">
+        <span className="inline-flex items-center gap-1.5">
+          <ShieldCheck className="w-3.5 h-3.5 text-accent-ink" aria-hidden="true" />
+          Sesión segura y aislamiento por organización
+        </span>
+        <div className="flex items-center gap-3">
+          <Link href="/" className="inline-flex items-center gap-1 font-medium text-ink-secondary hover:text-ink-primary">
+            <ArrowLeft className="w-3 h-3" aria-hidden="true" />
+            Volver al inicio
+          </Link>
+          {!isCloud ? (
+            <button
+              type="button"
+              onClick={() => router.push('/app')}
+              className="font-medium text-ink-secondary hover:text-ink-primary underline cursor-pointer"
+            >
+              Probar sin cuenta
+            </button>
+          ) : null}
+        </div>
+      </div>
+    </div>
   );
 }

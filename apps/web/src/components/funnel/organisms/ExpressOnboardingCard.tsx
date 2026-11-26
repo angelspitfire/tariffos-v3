@@ -45,7 +45,9 @@ export function ExpressOnboardingCard({
   const mockSession = readMockSession();
 
   const [fullName, setFullName] = useState(mockSession?.fullName ?? '');
+  const [role, setRole] = useState('Agente de Aduanas');
   const [companyName, setCompanyName] = useState('');
+  const [brokerLicense, setBrokerLicense] = useState('');
   const [jurisdictionId, setJurisdictionId] = useState(FUNNEL_JURISDICTIONS[0]?.id ?? 've-seniat');
   const [incoterm, setIncoterm] = useState<IncotermCode>('FOB');
   const [currency, setCurrency] = useState<'USD' | 'EUR'>('USD');
@@ -135,6 +137,24 @@ export function ExpressOnboardingCard({
           onChange={(e) => setFullName(e.target.value)}
           required
         />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FunnelSelect
+            label="Rol operativo"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+          >
+            <option value="Agente de Aduanas">Agente de Aduanas</option>
+            <option value="Analista de Comercio Exterior">Analista de Comercio Exterior</option>
+            <option value="Importador / Consignatario">Importador / Consignatario</option>
+            <option value="Auditor de Cumplimiento">Auditor de Cumplimiento</option>
+          </FunnelSelect>
+          <FunnelInput
+            label="Patente aduanal (opcional)"
+            placeholder="Ej. SENIAT-AA-1042"
+            value={brokerLicense}
+            onChange={(e) => setBrokerLicense(e.target.value)}
+          />
+        </div>
         <FunnelInput
           label="Empresa o agencia"
           placeholder="Ej. Aduanas Bolívar C.A."
@@ -169,6 +189,8 @@ export function ExpressOnboardingCard({
         {showPlanPicker ? (
           <OnboardingPlanPicker
             selectedPlanId={selectedPlanId}
+            billingCycle={billingCycle}
+            onChangeCycle={setBillingCycle}
             onSelect={(planId, cycle) => {
               setSelectedPlanId(planId);
               if (cycle) setBillingCycle(cycle);

@@ -3,7 +3,8 @@
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Moon, Sun } from 'lucide-react';
+import { ArrowRight, Moon, Sun } from 'lucide-react';
+import { readMockSession } from '@/lib/funnel/funnel-storage';
 import { BrandMark } from '../atoms/BrandMark';
 
 export interface PublicMarketingShellProps {
@@ -17,6 +18,11 @@ export function PublicMarketingShell({
 }: PublicMarketingShellProps) {
   const [isDark, setIsDark] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [hasSession, setHasSession] = useState(false);
+
+  useEffect(() => {
+    setHasSession(Boolean(readMockSession()));
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 36);
@@ -85,18 +91,30 @@ export function PublicMarketingShell({
                 <Moon className="w-4 h-4" aria-hidden="true" />
               )}
             </button>
-            <Link
-              href="/login"
-              className="px-3 py-1.5 rounded-full text-xs font-semibold text-ink-secondary hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink-primary transition-colors whitespace-nowrap"
-            >
-              Iniciar sesión
-            </Link>
-            <Link
-              href="/onboarding?plan=trial&cycle=monthly"
-              className="px-4 min-h-[38px] inline-flex items-center rounded-full text-xs font-semibold bg-accent-brand hover:bg-accent-brand-hover text-white transition-colors whitespace-nowrap"
-            >
-              Empezar gratis
-            </Link>
+            {hasSession ? (
+              <Link
+                href="/app"
+                className="px-4 min-h-[38px] inline-flex items-center gap-1.5 rounded-full text-xs font-semibold bg-accent-brand hover:bg-accent-brand-hover text-white transition-colors whitespace-nowrap"
+              >
+                <span>Ir al workspace</span>
+                <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="px-3 py-1.5 rounded-full text-xs font-semibold text-ink-secondary hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink-primary transition-colors whitespace-nowrap"
+                >
+                  Iniciar sesión
+                </Link>
+                <Link
+                  href="/onboarding?plan=trial&cycle=monthly"
+                  className="px-4 min-h-[38px] inline-flex items-center rounded-full text-xs font-semibold bg-accent-brand hover:bg-accent-brand-hover text-white transition-colors whitespace-nowrap"
+                >
+                  Empezar gratis
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>

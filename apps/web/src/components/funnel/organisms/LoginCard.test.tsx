@@ -91,4 +91,19 @@ describe('LoginCard', () => {
       }),
     );
   });
+
+  it('handles password reset request and local trial shortcut', async () => {
+    const user = userEvent.setup();
+    render(<LoginCard cloudMode={false} />);
+
+    await user.click(screen.getByRole('button', { name: /¿Olvidaste tu contraseña\?/i }));
+    expect(screen.getByRole('alert')).toHaveTextContent(/Escribe tu correo primero/i);
+
+    await user.type(screen.getByLabelText(/Correo electrónico/i), 'ana@aduanas.ve');
+    await user.click(screen.getByRole('button', { name: /¿Olvidaste tu contraseña\?/i }));
+    expect(screen.getByText(/Enviamos instrucciones de recuperación/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Probar sin cuenta/i }));
+    expect(mockPush).toHaveBeenCalledWith('/app');
+  });
 });

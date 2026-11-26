@@ -26,7 +26,7 @@ async function OnboardingContent({ searchParams }: OnboardingPageProps) {
 export default function OnboardingPage(props: OnboardingPageProps) {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-surface-app px-4 py-10">
-      <div className="w-full max-w-lg space-y-6">
+      <div className="w-full max-w-3xl space-y-6">
         <div className="flex justify-center">
           <BrandMark />
         </div>

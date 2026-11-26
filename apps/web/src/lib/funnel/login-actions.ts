@@ -93,3 +93,27 @@ export async function executeEmailAuth(params: {
   });
   return { error: null };
 }
+
+export async function executePasswordReset(params: {
+  isCloud: boolean;
+  email: string;
+}): Promise<{ error: string | null; info: string | null }> {
+  const cleanEmail = params.email.trim();
+  if (!cleanEmail || !cleanEmail.includes('@')) {
+    return {
+      error: 'Escribe tu correo primero para enviarte el enlace de recuperación.',
+      info: null,
+    };
+  }
+  if (params.isCloud) {
+    const supabase = createSupabaseBrowserClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+      redirectTo: `${window.location.origin}/login`,
+    });
+    if (error) return { error: error.message, info: null };
+  }
+  return {
+    error: null,
+    info: 'Enviamos instrucciones de recuperación a tu correo.',
+  };
+}

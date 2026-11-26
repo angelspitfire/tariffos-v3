@@ -92,4 +92,15 @@ describe('ExpressOnboardingCard', () => {
     expect(mockPush).toHaveBeenCalledWith('/app');
     vi.unstubAllGlobals();
   });
+
+  it('renders PlanRecommender inside onboarding when choosing a plan and applies recommendation', async () => {
+    const user = userEvent.setup();
+    render(<ExpressOnboardingCard cloudMode={false} />);
+
+    await user.click(screen.getByRole('button', { name: /Recomendar plan/i }));
+    await user.click(screen.getByRole('button', { name: /401–1,500/i }));
+    await user.click(screen.getByRole('button', { name: /Aplicar plan/i }));
+
+    expect(screen.getAllByText(/Recomendado/i).length).toBeGreaterThanOrEqual(2);
+  });
 });
