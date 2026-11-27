@@ -615,9 +615,9 @@ model ExchangeRate {
   valueDate DateTime
   source    String
   createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   @@unique([pair, valueDate])
-  @@index([pair, valueDate])
   @@schema("public")
 }
 

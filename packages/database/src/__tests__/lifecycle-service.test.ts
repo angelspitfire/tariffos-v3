@@ -206,4 +206,57 @@ describe('derogation & lifecycle-service', () => {
     await populateChunkSearchVectors(db as never, 'draft-1');
     expect(tx.$executeRaw).toHaveBeenCalledTimes(1);
   });
+
+  it('publishes TARIFF_SCHEDULE using chunked bulk SQL $executeRaw and explicit 60s tx timeout', async () => {
+    const { db, tx } = createMockDb();
+    tx.legalKnowledgeParent.findUnique.mockResolvedValue({
+      id: 'draft-tariff-1',
+      status: 'DRAFT',
+      countryCode: 'VE',
+      legalType: 'TARIFF_SCHEDULE',
+      hierarchyPath: 'tariff-schedule',
+      validFromDate: new Date('2026-01-01T00:00:00.000Z'),
+      content: JSON.stringify([
+        {
+          hsCode: '8504.40.90.00',
+          description: 'Convertidores estáticos',
+          adValorem: 14,
+          iva: 16,
+          customsFee: 1,
+          legalNotes: null,
+          isBK: true,
+          isBIT: false,
+        },
+        {
+          hsCode: '8501.52.10.00',
+          description: 'Motores CA polifásicos',
+          adValorem: 14,
+          iva: 16,
+          customsFee: 1,
+          legalNotes: 'RL-20',
+          isBK: true,
+          isBIT: false,
+        },
+      ]),
+      decreeNumber: 'Decreto 4.944',
+    });
+    tx.legalKnowledgeParent.findMany.mockResolvedValue([]);
+    tx.nationalTariff.findMany.mockResolvedValue([]);
+    tx.legalKnowledgeParent.update.mockResolvedValue({
+      id: 'draft-tariff-1',
+      status: 'PUBLISHED',
+      countryCode: 'VE',
+      legalType: 'TARIFF_SCHEDULE',
+      hierarchyPath: 'tariff-schedule',
+    });
+
+    const out = await publishLegalDraft(db as never, 'draft-tariff-1');
+    expect(out.status).toBe('PUBLISHED');
+    expect(db.$transaction).toHaveBeenCalledWith(expect.any(Function), {
+      timeout: 60_000,
+      maxWait: 10_000,
+    });
+    expect(tx.$executeRaw).toHaveBeenCalledTimes(1);
+    expect(tx.nationalTariff.upsert).not.toHaveBeenCalled();
+  });
 });

@@ -155,17 +155,22 @@ class BillingService {
   }
 
   /**
-   * Increments usage for the tenant for the current month.
+   * Atomically records classification count and token deltas in a single
+   * tenant existence check + `usageRecord.upsert` roundtrip.
    */
-  async incrementUsage(
+  async recordUsageDelta(
     tenantId: string,
-    type: 'input' | 'output' | 'classification',
-    amount = 1,
+    delta: { count?: number; inputTokens?: number; outputTokens?: number },
   ): Promise<void> {
+    const countDelta = Math.max(0, Math.floor(delta.count ?? 0));
+    const inputDelta = Math.max(0, Math.floor(delta.inputTokens ?? 0));
+    const outputDelta = Math.max(0, Math.floor(delta.outputTokens ?? 0));
+    if (countDelta === 0 && inputDelta === 0 && outputDelta === 0) return;
+
     const { month, year } = getCurrentMonthYear();
+    const systemPrisma = getUnscopedSystemPrisma();
 
     try {
-      const systemPrisma = getUnscopedSystemPrisma();
       const tenantExists = await systemPrisma.tenant.findUnique({
         where: { id: tenantId },
         select: { id: true },
@@ -174,32 +179,19 @@ class BillingService {
         console.warn(`[BillingService] Tenant not found: ${tenantId}. Skipping usage increment.`);
         return;
       }
-    } catch (err: unknown) {
-      console.error(`[BillingService] Error checking tenant existence for ${tenantId}:`, err);
-      return;
-    }
 
-    let client;
-    try {
-      client = getTenantClient(tenantId);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.warn(`[BillingService] Skipping increment (Prisma failed): ${message}`);
-      return;
-    }
+      const client = getTenantClient(tenantId);
+      if (!client?.usageRecord) {
+        console.error(
+          `[BillingService] Critical: Prisma client or usageRecord model is missing for tenant ${tenantId}.`,
+        );
+        return;
+      }
 
-    if (!client || !client.usageRecord) {
-      console.error(
-        `[BillingService] Critical: Prisma client or usageRecord model is missing for tenant ${tenantId}.`,
-      );
-      return;
-    }
-
-    try {
       const updateData: Prisma.UsageRecordUpdateInput = { updatedAt: new Date() };
-      if (type === 'input') updateData.inputTokens = { increment: amount };
-      if (type === 'output') updateData.outputTokens = { increment: amount };
-      if (type === 'classification') updateData.count = { increment: amount };
+      if (countDelta > 0) updateData.count = { increment: countDelta };
+      if (inputDelta > 0) updateData.inputTokens = { increment: inputDelta };
+      if (outputDelta > 0) updateData.outputTokens = { increment: outputDelta };
 
       await client.usageRecord.upsert({
         where: { tenantId_month_year: { tenantId, month, year } },
@@ -208,9 +200,9 @@ class BillingService {
           tenantId,
           month,
           year,
-          inputTokens: type === 'input' ? amount : 0,
-          outputTokens: type === 'output' ? amount : 0,
-          count: type === 'classification' ? amount : 0,
+          count: countDelta,
+          inputTokens: inputDelta,
+          outputTokens: outputDelta,
         },
       });
     } catch (err: unknown) {
@@ -218,15 +210,27 @@ class BillingService {
     }
   }
 
+  /**
+   * Increments usage for the tenant for the current month.
+   */
+  async incrementUsage(
+    tenantId: string,
+    type: 'input' | 'output' | 'classification',
+    amount = 1,
+  ): Promise<void> {
+    return this.recordUsageDelta(tenantId, {
+      ...(type === 'classification' ? { count: amount } : {}),
+      ...(type === 'input' ? { inputTokens: amount } : {}),
+      ...(type === 'output' ? { outputTokens: amount } : {}),
+    });
+  }
+
   async incrementUsageTokens(tenantId: string, inputTokens = 0, outputTokens = 0): Promise<void> {
-    if (inputTokens > 0) await this.incrementUsage(tenantId, 'input', inputTokens);
-    if (outputTokens > 0) await this.incrementUsage(tenantId, 'output', outputTokens);
-    await this.incrementUsage(tenantId, 'classification', 1);
+    return this.recordUsageDelta(tenantId, { count: 1, inputTokens, outputTokens });
   }
 
   async incrementTokenUsage(tenantId: string, inputTokens = 0, outputTokens = 0): Promise<void> {
-    if (inputTokens > 0) await this.incrementUsage(tenantId, 'input', inputTokens);
-    if (outputTokens > 0) await this.incrementUsage(tenantId, 'output', outputTokens);
+    return this.recordUsageDelta(tenantId, { inputTokens, outputTokens });
   }
 }
 

@@ -24,7 +24,7 @@ import {
 
 /** One recorded call, so a test can assert on what the domain asked for. */
 export interface RecordedCall {
-  operation: 'generateText' | 'generateJson' | 'embedText' | 'streamText';
+  operation: 'generateText' | 'generateJson' | 'embedText' | 'embedMany' | 'streamText';
   prompt: string;
   options: GenerateCallOptions | EmbedCallOptions;
 }
@@ -128,6 +128,18 @@ export function createFakeProvider(responses: FakeResponses = {}): FakeProvider 
         throw new EmbeddingDimensionMismatchError(dims, vector.length);
       }
       return vector;
+    },
+
+    async embedMany(texts: string[], options: EmbedCallOptions = {}): Promise<number[][]> {
+      calls.push({ operation: 'embedMany', prompt: texts.join('\n'), options });
+      const dims = options.dims ?? 768;
+      return texts.map((text) => {
+        const vector = resolveValue(responses.embedding, text, defaultVector(text, dims));
+        if (vector.length !== dims) {
+          throw new EmbeddingDimensionMismatchError(dims, vector.length);
+        }
+        return vector;
+      });
     },
 
     async *streamText(prompt: string, options: GenerateCallOptions = {}): AsyncGenerator<string> {

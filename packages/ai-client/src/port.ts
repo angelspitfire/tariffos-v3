@@ -100,6 +100,8 @@ export interface EmbedCallOptions {
   dims?: number;
   /** Asymmetric embedding role for providers that require it (e.g. NVIDIA NIM). */
   inputType?: 'query' | 'passage';
+  /** Optional per-call timeout in milliseconds. */
+  timeoutMs?: number;
 }
 
 /**
@@ -130,6 +132,9 @@ export interface LlmProviderPort {
 
   /** One embedding vector; always full-length, adapters never truncate here. */
   embedText(text: string, options?: EmbedCallOptions): Promise<number[]>;
+
+  /** Batch embedding vectors preserving input order and requested dimensions. */
+  embedMany(texts: string[], options?: EmbedCallOptions): Promise<number[][]>;
 
   /**
    * The same completion as `generateText`, delivered in fragments.

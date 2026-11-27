@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { z } from 'zod';
-import { embed, generateObject, generateText, streamText } from 'ai';
+import { embed, embedMany, generateObject, generateText, streamText } from 'ai';
 import {
   OpenAICompatibleAdapter,
   PROVIDER_NAME,
@@ -13,12 +13,14 @@ vi.mock('ai', () => ({
   generateText: vi.fn(),
   generateObject: vi.fn(),
   embed: vi.fn(),
+  embedMany: vi.fn(),
   streamText: vi.fn(),
 }));
 
 const mockedObject = generateObject as unknown as Mock;
 const mockedText = generateText as unknown as Mock;
 const mockedEmbed = embed as unknown as Mock;
+const mockedEmbedMany = embedMany as unknown as Mock;
 const mockedStream = streamText as unknown as Mock;
 
 function fakeProvider(): ProviderLike {
@@ -36,6 +38,7 @@ beforeEach(() => {
   mockedObject.mockReset();
   mockedText.mockReset();
   mockedEmbed.mockReset();
+  mockedEmbedMany.mockReset();
   mockedStream.mockReset();
 });
 
@@ -146,7 +149,7 @@ describe('OpenAICompatibleAdapter', () => {
     mockedEmbed.mockResolvedValueOnce({ embedding: [0.1, 0.2] });
     await adapter().embedText('tarifa', { dims: 2, inputType: 'passage' });
     expect(mockedEmbed.mock.calls[0][0].providerOptions).toEqual({
-      [PROVIDER_NAME]: { dimensions: 2, input_type: 'passage' },
+      [PROVIDER_NAME]: { dimensions: 2, input_type: 'passage', truncate: 'END' },
     });
     vi.unstubAllEnvs();
   });
@@ -166,6 +169,44 @@ describe('OpenAICompatibleAdapter', () => {
   it('the width mismatch reports both widths', async () => {
     mockedEmbed.mockResolvedValueOnce({ embedding: [0.1, 0.2, 0.3] });
     await expect(adapter().embedText('t', { dims: 768 })).rejects.toThrow(/768.*3|3.*768/);
+  });
+
+  it('embedText and embedMany honor runtimeOverride provider=nvidia even when env LLM_PROVIDER differs', async () => {
+    vi.stubEnv('LLM_PROVIDER', 'openai-compatible');
+    vi.stubEnv('LLM_BASE_URL', 'http://127.0.0.1:11434/v1');
+    const overrideAdapter = new OpenAICompatibleAdapter(fakeProvider, { provider: 'nvidia' });
+
+    mockedEmbed.mockResolvedValueOnce({ embedding: [0.4, 0.5] });
+    await overrideAdapter.embedText('inversor', { dims: 2, inputType: 'query', timeoutMs: 3000 });
+    expect(mockedEmbed.mock.calls[0][0].providerOptions).toEqual({
+      [PROVIDER_NAME]: { dimensions: 2, input_type: 'query', truncate: 'END' },
+    });
+    expect(mockedEmbed.mock.calls[0][0].abortSignal).toBeDefined();
+
+    mockedEmbedMany.mockResolvedValueOnce({
+      embeddings: [
+        [0.1, 0.2],
+        [0.3, 0.4],
+      ],
+    });
+    const vectors = await overrideAdapter.embedMany(['uno', 'dos'], {
+      dims: 2,
+      inputType: 'passage',
+      timeoutMs: 5000,
+    });
+    expect(vectors).toEqual([
+      [0.1, 0.2],
+      [0.3, 0.4],
+    ]);
+    expect(mockedEmbedMany.mock.calls[0][0].providerOptions).toEqual({
+      [PROVIDER_NAME]: { dimensions: 2, input_type: 'passage', truncate: 'END' },
+    });
+
+    mockedEmbedMany.mockResolvedValueOnce({ embeddings: [[0.1, 0.2, 0.3]] });
+    await expect(overrideAdapter.embedMany(['bad'], { dims: 2 })).rejects.toThrow(
+      EmbeddingDimensionMismatchError,
+    );
+    vi.unstubAllEnvs();
   });
 
   describe('attachments', () => {

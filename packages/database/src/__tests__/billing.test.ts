@@ -66,6 +66,35 @@ describe('BillingService', () => {
       // Verify upsert was called
       expect(mockPrisma.usageRecord.upsert).toHaveBeenCalled();
     });
+
+    it('recordUsageDelta performs 1 tenant check and 1 atomic upsert for classification + tokens', async () => {
+      const mockPrisma = getUnscopedSystemPrisma();
+      (mockPrisma.tenant.findUnique as any).mockResolvedValue({ id: 'valid-tenant' });
+      (mockPrisma.usageRecord.upsert as any).mockResolvedValue({ id: 'record-id' });
+
+      await billingService.recordUsageDelta('valid-tenant', {
+        count: 1,
+        inputTokens: 1200,
+        outputTokens: 350,
+      });
+
+      expect(mockPrisma.tenant.findUnique).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.usageRecord.upsert).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.usageRecord.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          update: expect.objectContaining({
+            count: { increment: 1 },
+            inputTokens: { increment: 1200 },
+            outputTokens: { increment: 350 },
+          }),
+          create: expect.objectContaining({
+            count: 1,
+            inputTokens: 1200,
+            outputTokens: 350,
+          }),
+        }),
+      );
+    });
   });
 
   describe('checkBillingLimit', () => {

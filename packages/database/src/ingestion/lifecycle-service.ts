@@ -125,45 +125,48 @@ export async function stageLegalDocumentDraft(
 }
 
 export async function publishLegalDraft(db: PrismaClient, draftId: string) {
-  return db.$transaction(async (tx) => {
-    const draft = await fetchAndValidateDraft(tx, draftId);
-    if (draft.status !== 'DRAFT') {
-      throw new Error(`Solo se pueden publicar documentos en estado DRAFT (actual: ${draft.status}).`);
-    }
+  return db.$transaction(
+    async (tx) => {
+      const draft = await fetchAndValidateDraft(tx, draftId);
+      if (draft.status !== 'DRAFT') {
+        throw new Error(`Solo se pueden publicar documentos en estado DRAFT (actual: ${draft.status}).`);
+      }
 
-    const derogatedIds = await sunsetOverlappingRecords(tx, {
-      draftId: draft.id,
-      countryCode: draft.countryCode,
-      legalType: draft.legalType,
-      hierarchyPath: draft.hierarchyPath,
-      validFromDate: draft.validFromDate,
-    });
-
-    if (draft.legalType === 'TARIFF_SCHEDULE') {
-      const rows = JSON.parse(draft.content || '[]') as NormalizedTariffRow[];
-      await publishTariffScheduleRows(tx, {
+      const derogatedIds = await sunsetOverlappingRecords(tx, {
+        draftId: draft.id,
         countryCode: draft.countryCode,
-        rows,
+        legalType: draft.legalType,
+        hierarchyPath: draft.hierarchyPath,
         validFromDate: draft.validFromDate,
-        datasetVersion: draft.decreeNumber ?? draft.officialDocumentNumber ?? draft.title,
       });
-    }
 
-    const published = await tx.legalKnowledgeParent.update({
-      where: { id: draft.id },
-      data: { status: 'PUBLISHED', isDerogated: false, validToDate: null },
-    });
+      if (draft.legalType === 'TARIFF_SCHEDULE') {
+        const rows = JSON.parse(draft.content || '[]') as NormalizedTariffRow[];
+        await publishTariffScheduleRows(tx, {
+          countryCode: draft.countryCode,
+          rows,
+          validFromDate: draft.validFromDate,
+          datasetVersion: draft.decreeNumber ?? draft.officialDocumentNumber ?? draft.title,
+        });
+      }
 
-    return {
-      publishedId: published.id,
-      countryCode: published.countryCode,
-      legalType: published.legalType as LegalDocumentType,
-      hierarchyPath: published.hierarchyPath,
-      status: 'PUBLISHED' as const,
-      derogatedCount: derogatedIds.length,
-      derogatedIds,
-    };
-  });
+      const published = await tx.legalKnowledgeParent.update({
+        where: { id: draft.id },
+        data: { status: 'PUBLISHED', isDerogated: false, validToDate: null },
+      });
+
+      return {
+        publishedId: published.id,
+        countryCode: published.countryCode,
+        legalType: published.legalType as LegalDocumentType,
+        hierarchyPath: published.hierarchyPath,
+        status: 'PUBLISHED' as const,
+        derogatedCount: derogatedIds.length,
+        derogatedIds,
+      };
+    },
+    { timeout: 60_000, maxWait: 10_000 },
+  );
 }
 
 export async function discardLegalDraft(db: PrismaClient, draftId: string): Promise<{ deletedId: string }> {

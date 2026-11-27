@@ -4,8 +4,9 @@
  * - Injects `chat_template_kwargs.enable_thinking = false` on `/chat/completions`
  *   unless explicitly overridden, preventing unbounded thinking stalls.
  */
-export function createNvidiaTransportFetch(baseFetch: typeof fetch = fetch): typeof fetch {
+export function createNvidiaTransportFetch(baseFetch?: typeof fetch): typeof fetch {
   return async (input, init) => {
+    const targetFetch = baseFetch ?? globalThis.fetch;
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
     if (typeof init?.body === 'string') {
       try {
@@ -19,12 +20,12 @@ export function createNvidiaTransportFetch(baseFetch: typeof fetch = fetch): typ
           modified = true;
         }
         if (modified) {
-          return baseFetch(input, { ...init, body: JSON.stringify(parsed) });
+          return targetFetch(input, { ...init, body: JSON.stringify(parsed) });
         }
       } catch {
         // Fall through with original request if body is not JSON.
       }
     }
-    return baseFetch(input, init);
+    return targetFetch(input, init);
   };
 }
