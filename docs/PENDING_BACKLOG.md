@@ -30,8 +30,8 @@
 
 ## P0 — Crítico para Producción, Auth y Despliegue
 
-- [x] **P0-1 · Validación de build/deploy (`pnpm check` + `pnpm check:deploy`) y `git push origin main`** *(2026-11-27)*
-  - **Estado:** `pnpm check` y `pnpm check:deploy` (limpieza + `packages/*` + `eve build` + `next build --webpack`) pasaron en verde. Push a `origin/main` ejecutado; verificar únicamente estado del deployment en el panel de Vercel si sigue propagando.
+- [ ] **P0-1 · Ejecutar `git push origin main` desde terminal local y confirmar deploy en Vercel** *(build local `100%` validado el 2026-11-27)*
+  - **Estado:** `pnpm check` y `pnpm check:deploy` (limpieza + `packages/*` + `eve build` + `next build --webpack`) pasaron en verde. Falta únicamente ejecutar `git push origin main` con tu passphrase SSH local y confirmar el deploy en Vercel.
 
 - [ ] **P0-2 · Corregir Supabase Auth en Dashboard (HTTP 400 en Password Reset y Google OAuth)** *(acción manual en Supabase Dashboard)*
   - **Referencia:** `docs/Test Results/REPORTE_PRUEBAS_EXPLORATORIAS_TARIFFOS_APP.md`.

@@ -113,8 +113,10 @@ await runCheck('GET /api/exchange-rates/latest (BCV rates)', async () => {
 
 await runCheck('GET /api/inngest (Serve endpoint)', async () => {
   const res = await fetchTimed('/api/inngest');
-  if (res.status !== 200) throw new Error(`HTTP ${res.status}`);
-  return { detail: 'HTTP 200' };
+  const handled = res.headers.get('x-inngest-sdk-handled') === 'true';
+  if (res.status === 200) return { detail: 'HTTP 200 (dev/open)' };
+  if (res.status === 401 && handled) return { detail: 'HTTP 401 (INNGEST_SIGNING_KEY verified)' };
+  throw new Error(`Unexpected status HTTP ${res.status}`);
 });
 
 await runCheck('POST /api/batch/upload-url (Auth guard)', async () => {
