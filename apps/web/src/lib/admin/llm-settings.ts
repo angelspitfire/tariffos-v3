@@ -7,6 +7,7 @@ import {
   resolveMaxRpm,
   resolveProvider,
   rgiModel,
+  type RgiLlmRuntimeOverride,
 } from '@tariffos/agent';
 import { prisma } from '@tariffos/database';
 import {
@@ -29,6 +30,19 @@ export interface ActiveLlmRuntimeConfig extends LlmRuntimeConfig {
   source: 'database' | 'env';
   canRunLive: boolean;
   updatedAt: string | null;
+}
+
+/** Converts an active DB-backed LLM runtime config into an agent pipeline override. */
+export function toRgiLlmRuntimeOverride(
+  config: ActiveLlmRuntimeConfig | null | undefined,
+): RgiLlmRuntimeOverride | undefined {
+  if (!config || config.source !== 'database') return undefined;
+  return {
+    provider: config.provider,
+    model: config.model,
+    deepModel: config.deepModel,
+    baseUrl: config.baseUrl,
+  };
 }
 
 interface DbCacheSlot {

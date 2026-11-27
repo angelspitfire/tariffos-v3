@@ -47,21 +47,36 @@ export async function checkTenantQuota(
   return billingService.checkBillingLimit(tenantId, options);
 }
 
-export function formatQuotaErrorResponse(reason = 'LIMIT_REACHED'): {
+export function formatQuotaErrorResponse(
+  reason = 'LIMIT_REACHED',
+  options?: { isBatch?: boolean },
+): {
   status: number;
   error: string;
   reason: string;
 } {
   const status =
-    reason === 'ACCOUNT_CANCELED' ? 403 : reason === 'QUOTA_CHECK_ERROR' ? 503 : 402;
+    reason === 'ACCOUNT_CANCELED' || reason === 'BATCH_NOT_IN_PLAN'
+      ? 403
+      : reason === 'QUOTA_CHECK_ERROR'
+        ? 503
+        : 402;
   const error =
     reason === 'ACCOUNT_CANCELED'
       ? 'Cuenta dada de baja. Contacta a soporte.'
-      : reason === 'PAST_DUE'
-        ? 'Activa tu Piloto Operativo o Plan Agencia para ejecutar clasificaciones.'
-        : reason === 'QUOTA_CHECK_ERROR'
-          ? 'No pudimos validar tu cuota de servicio. Intenta nuevamente.'
-          : 'Classification quota reached';
+      : reason === 'BATCH_NOT_IN_PLAN'
+        ? 'Tu plan actual no incluye procesamiento masivo por lotes.'
+        : reason === 'PAST_DUE'
+          ? options?.isBatch
+            ? 'Activa tu Piloto Operativo o Plan Agencia para procesar lotes.'
+            : 'Activa tu Piloto Operativo o Plan Agencia para ejecutar clasificaciones.'
+          : reason === 'QUOTA_CHECK_ERROR'
+            ? options?.isBatch
+              ? 'No pudimos verificar tu cuota en este momento. Intenta nuevamente.'
+              : 'No pudimos validar tu cuota de servicio. Intenta nuevamente.'
+            : options?.isBatch
+              ? 'El tamaño del lote excede tu cuota disponible.'
+              : 'Classification quota reached';
   return { status, error, reason };
 }
 
@@ -107,16 +122,22 @@ export async function persistClassificationOutcome(
     console.warn('[classify-stream] Skipping DecisionArtifact persistence:', err);
   }
 
+  const inputTokens = line.tokenUsage?.inputTokens ?? 0;
+  const outputTokens = line.tokenUsage?.outputTokens ?? 0;
+  if (typeof billingService.recordUsageDelta === 'function') {
+    await billingService.recordUsageDelta(tenantId, {
+      count: 1,
+      inputTokens,
+      outputTokens,
+    });
+    return;
+  }
+
   await billingService.incrementUsage(tenantId, 'classification', 1);
   if (
-    line.tokenUsage &&
-    (line.tokenUsage.inputTokens > 0 || line.tokenUsage.outputTokens > 0) &&
+    (inputTokens > 0 || outputTokens > 0) &&
     typeof billingService.incrementTokenUsage === 'function'
   ) {
-    await billingService.incrementTokenUsage(
-      tenantId,
-      line.tokenUsage.inputTokens,
-      line.tokenUsage.outputTokens,
-    );
+    await billingService.incrementTokenUsage(tenantId, inputTokens, outputTokens);
   }
 }

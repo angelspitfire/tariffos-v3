@@ -5,16 +5,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   resolveCloudTenantContext: vi.fn(),
-  pdfExtract: vi.fn(),
+  extractPdfPagesFromBuffer: vi.fn(),
 }));
 
 vi.mock('@tariffos/agent', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@tariffos/agent')>();
   return {
     ...actual,
-    PdfTextAdapter: class {
-      extract = mocks.pdfExtract;
-    },
+    extractPdfPagesFromBuffer: mocks.extractPdfPagesFromBuffer,
   };
 });
 
@@ -59,11 +57,11 @@ describe('POST /api/attachments/extract', () => {
     expect(res.status).toBe(401);
   });
 
-  it('extracts PDF text across pages using PdfTextAdapter', async () => {
-    mocks.pdfExtract
-      .mockResolvedValueOnce({ text: 'Página 1: Inversor solar 5kW MPPT 48V', claims: [], reader: 'text-layer', source: {} })
-      .mockResolvedValueOnce({ text: 'Página 2: Eficiencia 97.6% IP65', claims: [], reader: 'text-layer', source: {} })
-      .mockResolvedValueOnce(null);
+  it('extracts PDF text across pages in a single pass via extractPdfPagesFromBuffer', async () => {
+    mocks.extractPdfPagesFromBuffer.mockResolvedValueOnce({
+      pages: ['Página 1: Inversor solar 5kW MPPT 48V', 'Página 2: Eficiencia 97.6% IP65'],
+      totalPages: 2,
+    });
 
     const form = new FormData();
     form.append('file', new File([new Uint8Array([0x25, 0x50, 0x44, 0x46])], 'ficha.pdf', { type: 'application/pdf' }));

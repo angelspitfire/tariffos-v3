@@ -9,9 +9,13 @@ const mocks = vi.hoisted(() => ({
   persistFilingLinesAndUsage: vi.fn(),
 }));
 
-vi.mock('@/lib/admin/llm-settings', () => ({
-  getActiveLlmRuntimeConfig: mocks.getActiveLlmRuntimeConfig,
-}));
+vi.mock('@/lib/admin/llm-settings', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/admin/llm-settings')>();
+  return {
+    ...actual,
+    getActiveLlmRuntimeConfig: mocks.getActiveLlmRuntimeConfig,
+  };
+});
 
 vi.mock('@/lib/agent/prisma-ports', () => ({
   createPrismaPipelinePorts: mocks.createPrismaPipelinePorts,
@@ -110,5 +114,34 @@ describe('run-cloud-batch', () => {
     expect(out.lines[1]?.duties.cif).toBe(2000);
     expect(out.summary.totalCifUsd).toBe(3000);
     expect(out.envelope.canvasComponents[0]?.type).toBe('batch_manifest');
+  });
+
+  it('preserves original item order and strips tokenUsage from duplicate clones', async () => {
+    mocks.getActiveLlmRuntimeConfig.mockResolvedValue({ source: 'env' });
+    mocks.createPrismaPipelinePorts.mockReturnValue({});
+    mocks.classifyInvoiceBatch.mockResolvedValue({
+      lines: [
+        { ...SAMPLE_LINE, lineId: 'l1', tokenUsage: { inputTokens: 800, outputTokens: 200 } },
+        { ...SAMPLE_LINE, lineId: 'l2', hsCode: '8501.52.10.00', tokenUsage: { inputTokens: 900, outputTokens: 250 } },
+      ],
+      stats: { totalLines: 2, uniqueItems: 2, blockedByPreGate: 0, tier0Hits: 0, tier1Hits: 0, tier2Hits: 2, webGroundingUsed: 0 },
+    });
+    mocks.persistFilingLinesAndUsage.mockResolvedValue({ persisted: 3 });
+
+    const out = await executeCloudBatchInline({
+      filingId: 'fil-order-1',
+      tenantId: 'tenant-ve',
+      countryCode: 'VE',
+      deepMode: false,
+      items: [
+        { lineId: 'l1', sku: 'SKU-A', description: 'Inversor solar 5kW', originCountry: 'CN', cifValue: 1000 },
+        { lineId: 'l2', sku: 'SKU-B', description: 'Motor eléctrico 5HP', originCountry: 'CN', cifValue: 500 },
+        { lineId: 'l3', sku: 'SKU-A', description: 'Inversor solar 5kW', originCountry: 'CN', cifValue: 2000 },
+      ],
+    });
+
+    expect(out.lines.map((l) => l.lineId)).toEqual(['l1', 'l2', 'l3']);
+    expect(out.lines[0]?.tokenUsage).toEqual({ inputTokens: 800, outputTokens: 200 });
+    expect(out.lines[2]?.tokenUsage).toBeUndefined();
   });
 });

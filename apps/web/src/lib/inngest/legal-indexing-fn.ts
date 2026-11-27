@@ -22,6 +22,24 @@ const COUNTRY_CONCURRENCY = 2;
 const EMBED_THROTTLE_PER_MIN = 60;
 const toVectorLiteral = (values: number[]): string => `[${values.join(',')}]`;
 
+function collectScopedTariffCodes(hsCodes: readonly string[]): string[] {
+  const needed = new Set<string>();
+  for (const code of hsCodes) {
+    needed.add(code);
+    const digits = code.replace(/[^0-9]/g, '');
+    for (const prefixLen of [2, 4, 6, 8]) {
+      if (digits.length > prefixLen) {
+        const p = digits.slice(0, prefixLen);
+        needed.add(p);
+        if (prefixLen === 4) needed.add(p);
+        if (prefixLen === 6) needed.add(`${p.slice(0, 4)}.${p.slice(4, 6)}`);
+        if (prefixLen === 8) needed.add(`${p.slice(0, 4)}.${p.slice(4, 6)}.${p.slice(6, 8)}`);
+      }
+    }
+  }
+  return Array.from(needed);
+}
+
 export const indexPublishedLegalFn = inngest.createFunction(
   {
     id: 'index-published-legal',
@@ -73,11 +91,20 @@ export const indexPublishedLegalFn = inngest.createFunction(
       for (let idx = 0; idx < batches.length; idx += 1) {
         const hsCodes = batches[idx] ?? [];
         const written = await step.run(`embed-tariff-batch-${idx}`, async () => {
-          const allRows = await prisma.nationalTariff.findMany({
-            where: { countryCode: data.countryCode, isActive: true, isDerogated: false },
-            select: { hsCode: true, description: true },
-          });
-          const byCode = new Map(allRows.map((r) => [r.hsCode, r.description]));
+          const scopedCodes = collectScopedTariffCodes(hsCodes);
+          const scopedRows =
+            scopedCodes.length > 0
+              ? await prisma.nationalTariff.findMany({
+                  where: {
+                    countryCode: data.countryCode,
+                    hsCode: { in: scopedCodes },
+                    isActive: true,
+                    isDerogated: false,
+                  },
+                  select: { hsCode: true, description: true },
+                })
+              : [];
+          const byCode = new Map(scopedRows.map((r) => [r.hsCode, r.description]));
           const docs = hsCodes.map((code) => {
             const self = byCode.get(code) ?? 'Partida arancelaria nacional';
             return composeDocument(ancestryOf(code, byCode), self).trim() || self;
@@ -86,15 +113,42 @@ export const indexPublishedLegalFn = inngest.createFunction(
           const model = embeddingModel();
           const dims = embeddingDims();
 
+          const ids: string[] = [];
+          const countryCodes: string[] = [];
+          const codes: string[] = [];
+          const models: string[] = [];
+          const dimsList: number[] = [];
+          const documents: string[] = [];
+          const vectorLiterals: string[] = [];
+
           for (let k = 0; k < hsCodes.length; k += 1) {
             const code = hsCodes[k];
             const vec = vectors[k];
             const doc = docs[k];
             if (!code || !vec || !doc) continue;
+            ids.push(`${data.countryCode}:${code}`);
+            countryCodes.push(data.countryCode);
+            codes.push(code);
+            models.push(model);
+            dimsList.push(dims);
+            documents.push(doc);
+            vectorLiterals.push(toVectorLiteral(vec));
+          }
+
+          if (codes.length > 0) {
             await prisma.$executeRaw(Prisma.sql`
               INSERT INTO "TariffNodeEmbedding"
                 ("id", "countryCode", "hsCode", "model", "dims", "document", "embedding", "createdAt", "updatedAt")
-              VALUES (${`${data.countryCode}:${code}`}, ${data.countryCode}, ${code}, ${model}, ${dims}, ${doc}, ${toVectorLiteral(vec)}::vector, now(), now())
+              SELECT u.id, u.country_code, u.hs_code, u.model, u.dims, u.document, u.vec::vector, now(), now()
+              FROM UNNEST(
+                ${ids}::text[],
+                ${countryCodes}::text[],
+                ${codes}::text[],
+                ${models}::text[],
+                ${dimsList}::integer[],
+                ${documents}::text[],
+                ${vectorLiterals}::text[]
+              ) AS u(id, country_code, hs_code, model, dims, document, vec)
               ON CONFLICT ("countryCode", "hsCode") DO UPDATE SET
                 "document" = EXCLUDED."document",
                 "embedding" = EXCLUDED."embedding",
@@ -103,7 +157,7 @@ export const indexPublishedLegalFn = inngest.createFunction(
                 "updatedAt" = now()
             `);
           }
-          return hsCodes.length;
+          return codes.length;
         });
         embeddedTariffs += written;
       }

@@ -1,14 +1,14 @@
 import {
   canRunLiveLlmForProvider,
   extractInvoiceItemsWithLlm,
-  PdfTextAdapter,
+  extractPdfPagesFromBuffer,
   shouldUseLlmInvoiceExtraction,
   type ExtractedInvoiceBatch,
   type ExtractInvoiceLlmInput,
   type InvoiceItemInput,
   type RgiLlmRuntimeOverride,
 } from '@tariffos/agent';
-import { getActiveLlmRuntimeConfig } from '@/lib/admin/llm-settings';
+import { getActiveLlmRuntimeConfig, toRgiLlmRuntimeOverride } from '@/lib/admin/llm-settings';
 import { parseBatchTextToItems } from './batch-helpers';
 import { formatRowsToDelimitedText, parseXlsxBufferToRows } from './xlsx-parser';
 
@@ -72,16 +72,7 @@ async function resolveExtractorContext(options: ExtractBatchFileOptions): Promis
   }
   const active = await getActiveLlmRuntimeConfig();
   const canUseLlm = canRunLiveLlmForProvider(active.provider);
-  const runtimeLlm: RgiLlmRuntimeOverride | undefined =
-    active.source === 'database'
-      ? {
-          provider: active.provider,
-          model: active.model,
-          deepModel: active.deepModel,
-          baseUrl: active.baseUrl,
-        }
-      : undefined;
-  return { canUseLlm, runtimeLlm };
+  return { canUseLlm, runtimeLlm: toRgiLlmRuntimeOverride(active) };
 }
 
 function resolveImageMime(file: File): string | null {
@@ -132,15 +123,9 @@ export async function extractBatchItemsFromFile(
 
   if (mime === 'application/pdf' || nameLower.endsWith('.pdf')) {
     const buffer = Buffer.from(await file.arrayBuffer());
-    const dataUrl = `data:application/pdf;base64,${buffer.toString('base64')}`;
-    const adapter = new PdfTextAdapter();
-    const pages: string[] = [];
-
-    for (let page = 1; page <= MAX_BATCH_PDF_PAGES; page += 1) {
-      const doc = await adapter.extract({ kind: 'text', ref: dataUrl, page });
-      if (!doc?.text?.trim()) break;
-      pages.push(doc.text.trim());
-    }
+    const { pages } = await extractPdfPagesFromBuffer(new Uint8Array(buffer), {
+      maxPages: MAX_BATCH_PDF_PAGES,
+    });
 
     const joinedText = pages.join('\n');
     const needsLlm = shouldUseLlmInvoiceExtraction(joinedText);
@@ -151,7 +136,13 @@ export async function extractBatchItemsFromFile(
           joinedText.trim().length >= MIN_PDF_TEXT_LAYER_CHARS
             ? { text: joinedText, fileName: file.name, runtimeLlm: ctx.runtimeLlm }
             : {
-                attachments: [{ type: 'inline', dataUrl, mimeType: 'application/pdf' }],
+                attachments: [
+                  {
+                    type: 'inline',
+                    dataUrl: `data:application/pdf;base64,${buffer.toString('base64')}`,
+                    mimeType: 'application/pdf',
+                  },
+                ],
                 fileName: file.name,
                 runtimeLlm: ctx.runtimeLlm,
               };

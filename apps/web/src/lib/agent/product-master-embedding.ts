@@ -1,10 +1,9 @@
 import { Prisma, prisma } from '@tariffos/database';
 import type { SkuPrecedentRecord } from '@tariffos/agent';
+import { embedQueryVectorWithAiClient, type QueryEmbeddingFn } from './query-embedding';
 
 export const SEMANTIC_TIER0_THRESHOLD = 0.94;
-const DEFAULT_MODEL = 'nvidia/nemotron-3.5-embed-1b';
-const DEFAULT_DIMS = 768;
-const NVIDIA_EMBED_URL = 'https://integrate.api.nvidia.com/v1';
+const PRODUCT_EMBED_TIMEOUT_MS = 4_000;
 
 interface SemanticProductRow {
   hsCode: string | null;
@@ -18,38 +17,7 @@ export async function embedProductMasterText(
   text: string,
   inputType: 'query' | 'passage',
 ): Promise<number[] | null> {
-  const trimmed = text.trim();
-  const nvidiaKey = process.env.NVIDIA_API_KEY?.trim();
-  if (!trimmed || !nvidiaKey) return null;
-
-  const model = process.env.EMBEDDING_MODEL?.trim() || DEFAULT_MODEL;
-  const dimsRaw = Number(process.env.EMBEDDING_DIMS);
-  const dims = Number.isFinite(dimsRaw) && dimsRaw > 0 ? dimsRaw : DEFAULT_DIMS;
-
-  try {
-    const baseUrl = (process.env.NVIDIA_BASE_URL?.trim() || NVIDIA_EMBED_URL).replace(/\/+$/, '');
-    const res = await fetch(`${baseUrl}/embeddings`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${nvidiaKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        input: [trimmed],
-        input_type: inputType,
-        dimensions: dims,
-        truncate: 'END',
-      }),
-      signal: AbortSignal.timeout(4_000),
-    });
-    if (!res.ok) return null;
-    const parsed = (await res.json()) as { data?: Array<{ embedding?: number[] }> };
-    const vec = parsed.data?.[0]?.embedding;
-    return vec && vec.length === dims ? vec : null;
-  } catch {
-    return null;
-  }
+  return embedQueryVectorWithAiClient(text, inputType, PRODUCT_EMBED_TIMEOUT_MS);
 }
 
 /**
@@ -58,8 +26,9 @@ export async function embedProductMasterText(
 export async function searchProductMasterSemantic(
   tenantId: string,
   query: string,
+  embedQueryFn: QueryEmbeddingFn = embedQueryVectorWithAiClient,
 ): Promise<SkuPrecedentRecord | null> {
-  const vec = await embedProductMasterText(query, 'query');
+  const vec = await embedQueryFn(query, 'query');
   if (!vec) return null;
 
   const vecLiteral = `[${vec.join(',')}]`;

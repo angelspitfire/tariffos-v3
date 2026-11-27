@@ -87,7 +87,7 @@ export async function persistBcvRates(
     const valueDate = toUtcDateOnly(q.valueDate);
     const upserted = await prisma.exchangeRate.upsert({
       where: { pair_valueDate: { pair: q.pair, valueDate } },
-      update: { rate: q.rate, source: q.source },
+      update: { rate: q.rate, source: q.source, updatedAt: new Date() },
       create: { pair: q.pair, rate: q.rate, valueDate, source: q.source },
     });
     saved.push({
@@ -102,15 +102,15 @@ export async function persistBcvRates(
   return { saved, skipped };
 }
 
-/** Returns the epoch ms timestamp of the newest ExchangeRate row in DB, or null. */
+/** Returns the epoch ms timestamp of the most recently synced ExchangeRate row, or null. */
 export async function getLatestExchangeRateTimestamp(): Promise<number | null> {
   if (!isCloudModeEnabled()) return null;
   const prisma = getUnscopedSystemPrisma();
   const row = await prisma.exchangeRate.findFirst({
-    orderBy: [{ valueDate: 'desc' }, { createdAt: 'desc' }],
-    select: { createdAt: true },
+    orderBy: [{ updatedAt: 'desc' }, { valueDate: 'desc' }],
+    select: { updatedAt: true },
   });
-  return row ? row.createdAt.getTime() : null;
+  return row ? row.updatedAt.getTime() : null;
 }
 
 export async function getLatestExchangeRates(): Promise<Record<BcvPair, BcvRateQuote>> {

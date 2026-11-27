@@ -54,14 +54,22 @@ export async function persistFilingLinesAndUsage(params: {
   }
 
   if (lines.length > 0) {
-    await billingService.incrementUsage(tenantId, 'classification', lines.length);
     const totalInput = lines.reduce((sum, line) => sum + (line.tokenUsage?.inputTokens ?? 0), 0);
     const totalOutput = lines.reduce((sum, line) => sum + (line.tokenUsage?.outputTokens ?? 0), 0);
-    if (
-      (totalInput > 0 || totalOutput > 0) &&
-      typeof billingService.incrementTokenUsage === 'function'
-    ) {
-      await billingService.incrementTokenUsage(tenantId, totalInput, totalOutput);
+    if (typeof billingService.recordUsageDelta === 'function') {
+      await billingService.recordUsageDelta(tenantId, {
+        count: lines.length,
+        inputTokens: totalInput,
+        outputTokens: totalOutput,
+      });
+    } else {
+      await billingService.incrementUsage(tenantId, 'classification', lines.length);
+      if (
+        (totalInput > 0 || totalOutput > 0) &&
+        typeof billingService.incrementTokenUsage === 'function'
+      ) {
+        await billingService.incrementTokenUsage(tenantId, totalInput, totalOutput);
+      }
     }
   }
 

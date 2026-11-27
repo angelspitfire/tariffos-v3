@@ -145,11 +145,28 @@ describe('createPrismaPipelinePorts', () => {
     await expect(ports.findSkuPrecedent('t-1', 'MBP-14')).resolves.toMatchObject({
       hsCode: '8471.30.90.90',
     });
-    expect(mocks.findTenantSkuPrecedent).toHaveBeenCalledWith('t-1', 'MBP-14');
+    expect(mocks.findTenantSkuPrecedent).toHaveBeenCalledWith('t-1', 'MBP-14', expect.any(Function));
 
     const results = await ports.searchTariffCandidates('VE', 'inversor solar híbrido 5kw');
     expect(results[0]?.hsCode).toBe('8504.40.90.00');
     expect(results[0]?.score).toBe(1);
     expect(results).toHaveLength(2);
+  });
+
+  it('memoizes repeated searchTariffCandidates calls on the same ports instance', async () => {
+    mocks.vectorSearch.mockResolvedValue([
+      { hsCode: '8504.40.90.00', description: 'Inversores', adValoremRate: 14, ivaRate: 16, unit: 'u', prohibited: false, score: 0.91 },
+    ]);
+    mocks.ftsSearch.mockResolvedValue([
+      { hsCode: '8504.40.90.00', description: 'Inversores', adValoremRate: 14, ivaRate: 16, unit: 'u', prohibited: false, score: 0.72 },
+    ]);
+
+    const ports = createPrismaPipelinePorts();
+    const first = await ports.searchTariffCandidates('VE', 'inversor solar');
+    const second = await ports.searchTariffCandidates('VE', '  inversor solar  ');
+
+    expect(first).toEqual(second);
+    expect(mocks.vectorSearch).toHaveBeenCalledTimes(1);
+    expect(mocks.ftsSearch).toHaveBeenCalledTimes(1);
   });
 });

@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-  pdfExtract: vi.fn(),
+  extractPdfPagesFromBuffer: vi.fn(),
   getActiveLlmRuntimeConfig: vi.fn(),
 }));
 
@@ -10,15 +10,17 @@ vi.mock('@tariffos/agent', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@tariffos/agent')>();
   return {
     ...actual,
-    PdfTextAdapter: class {
-      extract = mocks.pdfExtract;
-    },
+    extractPdfPagesFromBuffer: mocks.extractPdfPagesFromBuffer,
   };
 });
 
-vi.mock('@/lib/admin/llm-settings', () => ({
-  getActiveLlmRuntimeConfig: mocks.getActiveLlmRuntimeConfig,
-}));
+vi.mock('@/lib/admin/llm-settings', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/admin/llm-settings')>();
+  return {
+    ...actual,
+    getActiveLlmRuntimeConfig: mocks.getActiveLlmRuntimeConfig,
+  };
+});
 
 import {
   BatchFileExtractionError,
@@ -44,14 +46,12 @@ describe('batch-file-extractor (PDF LLM/VL + invoice images + spreadsheets)', ()
   });
 
   it('uses extractWithLlm for unstructured commercial invoice PDF text and returns documentMeta', async () => {
-    mocks.pdfExtract
-      .mockResolvedValueOnce({
-        text: 'COMMERCIAL INVOICE #INV-99\nSeller: Shenzhen Co.\n1. Hybrid Inverter 5kW 48V MPPT Total $1,200.00 Origin: CN',
-        claims: [],
-        reader: 'text-layer',
-        source: {},
-      })
-      .mockResolvedValueOnce(null);
+    mocks.extractPdfPagesFromBuffer.mockResolvedValueOnce({
+      pages: [
+        'COMMERCIAL INVOICE #INV-99\nSeller: Shenzhen Co.\n1. Hybrid Inverter 5kW 48V MPPT Total $1,200.00 Origin: CN',
+      ],
+      totalPages: 1,
+    });
 
     const extractWithLlm = vi.fn(async () => ({
       documentReference: 'INV-99',
@@ -97,7 +97,7 @@ describe('batch-file-extractor (PDF LLM/VL + invoice images + spreadsheets)', ()
   });
 
   it('sends inline PDF bytes to VL when a scanned PDF has no text layer', async () => {
-    mocks.pdfExtract.mockResolvedValueOnce(null);
+    mocks.extractPdfPagesFromBuffer.mockResolvedValueOnce({ pages: [], totalPages: 1 });
     const extractWithLlm = vi.fn(async () => ({
       documentReference: 'SCAN-01',
       modelUsed: 'vision-model',

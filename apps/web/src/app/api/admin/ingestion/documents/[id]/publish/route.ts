@@ -38,8 +38,9 @@ export async function POST(
     }
   }
 
+  let published: Awaited<ReturnType<typeof publishLegalDraft>>;
   try {
-    const published = await publishLegalDraft(prisma, id);
+    published = await publishLegalDraft(prisma, id);
     await recordAdminAudit(prisma, {
       actorUserId: guard.context.userId,
       actorEmail: guard.context.userEmail,
@@ -50,7 +51,15 @@ export async function POST(
       afterState: published,
       reason: `Publicación de ${published.countryCode}/${published.hierarchyPath} (derogados: ${published.derogatedCount})`,
     });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Publish failed';
+    const status = msg.includes('DRAFT') ? 409 : /not found|no encontrado/i.test(msg) ? 404 : 500;
+    return Response.json({ error: msg }, { status });
+  }
 
+  let indexingEnqueued = true;
+  let warning: string | undefined;
+  try {
     await inngest.send({
       name: 'legal/draft.published',
       data: {
@@ -60,17 +69,23 @@ export async function POST(
         kind: resolveIndexingKind(published.legalType),
       },
     });
-
-    return Response.json(
-      {
-        mode: 'cloud',
-        result: { ...published, indexingEnqueued: true },
-      },
-      { status: 200 },
-    );
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Publish failed';
-    const status = msg.includes('DRAFT') ? 409 : 404;
-    return Response.json({ error: msg }, { status });
+    indexingEnqueued = false;
+    warning =
+      err instanceof Error
+        ? `Publicado en BD, pero falló el encolado de indexación: ${err.message}`
+        : 'Publicado en BD, pero falló el encolado de indexación.';
   }
+
+  return Response.json(
+    {
+      mode: 'cloud',
+      result: {
+        ...published,
+        indexingEnqueued,
+        ...(warning ? { warning } : {}),
+      },
+    },
+    { status: 200 },
+  );
 }

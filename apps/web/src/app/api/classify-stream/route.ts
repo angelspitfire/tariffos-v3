@@ -2,10 +2,9 @@ import {
   SUPPORTED_LIVE_COUNTRIES,
   classifyInvoiceBatch,
   isSupportedLiveCountry,
-  type RgiLlmRuntimeOverride,
 } from '@tariffos/agent';
 import type { StreamProgressEvent } from '@tariffos/shared-types';
-import { getActiveLlmRuntimeConfig } from '@/lib/admin/llm-settings';
+import { getActiveLlmRuntimeConfig, toRgiLlmRuntimeOverride } from '@/lib/admin/llm-settings';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 import { ClassifyStreamRequestSchema, type ClassifyStreamRequest } from '@/lib/agent/classify-stream-schema';
 import {
@@ -99,15 +98,7 @@ export async function POST(request: Request): Promise<Response> {
   const runtimeLlm = cloudMode ? await getActiveLlmRuntimeConfig() : null;
   const canRunLivePipeline =
     cloudMode && Boolean(process.env.DATABASE_URL) && Boolean(runtimeLlm?.canRunLive);
-  const llmOverride: RgiLlmRuntimeOverride | undefined =
-    runtimeLlm?.source === 'database'
-      ? {
-          provider: runtimeLlm.provider,
-          model: runtimeLlm.model,
-          deepModel: runtimeLlm.deepModel,
-          baseUrl: runtimeLlm.baseUrl,
-        }
-      : undefined;
+  const llmOverride = toRgiLlmRuntimeOverride(runtimeLlm);
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({

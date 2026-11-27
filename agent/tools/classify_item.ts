@@ -56,32 +56,50 @@ export default defineTool({
     'Run the full TariffOS classification pipeline (Compliance Pre-Gate, Tier 0 SKU cache, RGI 1-6 reasoning, official DB verification, deterministic duties, and A2UIEnvelope) using server-derived tenant credentials.',
   inputSchema: ClassifyItemInputSchema,
   async execute(input, ctx) {
-    const [{ classifyInvoiceBatch, mapPayloadToA2UIEnvelope }, { createPrismaPipelinePorts }] =
-      await Promise.all([
-        import('@tariffos/agent'),
-        import('../../apps/web/src/lib/agent/prisma-ports'),
-      ]);
+    const [
+      { classifyInvoiceBatch, mapPayloadToA2UIEnvelope },
+      { createPrismaPipelinePorts },
+      { getActiveLlmRuntimeConfig, toRgiLlmRuntimeOverride },
+      { runAuthorizedClassificationLine },
+      { isCloudModeEnabled },
+    ] = await Promise.all([
+      import('@tariffos/agent'),
+      import('../../apps/web/src/lib/agent/prisma-ports'),
+      import('../../apps/web/src/lib/admin/llm-settings'),
+      import('../../apps/web/src/lib/agent/authorized-classify'),
+      import('../../apps/web/src/lib/runtime-config'),
+    ]);
     const tenantId = await resolveToolTenantId(ctx.session.auth);
-    const ports = createPrismaPipelinePorts();
-    const result = await classifyInvoiceBatch(
-      [
-        {
-          lineId: input.lineId,
-          sku: input.sku,
-          description: input.description,
-          originCountry: input.originCountry,
-          cifValue: input.cifValue,
-        },
-      ],
-      ports,
-      {
+
+    const item = {
+      lineId: input.lineId,
+      sku: input.sku,
+      description: input.description,
+      originCountry: input.originCountry,
+      cifValue: input.cifValue,
+    };
+
+    let line = null;
+    if (isCloudModeEnabled() && tenantId !== 'eve-local-dev') {
+      const authorized = await runAuthorizedClassificationLine({
+        tenantId,
+        countryCode: input.countryCode,
+        item,
+        queryForAudit: input.description,
+        deepMode: input.deepMode,
+      });
+      line = authorized.line;
+    } else {
+      const runtimeLlm = await getActiveLlmRuntimeConfig();
+      const ports = createPrismaPipelinePorts(toRgiLlmRuntimeOverride(runtimeLlm));
+      const result = await classifyInvoiceBatch([item], ports, {
         tenantId,
         countryCode: input.countryCode,
         deepMode: input.deepMode,
-      },
-    );
+      });
+      line = result.lines[0] ?? null;
+    }
 
-    const line = result.lines[0] ?? null;
     if (!line) return null;
 
     return {

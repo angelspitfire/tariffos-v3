@@ -1,21 +1,8 @@
-import {
-  calculateDeterministicDuties,
-  classifyInvoiceBatch,
-  deduplicateInvoiceItems,
-  mapBatchToA2UIEnvelope,
-  type BatchPipelineResult,
-  type InvoiceItemInput,
-} from '@tariffos/agent';
+import { mapBatchToA2UIEnvelope, type InvoiceItemInput } from '@tariffos/agent';
 import type { A2UIEnvelope, ClassificationLinePayload } from '@tariffos/shared-types';
-import { getActiveLlmRuntimeConfig } from '@/lib/admin/llm-settings';
-import { createPrismaPipelinePorts } from '@/lib/agent/prisma-ports';
-import {
-  buildBatchSummary,
-  chunkItems,
-  DEFAULT_MICRO_BATCH_SIZE,
-  type BatchSummary,
-} from './batch-helpers';
+import { executeChunkedBatchPlan } from './batch-executor';
 import type { BatchDocumentMetadata } from './batch-file-extractor';
+import { buildBatchSummary, type BatchSummary } from './batch-helpers';
 import { persistFilingLinesAndUsage } from './persist-filing';
 
 export type BatchExecutionMode = 'inline' | 'inngest';
@@ -56,81 +43,22 @@ export async function executeCloudBatchInline(params: {
   fileName?: string;
   documentMeta?: BatchDocumentMetadata;
 }): Promise<InlineBatchResult> {
-  const deduped = deduplicateInvoiceItems([...params.items]);
-  const representatives = deduped.map((g) => g.representative);
-  const chunks = chunkItems(representatives, DEFAULT_MICRO_BATCH_SIZE);
-  const runtimeLlm = await getActiveLlmRuntimeConfig();
-  const ports = createPrismaPipelinePorts(
-    runtimeLlm.source === 'database'
-      ? {
-          provider: runtimeLlm.provider,
-          model: runtimeLlm.model,
-          deepModel: runtimeLlm.deepModel,
-          baseUrl: runtimeLlm.baseUrl,
-        }
-      : undefined,
-  );
-
-  const classifiedByRepId = new Map<string, ClassificationLinePayload>();
-  let tier0Hits = 0;
-  let tier1Hits = 0;
-  let tier2Hits = 0;
-  let blockedByPreGate = 0;
-  let webGroundingUsed = 0;
-
-  for (const chunk of chunks) {
-    const res = await classifyInvoiceBatch(chunk, ports, {
-      tenantId: params.tenantId,
-      countryCode: params.countryCode,
-      deepMode: params.deepMode,
-    });
-    tier0Hits += res.stats.tier0Hits;
-    tier1Hits += res.stats.tier1Hits;
-    tier2Hits += res.stats.tier2Hits;
-    blockedByPreGate += res.stats.blockedByPreGate;
-    webGroundingUsed += res.stats.webGroundingUsed;
-    for (const line of res.lines) classifiedByRepId.set(line.lineId, line);
-  }
-
-  const lines: ClassificationLinePayload[] = [];
-  for (const group of deduped) {
-    const template = classifiedByRepId.get(group.representative.lineId);
-    if (!template) continue;
-    for (const member of group.members) {
-      lines.push(
-        member.lineId === template.lineId
-          ? template
-          : {
-              ...template,
-              lineId: member.lineId,
-              duties: calculateDeterministicDuties(member.cifValue, template.duties),
-            },
-      );
-    }
-  }
+  const pipelineResult = await executeChunkedBatchPlan({
+    items: params.items,
+    tenantId: params.tenantId,
+    countryCode: params.countryCode,
+    deepMode: params.deepMode,
+  });
 
   await persistFilingLinesAndUsage({
     filingId: params.filingId,
     tenantId: params.tenantId,
-    lines,
+    lines: pipelineResult.lines,
   });
 
-  const pipelineResult: BatchPipelineResult = {
-    lines,
-    stats: {
-      totalLines: lines.length,
-      uniqueItems: representatives.length,
-      blockedByPreGate,
-      tier0Hits,
-      tier1Hits,
-      tier2Hits,
-      webGroundingUsed,
-    },
-  };
-
   return {
-    lines,
-    summary: buildBatchSummary(lines),
+    lines: pipelineResult.lines,
+    summary: buildBatchSummary(pipelineResult.lines),
     envelope: mapBatchToA2UIEnvelope(pipelineResult, {
       id: params.filingId,
       title: params.fileName ? `Lote: ${params.fileName}` : 'Manifiesto de Clasificación en Lote',

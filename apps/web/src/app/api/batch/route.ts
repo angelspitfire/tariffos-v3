@@ -1,7 +1,17 @@
-import { mapBatchToA2UIEnvelope, type BatchPipelineResult, type InvoiceItemInput } from '@tariffos/agent';
+import {
+  SUPPORTED_LIVE_COUNTRIES,
+  isSupportedLiveCountry,
+  mapBatchToA2UIEnvelope,
+  type BatchPipelineResult,
+  type InvoiceItemInput,
+} from '@tariffos/agent';
 import { prisma } from '@tariffos/database';
 import { z } from 'zod';
-import { checkTenantQuota, resolveCloudTenantContext } from '@/lib/agent/cloud-session';
+import {
+  checkTenantQuota,
+  formatQuotaErrorResponse,
+  resolveCloudTenantContext,
+} from '@/lib/agent/cloud-session';
 import { classifyItemOffline } from '@/lib/agent/offline-classifier';
 import {
   BatchFileExtractionError,
@@ -62,20 +72,6 @@ function buildOfflineBatchResult(itemsCount: number, lines: ReturnType<typeof cl
   };
 }
 
-function quotaFailureResponse(reason: string | undefined): Response {
-  const code = reason ?? 'LIMIT_REACHED';
-  const status = code === 'BATCH_NOT_IN_PLAN' || code === 'ACCOUNT_CANCELED' ? 403 : code === 'QUOTA_CHECK_ERROR' ? 503 : 402;
-  const error =
-    code === 'BATCH_NOT_IN_PLAN'
-      ? 'Tu plan actual no incluye procesamiento masivo por lotes.'
-      : code === 'PAST_DUE'
-        ? 'Activa tu Piloto Operativo o Plan Agencia para procesar lotes.'
-        : code === 'QUOTA_CHECK_ERROR'
-          ? 'No pudimos verificar tu cuota en este momento. Intenta nuevamente.'
-          : 'El tamaño del lote excede tu cuota disponible.';
-  return Response.json({ error, reason: code }, { status });
-}
-
 async function parseMultipartBatch(request: Request): Promise<ParsedBatchPayload | Response> {
   const formData = await request.formData();
   const file = formData.get('file');
@@ -107,33 +103,43 @@ async function parseMultipartBatch(request: Request): Promise<ParsedBatchPayload
   }
 }
 
-export async function POST(request: Request): Promise<Response> {
-  const contentType = request.headers.get('content-type')?.toLowerCase() ?? '';
-  let payload: ParsedBatchPayload;
-
-  if (contentType.includes('multipart/form-data')) {
-    const parsed = await parseMultipartBatch(request);
-    if (parsed instanceof Response) return parsed;
-    payload = parsed;
-  } else {
-    let rawBody: unknown;
-    try {
-      rawBody = await request.json();
-    } catch {
-      return Response.json({ error: 'Invalid JSON payload' }, { status: 400 });
-    }
-    const parsed = BatchRequestSchema.safeParse(rawBody);
-    if (!parsed.success) {
-      return Response.json({ error: 'Validation failed', issues: parsed.error.issues }, { status: 400 });
-    }
-    const input = parsed.data;
-    payload = {
-      filingId: input.filingId,
-      countryCode: input.countryCode,
-      deepMode: input.deepMode,
-      items: input.items && input.items.length > 0 ? input.items : parseBatchTextToItems(input.sourceText ?? ''),
-    };
+async function parseJsonBatch(request: Request): Promise<ParsedBatchPayload | Response> {
+  let rawBody: unknown;
+  try {
+    rawBody = await request.json();
+  } catch {
+    return Response.json({ error: 'Invalid JSON payload' }, { status: 400 });
   }
+  const parsed = BatchRequestSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return Response.json({ error: 'Validation failed', issues: parsed.error.issues }, { status: 400 });
+  }
+  const input = parsed.data;
+  return {
+    filingId: input.filingId,
+    countryCode: input.countryCode,
+    deepMode: input.deepMode,
+    items: input.items && input.items.length > 0 ? input.items : parseBatchTextToItems(input.sourceText ?? ''),
+  };
+}
+
+export async function POST(request: Request): Promise<Response> {
+  const cloudMode = isCloudModeEnabled();
+  let cloudTenantId = 'offline-tenant';
+  let cloudUserId = 'offline-user';
+
+  if (cloudMode) {
+    const auth = await resolveCloudTenantContext();
+    if (!auth.ok) return Response.json({ error: auth.error }, { status: auth.status });
+    cloudTenantId = auth.context.tenantId;
+    cloudUserId = auth.context.userId;
+  }
+
+  const contentType = request.headers.get('content-type')?.toLowerCase() ?? '';
+  const payload = contentType.includes('multipart/form-data')
+    ? await parseMultipartBatch(request)
+    : await parseJsonBatch(request);
+  if (payload instanceof Response) return payload;
 
   if (payload.items.length === 0) {
     return Response.json({ error: 'No se encontraron ítems clasificables en el lote.' }, { status: 400 });
@@ -141,23 +147,44 @@ export async function POST(request: Request): Promise<Response> {
 
   const filingId = payload.filingId ?? `batch-${Date.now()}`;
 
-  if (isCloudModeEnabled()) {
-    const auth = await resolveCloudTenantContext();
-    if (!auth.ok) return Response.json({ error: auth.error }, { status: auth.status });
+  if (cloudMode) {
+    if (!isSupportedLiveCountry(payload.countryCode)) {
+      return Response.json(
+        {
+          error: `La jurisdicción ${payload.countryCode} aún no tiene arancel cargado en modo Cloud. Disponible actualmente: ${SUPPORTED_LIVE_COUNTRIES.join(', ')}.`,
+          countryCode: payload.countryCode,
+          supportedCountries: [...SUPPORTED_LIVE_COUNTRIES],
+        },
+        { status: 422 },
+      );
+    }
 
-    const quota = await checkTenantQuota(auth.context.tenantId, {
+    const quota = await checkTenantQuota(cloudTenantId, {
       requestedCount: payload.items.length,
       isBatch: true,
     });
-    if (!quota.allowed) return quotaFailureResponse(quota.reason);
+    if (!quota.allowed) {
+      const formatted = formatQuotaErrorResponse(quota.reason, { isBatch: true });
+      return Response.json({ error: formatted.error, reason: formatted.reason }, { status: formatted.status });
+    }
+
+    if (payload.filingId && typeof prisma.filing.findUnique === 'function') {
+      const existing = await prisma.filing.findUnique({
+        where: { id: filingId },
+        select: { tenantId: true },
+      });
+      if (existing && existing.tenantId !== cloudTenantId) {
+        return Response.json({ error: 'Forbidden filing reference' }, { status: 403 });
+      }
+    }
 
     await prisma.filing.upsert({
       where: { id: filingId },
       update: {},
       create: {
         id: filingId,
-        tenantId: auth.context.tenantId,
-        userId: auth.context.userId,
+        tenantId: cloudTenantId,
+        userId: cloudUserId,
         referenceId: payload.fileName ?? filingId,
         status: 'In progress',
         items: [],
@@ -167,7 +194,7 @@ export async function POST(request: Request): Promise<Response> {
     if (resolveBatchExecutionMode() === 'inline') {
       const result = await executeCloudBatchInline({
         filingId,
-        tenantId: auth.context.tenantId,
+        tenantId: cloudTenantId,
         countryCode: payload.countryCode,
         deepMode: payload.deepMode,
         items: payload.items,
@@ -195,10 +222,13 @@ export async function POST(request: Request): Promise<Response> {
       name: 'filing/batch.requested',
       data: {
         filingId,
-        tenantId: auth.context.tenantId,
+        tenantId: cloudTenantId,
         countryCode: payload.countryCode,
         deepMode: payload.deepMode,
         items: payload.items,
+        ...(payload.fileName ? { fileName: payload.fileName } : {}),
+        ...(payload.extractionMethod ? { extractionMethod: payload.extractionMethod } : {}),
+        ...(payload.documentMeta ? { documentMeta: payload.documentMeta } : {}),
       },
     });
 

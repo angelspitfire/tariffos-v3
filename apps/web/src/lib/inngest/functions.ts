@@ -1,18 +1,7 @@
-import {
-  calculateDeterministicDuties,
-  classifyInvoiceBatch,
-  deduplicateInvoiceItems,
-  type InvoiceItemInput,
-} from '@tariffos/agent';
-import type { ClassificationLinePayload } from '@tariffos/shared-types';
-import { getActiveLlmRuntimeConfig } from '@/lib/admin/llm-settings';
-import { createPrismaPipelinePorts } from '@/lib/agent/prisma-ports';
-import {
-  buildBatchSummary,
-  chunkItems,
-  DEFAULT_MICRO_BATCH_SIZE,
-  parseBatchTextToItems,
-} from './batch-helpers';
+import type { InvoiceItemInput } from '@tariffos/agent';
+import { executeChunkedBatchPlan } from './batch-executor';
+import type { BatchDocumentMetadata } from './batch-file-extractor';
+import { buildBatchSummary, parseBatchTextToItems } from './batch-helpers';
 import { batchChannel, type BatchProgressEvent } from './channels';
 import { inngest } from './client';
 import { indexPublishedLegalFn } from './legal-indexing-fn';
@@ -30,6 +19,9 @@ export interface ClassifyBatchEventData {
   deepMode: boolean;
   items?: InvoiceItemInput[];
   sourceText?: string;
+  fileName?: string;
+  extractionMethod?: 'deterministic' | 'llm_vl';
+  documentMeta?: BatchDocumentMetadata;
 }
 
 export const classifyInvoiceBatchFn = inngest.createFunction(
@@ -87,83 +79,31 @@ export const classifyInvoiceBatchFn = inngest.createFunction(
       progressPct: 15,
     });
 
-    const deduped = await step.run('deduplicate-invoice-lines', async () => {
-      const groups = deduplicateInvoiceItems(parsedItems);
-      return groups.map((group) => ({
-        key: group.key,
-        representative: group.representative,
-        members: group.members,
-      }));
-    });
-
-    const representativeItems = deduped.map((g) => g.representative);
-    const chunks = chunkItems(representativeItems, DEFAULT_MICRO_BATCH_SIZE);
-    const classifiedByRepId = new Map<string, ClassificationLinePayload>();
-    const groupSizeByRepId = new Map<string, number>();
-    for (const group of deduped) groupSizeByRepId.set(group.representative.lineId, group.members.length);
-
-    let coveredCount = 0;
-    for (let idx = 0; idx < chunks.length; idx += 1) {
-      const chunk = chunks[idx];
-      const chunkLines = await step.run(`classify-micro-batch-${idx}`, async () => {
-        const runtimeLlm = await getActiveLlmRuntimeConfig();
-        const ports = createPrismaPipelinePorts(
-          runtimeLlm.source === 'database'
-            ? {
-                provider: runtimeLlm.provider,
-                model: runtimeLlm.model,
-                deepModel: runtimeLlm.deepModel,
-                baseUrl: runtimeLlm.baseUrl,
-              }
-            : undefined,
-        );
-        const result = await classifyInvoiceBatch(chunk, ports, {
-          tenantId: data.tenantId,
-          countryCode: data.countryCode,
-          deepMode: data.deepMode,
+    const batchResult = await executeChunkedBatchPlan({
+      items: parsedItems,
+      tenantId: data.tenantId,
+      countryCode: data.countryCode,
+      deepMode: data.deepMode,
+      runStep: (stepId, fn) => step.run(stepId, fn),
+      onChunkDone: async ({ chunkIndex, totalChunks, coveredCount, totalItems }) => {
+        const pct = totalChunks > 0 ? Math.round(20 + ((chunkIndex + 1) / totalChunks) * 65) : 85;
+        await publishProgress(`emit-chunk-${chunkIndex}`, {
+          stage: 'classifying',
+          label: `Clasificando bloque ${chunkIndex + 1} de ${totalChunks}…`,
+          completedItems: Math.min(coveredCount, totalItems),
+          totalItems,
+          progressPct: pct,
+          chunkIndex: chunkIndex + 1,
+          totalChunks,
         });
-        return result.lines;
-      });
-
-      for (const line of chunkLines) {
-        classifiedByRepId.set(line.lineId, line);
-        coveredCount += groupSizeByRepId.get(line.lineId) ?? 1;
-      }
-
-      const pct = chunks.length > 0 ? Math.round(20 + ((idx + 1) / chunks.length) * 65) : 85;
-      await publishProgress(`emit-chunk-${idx}`, {
-        stage: 'classifying',
-        label: `Clasificando bloque ${idx + 1} de ${chunks.length}…`,
-        completedItems: Math.min(coveredCount, parsedItems.length),
-        totalItems: parsedItems.length,
-        progressPct: pct,
-        chunkIndex: idx + 1,
-        totalChunks: chunks.length,
-      });
-    }
-
-    const allLines: ClassificationLinePayload[] = [];
-    for (const group of deduped) {
-      const template = classifiedByRepId.get(group.representative.lineId);
-      if (!template) continue;
-      for (const member of group.members) {
-        allLines.push(
-          member.lineId === template.lineId
-            ? template
-            : {
-                ...template,
-                lineId: member.lineId,
-                duties: calculateDeterministicDuties(member.cifValue, template.duties),
-              },
-        );
-      }
-    }
+      },
+    });
 
     await publishProgress('emit-persisting', {
       stage: 'persisting',
       label: 'Guardando expediente y métricas…',
-      completedItems: allLines.length,
-      totalItems: parsedItems.length || allLines.length,
+      completedItems: batchResult.lines.length,
+      totalItems: parsedItems.length || batchResult.lines.length,
       progressPct: 92,
     });
 
@@ -171,22 +111,22 @@ export const classifyInvoiceBatchFn = inngest.createFunction(
       persistFilingLinesAndUsage({
         filingId: data.filingId,
         tenantId: data.tenantId,
-        lines: allLines,
+        lines: batchResult.lines,
       }),
     );
 
     await publishProgress('emit-completed', {
       stage: 'completed',
       label: 'Lote clasificado y listo para triage',
-      completedItems: allLines.length,
-      totalItems: parsedItems.length || allLines.length,
+      completedItems: batchResult.lines.length,
+      totalItems: parsedItems.length || batchResult.lines.length,
       progressPct: 100,
     });
 
     return {
       filingId: data.filingId,
-      linesProcessed: allLines.length,
-      summary: buildBatchSummary(allLines),
+      linesProcessed: batchResult.lines.length,
+      summary: buildBatchSummary(batchResult.lines),
     };
   },
 );

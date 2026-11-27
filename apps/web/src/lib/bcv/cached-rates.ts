@@ -48,12 +48,12 @@ async function isDbSnapshotStale(
   nowMs: number,
   loadTimestampImpl: typeof getLatestExchangeRateTimestamp,
 ): Promise<boolean> {
-  const todayVe = getCaracasDateString(nowMs);
-  if (rates['USD/VES'].valueDate < todayVe || rates['EUR/VES'].valueDate < todayVe) {
-    return true;
+  const latestUpdatedMs = await loadTimestampImpl();
+  if (latestUpdatedMs !== null) {
+    return nowMs - latestUpdatedMs > BCV_DB_STALE_AFTER_MS;
   }
-  const latestCreatedMs = await loadTimestampImpl();
-  return latestCreatedMs !== null && nowMs - latestCreatedMs > BCV_DB_STALE_AFTER_MS;
+  const todayVe = getCaracasDateString(nowMs);
+  return rates['USD/VES'].valueDate < todayVe || rates['EUR/VES'].valueDate < todayVe;
 }
 
 async function runSingleFlightRefresh(params: {
@@ -71,9 +71,10 @@ async function runSingleFlightRefresh(params: {
   const promise = (async (): Promise<BcvRefreshOutcome> => {
     try {
       const quotes = await params.fetchImpl();
-      await params.persistImpl(quotes);
+      const persistRes = await params.persistImpl(quotes);
       const latest = await params.loadLatestImpl();
-      return { rates: latest, stale: false, refreshed: true };
+      const anySaved = persistRes.saved.length > 0;
+      return { rates: latest, stale: !anySaved, refreshed: anySaved };
     } catch {
       const fallback = bucket.entry?.rates ?? (await params.loadLatestImpl());
       return { rates: fallback, stale: true, refreshed: false };

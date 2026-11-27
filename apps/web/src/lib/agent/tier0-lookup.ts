@@ -1,6 +1,7 @@
 import { prisma } from '@tariffos/database';
 import type { SkuPrecedentRecord } from '@tariffos/agent';
 import { searchProductMasterSemantic } from './product-master-embedding';
+import type { QueryEmbeddingFn } from './query-embedding';
 
 /**
  * Looks up an active custom classification rule (preferring tenant-specific rules
@@ -10,6 +11,7 @@ import { searchProductMasterSemantic } from './product-master-embedding';
 export async function findTenantSkuPrecedent(
   tenantId: string,
   skuOrDesc: string,
+  embedQueryFn?: QueryEmbeddingFn,
 ): Promise<SkuPrecedentRecord | null> {
   const trimmed = skuOrDesc.trim();
   if (!trimmed) return null;
@@ -51,5 +53,7 @@ export async function findTenantSkuPrecedent(
     };
   }
 
-  return searchProductMasterSemantic(tenantId, trimmed);
+  return embedQueryFn
+    ? searchProductMasterSemantic(tenantId, trimmed, embedQueryFn)
+    : searchProductMasterSemantic(tenantId, trimmed);
 }

@@ -5,14 +5,27 @@ const mocks = vi.hoisted(() => ({
   inngestSend: vi.fn(),
   getAuthenticatedUser: vi.fn(),
   membershipFindFirst: vi.fn(),
+  filingFindUnique: vi.fn(),
   filingUpsert: vi.fn(),
   checkBillingLimit: vi.fn(),
   executeCloudBatchInline: vi.fn(),
+  extractSpy: vi.fn(),
 }));
 
 vi.mock('@/lib/inngest/client', () => ({
   inngest: { send: mocks.inngestSend },
 }));
+
+vi.mock('@/lib/inngest/batch-file-extractor', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/inngest/batch-file-extractor')>();
+  return {
+    ...actual,
+    extractBatchItemsFromFile: (file: File, options?: unknown) => {
+      mocks.extractSpy(file.name);
+      return actual.extractBatchItemsFromFile(file, options as never);
+    },
+  };
+});
 
 vi.mock('@/lib/inngest/run-cloud-batch', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/inngest/run-cloud-batch')>();
@@ -32,7 +45,10 @@ vi.mock('@tariffos/database', () => ({
   },
   prisma: {
     membership: { findFirst: mocks.membershipFindFirst },
-    filing: { upsert: mocks.filingUpsert },
+    filing: {
+      findUnique: mocks.filingFindUnique,
+      upsert: mocks.filingUpsert,
+    },
   },
 }));
 
@@ -274,5 +290,98 @@ describe('POST /api/batch', () => {
     expect(body.envelope.assistantMessage).toBe('Lote procesado en línea');
     expect(mocks.executeCloudBatchInline).toHaveBeenCalledTimes(1);
     expect(mocks.inngestSend).not.toHaveBeenCalled();
+  });
+
+  it('rejects unauthenticated multipart upload in cloud mode BEFORE running file/VL extraction', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    mocks.getAuthenticatedUser.mockResolvedValueOnce(null);
+
+    const form = new FormData();
+    form.append('file', new File([new Uint8Array([0x25, 0x50, 0x44, 0x46])], 'factura.pdf', { type: 'application/pdf' }));
+    form.append('countryCode', 'VE');
+
+    const res = await POST(new Request('http://localhost/api/batch', { method: 'POST', body: form }));
+    expect(res.status).toBe(401);
+    expect(mocks.extractSpy).not.toHaveBeenCalled();
+  });
+
+  it('rejects unsupported countryCode in cloud mode with 422', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    mocks.getAuthenticatedUser.mockResolvedValue({ id: 'user-1', email: 'ops@agency.ve' });
+    mocks.membershipFindFirst.mockResolvedValue({ tenantId: 'tenant-ve', role: 'ADMIN' });
+
+    const req = new Request('http://localhost/api/batch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        countryCode: 'XX',
+        items: [{ lineId: 'l1', description: 'Inversor solar 5kW', originCountry: 'CN', cifValue: 1000 }],
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(422);
+    expect(mocks.checkBillingLimit).not.toHaveBeenCalled();
+  });
+
+  it('rejects caller-supplied filingId owned by another tenant with 403', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    mocks.getAuthenticatedUser.mockResolvedValue({ id: 'user-1', email: 'ops@agency.ve' });
+    mocks.membershipFindFirst.mockResolvedValue({ tenantId: 'tenant-ve', role: 'ADMIN' });
+    mocks.checkBillingLimit.mockResolvedValue({ allowed: true });
+    mocks.filingFindUnique.mockResolvedValueOnce({ tenantId: 'other-tenant' });
+
+    const req = new Request('http://localhost/api/batch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filingId: 'fil-stolen',
+        countryCode: 'VE',
+        items: [{ lineId: 'l1', description: 'Inversor solar 5kW', originCountry: 'CN', cifValue: 1000 }],
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(403);
+    expect(mocks.filingUpsert).not.toHaveBeenCalled();
+    expect(mocks.inngestSend).not.toHaveBeenCalled();
+  });
+
+  it('forwards fileName and documentMeta to Inngest when queued', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    process.env.BATCH_EXECUTION_MODE = 'inngest';
+    mocks.getAuthenticatedUser.mockResolvedValue({ id: 'user-1', email: 'ops@agency.ve' });
+    mocks.membershipFindFirst.mockResolvedValue({ tenantId: 'tenant-ve', role: 'ADMIN' });
+    mocks.checkBillingLimit.mockResolvedValue({ allowed: true });
+    mocks.filingFindUnique.mockResolvedValueOnce(null);
+    mocks.filingUpsert.mockResolvedValue({ id: 'fil-csv-1' });
+    mocks.inngestSend.mockResolvedValue({ ids: ['evt-csv'] });
+
+    const form = new FormData();
+    form.append(
+      'file',
+      new File(['SKU,Descripcion,Origen,CIF\nINV-5,Inversor 5kW,CN,1200'], 'factura-csv.csv', {
+        type: 'text/csv',
+      }),
+    );
+    form.append('countryCode', 'VE');
+
+    const res = await POST(new Request('http://localhost/api/batch', { method: 'POST', body: form }));
+    expect(res.status).toBe(202);
+    expect(mocks.inngestSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          fileName: 'factura-csv.csv',
+        }),
+      }),
+    );
   });
 });

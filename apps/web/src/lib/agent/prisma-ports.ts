@@ -11,6 +11,7 @@ import {
   type RgiLlmRuntimeOverride,
   type TariffCandidateRecord,
 } from '@tariffos/agent';
+import { createQueryEmbeddingCache } from './query-embedding';
 import { searchTariffCandidatesFts } from './tariff-fts';
 import { fetchSiblingSubheadings } from './tariff-siblings';
 import { searchTariffCandidatesVector } from './tariff-vector';
@@ -66,25 +67,38 @@ function buildHsScopeVariants(hsPrefix: string): string[] {
  * (hybrid `TariffNodeEmbedding` vector + `NationalTariff` FTS) and `@tariffos/ai-client`.
  */
 export function createPrismaPipelinePorts(runtimeLlm?: RgiLlmRuntimeOverride): PipelinePorts {
+  const embedQuery = createQueryEmbeddingCache();
+  const candidateCache = new Map<string, Promise<TariffCandidateRecord[]>>();
+
   return {
     decisionProvider: process.env.TYPESAFE_API_KEY ? defaultProvider() : undefined,
     fetchWebSpecs: fetchWebSpecsFromEnv,
 
-    findSkuPrecedent: (tenantId, skuOrDesc) => findTenantSkuPrecedent(tenantId, skuOrDesc),
+    findSkuPrecedent: (tenantId, skuOrDesc) =>
+      findTenantSkuPrecedent(tenantId, skuOrDesc, embedQuery),
 
-    async searchTariffCandidates(
+    searchTariffCandidates(
       countryCode: string,
       query: string,
     ): Promise<TariffCandidateRecord[]> {
-      const [vectorCandidates, lexicalCandidates] = await Promise.all([
-        searchTariffCandidatesVector(countryCode, query, MAX_SEARCH_CANDIDATES),
-        searchTariffCandidatesFts(countryCode, query, MAX_SEARCH_CANDIDATES),
-      ]);
-      if (vectorCandidates.length === 0) return lexicalCandidates;
-      if (lexicalCandidates.length === 0) return vectorCandidates;
-      return fuseHybridTariffCandidates(vectorCandidates, lexicalCandidates, {
-        limit: MAX_SEARCH_CANDIDATES,
-      });
+      const cacheKey = `${countryCode}:${query.trim().toLowerCase()}`;
+      const cached = candidateCache.get(cacheKey);
+      if (cached) return cached;
+
+      const promise = (async () => {
+        const [vectorCandidates, lexicalCandidates] = await Promise.all([
+          searchTariffCandidatesVector(countryCode, query, MAX_SEARCH_CANDIDATES, embedQuery),
+          searchTariffCandidatesFts(countryCode, query, MAX_SEARCH_CANDIDATES),
+        ]);
+        if (vectorCandidates.length === 0) return lexicalCandidates;
+        if (lexicalCandidates.length === 0) return vectorCandidates;
+        return fuseHybridTariffCandidates(vectorCandidates, lexicalCandidates, {
+          limit: MAX_SEARCH_CANDIDATES,
+        });
+      })();
+
+      candidateCache.set(cacheKey, promise);
+      return promise;
     },
 
     expandSiblingSubheadings: (countryCode, prefixes) =>

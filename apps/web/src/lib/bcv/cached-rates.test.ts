@@ -141,4 +141,49 @@ describe('cached-rates (BCV L1/L2 cache & on-demand refresh)', () => {
     expect(result.rates['USD/VES'].rate).toBe(52.43);
     expect(persistImpl).not.toHaveBeenCalled();
   });
+
+  it('treats Friday rates as fresh on weekends when DB updatedAt is within 2 hours', async () => {
+    const fridayRates: Record<BcvPair, BcvRateQuote> = {
+      'USD/VES': { pair: 'USD/VES', rate: 52.43, valueDate: '2026-11-27', source: 'bcv.org.ve' },
+      'EUR/VES': { pair: 'EUR/VES', rate: 55.1, valueDate: '2026-11-27', source: 'bcv.org.ve' },
+    };
+    const sundayMs = Date.parse('2026-11-29T14:00:00Z');
+    const loadLatestImpl = vi.fn(async () => fridayRates);
+    const loadTimestampImpl = vi.fn(async () => sundayMs - 30 * 60 * 1000);
+    const fetchImpl = vi.fn();
+    const persistImpl = vi.fn();
+
+    const result = await getCachedBcvRates({
+      nowMs: sundayMs,
+      isCloud: true,
+      loadLatestImpl,
+      loadTimestampImpl,
+      fetchImpl,
+      persistImpl,
+    });
+
+    expect(result.stale).toBe(false);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it('reports refreshed=false and stale=true when persistImpl skips anomalous quotes', async () => {
+    const loadLatestImpl = vi.fn(async () => SEED_RATES);
+    const fetchImpl = vi.fn(async () => UPDATED_QUOTES);
+    const persistImpl = vi.fn(async () => ({
+      saved: [],
+      skipped: [{ quote: UPDATED_QUOTES[0]!, reason: 'Anomalous >25% rate delta' }],
+    }));
+
+    const result = await getCachedBcvRates({
+      forceRefresh: true,
+      nowMs: 4_000_000,
+      isCloud: true,
+      loadLatestImpl,
+      fetchImpl,
+      persistImpl,
+    });
+
+    expect(result.refreshed).toBe(false);
+    expect(result.stale).toBe(true);
+  });
 });
