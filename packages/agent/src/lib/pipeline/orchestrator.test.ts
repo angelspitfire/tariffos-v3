@@ -46,12 +46,9 @@ describe('classifyInvoiceBatch', () => {
   it('blocks prohibited goods in Pre-Gate before calling RGI reasoning', async () => {
     const decisionProvider: DecisionProvider = {
       name: 'mock-system-one',
-      systemOne: vi.fn().mockResolvedValue({
-        model: 'system-one',
-        answers: {
-          compliance_status: { type: 'choice', choice: 'prohibited_tariff', confidence: 0.92 },
-        },
-        usage: { input_tokens: 10, output_tokens: 5 },
+      classifyChoice: vi.fn().mockResolvedValue({
+        choice: 'prohibited_tariff',
+        confidence: 0.92,
       }),
     };
     const ports = createBasePorts({ decisionProvider });
@@ -358,5 +355,110 @@ describe('classifyInvoiceBatch', () => {
     expect(line.duties.isBK).toBe(true);
     expect(line.flags.some((f) => f.title.includes('Bien de Capital (BK)'))).toBe(true);
     expect(line.flags.some((f) => f.title.includes('antidumping'))).toBe(true);
+  });
+
+  it('includes trade remedies on Tier 0 and Tier 1 hits for matching origin and HS chapter', async () => {
+    const steelTariff: TariffCandidateRecord = {
+      hsCode: '7208.10.00.00',
+      description: 'Productos laminados planos de hierro o acero sin alear',
+      adValoremRate: 14,
+      ivaRate: 16,
+      unit: 'kg',
+      score: 0.95,
+    };
+
+    const tier0Ports = createBasePorts({
+      findSkuPrecedent: vi.fn().mockResolvedValue({
+        hsCode: '7208.10.00.00',
+        officialDescription: steelTariff.description,
+        confidencePct: 99,
+        approvedByBroker: true,
+      }),
+      verifyHsCode: vi.fn().mockResolvedValue(steelTariff),
+    });
+
+    const tier0Result = await classifyInvoiceBatch(
+      [{ lineId: 'L-T0', sku: 'ACERO-7208', description: 'Bobina acero CN', originCountry: 'CN', cifValue: 1000 }],
+      tier0Ports,
+      { tenantId: 't1', countryCode: 'VE' },
+    );
+    expect(tier0Result.lines[0]?.tierUsed).toBe('tier0_sku');
+    expect(tier0Result.lines[0]?.flags.some((f) => f.title.includes('antidumping'))).toBe(true);
+
+    const tier1Ports = createBasePorts({
+      searchTariffCandidates: vi.fn().mockResolvedValue([steelTariff]),
+      verifyHsCode: vi.fn().mockResolvedValue(steelTariff),
+    });
+
+    const tier1Result = await classifyInvoiceBatch(
+      [{ lineId: 'L-T1', description: 'Bobina de acero laminado en caliente', originCountry: 'CN', cifValue: 1000 }],
+      tier1Ports,
+      { tenantId: 't1', countryCode: 'VE' },
+    );
+    expect(tier1Result.lines[0]?.tierUsed).toBe('tier1_fast');
+    expect(tier1Result.lines[0]?.flags.some((f) => f.title.includes('antidumping'))).toBe(true);
+  });
+
+  it('preserves rgi.hsCode on unverified Tier 2 instead of mutating it to topCandidate.hsCode', async () => {
+    const ports = createBasePorts({
+      searchTariffCandidates: vi.fn().mockResolvedValue([
+        { ...LAPTOP_TARIFF, hsCode: '8471.30.12.00', score: 0.72 },
+      ]),
+      verifyHsCode: vi.fn().mockResolvedValue(null),
+      runRgiReasoning: vi.fn().mockResolvedValue({
+        hsCode: '8471.30.90.90',
+        confidenceLevel: 'Alto',
+        confidencePct: 91,
+        confidenceReason: 'RGI 1 y 6 hacia 8471.30.90.90',
+        rgiSteps: [{ rule: 'RGI 6', note: 'Subheading', items: ['laptop'], conclusion: '8471.30.90.90' }],
+        alternatives: [],
+        rejected: [],
+        flags: [],
+        unresolved: [],
+        modelUsed: 'reasoning-model',
+      }),
+    });
+
+    const result = await classifyInvoiceBatch(
+      [{ lineId: 'L-UNV', description: 'Laptop computer 14 inch', originCountry: 'CN', cifValue: 1000 }],
+      ports,
+      { tenantId: 't1', countryCode: 'VE' },
+    );
+
+    expect(result.lines[0]?.hsCode).toBe('8471.30.90.90');
+    expect(result.lines[0]?.verifiedAgainstDb).toBe(false);
+    expect(result.lines[0]?.unresolved.some((u) => u.item.includes('8471.30.90.90'))).toBe(true);
+  });
+
+  it('keeps tokenUsage only on representative line and strips it from duplicate clones', async () => {
+    const ports = createBasePorts({
+      runRgiReasoning: vi.fn().mockResolvedValue({
+        hsCode: '8471.30.90.90',
+        confidenceLevel: 'Alto',
+        confidencePct: 95,
+        confidenceReason: 'Verified',
+        rgiSteps: [],
+        alternatives: [],
+        rejected: [],
+        flags: [],
+        unresolved: [],
+        modelUsed: 'test-model',
+        tokenUsage: { inputTokens: 1500, outputTokens: 350 },
+      }),
+    });
+
+    const result = await classifyInvoiceBatch(
+      [
+        { lineId: 'L1', sku: 'SKU-DUP', description: 'Laptop 14', originCountry: 'CN', cifValue: 1000 },
+        { lineId: 'L2', sku: 'SKU-DUP', description: 'Laptop 14', originCountry: 'CN', cifValue: 2000 },
+        { lineId: 'L3', sku: 'SKU-DUP', description: 'Laptop 14', originCountry: 'CN', cifValue: 3000 },
+      ],
+      ports,
+      { tenantId: 't1', countryCode: 'VE' },
+    );
+
+    expect(result.lines[0]?.tokenUsage).toEqual({ inputTokens: 1500, outputTokens: 350 });
+    expect(result.lines[1]?.tokenUsage).toBeUndefined();
+    expect(result.lines[2]?.tokenUsage).toBeUndefined();
   });
 });

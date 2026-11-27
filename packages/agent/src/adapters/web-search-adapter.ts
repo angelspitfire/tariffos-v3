@@ -6,15 +6,26 @@ import {
   type WebSearchKind,
 } from '@tariffos/env';
 import {
+  formatSearchExcerpts,
   searchParallelFast,
+  type ParallelSearchItem,
   type ParallelSearchOptions,
   type ParallelSearchResponse,
 } from './parallel-web-search.js';
 
-const MAX_FORMATTED_CHARS = 1500;
+export type WebSearchResultItem = ParallelSearchItem;
 
-interface SearchItem {
+export interface WebSearchResponse {
+  query: string;
+  provider: WebSearchKind | 'none';
+  results: WebSearchResultItem[];
+  formattedSummary: string | null;
+}
+
+interface RawSearchItem {
   title?: string;
+  url?: string;
+  link?: string;
   snippet?: string;
   content?: string;
   description?: string;
@@ -50,18 +61,26 @@ function buildRequestSpec(
   };
 }
 
-function extractItems(kind: Exclude<WebSearchKind, 'parallel'>, payload: unknown): SearchItem[] {
+function normalizeHttpItems(
+  kind: Exclude<WebSearchKind, 'parallel'>,
+  payload: unknown,
+): WebSearchResultItem[] {
   if (!payload || typeof payload !== 'object') return [];
   const record = payload as Record<string, unknown>;
   const rawList = kind === 'serper' ? record.organic : record.results;
   if (!Array.isArray(rawList)) return [];
-  return rawList.filter((item): item is SearchItem => Boolean(item && typeof item === 'object'));
-}
 
-function formatSearchItems(items: SearchItem[], limit: number): string | null {
-  const lines: string[] = [];
-  for (const item of items.slice(0, limit)) {
+  const normalized: WebSearchResultItem[] = [];
+  for (const entry of rawList) {
+    if (!entry || typeof entry !== 'object') continue;
+    const item = entry as RawSearchItem;
     const title = typeof item.title === 'string' ? item.title.trim() : '';
+    const url =
+      typeof item.url === 'string'
+        ? item.url.trim()
+        : typeof item.link === 'string'
+          ? item.link.trim()
+          : '';
     const snippetSource =
       typeof item.snippet === 'string'
         ? item.snippet
@@ -72,41 +91,45 @@ function formatSearchItems(items: SearchItem[], limit: number): string | null {
             : '';
     const snippet = snippetSource.trim();
     if (!title && !snippet) continue;
-    lines.push(title && snippet ? `- ${title}: ${snippet}` : `- ${title || snippet}`);
+    normalized.push({
+      title,
+      url,
+      excerpts: snippet ? [snippet] : [],
+    });
   }
-
-  if (lines.length === 0) return null;
-  const joined = lines.join('\n');
-  return joined.length > MAX_FORMATTED_CHARS
-    ? `${joined.slice(0, MAX_FORMATTED_CHARS - 3)}...`
-    : joined;
+  return normalized;
 }
 
 /**
- * Creates a fail-closed web specs fetcher honoring `WEB_SEARCH_PROVIDER`
- * (`parallel`, `serper`, or `context`), returning `null` cleanly when unconfigured or on errors.
+ * Creates a fail-closed structured web search client honoring `WEB_SEARCH_PROVIDER`
+ * (`parallel`, `serper`, or `context`) via `@tariffos/env`.
  */
-export function createWebSpecsFetcher(
+export function createWebSearchClient(
   fetchImpl: typeof fetch = fetch,
   parallelSearch: ParallelSearchFn = searchParallelFast,
-): (query: string) => Promise<string | null> {
-  return async (query: string): Promise<string | null> => {
+): (query: string, options?: { limit?: number; timeoutMs?: number }) => Promise<WebSearchResponse> {
+  return async (
+    query: string,
+    options?: { limit?: number; timeoutMs?: number },
+  ): Promise<WebSearchResponse> => {
     const trimmedQuery = query.trim();
-    if (!trimmedQuery) return null;
+    if (!trimmedQuery) {
+      return { query, provider: 'none', results: [], formattedSummary: null };
+    }
 
     let provider: ReturnType<typeof webSearchProvider>;
     try {
       provider = webSearchProvider();
     } catch {
-      return null;
+      return { query: trimmedQuery, provider: 'none', results: [], formattedSummary: null };
     }
 
     if (!provider?.apiKey) {
-      return null;
+      return { query: trimmedQuery, provider: 'none', results: [], formattedSummary: null };
     }
 
-    const limit = webSearchLimit();
-    const timeoutMs = webSearchTimeoutMs();
+    const limit = options?.limit ?? webSearchLimit();
+    const timeoutMs = options?.timeoutMs ?? webSearchTimeoutMs();
 
     if (provider.kind === 'parallel') {
       const result = await parallelSearch(trimmedQuery, {
@@ -114,7 +137,12 @@ export function createWebSpecsFetcher(
         timeoutMs,
         modelId: webSearchParallelModel(),
       });
-      return result.formattedSummary;
+      return {
+        query: trimmedQuery,
+        provider: 'parallel',
+        results: result.results,
+        formattedSummary: result.formattedSummary,
+      };
     }
 
     const { headers, body } = buildRequestSpec(
@@ -131,15 +159,40 @@ export function createWebSpecsFetcher(
         body,
         signal: AbortSignal.timeout(timeoutMs),
       });
-      if (!response.ok) return null;
+      if (!response.ok) {
+        return { query: trimmedQuery, provider: provider.kind, results: [], formattedSummary: null };
+      }
       const json: unknown = await response.json();
-      const items = extractItems(provider.kind, json);
-      return formatSearchItems(items, limit);
+      const results = normalizeHttpItems(provider.kind, json);
+      return {
+        query: trimmedQuery,
+        provider: provider.kind,
+        results,
+        formattedSummary: formatSearchExcerpts(results, limit),
+      };
     } catch {
-      return null;
+      return { query: trimmedQuery, provider: provider.kind, results: [], formattedSummary: null };
     }
   };
 }
+
+/**
+ * Creates a fail-closed web specs text fetcher honoring `WEB_SEARCH_PROVIDER`,
+ * returning `null` cleanly when unconfigured or on errors.
+ */
+export function createWebSpecsFetcher(
+  fetchImpl: typeof fetch = fetch,
+  parallelSearch: ParallelSearchFn = searchParallelFast,
+): (query: string) => Promise<string | null> {
+  const search = createWebSearchClient(fetchImpl, parallelSearch);
+  return async (query: string): Promise<string | null> => {
+    const res = await search(query);
+    return res.formattedSummary;
+  };
+}
+
+/** Env-configured structured web search helper shared across pipeline and Eve tools. */
+export const searchWebSpecs = createWebSearchClient();
 
 /** Env-configured web grounding adapter for `PipelinePorts.fetchWebSpecs`. */
 export const fetchWebSpecsFromEnv = createWebSpecsFetcher();

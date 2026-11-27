@@ -85,14 +85,14 @@ export function extractParallelResultsFromToolResults(
   return items;
 }
 
-/** Formats Parallel Search excerpts into a concise bullet summary capped at 1500 chars. */
-export function formatParallelItems(
-  items: readonly ParallelSearchItem[],
+/** Formats search excerpts into a concise bullet summary capped at 1500 chars. */
+export function formatSearchExcerpts(
+  items: ReadonlyArray<{ title?: string; url?: string; excerpts: readonly string[] }>,
   limit: number = DEFAULT_WEB_SEARCH_LIMIT,
 ): string | null {
   const lines: string[] = [];
   for (const item of items.slice(0, limit)) {
-    const title = item.title.trim();
+    const title = item.title?.trim() ?? '';
     const firstExcerpt = item.excerpts.find((excerpt) => excerpt.trim().length > 0)?.trim() ?? '';
     if (!title && !firstExcerpt) continue;
     lines.push(title && firstExcerpt ? `- ${title}: ${firstExcerpt}` : `- ${title || firstExcerpt}`);
@@ -103,6 +103,8 @@ export function formatParallelItems(
     ? `${joined.slice(0, MAX_FORMATTED_CHARS - 3)}...`
     : joined;
 }
+
+export const formatParallelItems = formatSearchExcerpts;
 
 async function defaultParallelExecutor(
   params: ParallelSearchExecutorParams,

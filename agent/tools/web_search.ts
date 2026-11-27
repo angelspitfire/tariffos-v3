@@ -1,6 +1,10 @@
 import { defineTool } from 'eve/tools';
 import { z } from 'zod';
-import { searchParallelFast, type ParallelSearchResponse } from '@tariffos/agent';
+import {
+  searchParallelFast,
+  searchWebSpecs,
+  type WebSearchResultItem,
+} from '@tariffos/agent';
 
 export const WebSearchInputSchema = z.object({
   query: z.string().trim().min(2),
@@ -9,24 +13,48 @@ export const WebSearchInputSchema = z.object({
 
 export type WebSearchInput = z.infer<typeof WebSearchInputSchema>;
 
-type ParallelSearchFn = (
+type SearchExecutorFn = (
   query: string,
   options?: { limit?: number },
-) => Promise<ParallelSearchResponse>;
+) => Promise<{
+  query: string;
+  results: WebSearchResultItem[];
+  formattedSummary: string | null;
+}>;
 
 export interface EveWebSearchResult {
   query: string;
-  provider: 'vercel-parallel-fast';
-  results: ParallelSearchResponse['results'];
+  provider: string;
+  results: WebSearchResultItem[];
   summary: string | null;
 }
 
-/** Runs Vercel Parallel Fast web search for technical product specifications. */
+/** Runs configured web search (`WEB_SEARCH_PROVIDER` or Vercel Parallel Fast fallback) for product specs. */
 export async function executeWebSearch(
   input: WebSearchInput,
-  searchFn: ParallelSearchFn = searchParallelFast,
+  searchFn?: SearchExecutorFn,
 ): Promise<EveWebSearchResult> {
-  const response = await searchFn(input.query, { limit: input.limit });
+  if (searchFn) {
+    const response = await searchFn(input.query, { limit: input.limit });
+    return {
+      query: response.query,
+      provider: 'vercel-parallel-fast',
+      results: response.results,
+      summary: response.formattedSummary,
+    };
+  }
+
+  if (process.env.WEB_SEARCH_PROVIDER?.trim()) {
+    const response = await searchWebSpecs(input.query, { limit: input.limit });
+    return {
+      query: response.query,
+      provider: response.provider === 'parallel' ? 'vercel-parallel-fast' : response.provider,
+      results: response.results,
+      summary: response.formattedSummary,
+    };
+  }
+
+  const response = await searchParallelFast(input.query, { limit: input.limit });
   return {
     query: response.query,
     provider: 'vercel-parallel-fast',

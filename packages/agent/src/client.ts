@@ -34,3 +34,13 @@ export {
   isSupportedLiveCountry,
   type SupportedLiveCountry,
 } from './lib/pipeline/thresholds.js';
+export {
+  CANONICAL_MERCEOLOGICAL_ATTRIBUTES,
+  computeMerceologicalConfidence,
+  isMissingAttributeText,
+} from './lib/pipeline/merceological-specs.js';
+export { buildMerceologicalSheet } from './lib/pipeline/merceological-hitl.js';
+export {
+  buildDefaultMerceologicalSheet,
+  mergeUserEditedSheet,
+} from './lib/pipeline/merceological-edit.js';

@@ -1,7 +1,11 @@
-import { TypeSafeClient } from '@typesafe-ai/sdk';
-import type { DecisionProvider, SystemOneFn, SystemOneBatchFn } from './provider.js';
+import { choice, TypeSafeClient } from '@typesafe-ai/sdk';
+import type {
+  ComplianceChoiceAnswer,
+  ComplianceChoicePrompt,
+  DecisionProvider,
+} from './provider.js';
 
-/** TypeSafe Jev decision provider — wraps the hosted TypeSafe client. */
+/** TypeSafe Jev decision provider — encapsulates `@typesafe-ai/sdk`. */
 function createTypesafeProvider(): DecisionProvider {
   let client: TypeSafeClient | null = null;
 
@@ -9,26 +13,36 @@ function createTypesafeProvider(): DecisionProvider {
     if (!client) {
       const apiKey = process.env.TYPESAFE_API_KEY;
       if (!apiKey) {
-        throw new Error('TYPESAFE_API_KEY is not set. Populate it in .env.local — TypeSafe judgments refuse to run without a key.');
+        throw new Error(
+          'TYPESAFE_API_KEY is not set. Populate it in .env.local — TypeSafe judgments refuse to run without a key.',
+        );
       }
       client = new TypeSafeClient({ apiKey });
     }
     return client;
   }
 
-  const systemOne: SystemOneFn = async (request, options) => {
-    return getClient().systemOne(request, options);
-  };
-
-  // TypeSafe doesn't have batch; callers must fall back to systemOne
-  const systemOneBatch: SystemOneBatchFn = async (requests, options) => {
-    return Promise.all(requests.map((r) => systemOne(r, options)));
+  const classifyChoice = async (
+    input: ComplianceChoicePrompt,
+  ): Promise<ComplianceChoiceAnswer> => {
+    const result = await getClient().systemOne({
+      state: input.state,
+      questions: {
+        classification: choice(input.prompt, input.categories),
+      },
+    });
+    const answer = result.answers.classification as
+      | { choice?: string; confidence?: number }
+      | undefined;
+    return {
+      choice: answer?.choice ?? 'allowed',
+      confidence: typeof answer?.confidence === 'number' ? answer.confidence : 0,
+    };
   };
 
   return {
     name: 'typesafe-jev',
-    systemOne,
-    systemOneBatch,
+    classifyChoice,
   };
 }
 

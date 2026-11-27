@@ -33,6 +33,9 @@ function mergeTariffMetadata(
     prohibited: Boolean(primary.prohibited || secondary.prohibited),
     permits: primary.permits?.length ? primary.permits : secondary.permits,
     score: primary.score ?? secondary.score,
+    customsFeeRate: primary.customsFeeRate ?? secondary.customsFeeRate,
+    isBK: primary.isBK ?? secondary.isBK,
+    isBIT: primary.isBIT ?? secondary.isBIT,
   };
 }
 

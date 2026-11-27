@@ -1,20 +1,19 @@
-import type { Questions, RequestOptions, SystemOneRequest, SystemOneResult } from '@typesafe-ai/sdk';
 import { typesafeProvider } from './typesafe-adapter.js';
 
-export type SystemOneFn = (
-  request: SystemOneRequest,
-  options?: RequestOptions,
-) => Promise<SystemOneResult<Questions>>;
+export interface ComplianceChoicePrompt {
+  state: Record<string, string | number | boolean | null>;
+  prompt: string;
+  categories: Record<string, string>;
+}
 
-export type SystemOneBatchFn = (
-  requests: SystemOneRequest[],
-  options?: RequestOptions,
-) => Promise<SystemOneResult<Questions>[]>;
+export interface ComplianceChoiceAnswer {
+  choice: string;
+  confidence: number;
+}
 
 export interface DecisionProvider {
   readonly name: string;
-  readonly systemOne: SystemOneFn;
-  readonly systemOneBatch?: SystemOneBatchFn;
+  readonly classifyChoice: (input: ComplianceChoicePrompt) => Promise<ComplianceChoiceAnswer>;
 }
 
 /** Default hosted System One decision provider. */

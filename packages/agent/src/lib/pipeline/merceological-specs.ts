@@ -116,7 +116,7 @@ export function isMissingAttributeText(value: unknown): boolean {
 }
 
 export function computeMerceologicalConfidence(
-  attributes: MerceologicalAttribute[],
+  attributes: readonly MerceologicalAttribute[],
   options: { competingCandidatesCount?: number; confirmedByUser?: boolean } = {},
 ): MerceologicalConfidenceBreakdown {
   let weightedSum = 0;

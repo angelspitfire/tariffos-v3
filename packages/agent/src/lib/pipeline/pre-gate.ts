@@ -1,4 +1,3 @@
-import { choice } from '@typesafe-ai/sdk';
 import type { ComplianceFlag } from '@tariffos/shared-types';
 import type { DecisionProvider } from '../decision/provider.js';
 import type { InvoiceItemInput } from './types.js';
@@ -32,28 +31,20 @@ export async function runCompliancePreGate(
   }
 
   try {
-    const result = await provider.systemOne({
+    const answer = await provider.classifyChoice({
       state: {
         product: item.description,
         origin: item.originCountry,
         jurisdiction: countryCode,
       },
-      questions: {
-        compliance_status: choice(
-          'Classify whether this merchandise falls under prohibited or restricted import categories before tariff classification.',
-          PROHIBITED_CATEGORIES,
-        ),
-      },
+      prompt:
+        'Classify whether this merchandise falls under prohibited or restricted import categories before tariff classification.',
+      categories: PROHIBITED_CATEGORIES,
     });
 
-    const answer = result.answers.compliance_status as
-      | { choice?: string; confidence?: number }
-      | undefined;
-    const picked = answer?.choice ?? 'allowed';
-    const confidence = typeof answer?.confidence === 'number' ? answer.confidence : 0;
-
-    const blocked =
-      picked !== 'allowed' && confidence >= PRE_GATE_CONFIDENCE_THRESHOLD;
+    const picked = answer.choice || 'allowed';
+    const confidence = typeof answer.confidence === 'number' ? answer.confidence : 0;
+    const blocked = picked !== 'allowed' && confidence >= PRE_GATE_CONFIDENCE_THRESHOLD;
 
     if (!blocked) {
       return { blocked: false, category: picked, confidence, flag: null };

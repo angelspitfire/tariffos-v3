@@ -42,7 +42,7 @@ async function classifyUniqueItem(
     const verified = await ports.verifyHsCode(options.countryCode, precedent.hsCode);
     const audit = auditTariffAgainstOfficialSchedule({ proposedHsCode: precedent.hsCode }, verified);
     if (verified && audit.codeDigitsMatch) {
-      return buildTier0Payload(item, precedent, verified, audit);
+      return buildTier0Payload(item, precedent, verified, audit, options.countryCode);
     }
   }
 
@@ -54,7 +54,7 @@ async function classifyUniqueItem(
     const verified = await ports.verifyHsCode(options.countryCode, topCandidate.hsCode);
     const audit = auditTariffAgainstOfficialSchedule({ proposedHsCode: topCandidate.hsCode }, verified);
     if (verified && audit.codeDigitsMatch) {
-      return buildTier1Payload(item, topCandidate, verified, audit);
+      return buildTier1Payload(item, topCandidate, verified, audit, options.countryCode);
     }
   }
 
@@ -90,7 +90,7 @@ async function classifyUniqueItem(
   options.onProgress?.({ stage: 'verifying_tariff', label: 'Verificando código en Arancel Oficial y tributos', progressPct: 90 });
   const verified = await ports.verifyHsCode(options.countryCode, rgi.hsCode);
   const audit = auditTariffAgainstOfficialSchedule({ proposedHsCode: rgi.hsCode }, verified);
-  const fallbackRecord = verified ?? topCandidate ?? {
+  const fallbackRecord = verified ?? {
     hsCode: rgi.hsCode,
     description: 'Unverified HS code — manual tariff check required',
     adValoremRate: 0,

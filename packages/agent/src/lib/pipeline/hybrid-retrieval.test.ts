@@ -56,6 +56,25 @@ describe('fuseHybridTariffCandidates', () => {
     expect(fused[0]?.permits).toEqual(['CONATEL']);
     expect(fused[0]?.score).toBe(1);
   });
+
+  it('preserves isBK, isBIT, and customsFeeRate when merging vector and lexical metadata', () => {
+    const vectorLaptop: TariffCandidateRecord = {
+      ...LAPTOP,
+      customsFeeRate: 1,
+      isBK: true,
+      isBIT: false,
+    };
+    const lexicalLaptop: TariffCandidateRecord = {
+      ...LAPTOP,
+      permits: ['CONATEL'],
+    };
+
+    const fused = fuseHybridTariffCandidates([vectorLaptop], [lexicalLaptop]);
+    expect(fused[0]?.customsFeeRate).toBe(1);
+    expect(fused[0]?.isBK).toBe(true);
+    expect(fused[0]?.isBIT).toBe(false);
+    expect(fused[0]?.permits).toEqual(['CONATEL']);
+  });
 });
 
 describe('filterLegalNotesByChapter', () => {

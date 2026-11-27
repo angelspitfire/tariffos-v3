@@ -87,9 +87,9 @@ export {
 } from './lib/pipeline/types.js';
 export {
   defaultProvider,
+  type ComplianceChoiceAnswer,
+  type ComplianceChoicePrompt,
   type DecisionProvider,
-  type SystemOneFn,
-  type SystemOneBatchFn,
 } from './lib/decision/provider.js';
 export { typesafeProvider } from './lib/decision/typesafe-adapter.js';
 export {
@@ -124,8 +124,12 @@ export {
   type ParallelSearchResponse,
 } from './adapters/parallel-web-search.js';
 export {
+  createWebSearchClient,
   createWebSpecsFetcher,
   fetchWebSpecsFromEnv,
+  searchWebSpecs,
+  type WebSearchResponse,
+  type WebSearchResultItem,
 } from './adapters/web-search-adapter.js';
 export {
   matchPrefixDigits,
@@ -141,4 +145,7 @@ export {
   type ExtractedInvoiceBatch,
   type ExtractInvoiceLlmInput,
 } from './adapters/invoice-llm-extractor.js';
-export { PdfTextAdapter } from './intake/adapters/pdf-text.js';
+export {
+  extractPdfPagesFromBuffer,
+  type PdfPagesExtractionResult,
+} from './lib/util/pdf-text.js';

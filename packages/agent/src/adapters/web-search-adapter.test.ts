@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createWebSpecsFetcher } from './web-search-adapter.js';
+import { createWebSearchClient, createWebSpecsFetcher } from './web-search-adapter.js';
 
 describe('createWebSpecsFetcher', () => {
   const originalEnv = { ...process.env };
@@ -117,5 +117,27 @@ describe('createWebSpecsFetcher', () => {
       modelId: 'google/gemini-2.5-flash-lite',
     });
     expect(result).toBe('- Bomba sumergible 2HP: Caudal 120 L/min, acero inoxidable AISI 304.');
+  });
+
+  it('exposes structured results from createWebSearchClient across configured providers', async () => {
+    process.env.WEB_SEARCH_PROVIDER = 'serper';
+    process.env.SERPER_API_KEY = 'serper-key-2';
+
+    const fetchMock = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          organic: [{ title: 'ABB Inverter', snippet: '5 kW 48V DC', link: 'https://abb.example/inv' }],
+        }),
+        { status: 200 },
+      ),
+    );
+
+    const client = createWebSearchClient(fetchMock as unknown as typeof fetch);
+    const out = await client('ABB inverter', { limit: 2 });
+    expect(out.provider).toBe('serper');
+    expect(out.results).toEqual([
+      { title: 'ABB Inverter', url: 'https://abb.example/inv', excerpts: ['5 kW 48V DC'] },
+    ]);
+    expect(out.formattedSummary).toBe('- ABB Inverter: 5 kW 48V DC');
   });
 });

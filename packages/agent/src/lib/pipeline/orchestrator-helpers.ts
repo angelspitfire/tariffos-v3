@@ -116,6 +116,7 @@ export function buildTier0Payload(
   precedent: SkuPrecedentRecord,
   verified: TariffCandidateRecord,
   audit: TariffAuditResult,
+  countryCode?: string,
 ): ClassificationLinePayload {
   return {
     lineId: item.lineId,
@@ -129,7 +130,10 @@ export function buildTier0Payload(
     rgiSteps: [],
     alternatives: [],
     rejected: [],
-    flags: mergeTariffFlags([], verified, audit),
+    flags: mergeTariffFlags([], verified, audit, {
+      countryCode,
+      originCountry: item.originCountry,
+    }),
     unresolved: [],
     duties: calculateDeterministicDuties(item.cifValue, verified),
     tierUsed: 'tier0_sku',
@@ -143,6 +147,7 @@ export function buildTier1Payload(
   topCandidate: TariffCandidateRecord,
   verified: TariffCandidateRecord,
   audit: TariffAuditResult,
+  countryCode?: string,
 ): ClassificationLinePayload {
   const formattedCode = formatHsCode(verified.hsCode);
   return {
@@ -159,7 +164,10 @@ export function buildTier1Payload(
     ],
     alternatives: [],
     rejected: [],
-    flags: mergeTariffFlags([], verified, audit),
+    flags: mergeTariffFlags([], verified, audit, {
+      countryCode,
+      originCountry: item.originCountry,
+    }),
     unresolved: [],
     duties: calculateDeterministicDuties(item.cifValue, verified),
     tierUsed: 'tier1_fast',
@@ -189,5 +197,10 @@ export function projectToLine(
   >,
 ): ClassificationLinePayload {
   if (member.lineId === template.lineId) return template;
-  return { ...template, lineId: member.lineId, duties: calculateDeterministicDuties(member.cifValue, verifiedTariff) };
+  const { tokenUsage: _omitTokenUsage, ...templateWithoutTokens } = template;
+  return {
+    ...templateWithoutTokens,
+    lineId: member.lineId,
+    duties: calculateDeterministicDuties(member.cifValue, verifiedTariff),
+  };
 }
