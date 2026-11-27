@@ -79,10 +79,6 @@ export function useWorkspaceState() {
         if (localThreads.length > 0 && threadsRef.current.length === 0) {
           threadsRef.current = localThreads;
           setThreads(localThreads);
-          if (!activeThreadIdRef.current && localThreads[0]) {
-            activeThreadIdRef.current = localThreads[0].id;
-            setActiveThreadId(localThreads[0].id);
-          }
         }
         if (localSkus.length > 0) setSkuPrecedents(localSkus);
         if (localProfile) setProfile(localProfile);
@@ -93,15 +89,16 @@ export function useWorkspaceState() {
       ([loadedThreads, loadedSkus, loadedProfile]) => {
         if (!active) return;
         userMutatedLocally = true;
-        threadsRef.current = loadedThreads;
-        setThreads(loadedThreads);
-        const stillExists = activeThreadIdRef.current
-          ? loadedThreads.some((t) => t.id === activeThreadIdRef.current)
-          : false;
-        if (!stillExists) {
-          const nextId = loadedThreads[0]?.id ?? null;
-          activeThreadIdRef.current = nextId;
-          setActiveThreadId(nextId);
+        const activeId = activeThreadIdRef.current;
+        const localActive = activeId
+          ? threadsRef.current.find((t) => t.id === activeId && !loadedThreads.some((r) => r.id === t.id))
+          : undefined;
+        const mergedThreads = localActive ? [localActive, ...loadedThreads] : loadedThreads;
+        threadsRef.current = mergedThreads;
+        setThreads(mergedThreads);
+        if (activeId && !mergedThreads.some((t) => t.id === activeId)) {
+          activeThreadIdRef.current = null;
+          setActiveThreadId(null);
         }
         setSkuPrecedents(loadedSkus);
         if (loadedProfile) setProfile(loadedProfile);
@@ -158,9 +155,8 @@ export function useWorkspaceState() {
     threadsRef.current = remaining;
     setThreads(remaining);
     if (activeThreadIdRef.current === threadId) {
-      const nextId = remaining[0]?.id ?? null;
-      activeThreadIdRef.current = nextId;
-      setActiveThreadId(nextId);
+      activeThreadIdRef.current = null;
+      setActiveThreadId(null);
       setSelectedCanvasMsgId(null);
     }
     void persistence.deleteThread(threadId);

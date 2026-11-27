@@ -60,10 +60,10 @@ export function RgiDecisionDiagram({
         ) : null}
       </div>
 
-      <div className="mt-2 overflow-x-auto">
+      <div className="mt-2">
         <svg
           viewBox={`0 0 ${viewWidth} 96`}
-          className="h-auto min-w-[520px] w-full"
+          className="block h-auto w-full"
           role="img"
           aria-label={`Diagrama de decisión RGI de ${hsCode}`}
         >

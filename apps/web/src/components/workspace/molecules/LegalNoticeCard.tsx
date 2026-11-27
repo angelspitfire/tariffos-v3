@@ -87,17 +87,19 @@ export function LegalNoticeCard({ component }: LegalNoticeCardProps) {
               const checked = Boolean(checkedMap[key]);
               return (
                 <li key={key}>
-                  <label className="flex cursor-pointer items-center justify-between gap-2 rounded-lg border border-border-subtle bg-surface-panel px-2.5 py-1.5 text-xs transition-colors hover:bg-surface-hover">
-                    <span className="flex min-w-0 items-center gap-2">
+                  <label className="flex cursor-pointer flex-wrap items-start justify-between gap-x-2 gap-y-1 rounded-lg border border-border-subtle bg-surface-panel px-2.5 py-1.5 text-xs transition-colors hover:bg-surface-hover">
+                    <span className="flex min-w-0 flex-1 items-start gap-2">
                       <input
                         type="checkbox"
                         checked={checked}
                         onChange={(e) =>
                           setCheckedMap((prev) => ({ ...prev, [key]: e.target.checked }))
                         }
-                        className="h-3.5 w-3.5 rounded accent-accent-brand focus-visible:ring-2 focus-visible:ring-accent-brand"
+                        className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded accent-accent-brand focus-visible:ring-2 focus-visible:ring-accent-brand"
                       />
-                      <span className={`truncate ${checked ? 'text-ink-subtle line-through' : 'font-medium text-ink-primary'}`}>
+                      <span
+                        className={`break-words leading-snug ${checked ? 'text-ink-subtle line-through' : 'font-medium text-ink-primary'}`}
+                      >
                         <span className="font-mono font-semibold">{permit.code}</span> {permit.name}
                       </span>
                     </span>

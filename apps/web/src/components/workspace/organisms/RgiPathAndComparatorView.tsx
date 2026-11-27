@@ -41,8 +41,10 @@ export function RgiPathAndComparatorView({
                 key={`${step.rule}-${idx}`}
                 className="rounded-lg border border-border-hairline bg-surface-muted p-3 text-xs space-y-1"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold text-accent-ink">{step.rule}</span>
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="shrink-0 whitespace-nowrap font-semibold text-accent-ink">
+                    {step.rule}
+                  </span>
                   {step.note ? (
                     <span className="font-mono text-[10px] text-ink-muted">{step.note}</span>
                   ) : null}
