@@ -134,4 +134,11 @@ export {
   type EvalSummary,
   type GoldenCase,
 } from './lib/pipeline/eval-metrics.js';
+export {
+  ExtractedInvoiceDocumentSchema,
+  extractInvoiceItemsWithLlm,
+  shouldUseLlmInvoiceExtraction,
+  type ExtractedInvoiceBatch,
+  type ExtractInvoiceLlmInput,
+} from './adapters/invoice-llm-extractor.js';
 export { PdfTextAdapter } from './intake/adapters/pdf-text.js';

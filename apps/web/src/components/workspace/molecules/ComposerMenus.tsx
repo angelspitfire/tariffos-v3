@@ -60,7 +60,7 @@ export function ComposerMenus({
             <FileSpreadsheet className="w-4 h-4 text-accent-ink shrink-0 mt-0.5" />
             <div className="min-w-0">
               <div className="text-xs font-semibold text-ink-primary">Procesar lote masivo</div>
-              <div className="text-[11px] text-ink-muted">Factura Excel (.xlsx), CSV o PDF en cola</div>
+              <div className="text-[11px] text-ink-muted">Factura Excel, CSV, PDF o foto (VL)</div>
             </div>
           </button>
         ) : null}

@@ -15,6 +15,7 @@ import {
   DEFAULT_MICRO_BATCH_SIZE,
   type BatchSummary,
 } from './batch-helpers';
+import type { BatchDocumentMetadata } from './batch-file-extractor';
 import { persistFilingLinesAndUsage } from './persist-filing';
 
 export type BatchExecutionMode = 'inline' | 'inngest';
@@ -53,6 +54,7 @@ export async function executeCloudBatchInline(params: {
   deepMode: boolean;
   items: readonly InvoiceItemInput[];
   fileName?: string;
+  documentMeta?: BatchDocumentMetadata;
 }): Promise<InlineBatchResult> {
   const deduped = deduplicateInvoiceItems([...params.items]);
   const representatives = deduped.map((g) => g.representative);
@@ -132,7 +134,10 @@ export async function executeCloudBatchInline(params: {
     envelope: mapBatchToA2UIEnvelope(pipelineResult, {
       id: params.filingId,
       title: params.fileName ? `Lote: ${params.fileName}` : 'Manifiesto de Clasificación en Lote',
-      documentReference: params.fileName ?? params.filingId,
+      documentReference: params.documentMeta?.documentReference ?? params.fileName ?? params.filingId,
+      ...(params.documentMeta?.shipper ? { shipper: params.documentMeta.shipper } : {}),
+      ...(params.documentMeta?.consignee ? { consignee: params.documentMeta.consignee } : {}),
+      ...(params.documentMeta?.incoterm ? { routeOrIncoterm: params.documentMeta.incoterm } : {}),
     }),
   };
 }

@@ -6,6 +6,7 @@ import { classifyItemOffline } from '@/lib/agent/offline-classifier';
 import {
   BatchFileExtractionError,
   extractBatchItemsFromFile,
+  type BatchDocumentMetadata,
 } from '@/lib/inngest/batch-file-extractor';
 import { buildBatchSummary, parseBatchTextToItems } from '@/lib/inngest/batch-helpers';
 import { inngest } from '@/lib/inngest/client';
@@ -42,6 +43,8 @@ interface ParsedBatchPayload {
   deepMode: boolean;
   items: InvoiceItemInput[];
   fileName?: string;
+  extractionMethod?: 'deterministic' | 'llm_vl';
+  documentMeta?: BatchDocumentMetadata;
 }
 
 function buildOfflineBatchResult(itemsCount: number, lines: ReturnType<typeof classifyItemOffline>[]): BatchPipelineResult {
@@ -87,7 +90,15 @@ async function parseMultipartBatch(request: Request): Promise<ParsedBatchPayload
 
   try {
     const extracted = await extractBatchItemsFromFile(file);
-    return { filingId, countryCode, deepMode, items: extracted.items, fileName: extracted.fileName };
+    return {
+      filingId,
+      countryCode,
+      deepMode,
+      items: extracted.items,
+      fileName: extracted.fileName,
+      extractionMethod: extracted.extractionMethod,
+      documentMeta: extracted.documentMeta,
+    };
   } catch (err) {
     if (err instanceof BatchFileExtractionError) {
       return Response.json({ error: err.message }, { status: err.status });
@@ -161,6 +172,7 @@ export async function POST(request: Request): Promise<Response> {
         deepMode: payload.deepMode,
         items: payload.items,
         fileName: payload.fileName,
+        documentMeta: payload.documentMeta,
       });
       return Response.json(
         {
@@ -169,6 +181,7 @@ export async function POST(request: Request): Promise<Response> {
           executionMode: 'inline',
           totalItems: payload.items.length,
           fileName: payload.fileName,
+          extractionMethod: payload.extractionMethod,
           summary: result.summary,
           lines: result.lines,
           envelope: result.envelope,
@@ -206,7 +219,10 @@ export async function POST(request: Request): Promise<Response> {
   const envelope = mapBatchToA2UIEnvelope(buildOfflineBatchResult(payload.items.length, lines), {
     id: filingId,
     title: payload.fileName ? `Lote: ${payload.fileName}` : 'Manifiesto de Clasificación en Lote',
-    documentReference: payload.fileName ?? filingId,
+    documentReference: payload.documentMeta?.documentReference ?? payload.fileName ?? filingId,
+    ...(payload.documentMeta?.shipper ? { shipper: payload.documentMeta.shipper } : {}),
+    ...(payload.documentMeta?.consignee ? { consignee: payload.documentMeta.consignee } : {}),
+    ...(payload.documentMeta?.incoterm ? { routeOrIncoterm: payload.documentMeta.incoterm } : {}),
   });
 
   return Response.json(

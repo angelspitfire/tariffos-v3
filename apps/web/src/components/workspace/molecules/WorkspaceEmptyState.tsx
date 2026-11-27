@@ -86,7 +86,7 @@ export function WorkspaceEmptyState({
             </div>
             <p className="text-[11px] text-ink-muted leading-relaxed">
               {onTriggerBatchUpload
-                ? 'Sube una factura .xlsx, .csv o .pdf para clasificarla por bloques.'
+                ? 'Sube una factura .xlsx, .csv, PDF o foto para extraer líneas y clasificar.'
                 : firstBatch.label}
             </p>
           </button>

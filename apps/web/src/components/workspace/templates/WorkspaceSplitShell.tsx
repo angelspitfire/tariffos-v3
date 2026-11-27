@@ -103,7 +103,7 @@ export function WorkspaceSplitShell() {
       <input
         ref={batchInputRef}
         type="file"
-        accept=".xlsx,.csv,.txt,.pdf"
+        accept=".xlsx,.csv,.txt,.pdf,.png,.jpg,.jpeg,.webp"
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
