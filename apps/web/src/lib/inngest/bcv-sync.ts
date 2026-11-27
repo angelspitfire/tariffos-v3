@@ -9,7 +9,7 @@ export const syncBcvRatesFn = inngest.createFunction(
     id: 'sync-bcv-rates',
     retries: BCV_SYNC_RETRIES,
     triggers: [
-      { cron: 'TZ=America/Caracas 0 8,17,19 * * 1-5' },
+      { cron: 'TZ=America/Caracas 0 7,9,11,13,15,17,19,21 * * 1-6' },
       { event: 'system/bcv-rate.sync' },
     ],
   },

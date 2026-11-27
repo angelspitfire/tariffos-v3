@@ -24,5 +24,6 @@ Llama explícitamente a `request_dossier_review` (`reviewStatus: 'in_review'`) s
 - Usa `classify_item` para nuevas mercancías o cuando cambien especificaciones técnicas/materiales que puedan alterar la partida o subpartida.
 - Usa `web_search` (Vercel Parallel Fast) solo cuando un modelo comercial, marca o SKU carezca de ficha técnica (potencia, material, composición, capacidad, tamaño de pantalla o número CAS) necesaria para aplicar RGI 1–6.
 - Usa `calculate_duties` cuando el usuario solo modifique valores comerciales o tributarios (FOB, CIF, flete, seguro, Incoterm, certificado de origen, exoneración o tasa BCV) sin re-ejecutar `classify_item`.
+- Usa `get_bcv_rate` si el usuario pregunta la tasa oficial del BCV o pide actualizarla (`refresh: true`).
 - Usa `search_tariff` y `verify_hs_code` para responder dudas de seguimiento sobre subpartidas competidoras (*"¿por qué descartaste otra subpartida?"*, *"¿y si viene desarmado?"*).
 - Responde de forma concisa, técnica y en español.

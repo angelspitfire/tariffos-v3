@@ -1,5 +1,6 @@
 import { getUnscopedSystemPrisma } from '@tariffos/database';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
+import { invalidateBcvRateCache } from './cache-state';
 import { validateRateDelta, type BcvPair, type BcvRateQuote } from './parser';
 
 export interface PersistBcvResult {
@@ -66,6 +67,7 @@ export async function persistBcvRates(
       store.history.unshift({ ...q });
       saved.push(q);
     }
+    if (saved.length > 0) invalidateBcvRateCache();
     return { saved, skipped };
   }
 
@@ -96,7 +98,19 @@ export async function persistBcvRates(
     });
   }
 
+  if (saved.length > 0) invalidateBcvRateCache();
   return { saved, skipped };
+}
+
+/** Returns the epoch ms timestamp of the newest ExchangeRate row in DB, or null. */
+export async function getLatestExchangeRateTimestamp(): Promise<number | null> {
+  if (!isCloudModeEnabled()) return null;
+  const prisma = getUnscopedSystemPrisma();
+  const row = await prisma.exchangeRate.findFirst({
+    orderBy: [{ valueDate: 'desc' }, { createdAt: 'desc' }],
+    select: { createdAt: true },
+  });
+  return row ? row.createdAt.getTime() : null;
 }
 
 export async function getLatestExchangeRates(): Promise<Record<BcvPair, BcvRateQuote>> {

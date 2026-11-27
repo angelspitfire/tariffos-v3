@@ -11,6 +11,7 @@ import {
   calculateDeterministicDuties,
   inferTradeParamsFromContext,
 } from '@/lib/workspace/duty-engine';
+import { useBcvRate } from '@/lib/workspace/use-bcv-rate';
 import { CifTopKpiStrip } from '../molecules/CifTopKpiStrip';
 import { DutyAdvancedAccordion } from '../molecules/DutyAdvancedAccordion';
 
@@ -48,6 +49,11 @@ export function DutyCalculatorView({
   const [vat, setVat] = useState(calculator.vatPercent);
   const [customsFee, setCustomsFee] = useState(calculator.customsServiceFeePercent);
   const [exchangeRate, setExchangeRate] = useState(calculator.suggestedExchangeRate);
+  const bcv = useBcvRate({
+    jurisdictionId: jurisdiction.id,
+    currencyCode: calculator.currencyCode,
+    onRateResolved: setExchangeRate,
+  });
   const [hasCertificate, setHasCertificate] = useState(false);
   const [applyExemption, setApplyExemption] = useState(calculator.exemptionAvailable);
   const [applyAntidumping, setApplyAntidumping] = useState((calculator.antidumpingPercent ?? 0) > 0);
@@ -149,6 +155,9 @@ export function DutyCalculatorView({
         onCustomsFeeChange={setCustomsFee}
         exchangeRate={exchangeRate}
         onExchangeRateChange={setExchangeRate}
+        bcvDate={bcv.rateMeta?.valueDate}
+        isRefreshingBcv={bcv.isRefreshing}
+        onRefreshBcv={bcv.isBcvJurisdiction ? bcv.refreshBcvRate : undefined}
         localCurrencyCode={calculator.localCurrencyCode}
         hasCertificate={hasCertificate}
         onHasCertificateChange={setHasCertificate}

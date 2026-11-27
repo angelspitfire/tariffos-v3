@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import { ORIGIN_COUNTRIES, type PreferentialAgreementResult } from '@/lib/workspace/trade-preferences';
 
 interface DutyAdvancedAccordionProps {
@@ -16,6 +16,9 @@ interface DutyAdvancedAccordionProps {
   onCustomsFeeChange: (v: number) => void;
   exchangeRate: number;
   onExchangeRateChange: (v: number) => void;
+  bcvDate?: string;
+  isRefreshingBcv?: boolean;
+  onRefreshBcv?: () => void;
   localCurrencyCode: string;
   hasCertificate: boolean;
   onHasCertificateChange: (v: boolean) => void;
@@ -42,6 +45,9 @@ export function DutyAdvancedAccordion(props: DutyAdvancedAccordionProps) {
     onCustomsFeeChange,
     exchangeRate,
     onExchangeRateChange,
+    bcvDate,
+    isRefreshingBcv = false,
+    onRefreshBcv,
     localCurrencyCode,
     hasCertificate,
     onHasCertificateChange,
@@ -104,7 +110,22 @@ export function DutyAdvancedAccordion(props: DutyAdvancedAccordionProps) {
               />
             </label>
             <label className="flex flex-col gap-1">
-              <span className="text-[11px] text-ink-muted">Tasa de cambio ({localCurrencyCode})</span>
+              <span className="flex items-center justify-between gap-1 text-[11px] text-ink-muted">
+                <span>
+                  Tasa ({localCurrencyCode}){bcvDate ? ` · ${bcvDate}` : ''}
+                </span>
+                {onRefreshBcv ? (
+                  <button
+                    type="button"
+                    onClick={onRefreshBcv}
+                    disabled={isRefreshingBcv}
+                    className="inline-flex items-center gap-1 font-medium text-accent-ink hover:underline disabled:opacity-50 cursor-pointer"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${isRefreshingBcv ? 'animate-spin' : ''}`} aria-hidden="true" />
+                    <span>BCV</span>
+                  </button>
+                ) : null}
+              </span>
               <input
                 type="number"
                 step="0.01"
