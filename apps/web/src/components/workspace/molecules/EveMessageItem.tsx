@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { MessagePrimitive, type ThreadMessage } from '@assistant-ui/react';
-import { Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import type { ApprovalWorkflowMode } from '@tariffos/shared-types';
 import { applyApprovalPolicyToEnvelope } from '@/lib/workspace/dossier-approval-policy';
 import {
@@ -24,6 +24,19 @@ function readPreliminaryPhase(result: unknown): string | undefined {
   if (!result || typeof result !== 'object') return undefined;
   const phase = (result as { phase?: unknown }).phase;
   return typeof phase === 'string' && phase.trim() ? phase.trim() : undefined;
+}
+
+function formatTurnError(error: unknown): string {
+  const raw =
+    typeof error === 'string'
+      ? error
+      : error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message ?? '')
+        : '';
+  if (/insufficient credits/i.test(raw)) {
+    return 'Créditos insuficientes en el proveedor LLM configurado. Cambia el proveedor o recarga créditos.';
+  }
+  return raw.trim() || 'El agente no pudo completar la respuesta.';
 }
 
 export function EveMessageItem({
@@ -88,6 +101,11 @@ export function EveMessageItem({
   }
 
   const visibleText = text || mappedAssistant?.text || '';
+  const isRunning = message.status?.type === 'running';
+  const turnError =
+    message.status?.type === 'incomplete' && message.status.reason === 'error'
+      ? formatTurnError(message.status.error)
+      : null;
 
   return (
     <MessagePrimitive.Root className="mx-auto flex w-full max-w-2xl items-start gap-3">
@@ -107,13 +125,23 @@ export function EveMessageItem({
 
         <ToolActivityList items={toolItems} />
 
-        {!visibleText && toolItems.length === 0 ? (
+        {isRunning && !visibleText && toolItems.length === 0 ? (
           <div className="inline-flex items-center gap-2 text-xs text-ink-muted" aria-live="polite">
             <Loader2
               className="h-3.5 w-3.5 animate-spin text-accent-ink motion-reduce:animate-none"
               aria-hidden="true"
             />
             <span>Analizando consulta…</span>
+          </div>
+        ) : null}
+
+        {turnError && !visibleText ? (
+          <div
+            role="alert"
+            className="inline-flex items-start gap-2 rounded-surface-sm border border-rose-500/30 bg-rose-500/5 px-3 py-2 text-xs text-rose-700 dark:text-rose-300"
+          >
+            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            <span>{turnError}</span>
           </div>
         ) : null}
 
