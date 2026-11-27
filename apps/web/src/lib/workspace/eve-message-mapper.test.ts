@@ -73,6 +73,17 @@ describe('eve-message-mapper', () => {
       label: 'Clasificando 5 líneas…',
       detail: 'FAC-100',
     });
+
+    expect(
+      getEveToolActivity('classify_item', true, { description: 'Ecógrafo' }, undefined, true),
+    ).toEqual({
+      label: 'Error en clasificación',
+      detail: 'Ecógrafo',
+    });
+    expect(getEveToolActivity('unknown_tool', true, undefined, undefined, true)).toEqual({
+      label: 'Error en unknown_tool',
+      detail: undefined,
+    });
   });
 
   it('extracts A2UIEnvelope from classify_item, patches dossier review, and merges calculate_duties calculatorComponent', () => {

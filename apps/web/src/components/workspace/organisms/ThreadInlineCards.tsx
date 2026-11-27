@@ -21,6 +21,7 @@ export interface InlineCardActions {
   onAcceptTentative: (hsCode: string) => void;
   onSubmitQuestionnaire: (answers: Record<string, string>) => void;
   onSelectDisambiguation: (opt: A2UIDisambiguationOption) => void;
+  onSendFollowUp?: (prompt: string) => void;
 }
 
 export function ThreadInlineCards({

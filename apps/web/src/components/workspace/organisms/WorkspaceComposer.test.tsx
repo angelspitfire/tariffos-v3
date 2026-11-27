@@ -138,4 +138,75 @@ describe('AssistantThreadSurface & WorkspaceComposer tools', () => {
     await user.click(screen.getByRole('menuitem', { name: /Cámara integrada/i }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
+
+  it('shows extracting state on pending attachments and allows 1-click send with ready attachments and empty text', async () => {
+    const user = userEvent.setup();
+    const onSendMessage = vi.fn<() => Promise<void>>();
+
+    const { rerender } = render(
+      <AssistantThreadSurface
+        messages={[]}
+        isRunning={false}
+        liveProgress={null}
+        skuPrecedents={[]}
+        pendingAttachments={[
+          {
+            id: 'att-ext',
+            name: 'factura-proforma.pdf',
+            mimeType: 'application/pdf',
+            sizeBytes: 1200,
+            status: 'extracting',
+          },
+        ]}
+        profile={DEFAULT_USER_PROFILE}
+        inlineActions={baseInlineActions}
+        onSendMessage={onSendMessage}
+        onCancelRun={vi.fn<() => void>()}
+        onAddFiles={vi.fn<() => void>()}
+        onRemoveAttachment={vi.fn<() => void>()}
+        onRunSample={vi.fn<() => void>()}
+        onRunBatchSample={vi.fn<() => void>()}
+        onUpdateProfile={vi.fn<() => void>()}
+      />,
+    );
+
+    expect(screen.getByText(/Extrayendo…/i)).toBeInTheDocument();
+    const waitBtn = screen.getByRole('button', { name: /Procesando archivo/i });
+    expect(waitBtn).toBeDisabled();
+
+    rerender(
+      <AssistantThreadSurface
+        messages={[]}
+        isRunning={false}
+        liveProgress={null}
+        skuPrecedents={[]}
+        pendingAttachments={[
+          {
+            id: 'att-ext',
+            name: 'factura-proforma.pdf',
+            mimeType: 'application/pdf',
+            sizeBytes: 1200,
+            status: 'ready',
+            extractedText: 'Compresor BAOSI 75kW',
+          },
+        ]}
+        profile={DEFAULT_USER_PROFILE}
+        inlineActions={baseInlineActions}
+        onSendMessage={onSendMessage}
+        onCancelRun={vi.fn<() => void>()}
+        onAddFiles={vi.fn<() => void>()}
+        onRemoveAttachment={vi.fn<() => void>()}
+        onRunSample={vi.fn<() => void>()}
+        onRunBatchSample={vi.fn<() => void>()}
+        onUpdateProfile={vi.fn<() => void>()}
+      />,
+    );
+
+    const sendBtn = screen.getByRole('button', { name: /Enviar/i });
+    expect(sendBtn).not.toBeDisabled();
+    await user.click(sendBtn);
+    expect(onSendMessage).toHaveBeenCalledWith(
+      expect.stringMatching(/Analiza el documento adjunto/i),
+    );
+  });
 });

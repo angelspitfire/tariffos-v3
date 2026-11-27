@@ -1,39 +1,48 @@
-const TOOL_LABELS: Record<string, { running: string; done: string }> = {
+const TOOL_LABELS: Record<string, { running: string; done: string; error?: string }> = {
   classify_item: {
     running: 'Clasificando mercancía (RGI 1→6)…',
     done: 'Clasificación completada',
+    error: 'Error en clasificación',
   },
   request_technical_clarification: {
     running: 'Preparando validación técnica…',
     done: 'Validación técnica solicitada',
+    error: 'Error al solicitar aclaración',
   },
   analyze_invoice_manifest: {
     running: 'Analizando manifiesto en streaming…',
     done: 'Manifiesto procesado',
+    error: 'Error al analizar manifiesto',
   },
   web_search: {
     running: 'Buscando especificaciones en web (Parallel Fast)…',
     done: 'Especificaciones web consultadas (Parallel Fast)',
+    error: 'Error en búsqueda web',
   },
   search_tariff: {
     running: 'Consultando Arancel de Aduanas…',
     done: 'Arancel consultado',
+    error: 'Error al consultar arancel',
   },
   verify_hs_code: {
     running: 'Verificando código HS en base oficial…',
     done: 'Código HS verificado',
+    error: 'Error al verificar código HS',
   },
   calculate_duties: {
     running: 'Calculando tributos y valor CIF…',
     done: 'Tributos recalculados',
+    error: 'Error al calcular tributos',
   },
   request_dossier_review: {
     running: 'Marcando dictamen para revisión…',
     done: 'Enviado a revisión técnica',
+    error: 'Error al solicitar revisión',
   },
   get_bcv_rate: {
     running: 'Consultando tasa oficial BCV…',
     done: 'Tasa BCV consultada',
+    error: 'Error al consultar BCV',
   },
   eve__skill: {
     running: 'Cargando guía técnica…',
@@ -67,10 +76,12 @@ export function getEveToolActivity(
   completed: boolean,
   args?: unknown,
   preliminaryPhase?: string,
+  isError = false,
 ): { label: string; detail?: string } {
   const known = TOOL_LABELS[toolName];
-  const label =
-    !completed && preliminaryPhase?.trim()
+  const label = isError
+    ? (known?.error ?? `Error en ${toolName}`)
+    : !completed && preliminaryPhase?.trim()
       ? preliminaryPhase.trim()
       : known
         ? completed

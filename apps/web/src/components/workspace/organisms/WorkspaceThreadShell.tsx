@@ -2,7 +2,7 @@
 
 import { useRef, useState, type ReactNode } from 'react';
 import { AuiIf, ThreadPrimitive } from '@assistant-ui/react';
-import { FilePlus2 } from 'lucide-react';
+import { ArrowDown, FilePlus2 } from 'lucide-react';
 import type { SkuPrecedent, UserProfileSettings } from '@tariffos/shared-types';
 import type { SampleBatchDocument, SampleMerchandise } from '@/lib/workspace/jurisdictions';
 import type { WorkspaceAttachment } from '@/lib/workspace/types';
@@ -48,6 +48,12 @@ export function WorkspaceThreadShell({
   const [isDraggingFiles, setIsDraggingFiles] = useState(false);
 
   const openFilePicker = () => hiddenUploadRef.current?.click();
+  const handleClassifyCardClick = () => {
+    const textarea = document.querySelector<HTMLTextAreaElement>(
+      'textarea[aria-label="Consulta arancelaria o descripción de mercancía"]',
+    );
+    textarea?.focus();
+  };
 
   return (
     <>
@@ -99,13 +105,7 @@ export function WorkspaceThreadShell({
           {!hasExternalMessages ? (
             <AuiIf condition={(s) => s.thread.isEmpty}>
               <WorkspaceEmptyState
-                onFocusComposer={() => {
-                  document
-                    .querySelector<HTMLTextAreaElement>(
-                      'textarea[aria-label="Consulta arancelaria o descripción de mercancía"]',
-                    )
-                    ?.focus();
-                }}
+                onFocusComposer={handleClassifyCardClick}
                 onTriggerUpload={openFilePicker}
                 onTriggerBatchUpload={onTriggerBatchUpload}
                 onRunSample={onRunSample}
@@ -117,7 +117,13 @@ export function WorkspaceThreadShell({
           {children}
         </ThreadPrimitive.Viewport>
 
-        <div className="shrink-0 bg-surface-app px-4 pt-2 pb-4 sm:px-6">
+        <div className="relative shrink-0 bg-surface-app px-4 pt-2 pb-4 sm:px-6">
+          <ThreadPrimitive.ScrollToBottom
+            aria-label="Ir al último mensaje"
+            className="absolute -top-9 left-1/2 z-20 inline-flex h-8 w-8 -translate-x-1/2 cursor-pointer items-center justify-center rounded-full border border-border-subtle bg-surface-panel text-ink-secondary shadow-md transition hover:bg-surface-hover hover:text-ink-primary disabled:pointer-events-none disabled:opacity-0"
+          >
+            <ArrowDown className="h-4 w-4" aria-hidden="true" />
+          </ThreadPrimitive.ScrollToBottom>
           {batchBanner ? <div className="mx-auto mb-2 max-w-2xl">{batchBanner}</div> : null}
           {readOnlyReason ? (
             <WorkspaceReadOnlyBar reason={readOnlyReason} />

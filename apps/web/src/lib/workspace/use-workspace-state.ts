@@ -70,14 +70,38 @@ export function useWorkspaceState() {
 
   useEffect(() => {
     let active = true;
+    let userMutatedLocally = false;
+
+    const hydrateLocal = persistence.loadLocalBootstrap?.();
+    if (hydrateLocal) {
+      void hydrateLocal.then(({ threads: localThreads, skuPrecedents: localSkus, profile: localProfile }) => {
+        if (!active || userMutatedLocally) return;
+        if (localThreads.length > 0 && threadsRef.current.length === 0) {
+          threadsRef.current = localThreads;
+          setThreads(localThreads);
+          if (!activeThreadIdRef.current && localThreads[0]) {
+            activeThreadIdRef.current = localThreads[0].id;
+            setActiveThreadId(localThreads[0].id);
+          }
+        }
+        if (localSkus.length > 0) setSkuPrecedents(localSkus);
+        if (localProfile) setProfile(localProfile);
+      });
+    }
+
     void Promise.all([persistence.loadThreads(), persistence.loadSkuPrecedents(), persistence.loadUserProfile()]).then(
       ([loadedThreads, loadedSkus, loadedProfile]) => {
         if (!active) return;
+        userMutatedLocally = true;
         threadsRef.current = loadedThreads;
         setThreads(loadedThreads);
-        if (loadedThreads[0]) {
-          activeThreadIdRef.current = loadedThreads[0].id;
-          setActiveThreadId(loadedThreads[0].id);
+        const stillExists = activeThreadIdRef.current
+          ? loadedThreads.some((t) => t.id === activeThreadIdRef.current)
+          : false;
+        if (!stillExists) {
+          const nextId = loadedThreads[0]?.id ?? null;
+          activeThreadIdRef.current = nextId;
+          setActiveThreadId(nextId);
         }
         setSkuPrecedents(loadedSkus);
         if (loadedProfile) setProfile(loadedProfile);

@@ -13,6 +13,14 @@ export const DEFAULT_GOOGLE_MODEL = 'gemini-2.5-flash';
 export const DEFAULT_COMPAT_MODEL = 'gpt-4o-mini';
 
 const LLM_RUNTIME_SETTING_KEY = 'ai.runtime_config';
+const RUNTIME_OVERRIDE_TTL_MS = 60_000;
+
+let cachedRuntimeOverride: { value: EveRuntimeModelOverride | null; expiresAt: number } | null = null;
+
+/** Clears the in-memory runtime LLM override cache (intended for deterministic tests). */
+export function resetSystemLlmOverrideCacheForTests(): void {
+  cachedRuntimeOverride = null;
+}
 
 export type EveProviderName =
   | 'anthropic'
@@ -162,21 +170,34 @@ export function resolveEveModel(
 export async function readSystemLlmRuntimeOverride(): Promise<EveRuntimeModelOverride | null> {
   if (!process.env.DATABASE_URL?.trim()) return null;
 
+  const now = Date.now();
+  if (cachedRuntimeOverride && cachedRuntimeOverride.expiresAt > now) {
+    return cachedRuntimeOverride.value;
+  }
+
   try {
     const { prisma } = await import('@tariffos/database');
     const row = prisma.systemSetting?.findUnique
       ? await prisma.systemSetting.findUnique({ where: { key: LLM_RUNTIME_SETTING_KEY } })
       : null;
-    if (!row?.value) return null;
+    if (!row?.value) {
+      cachedRuntimeOverride = { value: null, expiresAt: now + RUNTIME_OVERRIDE_TTL_MS };
+      return null;
+    }
 
     const parsed = LlmRuntimeConfigSchema.safeParse(JSON.parse(row.value));
-    if (!parsed.success) return null;
+    if (!parsed.success) {
+      cachedRuntimeOverride = { value: null, expiresAt: now + RUNTIME_OVERRIDE_TTL_MS };
+      return null;
+    }
 
-    return {
+    const resolved: EveRuntimeModelOverride = {
       provider: parsed.data.provider,
       model: parsed.data.model,
       baseUrl: parsed.data.baseUrl ?? null,
     };
+    cachedRuntimeOverride = { value: resolved, expiresAt: now + RUNTIME_OVERRIDE_TTL_MS };
+    return resolved;
   } catch {
     return null;
   }

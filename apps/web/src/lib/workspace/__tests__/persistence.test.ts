@@ -121,4 +121,22 @@ describe('IndexedDBAdapter and DualWritePersistence', () => {
     expect(await dual.loadThreads()).toEqual([]);
     expect(await dual.loadSkuPrecedents()).toEqual([]);
   });
+
+  it('loadLocalBootstrap hydrates threads, SKUs, and profile immediately from IndexedDB without waiting for cloud', async () => {
+    const local = new IndexedDBAdapter({ forceMemoryFallback: true });
+    await local.saveThread(SAMPLE_THREAD);
+    await local.saveSkuPrecedent(SAMPLE_SKU);
+    await local.saveUserProfile(SAMPLE_PROFILE);
+
+    const cloudLoadThreads = vi.fn<IPersistence['loadThreads']>().mockResolvedValue([]);
+    const cloud = makeCloudStub({ loadThreads: cloudLoadThreads });
+
+    const dual = new DualWritePersistence(local, cloud);
+    const localState = await dual.loadLocalBootstrap();
+
+    expect(localState.threads).toEqual([SAMPLE_THREAD]);
+    expect(localState.skuPrecedents).toEqual([SAMPLE_SKU]);
+    expect(localState.profile).toEqual(SAMPLE_PROFILE);
+    expect(cloudLoadThreads).not.toHaveBeenCalled();
+  });
 });

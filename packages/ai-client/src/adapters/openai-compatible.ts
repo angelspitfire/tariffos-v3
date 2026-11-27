@@ -37,7 +37,7 @@ export interface LlmRuntimeOverride {
   apiKey?: string;
 }
 
-export const PROVIDER_NAME = 'tariffos-llm';
+export const PROVIDER_NAME = 'tariffosLlm';
 const EMBED_MAX_RETRIES = 3;
 
 export interface ProviderLike {

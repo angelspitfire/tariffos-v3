@@ -37,7 +37,9 @@ export function resolveEveReasoningEffort(
 export function shouldUseLocalEnvModel(
   env: Record<string, string | undefined> = process.env,
 ): boolean {
-  return env.NODE_ENV !== 'production' && env.VERCEL !== '1' && Boolean(env.EVE_MODEL?.trim());
+  const isDeployedVercel =
+    env.VERCEL === '1' && (env.VERCEL_ENV === 'production' || env.VERCEL_ENV === 'preview');
+  return env.NODE_ENV !== 'production' && !isDeployedVercel && Boolean(env.EVE_MODEL?.trim());
 }
 
 export default defineAgent({

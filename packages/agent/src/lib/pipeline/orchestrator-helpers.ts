@@ -11,9 +11,15 @@ import {
 
 const TIER1_SCORE_GAP_THRESHOLD = 0.25;
 const TIER1_MIN_TOP_SCORE = 0.85;
+const RICH_SPECS_CHAR_THRESHOLD = 160;
 
 export function isShortDescription(description: string): boolean {
   return description.trim().split(/\s+/).filter(Boolean).length < SHORT_DESCRIPTION_WORD_THRESHOLD;
+}
+
+export function hasRichAttachedSpecs(description: string): boolean {
+  const trimmed = description.trim();
+  return trimmed.includes('[Adjunto:') || trimmed.length >= RICH_SPECS_CHAR_THRESHOLD;
 }
 
 export function canUseTier1FastPath(candidates: TariffCandidateRecord[]): boolean {

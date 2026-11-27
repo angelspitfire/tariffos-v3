@@ -169,4 +169,32 @@ describe('createPrismaPipelinePorts', () => {
     expect(mocks.vectorSearch).toHaveBeenCalledTimes(1);
     expect(mocks.ftsSearch).toHaveBeenCalledTimes(1);
   });
+
+  it('queries NationalTariff and HsPermitRequirement concurrently in verifyHsCode', async () => {
+    let tariffPending = true;
+    let ranConcurrently = false;
+    mocks.nationalTariffFindFirst.mockImplementation(async () => {
+      await new Promise((r) => setTimeout(r, 15));
+      tariffPending = false;
+      return {
+        hsCode: '8414801200',
+        description: 'De tornillo',
+        adValorem: 14,
+        iva: 16,
+        customsFee: 1,
+        isBK: true,
+        isBIT: false,
+        legalNotes: null,
+      };
+    });
+    mocks.hsPermitRequirementFindMany.mockImplementation(async () => {
+      if (tariffPending) ranConcurrently = true;
+      return [];
+    });
+
+    const ports = createPrismaPipelinePorts();
+    const verified = await ports.verifyHsCode('VE', '8414.80.12.00');
+    expect(verified?.hsCode).toBe('8414801200');
+    expect(ranConcurrently).toBe(true);
+  });
 });

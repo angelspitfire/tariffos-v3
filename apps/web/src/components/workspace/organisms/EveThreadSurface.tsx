@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, type ReactNode } from 'react';
+import { useMemo, useRef, type ReactNode } from 'react';
 import { AssistantRuntimeProvider, ThreadPrimitive } from '@assistant-ui/react';
 import { useEveAgentRuntime } from '@assistant-ui/eve';
 import type {
@@ -85,33 +85,24 @@ export function EveThreadSurface({
   onErrorToast,
 }: EveThreadSurfaceProps) {
   const reportedSessionRef = useRef<string | null>(eveSessionId);
+  const initialSession = useMemo(
+    () => (eveSessionId ? { sessionId: eveSessionId, streamIndex: 0 } : undefined),
+    [eveSessionId],
+  );
   const contextRef = useRef({
-    jurisdictionId,
-    countryCode,
-    defaultIncoterm,
-    deepMode,
-    approvalWorkflowMode,
+    jurisdictionId, countryCode, defaultIncoterm, deepMode, approvalWorkflowMode,
     webEnrichmentEnabled: profile.webEnrichmentEnabled !== false,
-    onConsumeAttachments,
+    onConsumeAttachments, onSessionIdDiscovered, onErrorToast,
   });
   contextRef.current = {
-    jurisdictionId,
-    countryCode,
-    defaultIncoterm,
-    deepMode,
-    approvalWorkflowMode,
+    jurisdictionId, countryCode, defaultIncoterm, deepMode, approvalWorkflowMode,
     webEnrichmentEnabled: profile.webEnrichmentEnabled !== false,
-    onConsumeAttachments,
+    onConsumeAttachments, onSessionIdDiscovered, onErrorToast,
   };
 
   const runtime = useEveAgentRuntime({
     baseUrl: getEveBaseUrl() || undefined,
-    ...(eveSessionId
-      ? {
-          initialSession: { sessionId: eveSessionId, streamIndex: 0 },
-          resume: true,
-        }
-      : {}),
+    ...(initialSession ? { initialSession, resume: true } : {}),
     isSendDisabled: Boolean(readOnlyReason),
     prepareSend: (input) => {
       if (!('message' in input) || input.message === undefined) return input;
@@ -142,11 +133,11 @@ export function EveThreadSurface({
     onSessionChange: (session) => {
       if (session?.sessionId && session.sessionId !== reportedSessionRef.current) {
         reportedSessionRef.current = session.sessionId;
-        onSessionIdDiscovered?.(session.sessionId);
+        contextRef.current.onSessionIdDiscovered?.(session.sessionId);
       }
     },
     onError: (err) => {
-      onErrorToast(formatEveRuntimeError(err));
+      contextRef.current.onErrorToast(formatEveRuntimeError(err));
     },
   });
 

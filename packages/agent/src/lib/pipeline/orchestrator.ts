@@ -4,7 +4,7 @@ import { deduplicateInvoiceItems } from './dedup.js';
 import { expandSiblingsForRgi, filterLegalNotesByChapter, retrieveHybridCandidates } from './hybrid-retrieval.js';
 import {
   appendAuditUnresolved, buildProhibitedPayload, buildTier0Payload, buildTier1Payload,
-  canUseTier1FastPath, isShortDescription, mergeTariffFlags, projectToLine,
+  canUseTier1FastPath, hasRichAttachedSpecs, isShortDescription, mergeTariffFlags, projectToLine,
 } from './orchestrator-helpers.js';
 import { runCompliancePreGate } from './pre-gate.js';
 import { auditTariffAgainstOfficialSchedule } from './tariff-validator.js';
@@ -34,10 +34,17 @@ async function classifyUniqueItem(
     return buildProhibitedPayload(item, preGate.flag, preGate.confidence);
   }
 
-  // 2. Tier 0: Exact SKU / approved precedent lookup
+  // 2 & 3. Run Tier 0 SKU lookup + Hybrid Retrieval concurrently
   options.onProgress?.({ stage: 'sku_lookup', label: 'Consultando precedentes SKU', progressPct: 30 });
   const precedentKey = item.sku?.trim() || item.description;
-  const precedent = await ports.findSkuPrecedent(options.tenantId, precedentKey);
+  const [precedent, candidates] = await Promise.all([
+    ports.findSkuPrecedent(options.tenantId, precedentKey),
+    (async () => {
+      options.onProgress?.({ stage: 'hybrid_retrieval', label: 'Recuperando candidatas NCM oficiales', progressPct: 50 });
+      return retrieveHybridCandidates(ports, options.countryCode, item.description);
+    })(),
+  ]);
+
   if (precedent?.approvedByBroker) {
     const verified = await ports.verifyHsCode(options.countryCode, precedent.hsCode);
     const audit = auditTariffAgainstOfficialSchedule({ proposedHsCode: precedent.hsCode }, verified);
@@ -46,9 +53,6 @@ async function classifyUniqueItem(
     }
   }
 
-  // 3. Hybrid Retrieval (pgvector + FTS lexical) + Tier 1 Fast-Path check
-  options.onProgress?.({ stage: 'hybrid_retrieval', label: 'Recuperando candidatas NCM oficiales', progressPct: 50 });
-  const candidates = await retrieveHybridCandidates(ports, options.countryCode, item.description);
   const topCandidate = candidates[0];
   if (topCandidate && canUseTier1FastPath(candidates)) {
     const verified = await ports.verifyHsCode(options.countryCode, topCandidate.hsCode);
@@ -58,9 +62,11 @@ async function classifyUniqueItem(
     }
   }
 
-  // 4. Optional Web Grounding (bounded in Standard mode, expanded in Deep mode)
+  // 4. Optional Web Grounding (bounded in Standard mode, skipped when specs are already attached)
   let webContext: string | undefined;
-  const needsGrounding = Boolean(options.deepMode) || isShortDescription(item.description);
+  const needsGrounding =
+    Boolean(options.deepMode) ||
+    (!hasRichAttachedSpecs(item.description) && isShortDescription(item.description));
   if (needsGrounding && ports.fetchWebSpecs && budget.remaining > 0) {
     budget.remaining -= 1;
     budget.used += 1;

@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AuiIf, ComposerPrimitive, useAui, useAuiState } from '@assistant-ui/react';
-import { ChevronDown, Mic, Plus, Send, SlidersHorizontal, Square } from 'lucide-react';
+import { ComposerPrimitive, useAui, useAuiState } from '@assistant-ui/react';
+import { ChevronDown, Plus, SlidersHorizontal } from 'lucide-react';
 import type { SkuPrecedent, UserProfileSettings } from '@tariffos/shared-types';
 import type { WorkspaceAttachment } from '@/lib/workspace/types';
 import { ComposerAttachmentStrip } from '../molecules/ComposerAttachmentStrip';
@@ -12,8 +12,11 @@ import {
   type SpeechRecognitionLike,
 } from '../molecules/ComposerDictationBar';
 import { ComposerMenus, type ComposerMenuKind } from '../molecules/ComposerMenus';
+import { ComposerSendActions } from '../molecules/ComposerSendActions';
 import { PredictiveSkuList } from '../molecules/PredictiveSkuList';
 import { CameraScannerModal } from './CameraScannerModal';
+
+const ATTACHMENT_DEFAULT_PROMPT = 'Analiza el documento adjunto y resume sus características clave.';
 
 export interface WorkspaceComposerProps {
   skuPrecedents: readonly SkuPrecedent[];
@@ -45,6 +48,17 @@ export function WorkspaceComposer({
   const [composerMenu, setComposerMenu] = useState<ComposerMenuKind>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [dismissedForText, setDismissedForText] = useState<string | null>(null);
+  const isExtracting = pendingAttachments.some((a) => a.status === 'extracting');
+  const hasReadyAttachments = pendingAttachments.some((a) => a.status !== 'extracting');
+  const sendWithAttachmentsOnly = !text.trim() && hasReadyAttachments && !isExtracting;
+
+  const handleAttachmentOnlySend = () => {
+    if (!sendWithAttachmentsOnly) return;
+    aui.thread.append({
+      role: 'user',
+      content: [{ type: 'text', text: ATTACHMENT_DEFAULT_PROMPT }],
+    });
+  };
 
   useEffect(() => {
     if (!composerMenu) return;
@@ -130,6 +144,7 @@ export function WorkspaceComposer({
           const formatted = `${item.sku}: ${item.title} (${item.hsCode})`;
           aui.composer.setText(formatted);
           setDismissedForText(formatted);
+          containerRef.current?.querySelector<HTMLTextAreaElement>('textarea')?.focus();
         }}
         onDismiss={() => setDismissedForText(text)}
       />
@@ -146,6 +161,12 @@ export function WorkspaceComposer({
         <ComposerPrimitive.Input
           rows={2}
           aria-label="Consulta arancelaria o descripción de mercancía"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey && sendWithAttachmentsOnly) {
+              e.preventDefault();
+              handleAttachmentOnlySend();
+            }
+          }}
           onPaste={(e) => {
             if (e.clipboardData?.files && e.clipboardData.files.length > 0) {
               e.preventDefault();
@@ -204,51 +225,13 @@ export function WorkspaceComposer({
             </button>
           </div>
 
-          <div className="flex shrink-0 items-center gap-1.5">
-            <button
-              type="button"
-              onClick={handleToggleDictation}
-              aria-pressed={dictating}
-              aria-label={dictating ? 'Detener dictado por voz' : 'Dictar consulta por voz'}
-              className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none @[440px]:px-3 ${
-                dictating
-                  ? 'border border-[var(--color-error-border)] bg-[var(--color-error-soft)] text-[var(--color-error)]'
-                  : 'text-ink-secondary hover:bg-surface-hover hover:text-ink-primary'
-              }`}
-            >
-              {dictating ? (
-                <>
-                  <Square className="h-3.5 w-3.5 shrink-0 fill-current" aria-hidden="true" />
-                  <span>Detener</span>
-                </>
-              ) : (
-                <>
-                  <Mic className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                  <span className="hidden @[440px]:inline">Dictar</span>
-                </>
-              )}
-            </button>
-
-            <AuiIf condition={(s) => !s.thread.isRunning}>
-              <ComposerPrimitive.Send
-                aria-label="Enviar"
-                className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-accent-brand px-4 py-1.5 text-xs font-semibold text-white whitespace-nowrap transition-colors hover:bg-accent-brand-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none disabled:opacity-40"
-              >
-                <Send className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>Enviar</span>
-              </ComposerPrimitive.Send>
-            </AuiIf>
-
-            <AuiIf condition={(s) => s.thread.isRunning}>
-              <ComposerPrimitive.Cancel
-                aria-label="Detener clasificación"
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle bg-surface-muted px-3.5 py-1.5 text-xs font-semibold text-ink-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
-              >
-                <Square className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>Detener</span>
-              </ComposerPrimitive.Cancel>
-            </AuiIf>
-          </div>
+          <ComposerSendActions
+            dictating={dictating}
+            isExtracting={isExtracting}
+            sendWithAttachmentsOnly={sendWithAttachmentsOnly}
+            onToggleDictation={handleToggleDictation}
+            onAttachmentOnlySend={handleAttachmentOnlySend}
+          />
         </div>
       </ComposerPrimitive.Root>
     </div>

@@ -43,5 +43,6 @@ export function buildWorkspaceInlineActions({
       onClassify(
         `Opción seleccionada: ${opt.label}${opt.suggestedHsHint ? ` (${opt.suggestedHsHint})` : ''}`
       ),
+    onSendFollowUp: (prompt: string) => onClassify(prompt),
   };
 }

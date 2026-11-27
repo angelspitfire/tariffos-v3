@@ -66,6 +66,10 @@ describe('repairJson', () => {
 describe('OpenAICompatibleAdapter', () => {
   const schema = z.object({ ok: z.boolean() });
 
+  it('uses camelCase PROVIDER_NAME so AI SDK accepts providerOptions without deprecation warnings', () => {
+    expect(PROVIDER_NAME).toBe('tariffosLlm');
+  });
+
   it('generateText posts the prompt to the chat model', async () => {
     mockedText.mockResolvedValueOnce({ text: 'resp' });
     await adapter().generateText('hi');

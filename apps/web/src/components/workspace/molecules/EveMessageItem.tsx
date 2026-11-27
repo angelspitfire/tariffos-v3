@@ -1,16 +1,18 @@
 'use client';
 
 import { useMemo } from 'react';
-import { MessagePrimitive, type ThreadMessage } from '@assistant-ui/react';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { MessagePrimitive, type ThreadMessage, useAuiState } from '@assistant-ui/react';
+import { AlertCircle, FileText, Loader2 } from 'lucide-react';
 import type { ApprovalWorkflowMode } from '@tariffos/shared-types';
 import { applyApprovalPolicyToEnvelope } from '@/lib/workspace/dossier-approval-policy';
+import { parseEveUserDisplay } from '@/lib/workspace/eve-attachments';
 import {
   extractMessagePlainText,
   toWorkspaceMessageFromEve,
 } from '@/lib/workspace/eve-message-mapper';
 import { MarkdownProse } from '../atoms/MarkdownProse';
 import { ThreadInlineCards, type InlineCardActions } from '../organisms/ThreadInlineCards';
+import { FollowUpChips } from './FollowUpChips';
 import { ToolActivityList, type ToolActivityItem } from './ToolActivityList';
 
 export interface EveMessageItemProps {
@@ -86,10 +88,40 @@ export function EveMessageItem({
   }, [approvalWorkflowMode, jurisdictionId, message.content, message.createdAt, message.id, message.role]);
 
   if (message.role === 'user') {
+    const { displayText, attachmentNames } = parseEveUserDisplay(text);
+    const filePartNames = message.content
+      .filter(
+        (part): part is Extract<typeof part, { type: 'file' }> & { filename?: string } =>
+          part.type === 'file',
+      )
+      .map((part) => part.filename?.trim())
+      .filter((name): name is string => Boolean(name));
+    const messageAttachments = (message.attachments ?? [])
+      .map((att) => att.name?.trim())
+      .filter((name): name is string => Boolean(name));
+    const allAttachmentNames = Array.from(
+      new Set([...attachmentNames, ...filePartNames, ...messageAttachments]),
+    );
+
     return (
       <MessagePrimitive.Root className="mx-auto flex w-full max-w-2xl justify-end">
         <div className="max-w-[85%] space-y-2 rounded-[22px] rounded-br-md bg-surface-inverted px-4 py-3 text-ink-on-inverted shadow-sm dark:border dark:border-border-subtle">
-          <p className="whitespace-pre-wrap text-xs leading-relaxed sm:text-sm">{text}</p>
+          {displayText ? (
+            <p className="whitespace-pre-wrap text-xs leading-relaxed sm:text-sm">{displayText}</p>
+          ) : null}
+          {allAttachmentNames.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {allAttachmentNames.map((name) => (
+                <span
+                  key={name}
+                  className="inline-flex items-center gap-1 rounded-md bg-white/15 px-2 py-0.5 text-[11px]"
+                >
+                  <FileText className="h-3 w-3 shrink-0" aria-hidden="true" />
+                  <span className="max-w-[200px] truncate">{name}</span>
+                </span>
+              ))}
+            </div>
+          ) : null}
           {timestamp ? (
             <div className="text-right font-mono text-[10px] text-ink-on-inverted/65 tabular-nums">
               {timestamp}
@@ -102,6 +134,11 @@ export function EveMessageItem({
 
   const visibleText = text || mappedAssistant?.text || '';
   const isRunning = message.status?.type === 'running';
+  const isLastSettledAssistant = useAuiState((s) => {
+    if (s.thread.isRunning || isRunning) return false;
+    const msgs = s.thread.messages;
+    return msgs[msgs.length - 1]?.id === message.id;
+  });
   const turnError =
     message.status?.type === 'incomplete' && message.status.reason === 'error'
       ? formatTurnError(message.status.error)
@@ -148,6 +185,13 @@ export function EveMessageItem({
         {visibleText ? <MarkdownProse text={visibleText} /> : null}
         {mappedAssistant ? (
           <ThreadInlineCards message={mappedAssistant} actions={inlineActions} />
+        ) : null}
+        {isLastSettledAssistant && mappedAssistant && inlineActions.onSendFollowUp ? (
+          <FollowUpChips
+            message={{ ...mappedAssistant, text: visibleText }}
+            onSendPrompt={inlineActions.onSendFollowUp}
+            onOpenTab={(tab) => inlineActions.onOpenCanvasTab(mappedAssistant, tab)}
+          />
         ) : null}
       </div>
     </MessagePrimitive.Root>

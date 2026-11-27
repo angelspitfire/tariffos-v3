@@ -4,6 +4,7 @@ import {
   createRgiLlmRunner,
   MAX_OUTPUT_TOKENS_DEEP,
   MAX_OUTPUT_TOKENS_STANDARD,
+  RgiResponseSchema,
   runRgiWithLlm,
 } from './rgi-llm-adapter.js';
 
@@ -167,5 +168,33 @@ describe('createRgiLlmRunner', () => {
     expect(sentPrompt).toContain('antidumping');
     expect(sentPrompt).toContain('unresolved');
     expect(sentPrompt).toContain('Spanish');
+  });
+
+  it('normalizes omitted or null optional array fields to empty arrays in RgiResponseSchema while rejecting invalid types', () => {
+    const parsed = RgiResponseSchema.parse({
+      hsCode: '9018.12.10.00',
+      confidenceLevel: 'Medio',
+      confidencePct: 75,
+      confidenceReason: 'Ecógrafo Doppler con dos transductores.',
+      rgiSteps: [],
+      alternatives: null,
+      rejected: undefined,
+    });
+
+    expect(parsed.alternatives).toEqual([]);
+    expect(parsed.rejected).toEqual([]);
+    expect(parsed.flags).toEqual([]);
+    expect(parsed.unresolved).toEqual([]);
+
+    expect(() =>
+      RgiResponseSchema.parse({
+        hsCode: '9018.12.10.00',
+        confidenceLevel: 'Medio',
+        confidencePct: 75,
+        confidenceReason: 'Bad flags',
+        rgiSteps: [],
+        flags: 'invalid',
+      }),
+    ).toThrow();
   });
 });

@@ -1,6 +1,7 @@
 'use client';
 
 import { FileText } from 'lucide-react';
+import { parseEveUserDisplay } from '@/lib/workspace/eve-attachments';
 import type { WorkspaceMessage } from '@/lib/workspace/types';
 import { MarkdownProse } from '../atoms/MarkdownProse';
 import { ThreadInlineCards, type InlineCardActions } from '../organisms/ThreadInlineCards';
@@ -24,13 +25,23 @@ export function WorkspaceMessageBubble({
     : '';
 
   if (message.role === 'user') {
+    const { displayText, attachmentNames } = parseEveUserDisplay(message.text);
+    const mergedAttachments = [
+      ...(message.attachments?.map((a) => ({ id: a.id, name: a.name })) ?? []),
+      ...attachmentNames
+        .filter((name) => !message.attachments?.some((a) => a.name === name))
+        .map((name) => ({ id: `parsed-${name}`, name })),
+    ];
+
     return (
       <div className="mx-auto flex w-full max-w-2xl justify-end">
         <div className="max-w-[85%] space-y-2 rounded-[22px] rounded-br-md bg-surface-inverted px-4 py-3 text-ink-on-inverted shadow-sm dark:border dark:border-border-subtle">
-          <p className="whitespace-pre-wrap text-xs leading-relaxed sm:text-sm">{message.text}</p>
-          {message.attachments && message.attachments.length > 0 ? (
+          {displayText ? (
+            <p className="whitespace-pre-wrap text-xs leading-relaxed sm:text-sm">{displayText}</p>
+          ) : null}
+          {mergedAttachments.length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
-              {message.attachments.map((att) => (
+              {mergedAttachments.map((att) => (
                 <span
                   key={att.id}
                   className="inline-flex items-center gap-1 rounded-md bg-surface-panel/15 px-2 py-0.5 text-[11px]"

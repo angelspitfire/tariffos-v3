@@ -150,20 +150,21 @@ export function createPrismaPipelinePorts(runtimeLlm?: RgiLlmRuntimeOverride): P
       hsCode: string,
     ): Promise<TariffCandidateRecord | null> {
       const variants = buildHsCodeLookupVariants(hsCode);
-      const row = await prisma.nationalTariff.findFirst({
-        where: {
-          countryCode,
-          hsCode: { in: variants },
-          isActive: true,
-          isDerogated: false,
-        },
-      });
+      const [row, permits] = await Promise.all([
+        prisma.nationalTariff.findFirst({
+          where: {
+            countryCode,
+            hsCode: { in: variants },
+            isActive: true,
+            isDerogated: false,
+          },
+        }),
+        prisma.hsPermitRequirement.findMany({
+          where: { hsCode: { in: variants }, permitType: { countryCode } },
+          include: { permitType: true },
+        }),
+      ]);
       if (!row) return null;
-
-      const permits = await prisma.hsPermitRequirement.findMany({
-        where: { hsCode: { in: variants }, permitType: { countryCode } },
-        include: { permitType: true },
-      });
 
       return {
         hsCode: row.hsCode,

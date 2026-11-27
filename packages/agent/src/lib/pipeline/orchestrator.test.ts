@@ -461,4 +461,40 @@ describe('classifyInvoiceBatch', () => {
     expect(result.lines[1]?.tokenUsage).toBeUndefined();
     expect(result.lines[2]?.tokenUsage).toBeUndefined();
   });
+
+  it('runs SKU lookup and hybrid retrieval concurrently and skips redundant web grounding when specs are already attached', async () => {
+    let skuPending = true;
+    let bothConcurrent = false;
+    const findSkuPrecedent = vi.fn(async () => {
+      await new Promise((r) => setTimeout(r, 15));
+      skuPending = false;
+      return null;
+    });
+    const searchTariffCandidates = vi.fn(async () => {
+      if (skuPending) bothConcurrent = true;
+      return [LAPTOP_TARIFF];
+    });
+    const fetchWebSpecs = vi.fn().mockResolvedValue('extra web specs');
+    const ports = createBasePorts({
+      findSkuPrecedent,
+      searchTariffCandidates,
+      fetchWebSpecs,
+    });
+
+    await classifyInvoiceBatch(
+      [
+        {
+          lineId: 'L-CONC',
+          description: 'Compresor RTF-100\n[Adjunto: factura.pdf]\n75 kW 8 bar tornillo',
+          originCountry: 'CN',
+          cifValue: 1000,
+        },
+      ],
+      ports,
+      { tenantId: 't1', countryCode: 'VE', deepMode: false },
+    );
+
+    expect(bothConcurrent).toBe(true);
+    expect(fetchWebSpecs).not.toHaveBeenCalled();
+  });
 });

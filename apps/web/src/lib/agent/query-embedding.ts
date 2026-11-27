@@ -5,7 +5,7 @@ export type QueryEmbeddingFn = (
   inputType?: 'query' | 'passage',
 ) => Promise<number[] | null>;
 
-const DEFAULT_EMBED_TIMEOUT_MS = 4_500;
+const DEFAULT_EMBED_TIMEOUT_MS = 2_000;
 
 /**
  * Generates a single embedding vector via `@tariffos/ai-client` (NVIDIA NIM when configured),

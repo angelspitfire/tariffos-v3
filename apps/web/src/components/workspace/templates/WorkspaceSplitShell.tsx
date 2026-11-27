@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CanvasTabType } from '@tariffos/shared-types';
 import { readSelectedPlan } from '@/lib/funnel/funnel-storage';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
@@ -94,6 +94,12 @@ export function WorkspaceSplitShell() {
   const onNewThread = () => { ownedThreadIdRef.current = null; ws.startNewThread(); setSurfaceKey(`eve-new-${Date.now()}`); goToChat(); };
   const onSelectThread = (id: string) => { ownedThreadIdRef.current = id; ws.setActiveThreadId(id); ws.setSelectedCanvasMsgId(null); setSurfaceKey(`eve-thread-${id}`); goToChat(); };
   const onTriggerBatch = () => (readOnlyReason ? ws.pushToast(readOnlyReason, 'info') : batchInputRef.current?.click());
+  const handleRegisterAgentSend = useCallback((fn: ((text: string) => void) | null) => {
+    agentSendRef.current = fn;
+  }, []);
+  const { bindEveSessionId, syncChatMessages } = ws;
+  const handleSessionIdDiscovered = useCallback((sid: string) => { ownedThreadIdRef.current = bindEveSessionId(sid); }, [bindEveSessionId]);
+  const handleSyncChatMessages = useCallback((msgs: Parameters<typeof syncChatMessages>[0], latestId: string | null) => { ownedThreadIdRef.current = syncChatMessages(msgs, latestId); }, [syncChatMessages]);
 
   return (
     <div className="flex h-dvh overflow-hidden bg-surface-app text-ink-primary">
@@ -142,9 +148,9 @@ export function WorkspaceSplitShell() {
               onConsumeAttachments={ws.consumePendingAttachments} onRunSample={(s) => void sendToAgent(s.description)}
               onRunBatchSample={(b) => void sendToAgent(b.promptText, { attachmentsText: b.documentText, isBatchHint: true })}
               onUpdateProfile={ws.updateProfile}
-              onSessionIdDiscovered={(sid) => { ownedThreadIdRef.current = ws.bindEveSessionId(sid); }}
-              onSyncChatMessages={(msgs, latestId) => { ownedThreadIdRef.current = ws.syncChatMessages(msgs, latestId); }}
-              onRegisterAgentSend={(fn) => { agentSendRef.current = fn; }} onNotifyWarning={(msg) => ws.pushToast(msg, 'warning')}
+              onSessionIdDiscovered={handleSessionIdDiscovered}
+              onSyncChatMessages={handleSyncChatMessages}
+              onRegisterAgentSend={handleRegisterAgentSend} onNotifyWarning={(msg) => ws.pushToast(msg, 'warning')}
             />
             {layout.showCanvas ? <WorkspaceMobilePaneTabs activePane={layout.mobilePane} onSelectPane={layout.setMobilePane} /> : null}
           </div>

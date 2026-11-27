@@ -15,16 +15,19 @@ import type {
   TariffCandidateRecord,
 } from '../lib/pipeline/types.js';
 
-const RgiResponseSchema = z.object({
+const defaultEmptyArray = <T extends z.ZodTypeAny>(itemSchema: T) =>
+  z.array(itemSchema).nullish().transform((val) => val ?? []);
+
+export const RgiResponseSchema = z.object({
   hsCode: z.string(),
   confidenceLevel: z.enum(['Alto', 'Medio', 'Bajo']),
   confidencePct: z.number().min(0).max(100),
   confidenceReason: z.string(),
   rgiSteps: z.array(RgiStepSchema),
-  alternatives: z.array(ClassificationAlternativeSchema),
-  rejected: z.array(RejectedAlternativeSchema),
-  flags: z.array(ComplianceFlagSchema),
-  unresolved: z.array(UnresolvedItemSchema),
+  alternatives: defaultEmptyArray(ClassificationAlternativeSchema),
+  rejected: defaultEmptyArray(RejectedAlternativeSchema),
+  flags: defaultEmptyArray(ComplianceFlagSchema),
+  unresolved: defaultEmptyArray(UnresolvedItemSchema),
 });
 
 const RGI_TIMEOUT_MS = 90_000;
@@ -81,7 +84,7 @@ Rules:
    - Emit an "info" or "warn" flag ("OGA / Régimen Legal") noting applicable permits, technical regulations (e.g., SENCAMER, CONATEL), or special regimes (CAU / Cap. 98).
 5. Non-blocking posture: when secondary specs or shipment configuration details are missing (e.g., chassis mounting, split dispatch vs. functional unit under Section XVI Note 4), still classify with an honest confidenceLevel ("Alto" >=85, "Medio" 60-84, "Bajo" <60) and log each pending verification in unresolved.
 6. Write all human-facing prose fields (confidenceReason, rgiSteps, alternatives, rejected, flags, unresolved) in clear, broker-grade Spanish.
-7. Respond ONLY with a valid JSON object (no markdown prose outside JSON) matching this exact shape:
+7. Respond ONLY with a valid JSON object (no markdown prose outside JSON) matching this exact shape (always include every key, using [] when an array has no entries):
 {
   "hsCode": "xxxx.xx.xx.xx",
   "confidenceLevel": "Alto" | "Medio" | "Bajo",

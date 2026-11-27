@@ -4,7 +4,14 @@ import { IndexedDBAdapter } from './indexeddb-adapter';
 import { SupabaseCloudAdapter } from './supabase-cloud-adapter';
 import type { WorkspaceThread } from './types';
 
+export interface LocalBootstrapSnapshot {
+  threads: WorkspaceThread[];
+  skuPrecedents: SkuPrecedent[];
+  profile: UserProfileSettings | null;
+}
+
 export interface IPersistence {
+  loadLocalBootstrap?: () => Promise<LocalBootstrapSnapshot>;
   loadThreads(): Promise<WorkspaceThread[]>;
   saveThread(thread: WorkspaceThread): Promise<void>;
   deleteThread(threadId: string): Promise<void>;
@@ -37,6 +44,23 @@ export class DualWritePersistence implements IPersistence {
     private readonly local: IPersistence,
     private readonly cloud?: IPersistence | null,
   ) {}
+
+  async loadLocalBootstrap(): Promise<{
+    threads: WorkspaceThread[];
+    skuPrecedents: SkuPrecedent[];
+    profile: UserProfileSettings | null;
+  }> {
+    const [threads, skuPrecedents, profile] = await Promise.all([
+      this.local.loadThreads(),
+      this.local.loadSkuPrecedents(),
+      this.local.loadUserProfile(),
+    ]);
+    return {
+      threads: [...threads].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
+      skuPrecedents,
+      profile,
+    };
+  }
 
   async loadThreads(): Promise<WorkspaceThread[]> {
     const localThreads = await this.local.loadThreads();

@@ -8,7 +8,7 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
     disconnect() {}
   };
 }
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { A2UIEnvelope, UserProfileSettings } from '@tariffos/shared-types';
 import type { ThreadMessageLike } from '@assistant-ui/react';
 import { buildWorkspaceInlineActions } from '@/lib/workspace/inline-actions';
@@ -87,6 +87,9 @@ const MOCK_MESSAGES: ThreadMessageLike[] = [
 
 const capturedRuntimeOptions = vi.hoisted(() => ({
   lastOptions: null as Record<string, unknown> | null,
+  messages: null as ThreadMessageLike[] | null,
+  isRunning: false,
+  onNew: vi.fn(async () => undefined),
 }));
 
 vi.mock('@assistant-ui/eve', async () => {
@@ -95,10 +98,10 @@ vi.mock('@assistant-ui/eve', async () => {
     useEveAgentRuntime: (options?: Record<string, unknown>) => {
       capturedRuntimeOptions.lastOptions = options ?? null;
       return react.useExternalStoreRuntime({
-        isRunning: false,
-        messages: MOCK_MESSAGES,
+        isRunning: capturedRuntimeOptions.isRunning,
+        messages: capturedRuntimeOptions.messages ?? MOCK_MESSAGES,
         convertMessage: (m: ThreadMessageLike) => m,
-        onNew: async () => undefined,
+        onNew: capturedRuntimeOptions.onNew,
       });
     },
   };
@@ -118,6 +121,8 @@ describe('EveThreadSurface', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     capturedRuntimeOptions.lastOptions = null;
+    capturedRuntimeOptions.messages = null;
+    capturedRuntimeOptions.isRunning = false;
   });
 
   it('renders ToolActivityList, VerdictCard from classify_item, and syncs discovered messages & envelopes', async () => {
@@ -149,6 +154,8 @@ describe('EveThreadSurface', () => {
     );
 
     expect(screen.getByText('Clasifica MacBook Pro 14 M3')).toBeTruthy();
+    expect(screen.getByText(/Completado · 2 pasos/i)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Completado · 2 pasos/i }));
     expect(screen.getByText(/Parallel Fast/i)).toBeTruthy();
     expect(screen.getByText(/Clasificación completada/i)).toBeTruthy();
     expect(screen.getAllByText('8471.30.00.90').length).toBeGreaterThanOrEqual(2);
@@ -314,5 +321,139 @@ describe('EveThreadSurface', () => {
       expect.stringMatching(/pnpm dev|pnpm dev:eve/),
     );
     expect(onErrorToast).toHaveBeenNthCalledWith(3, 'Cuota mensual alcanzada');
+  });
+
+  it('triggers onNew when empty-state quick suggestions are clicked, stabilizes send registration across rerenders, and prefills prompt on Clasificar producto', async () => {
+    capturedRuntimeOptions.messages = [];
+    let latestRegisteredSend: ((text: string) => void) | null = null;
+    const onRegisterSend = vi.fn((fn: ((text: string) => void) | null) => {
+      latestRegisteredSend = fn;
+    });
+
+    const commonProps = {
+      jurisdictionId: 've-seniat',
+      approvalWorkflowMode: 'agent_decides' as const,
+      defaultIncoterm: 'FOB' as const,
+      deepMode: false,
+      skuPrecedents: [],
+      pendingAttachments: [],
+      profile,
+      inlineActions,
+      onAddFiles: vi.fn(),
+      onRemoveAttachment: vi.fn(),
+      onConsumeAttachments: () => [],
+      onRunSample: (sample: { description: string }) => {
+        latestRegisteredSend?.(sample.description);
+      },
+      onRunBatchSample: vi.fn(),
+      onUpdateProfile: vi.fn(),
+      onErrorToast: vi.fn(),
+    };
+
+    const { rerender } = render(<EveThreadSurface {...commonProps} onRegisterSend={onRegisterSend} />);
+
+    // Re-rendering with a new inline callback must NOT tear down the send ref to null.
+    const secondRegister = vi.fn((fn: ((text: string) => void) | null) => {
+      latestRegisteredSend = fn;
+    });
+    rerender(<EveThreadSurface {...commonProps} onRegisterSend={secondRegister} />);
+    expect(onRegisterSend).not.toHaveBeenCalledWith(null);
+    expect(latestRegisteredSend).toBeTypeOf('function');
+
+    fireEvent.click(screen.getByRole('button', { name: /Tasa oficial BCV/i }));
+    await waitFor(() => {
+      expect(capturedRuntimeOptions.onNew).toHaveBeenCalledWith(
+        expect.objectContaining({
+          role: 'user',
+          content: [{ type: 'text', text: '¿Cuál es la tasa oficial del BCV hoy?' }],
+        }),
+      );
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Ecógrafo portátil Doppler/i }));
+    await waitFor(() => {
+      expect(capturedRuntimeOptions.onNew).toHaveBeenCalledTimes(2);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Clasificar producto/i }));
+    const textarea = screen.getByLabelText(
+      /Consulta arancelaria o descripción de mercancía/i,
+    ) as HTMLTextAreaElement;
+    expect(document.activeElement).toBe(textarea);
+    expect(textarea.value).toBe('');
+  });
+
+  it('syncs once when canvas arrives mid-stream, ignores streaming text deltas, and persists final settled text once', async () => {
+    const syncSpy = vi.fn();
+    capturedRuntimeOptions.isRunning = true;
+
+    const buildMsgs = (text: string): ThreadMessageLike[] => [
+      MOCK_MESSAGES[0],
+      {
+        id: 'a-stream-1',
+        role: 'assistant',
+        createdAt: new Date('2026-11-26T12:00:05.000Z'),
+        content: [
+          {
+            type: 'tool-call',
+            toolCallId: 'tc-cls',
+            toolName: 'classify_item',
+            args: { description: 'Ecógrafo' },
+            result: { line: {}, envelope: SAMPLE_ENVELOPE },
+          },
+          { type: 'text', text },
+        ],
+      },
+    ];
+
+    capturedRuntimeOptions.messages = buildMsgs('Parcial 1');
+
+    const baseProps = {
+      jurisdictionId: 've-seniat',
+      approvalWorkflowMode: 'agent_decides' as const,
+      defaultIncoterm: 'FOB' as const,
+      deepMode: false,
+      skuPrecedents: [],
+      pendingAttachments: [],
+      profile,
+      inlineActions,
+      onAddFiles: vi.fn(),
+      onRemoveAttachment: vi.fn(),
+      onConsumeAttachments: () => [],
+      onRunSample: vi.fn(),
+      onRunBatchSample: vi.fn(),
+      onUpdateProfile: vi.fn(),
+      onRegisterSend: vi.fn(),
+      onErrorToast: vi.fn(),
+    };
+
+    const { rerender } = render(
+      <EveThreadSurface {...baseProps} onSyncMessages={(m, id) => syncSpy(m, id)} />,
+    );
+
+    await waitFor(() => {
+      expect(syncSpy).toHaveBeenCalledTimes(1);
+    });
+    expect(syncSpy.mock.calls[0]?.[1]).toBeNull();
+
+    // Streaming text token deltas with fresh inline callback must NOT re-trigger persistence
+    capturedRuntimeOptions.messages = buildMsgs('Parcial 1 + más texto');
+    rerender(<EveThreadSurface {...baseProps} onSyncMessages={(m, id) => syncSpy(m, id)} />);
+    expect(syncSpy).toHaveBeenCalledTimes(1);
+
+    // Once stream finishes (isRunning -> false), persist final settled text and open Canvas once
+    capturedRuntimeOptions.isRunning = false;
+    capturedRuntimeOptions.messages = buildMsgs('Dictamen final completo.');
+    rerender(<EveThreadSurface {...baseProps} onSyncMessages={(m, id) => syncSpy(m, id)} />);
+
+    await waitFor(() => {
+      expect(syncSpy).toHaveBeenCalledTimes(2);
+    });
+    expect(syncSpy.mock.calls[1]?.[0]?.[1]?.text).toBe('Dictamen final completo.');
+    expect(syncSpy.mock.calls[1]?.[1]).toBe('a-stream-1');
+
+    // Re-rendering with a new inline callback and identical settled messages must NOT fire again
+    rerender(<EveThreadSurface {...baseProps} onSyncMessages={(m, id) => syncSpy(m, id)} />);
+    expect(syncSpy).toHaveBeenCalledTimes(2);
   });
 });

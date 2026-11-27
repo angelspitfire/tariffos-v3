@@ -31,11 +31,21 @@ export function EveRuntimeObserver({
   const isRunning = useAuiState((s) => s.thread.isRunning);
   const seenEnvelopesRef = useRef<Map<string, string>>(new Map());
   const lastSyncSigRef = useRef<string>('');
+  const onRegisterSendRef = useRef(onRegisterSend);
+  const onSyncMessagesRef = useRef(onSyncMessages);
+  const onEnvelopeDiscoveredRef = useRef(onEnvelopeDiscovered);
+  onRegisterSendRef.current = onRegisterSend;
+  onSyncMessagesRef.current = onSyncMessages;
+  onEnvelopeDiscoveredRef.current = onEnvelopeDiscovered;
 
   useEffect(() => {
-    onRegisterSend((text: string) => aui.thread().append(text));
-    return () => onRegisterSend(null);
-  }, [aui, onRegisterSend]);
+    onRegisterSendRef.current((text: string) => {
+      const clean = text.trim();
+      if (!clean) return;
+      aui.thread.append({ role: 'user', content: [{ type: 'text', text: clean }] });
+    });
+    return () => onRegisterSendRef.current(null);
+  }, [aui]);
 
   useEffect(() => {
     if (messages.length === 0) return;
@@ -64,7 +74,7 @@ export function EveRuntimeObserver({
         const envSig = JSON.stringify(normalized.envelope);
         if (seenEnvelopesRef.current.get(normalized.id) !== envSig) {
           seenEnvelopesRef.current.set(normalized.id, envSig);
-          onEnvelopeDiscovered?.(normalized);
+          onEnvelopeDiscoveredRef.current?.(normalized);
         }
         if (normalized.envelope.canvasComponents.length > 0) {
           latestCanvasMsgId = normalized.id;
@@ -76,29 +86,27 @@ export function EveRuntimeObserver({
       }
     }
 
-    if (!onSyncMessages || mappedAll.length === 0) return;
+    const syncMessages = onSyncMessagesRef.current;
+    if (!syncMessages || mappedAll.length === 0) return;
     if (isRunning && !latestCanvasMsgId) return;
 
-    const sig = JSON.stringify(
-      mappedAll.map((m) => [
+    // During streaming, skip text-delta churn so tokens never trigger repeated persistence loops.
+    const sig = JSON.stringify([
+      isRunning ? 'streaming' : 'settled',
+      ...mappedAll.map((m) => [
         m.id,
         m.role,
-        m.text,
+        ...(isRunning ? [] : [m.text]),
         m.envelope?.classificationStatus ?? null,
-        m.envelope?.canvasComponents.map((c) => c.id) ?? [],
+        m.envelope?.canvasComponents.map((c) =>
+          c.type === 'dossier' ? `${c.id}:${c.reviewStatus}` : c.id,
+        ) ?? [],
       ]),
-    );
+    ]);
     if (sig === lastSyncSigRef.current) return;
     lastSyncSigRef.current = sig;
-    onSyncMessages(mappedAll, latestCanvasMsgId);
-  }, [
-    approvalWorkflowMode,
-    isRunning,
-    jurisdictionId,
-    messages,
-    onEnvelopeDiscovered,
-    onSyncMessages,
-  ]);
+    syncMessages(mappedAll, isRunning ? null : latestCanvasMsgId);
+  }, [approvalWorkflowMode, isRunning, jurisdictionId, messages]);
 
   return null;
 }

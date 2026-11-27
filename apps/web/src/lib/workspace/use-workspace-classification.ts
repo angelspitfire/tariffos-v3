@@ -170,8 +170,36 @@ export function useWorkspaceClassification({
   );
 
   const addFiles = useCallback(async (files: FileList) => {
-    const added = await extractWorkspaceAttachments(files);
-    setPendingAttachments((prev) => [...prev, ...added]);
+    const fileList = Array.from(files);
+    if (fileList.length === 0) return;
+
+    const baseTime = Date.now();
+    const placeholders: WorkspaceAttachment[] = fileList.map((file, idx) => ({
+      id: `att-${baseTime}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
+      name: file.name,
+      mimeType: file.type || 'application/octet-stream',
+      sizeBytes: file.size,
+      status: 'extracting',
+    }));
+    const placeholderIds = new Set(placeholders.map((p) => p.id));
+
+    setPendingAttachments((prev) => [...prev, ...placeholders]);
+
+    const extracted = await extractWorkspaceAttachments(files);
+    setPendingAttachments((prev) => {
+      const stillPending = new Set(prev.map((item) => item.id));
+      const completed = extracted.map((item, idx) => ({
+        ...item,
+        id: placeholders[idx]?.id ?? item.id,
+        status: 'ready' as const,
+      }));
+      const completedById = new Map(completed.map((item) => [item.id, item]));
+      return prev.map((item) =>
+        placeholderIds.has(item.id) && stillPending.has(item.id)
+          ? (completedById.get(item.id) ?? { ...item, status: 'ready' as const })
+          : item,
+      );
+    });
   }, []);
 
   return {

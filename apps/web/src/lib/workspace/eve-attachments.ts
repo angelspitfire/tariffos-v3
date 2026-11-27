@@ -2,6 +2,29 @@ import type { EveMessageContent } from '@assistant-ui/eve';
 import type { WorkspaceAttachment } from './types';
 
 const DATA_URL_RE = /^data:([^;]+);base64,(.+)$/;
+const ATTACHMENT_MARKER_RE = /(?:^|\n\n)\[Adjunto:\s*([^\]]+)\]\n[\s\S]*?(?=\n\n\[Adjunto:|$)/g;
+
+export interface ParsedEveUserDisplay {
+  displayText: string;
+  attachmentNames: string[];
+}
+
+/**
+ * Separates user-authored prompt text from appended `[Adjunto: <name>]` payloads
+ * so user chat bubbles show compact filename chips instead of raw extracted text.
+ */
+export function parseEveUserDisplay(rawText: string): ParsedEveUserDisplay {
+  const attachmentNames: string[] = [];
+  const cleaned = rawText.replace(ATTACHMENT_MARKER_RE, (_match, name: string) => {
+    const trimmedName = name.trim();
+    if (trimmedName) attachmentNames.push(trimmedName);
+    return '';
+  });
+  return {
+    displayText: cleaned.trim(),
+    attachmentNames,
+  };
+}
 
 /**
  * Builds an Eve outbound message payload merging pending extracted document text

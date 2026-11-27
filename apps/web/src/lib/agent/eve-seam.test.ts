@@ -15,6 +15,7 @@ import {
   DEFAULT_ANTHROPIC_MODEL,
   parseEveModelSpec,
   readSystemLlmRuntimeOverride,
+  resetSystemLlmOverrideCacheForTests,
   resolveEveModel,
   resolveEveModelFromOverride,
 } from '../../../../../agent/model-resolver';
@@ -151,6 +152,7 @@ describe('Eve swap-ready model resolver', () => {
 
 describe('Eve SystemSetting ai.runtime_config override', () => {
   afterEach(() => {
+    resetSystemLlmOverrideCacheForTests();
     vi.clearAllMocks();
     vi.unstubAllEnvs();
   });
@@ -161,9 +163,9 @@ describe('Eve SystemSetting ai.runtime_config override', () => {
     expect(mockFindUnique).not.toHaveBeenCalled();
   });
 
-  it('reads and validates ai.runtime_config from SystemSetting when present', async () => {
+  it('reads and validates ai.runtime_config from SystemSetting when present and caches within TTL', async () => {
     vi.stubEnv('DATABASE_URL', 'postgresql://localhost/test');
-    mockFindUnique.mockResolvedValueOnce({
+    mockFindUnique.mockResolvedValue({
       key: 'ai.runtime_config',
       value: JSON.stringify({
         provider: 'google',
@@ -173,11 +175,14 @@ describe('Eve SystemSetting ai.runtime_config override', () => {
     });
 
     const override = await readSystemLlmRuntimeOverride();
+    const cached = await readSystemLlmRuntimeOverride();
     expect(override).toEqual({
       provider: 'google',
       model: 'gemini-2.5-flash',
       baseUrl: null,
     });
+    expect(cached).toEqual(override);
+    expect(mockFindUnique).toHaveBeenCalledTimes(1);
   });
 
   it('applies DB override when provider credentials exist and falls back to EVE_MODEL otherwise', () => {
@@ -264,12 +269,30 @@ describe('Eve hardened root agent and duty tool', () => {
       shouldUseLocalEnvModel({
         NODE_ENV: 'development',
         VERCEL: '1',
+        VERCEL_ENV: 'development',
+        EVE_MODEL: 'nvidia:nvidia/nemotron-3.5-super-vl-120b-a12b',
+      }),
+    ).toBe(true);
+    expect(
+      shouldUseLocalEnvModel({
+        NODE_ENV: 'development',
+        VERCEL: '1',
+        EVE_MODEL: 'nvidia:nvidia/nemotron-3.5-super-vl-120b-a12b',
+      }),
+    ).toBe(true);
+    expect(
+      shouldUseLocalEnvModel({
+        NODE_ENV: 'development',
+        VERCEL: '1',
+        VERCEL_ENV: 'preview',
         EVE_MODEL: 'nvidia:nvidia/nemotron-3.5-super-vl-120b-a12b',
       }),
     ).toBe(false);
     expect(
       shouldUseLocalEnvModel({
         NODE_ENV: 'production',
+        VERCEL: '1',
+        VERCEL_ENV: 'production',
         EVE_MODEL: 'nvidia:nvidia/nemotron-3.5-super-vl-120b-a12b',
       }),
     ).toBe(false);

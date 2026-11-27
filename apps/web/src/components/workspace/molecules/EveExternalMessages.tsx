@@ -38,10 +38,11 @@ export function EveExternalMessages({
       : messages.filter((m) => !liveIds.has(m.id));
 
   if (externalOnly.length === 0 && !isResuming) return null;
+  const showReconnecting = isResuming && liveMessages.length === 0 && externalOnly.length === 0;
 
   return (
     <div className="space-y-5">
-      {isResuming && liveMessages.length === 0 ? (
+      {showReconnecting ? (
         <div
           className="mx-auto flex w-full max-w-2xl items-center gap-2 text-xs text-ink-muted"
           aria-live="polite"

@@ -14,6 +14,7 @@ export interface WorkspaceAttachment {
   name: string;
   mimeType: string;
   sizeBytes: number;
+  status?: 'extracting' | 'ready' | 'error';
   extractedText?: string;
   imageDataUrl?: string;
 }
