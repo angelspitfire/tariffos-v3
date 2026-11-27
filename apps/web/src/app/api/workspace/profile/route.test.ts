@@ -76,10 +76,37 @@ describe('/api/workspace/profile', () => {
     expect(mocks.uploadBrokerSignature).toHaveBeenCalledWith('u-1', sigUrl);
     expect(mocks.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        update: expect.objectContaining({ signatureStorageKey: 'u-1/signature.png' }),
-        create: expect.objectContaining({ id: 'u-1', signatureStorageKey: 'u-1/signature.png' }),
+        update: expect.objectContaining({ position: 'Agente Titular', signatureStorageKey: 'u-1/signature.png' }),
+        create: expect.objectContaining({ id: 'u-1', position: 'Agente Titular', signatureStorageKey: 'u-1/signature.png' }),
       }),
     );
+    const firstUpsert = mocks.upsert.mock.calls[0]?.[0] as {
+      update: Record<string, unknown>;
+      create: Record<string, unknown>;
+    };
+    expect('role' in firstUpsert.update).toBe(false);
+    expect('role' in firstUpsert.create).toBe(false);
+  });
+
+  it('preserves profiles.role super_admin on GET and falls back to default job title when position is null', async () => {
+    mocks.findUnique.mockResolvedValueOnce({
+      fullName: 'Erick',
+      companyName: 'TariffOS',
+      brokerLicense: null,
+      approvalWorkflowMode: 'agent_decides',
+      defaultIncoterm: 'FOB',
+      preferredCurrency: 'USD',
+      detailLevel: 'standard',
+      position: null,
+      role: 'super_admin',
+      signatureStorageKey: null,
+      updatedAt: new Date('2026-11-27T10:00:00Z'),
+    });
+
+    const res = await GET();
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as { profile: { role: string } };
+    expect(json.profile.role).toBe('Agente de Aduanas');
   });
 
   it('preserves existing signatureStorageKey when brokerSignatureDataUrl is omitted and clears it when empty string', async () => {

@@ -17,9 +17,35 @@ const rootDir = path.resolve(process.cwd(), '../..');
 dotenv.config({ path: path.join(rootDir, '.env.local') });
 dotenv.config({ path: path.join(rootDir, '.env') });
 
+interface SupabaseAuthUserRow {
+  id: string;
+  email?: string;
+  user_metadata?: Record<string, unknown>;
+  app_metadata?: Record<string, unknown>;
+}
+
 function getFlagValue(args: readonly string[], flag: string): string | undefined {
   const idx = args.indexOf(flag);
   return idx === -1 ? undefined : args[idx + 1];
+}
+
+async function findSupabaseUserByEmail(
+  url: string,
+  headers: Record<string, string>,
+  email: string,
+): Promise<SupabaseAuthUserRow | undefined> {
+  const MAX_PAGES = 20;
+  const PER_PAGE = 200;
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const res = await fetch(`${url}/auth/v1/admin/users?page=${page}&per_page=${PER_PAGE}`, { headers });
+    if (!res.ok) throw new Error(`Supabase listUsers respondió ${res.status}: ${await res.text()}`);
+    const json = (await res.json()) as { users?: SupabaseAuthUserRow[] };
+    const users = json.users ?? [];
+    const match = users.find((u) => u.email?.trim().toLowerCase() === email);
+    if (match) return match;
+    if (users.length < PER_PAGE) break;
+  }
+  return undefined;
 }
 
 async function upsertSupabaseAuthUser(params: {
@@ -33,12 +59,7 @@ async function upsertSupabaseAuthUser(params: {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error('Faltan NEXT_PUBLIC_SUPABASE_URL/SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY.');
   const headers = { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' };
-  const listRes = await fetch(`${url}/auth/v1/admin/users?page=1&per_page=200`, { headers });
-  if (!listRes.ok) throw new Error(`Supabase listUsers respondió ${listRes.status}: ${await listRes.text()}`);
-  const listJson = (await listRes.json()) as {
-    users?: Array<{ id: string; email?: string; user_metadata?: Record<string, unknown>; app_metadata?: Record<string, unknown> }>;
-  };
-  const existing = (listJson.users ?? []).find((u) => u.email?.trim().toLowerCase() === params.email);
+  const existing = await findSupabaseUserByEmail(url, headers, params.email);
   const metadataPatch = { full_name: params.fullName, must_change_password: params.mustChangePassword };
 
   if (existing) {
@@ -106,21 +127,14 @@ async function main(): Promise<void> {
       const rows = await listPlatformAdmins(prisma);
       if (rows.length === 0) return console.log('No hay administradores en platform_admins.');
       console.table(
-        rows.map((r) => ({
-          email: r.email,
-          role: r.role,
-          estado: r.isActive ? 'ACTIVO' : 'REVOCADO',
-          notas: r.notes ?? '—',
-        })),
+        rows.map((r) => ({ email: r.email, role: r.role, estado: r.isActive ? 'ACTIVO' : 'REVOCADO', notas: r.notes ?? '—' })),
       );
       return;
     }
 
     if (command === 'provision' || command === 'create') {
       const rawEmail = rest[0];
-      if (!rawEmail || rawEmail.startsWith('--')) {
-        throw new Error('Debes indicar el correo. Ej: pnpm admin:users provision admin@tariffos.app');
-      }
+      if (!rawEmail || rawEmail.startsWith('--')) throw new Error('Debes indicar el correo. Ej: pnpm admin:users provision admin@tariffos.app');
       const email = normalizeAdminEmail(rawEmail);
       const role = getFlagValue(rest, '--role') ?? 'super_admin';
       const fullName = getFlagValue(rest, '--name') ?? email.split('@')[0] ?? 'Super Admin';
@@ -129,44 +143,16 @@ async function main(): Promise<void> {
       const temporaryPassword = explicitPassword ?? generateTemporaryAdminPassword();
 
       const auth = await upsertSupabaseAuthUser({
-        email,
-        password: temporaryPassword,
-        fullName,
-        role,
-        mustChangePassword: !explicitPassword,
+        email, password: temporaryPassword, fullName, role, mustChangePassword: !explicitPassword,
       });
       const ws = await prisma.$transaction((tx) =>
-        provisionInternalAdminWorkspace(tx, {
-          userId: auth.userId,
-          email,
-          fullName,
-          companyName,
-          role,
-          actor,
-        }),
+        provisionInternalAdminWorkspace(tx, { userId: auth.userId, email, fullName, companyName, role, actor }),
       );
       const mail = await sendSuperAdminCredentialsEmail({
-        recipientEmail: email,
-        recipientName: fullName,
-        temporaryPassword,
-        role,
+        recipientEmail: email, recipientName: fullName, temporaryPassword, role,
       });
 
-      console.log(
-        JSON.stringify(
-          {
-            ok: true,
-            email,
-            userId: auth.userId,
-            authAction: auth.action,
-            temporaryPassword,
-            ...ws,
-            emailDelivery: mail,
-          },
-          null,
-          2,
-        ),
-      );
+      console.log(JSON.stringify({ ok: true, email, userId: auth.userId, authAction: auth.action, temporaryPassword, ...ws, emailDelivery: mail }, null, 2));
       return;
     }
 
@@ -174,10 +160,7 @@ async function main(): Promise<void> {
       const email = rest[0];
       if (!email || email.startsWith('--')) throw new Error('Debes indicar el correo.');
       const row = await grantPlatformAdmin(prisma, {
-        email,
-        role: getFlagValue(rest, '--role') ?? 'super_admin',
-        notes: getFlagValue(rest, '--notes'),
-        actor,
+        email, role: getFlagValue(rest, '--role') ?? 'super_admin', notes: getFlagValue(rest, '--notes'), actor,
       });
       console.log(`✅ Admin activo: ${row.email} (rol: ${row.role})`);
       return;
@@ -186,11 +169,7 @@ async function main(): Promise<void> {
     if (command === 'revoke') {
       const email = rest[0];
       if (!email || email.startsWith('--')) throw new Error('Debes indicar el correo a revocar.');
-      const row = await revokePlatformAdmin(prisma, {
-        email,
-        reason: getFlagValue(rest, '--reason'),
-        actor,
-      });
+      const row = await revokePlatformAdmin(prisma, { email, reason: getFlagValue(rest, '--reason'), actor });
       console.log(`🛑 Acceso admin revocado para: ${row.email}`);
       return;
     }

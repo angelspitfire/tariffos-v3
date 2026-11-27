@@ -93,6 +93,63 @@ describe('platform-admins service', () => {
     );
   });
 
+  it('syncs profiles.role on grantPlatformAdmin and resets to user on revokePlatformAdmin', async () => {
+    const upsertMock = vi.fn<() => Promise<unknown>>().mockResolvedValue({
+      id: 'pa-sync',
+      email: 'ops@tariffos.app',
+      role: 'ops_billing',
+      isActive: true,
+    });
+    const findUniqueMock = vi.fn<() => Promise<unknown>>().mockResolvedValue({
+      id: 'pa-sync',
+      email: 'ops@tariffos.app',
+      role: 'ops_billing',
+      isActive: true,
+    });
+    const updateMock = vi.fn<() => Promise<unknown>>().mockResolvedValue({
+      id: 'pa-sync',
+      email: 'ops@tariffos.app',
+      role: 'ops_billing',
+      isActive: false,
+    });
+    const membershipFindManyMock = vi
+      .fn<() => Promise<Array<{ userId: string }>>>()
+      .mockResolvedValue([{ userId: 'usr-ops-1' }]);
+    const profileUpdateManyMock = vi.fn<() => Promise<unknown>>().mockResolvedValue({ count: 1 });
+
+    const client = {
+      platformAdmin: {
+        upsert: upsertMock,
+        findUnique: findUniqueMock,
+        findMany: vi.fn<() => Promise<unknown[]>>(),
+        update: updateMock,
+      },
+      membership: { findMany: membershipFindManyMock },
+      userProfile: { updateMany: profileUpdateManyMock },
+      adminAuditLog: { create: vi.fn<() => Promise<unknown>>() },
+    };
+
+    await grantPlatformAdmin(client, {
+      email: 'ops@tariffos.app',
+      role: 'ops_billing',
+      actor: 'cli:local',
+    });
+    expect(profileUpdateManyMock).toHaveBeenCalledWith({
+      where: { id: { in: ['usr-ops-1'] } },
+      data: { role: 'ops_billing' },
+    });
+
+    await revokePlatformAdmin(client, {
+      email: 'ops@tariffos.app',
+      reason: 'Salida',
+      actor: 'cli:local',
+    });
+    expect(profileUpdateManyMock).toHaveBeenLastCalledWith({
+      where: { id: { in: ['usr-ops-1'] } },
+      data: { role: 'user' },
+    });
+  });
+
   it('looks up active platform admin by normalized email', async () => {
     const findUniqueMock = vi
       .fn<() => Promise<{ role: string; isActive: boolean } | null>>()

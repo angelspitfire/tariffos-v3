@@ -1,11 +1,21 @@
 import { prisma } from '@tariffos/database';
 import { UserProfileSettingsSchema, type UserProfileSettings } from '@tariffos/shared-types';
+import { isPlatformAdminRole, normalizePlatformRole } from '@/lib/admin/permissions';
 import { resolveCloudTenantContext } from '@/lib/agent/cloud-session';
 import {
   downloadBrokerSignatureAsDataUrl,
   uploadBrokerSignature,
 } from '@/lib/workspace/signature-storage';
 import { DEFAULT_USER_PROFILE } from '@/lib/workspace/types';
+
+function resolveDisplayJobTitle(position: string | null | undefined, role: string | null | undefined): string {
+  if (position?.trim()) return position.trim();
+  const normalizedRole = normalizePlatformRole(role);
+  if (role?.trim() && !isPlatformAdminRole(normalizedRole) && role.trim().toLowerCase() !== 'user') {
+    return role.trim();
+  }
+  return DEFAULT_USER_PROFILE.role;
+}
 
 function mapProfileRow(
   row: {
@@ -16,6 +26,7 @@ function mapProfileRow(
     defaultIncoterm: string | null;
     preferredCurrency: string | null;
     detailLevel: string | null;
+    position?: string | null;
     role: string | null;
     updatedAt: Date;
   },
@@ -29,7 +40,7 @@ function mapProfileRow(
     companyName: row.companyName ?? DEFAULT_USER_PROFILE.companyName,
     brokerLicense: row.brokerLicense ?? DEFAULT_USER_PROFILE.brokerLicense,
     ...(brokerSignatureDataUrl ? { brokerSignatureDataUrl } : {}),
-    role: row.role ?? DEFAULT_USER_PROFILE.role,
+    role: resolveDisplayJobTitle(row.position, row.role),
     approvalWorkflowMode: row.approvalWorkflowMode ?? DEFAULT_USER_PROFILE.approvalWorkflowMode,
     defaultIncoterm: row.defaultIncoterm ?? DEFAULT_USER_PROFILE.defaultIncoterm,
     preferredCurrency: row.preferredCurrency === 'EUR' ? 'EUR' : 'USD',
@@ -94,7 +105,7 @@ export async function PUT(request: Request): Promise<Response> {
     defaultIncoterm: p.defaultIncoterm,
     preferredCurrency: p.preferredCurrency,
     detailLevel: p.detailLevel,
-    role: p.role,
+    position: p.role,
     ...signaturePatch,
   };
 

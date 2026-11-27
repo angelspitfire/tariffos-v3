@@ -4,16 +4,9 @@ import { AdminRoleBadge } from '@/components/admin/atoms/AdminRoleBadge';
 export interface PlatformAdminsListProps {
   admins: readonly PlatformAdminRecord[];
   loading: boolean;
-  busy: boolean;
-  onToggleAccess: (admin: PlatformAdminRecord) => void;
 }
 
-export function PlatformAdminsList({
-  admins,
-  loading,
-  busy,
-  onToggleAccess,
-}: PlatformAdminsListProps) {
+export function PlatformAdminsList({ admins, loading }: PlatformAdminsListProps) {
   if (loading) {
     return <p className="text-xs text-ink-muted">Cargando lista de administradores...</p>;
   }
@@ -29,26 +22,18 @@ export function PlatformAdminsList({
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono font-semibold text-ink-primary">{item.email}</span>
               <AdminRoleBadge role={item.role} />
-              {!item.isActive ? (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-500 border border-rose-500/30">
-                  Revocado
-                </span>
-              ) : null}
             </div>
             {item.notes ? <div className="text-[11px] text-ink-muted">{item.notes}</div> : null}
           </div>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => onToggleAccess(item)}
-            className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold cursor-pointer disabled:opacity-50 ${
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
               item.isActive
-                ? 'border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10'
-                : 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10'
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                : 'bg-rose-500/10 text-rose-500 border-rose-500/30'
             }`}
           >
-            {item.isActive ? 'Revocar' : 'Reactivar'}
-          </button>
+            {item.isActive ? 'Activo' : 'Revocado'}
+          </span>
         </div>
       ))}
     </div>

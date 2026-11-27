@@ -40,6 +40,41 @@ export interface PlatformAdminClient extends AdminAuditClient {
   };
 }
 
+interface ProfileSyncCapableClient {
+  membership?: {
+    findMany?: (args: {
+      where: { email: { equals: string; mode: 'insensitive' } };
+      select: { userId: true };
+    }) => Promise<Array<{ userId: string }>>;
+  };
+  userProfile?: {
+    updateMany?: (args: {
+      where: { id: { in: string[] } };
+      data: { role: string };
+    }) => Promise<unknown>;
+  };
+}
+
+async function syncProfilePlatformRole(
+  client: PlatformAdminClient,
+  email: string,
+  nextRole: string,
+): Promise<void> {
+  const syncClient = client as PlatformAdminClient & ProfileSyncCapableClient;
+  if (!syncClient.membership?.findMany || !syncClient.userProfile?.updateMany) return;
+  const rows = await syncClient.membership.findMany({
+    where: { email: { equals: email, mode: 'insensitive' } },
+    select: { userId: true },
+  });
+  const userIds = Array.from(new Set(rows.map((r) => r.userId).filter(Boolean)));
+  if (userIds.length === 0) return;
+
+  await syncClient.userProfile.updateMany({
+    where: { id: { in: userIds } },
+    data: { role: nextRole },
+  });
+}
+
 export function normalizeAdminEmail(raw: string): string {
   const normalized = raw.trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
@@ -82,6 +117,8 @@ export async function grantPlatformAdmin(
     },
   });
 
+  await syncProfilePlatformRole(client, email, role);
+
   await recordAdminAudit(client, {
     actorUserId: actor,
     actorEmail: actor,
@@ -115,6 +152,8 @@ export async function revokePlatformAdmin(
     where: { email },
     data: { isActive: false },
   });
+
+  await syncProfilePlatformRole(client, email, 'user');
 
   await recordAdminAudit(client, {
     actorUserId: actor,
