@@ -77,7 +77,7 @@ export function mapPayloadToA2UIEnvelope(
         options.legalRegimeSummary ??
         (permits.length > 0 ? permits.map((p) => p.code).join(', ') : 'Libre importación (NMF)'),
       confidenceLabel: `${payload.confidenceLevel} (${payload.confidencePct}%)`,
-      rgiApplied: payload.rgiSteps.map((s) => s.rule),
+      rgiApplied: Array.from(new Set(payload.rgiSteps.map((s) => s.rule.trim()).filter(Boolean))),
       preferredCanvasTab: 'dossier',
     });
   }

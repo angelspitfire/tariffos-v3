@@ -261,4 +261,24 @@ describe('Inline A2UI cards', () => {
     await user.click(screen.getByRole('button', { name: /Abrir Lote/i }));
     expect(onOpenBatch).toHaveBeenCalledTimes(1);
   });
+
+  it('VerdictCard deduplicates repeated RGI rules before slicing without duplicate React key warnings', () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      render(
+        <VerdictCard
+          verdict={{
+            ...sampleVerdict,
+            rgiApplied: ['RGI 1', 'RGI 1', 'RGI 6'],
+          }}
+        />,
+      );
+
+      expect(errorSpy).not.toHaveBeenCalled();
+      expect(screen.getAllByText('RGI 1')).toHaveLength(1);
+      expect(screen.getByText('RGI 6')).toBeInTheDocument();
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
 });

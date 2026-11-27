@@ -36,6 +36,9 @@ export function VerdictCard({
   const [descExpanded, setDescExpanded] = useState(false);
   const summaryPoints = verdict.executiveSummary ?? [];
   const isLongDesc = verdict.description.length > 210;
+  const uniqueRgiBadges = Array.from(
+    new Set(verdict.rgiApplied.map((r) => r.trim()).filter(Boolean)),
+  ).slice(0, 2);
 
   return (
     <section className="@container tos-rise rounded-card border border-border-subtle border-t-2 border-t-accent-brand/85 bg-surface-panel p-3.5 shadow-card sm:p-4">
@@ -45,9 +48,9 @@ export function VerdictCard({
             Clasificación sugerida
           </span>
           <ConfidenceBadge label={verdict.confidenceLabel} />
-          {verdict.rgiApplied.slice(0, 2).map((rgi) => (
+          {uniqueRgiBadges.map((rgi, idx) => (
             <span
-              key={rgi}
+              key={`${rgi}-${idx}`}
               className="rounded-full border border-border-subtle bg-surface-muted px-2 py-0.5 font-mono text-[10px] font-medium text-ink-secondary"
             >
               {rgi}

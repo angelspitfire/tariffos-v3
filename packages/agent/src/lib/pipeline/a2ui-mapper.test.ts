@@ -213,4 +213,19 @@ describe('mapPayloadToA2UIEnvelope', () => {
     expect(envelope.assistantMessage).toContain('Pendiente por confirmar');
     expect(envelope.assistantMessage).toContain('Confirmar ausencia de chasis remolcable');
   });
+
+  it('deduplicates repeated RGI rule labels in verdict.rgiApplied across multiple rgiSteps', () => {
+    const envelope = mapPayloadToA2UIEnvelope(
+      makeClassifiedPayload({
+        rgiSteps: [
+          { rule: 'RGI 1', note: 'Partida 84.14', items: ['Compresores'], conclusion: 'Compresores' },
+          { rule: ' RGI 1 ', note: 'Nota 2 Sección XVI', items: ['Estacionarios'], conclusion: 'Incluye estacionarios' },
+          { rule: 'RGI 6', note: 'Subpartida 8414.80.12.00', items: ['De tornillo'], conclusion: 'De tornillo' },
+        ],
+      }),
+    );
+
+    const verdict = envelope.inlineComponents.find((c) => c.type === 'verdict');
+    expect(verdict?.type === 'verdict' && verdict.rgiApplied).toEqual(['RGI 1', 'RGI 6']);
+  });
 });
