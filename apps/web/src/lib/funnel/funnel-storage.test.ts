@@ -1,13 +1,16 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   clearMockSession,
+  clearOnboardingDraft,
   consumePendingQuery,
   readMockProfile,
   readMockSession,
+  readOnboardingDraft,
   readPendingQuery,
   readSelectedPlan,
   saveMockProfile,
   saveMockSession,
+  saveOnboardingDraft,
   savePendingQuery,
   saveSelectedPlan,
 } from './funnel-storage';
@@ -68,5 +71,30 @@ describe('funnel-storage', () => {
     const saved = readMockProfile();
     expect(saved?.companyName).toBe('Aduanas del Caribe C.A.');
     expect(saved?.approvalWorkflowMode).toBe('always_review');
+  });
+
+  it('persists, reads, and clears multi-step onboarding wizard draft state', () => {
+    saveOnboardingDraft({
+      currentStep: 2,
+      fullName: 'María González',
+      role: 'Agente de Aduanas',
+      companyName: 'Aduanas Bolívar C.A.',
+      brokerLicense: 'SENIAT-1042',
+      defaultJurisdictionId: 've-seniat',
+      defaultIncoterm: 'CIF',
+      preferredCurrency: 'EUR',
+      approvalWorkflowMode: 'always_review',
+      selectedPlanId: 'pilot',
+      selectedBillingCycle: 'monthly',
+      updatedAt: '2026-11-27T10:40:00.000Z',
+    });
+
+    const loaded = readOnboardingDraft();
+    expect(loaded?.currentStep).toBe(2);
+    expect(loaded?.companyName).toBe('Aduanas Bolívar C.A.');
+    expect(loaded?.defaultIncoterm).toBe('CIF');
+
+    clearOnboardingDraft();
+    expect(readOnboardingDraft()).toBeNull();
   });
 });

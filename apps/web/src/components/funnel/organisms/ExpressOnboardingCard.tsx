@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
-import Link from 'next/link';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowRight, Building2, CheckCircle2, User } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
 import {
   SAAS_PLANS,
   type ApprovalWorkflowMode,
@@ -12,7 +11,14 @@ import {
   type SubscriptionPlanConfig,
 } from '@tariffos/shared-types';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
-import { FUNNEL_JURISDICTIONS, readMockSession } from '@/lib/funnel/funnel-storage';
+import {
+  clearOnboardingDraft,
+  FUNNEL_JURISDICTIONS,
+  readMockSession,
+  readOnboardingDraft,
+  saveOnboardingDraft,
+  type OnboardingWizardStep,
+} from '@/lib/funnel/funnel-storage';
 import {
   persistOnboardingProfile,
   resolveInitialOnboardingPlan,
@@ -21,9 +27,10 @@ import { isPlanAnnualOnly, isPlanFree, isPlanOneTime } from '@/lib/funnel/plan-r
 import { FunnelBadge } from '../atoms/FunnelBadge';
 import { FunnelButton } from '../atoms/FunnelButton';
 import { FunnelCard } from '../atoms/FunnelCard';
-import { FunnelInput, FunnelSelect } from '../atoms/FunnelField';
-import { OnboardingAdvancedAccordion } from '../molecules/OnboardingAdvancedAccordion';
 import { OnboardingPlanPicker } from '../molecules/OnboardingPlanPicker';
+import { OnboardingStepIdentity } from '../molecules/OnboardingStepIdentity';
+import { OnboardingStepOperation } from '../molecules/OnboardingStepOperation';
+import { OnboardingStepper } from '../molecules/OnboardingStepper';
 
 export interface ExpressOnboardingCardProps {
   cloudMode?: boolean;
@@ -48,21 +55,52 @@ export function ExpressOnboardingCard({
     urlPlan: preselectedPlanId ?? searchParams.get('plan'),
     urlCycle: preselectedCycle ?? searchParams.get('cycle'),
   });
+  const savedDraft = readOnboardingDraft();
   const mockSession = readMockSession();
 
-  const [fullName, setFullName] = useState(initialFullName ?? mockSession?.fullName ?? '');
-  const [role, setRole] = useState('Agente de Aduanas');
-  const [companyName, setCompanyName] = useState('');
-  const [brokerLicense, setBrokerLicense] = useState('');
-  const [jurisdictionId, setJurisdictionId] = useState(FUNNEL_JURISDICTIONS[0]?.id ?? 've-seniat');
-  const [incoterm, setIncoterm] = useState<IncotermCode>('FOB');
-  const [currency, setCurrency] = useState<'USD' | 'EUR'>('USD');
-  const [approvalMode, setApprovalMode] = useState<ApprovalWorkflowMode>('agent_decides');
-  const [selectedPlanId, setSelectedPlanId] = useState(initialPlan.planId);
-  const [billingCycle, setBillingCycle] = useState<SubscriptionBillingCycle>(initialPlan.billingCycle);
+  const [step, setStep] = useState<OnboardingWizardStep>(savedDraft?.currentStep ?? 1);
+  const [fullName, setFullName] = useState(savedDraft?.fullName || initialFullName || mockSession?.fullName || '');
+  const [role, setRole] = useState(savedDraft?.role ?? 'Agente de Aduanas');
+  const [companyName, setCompanyName] = useState(savedDraft?.companyName ?? '');
+  const [brokerLicense, setBrokerLicense] = useState(savedDraft?.brokerLicense ?? '');
+  const [jurisdictionId, setJurisdictionId] = useState(
+    savedDraft?.defaultJurisdictionId ?? FUNNEL_JURISDICTIONS[0]?.id ?? 've-seniat',
+  );
+  const [incoterm, setIncoterm] = useState<IncotermCode>(savedDraft?.defaultIncoterm ?? 'FOB');
+  const [currency, setCurrency] = useState<'USD' | 'EUR'>(savedDraft?.preferredCurrency ?? 'USD');
+  const [approvalMode, setApprovalMode] = useState<ApprovalWorkflowMode>(
+    savedDraft?.approvalWorkflowMode ?? 'agent_decides',
+  );
+  const [selectedPlanId, setSelectedPlanId] = useState(
+    initialPlan.preselected ? initialPlan.planId : (savedDraft?.selectedPlanId ?? initialPlan.planId),
+  );
+  const [billingCycle, setBillingCycle] = useState<SubscriptionBillingCycle>(
+    initialPlan.preselected ? initialPlan.billingCycle : (savedDraft?.selectedBillingCycle ?? initialPlan.billingCycle),
+  );
   const [showPlanPicker, setShowPlanPicker] = useState(!initialPlan.preselected);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    saveOnboardingDraft({
+      currentStep: step,
+      fullName,
+      role,
+      companyName,
+      brokerLicense,
+      defaultJurisdictionId: jurisdictionId,
+      defaultIncoterm: incoterm,
+      preferredCurrency: currency,
+      approvalWorkflowMode: approvalMode,
+      selectedPlanId,
+      selectedBillingCycle: billingCycle,
+      updatedAt: new Date().toISOString(),
+    });
+  }, [
+    step, fullName, role, companyName, brokerLicense,
+    jurisdictionId, incoterm, currency, approvalMode,
+    selectedPlanId, billingCycle,
+  ]);
 
   const matchedPlan = plans.find((p) => p.planId === selectedPlanId) ?? plans[0];
   const isOneTime = matchedPlan ? isPlanOneTime(matchedPlan) : false;
@@ -73,9 +111,23 @@ export function ExpressOnboardingCard({
       ? 'annual'
       : billingCycle;
 
+  const handleNextStep = () => {
+    if (step === 1 && (fullName.trim().length < 2 || companyName.trim().length < 2)) {
+      setError('Ingresa tu nombre completo y el nombre de tu empresa o agencia.');
+      return;
+    }
+    setError(null);
+    setStep((prev) => (prev === 1 ? 2 : 3));
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (step < 3) {
+      handleNextStep();
+      return;
+    }
     if (fullName.trim().length < 2 || companyName.trim().length < 2) {
+      setStep(1);
       setError('Ingresa tu nombre completo y el nombre de tu empresa o agencia.');
       return;
     }
@@ -99,6 +151,7 @@ export function ExpressOnboardingCard({
         isCloud,
       );
       if (!result.ok) return setError(result.error);
+      clearOnboardingDraft();
       router.push(
         isPaidPlan && !result.skipPaymentActivation
           ? `/activate-plan?plan=${encodeURIComponent(selectedPlanId)}&cycle=${effectiveCycle}`
@@ -112,133 +165,122 @@ export function ExpressOnboardingCard({
   return (
     <FunnelCard padding="p-6" className="space-y-5 shadow-xs">
       <div className="space-y-1.5">
-        <FunnelBadge variant="accent">Configuración express · 1 paso</FunnelBadge>
+        <FunnelBadge variant="accent">Configuración inicial</FunnelBadge>
         <h1 className="text-xl font-bold tracking-tight text-ink-primary">
           Prepara tu estación arancelaria
         </h1>
         <p className="text-xs text-ink-muted">
-          Solo 3 datos esenciales para personalizar tus dictámenes. Sin pasos bloqueantes.
+          Completa estos 3 pasos rápidos. Tu progreso queda guardado si necesitas continuar luego.
         </p>
       </div>
 
-      {!showPlanPicker && matchedPlan ? (
-        <div className="px-3.5 py-2.5 rounded-xl border border-accent-border bg-accent-soft/50 flex items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-2 text-ink-primary">
-            <CheckCircle2 className="w-4 h-4 text-accent-ink shrink-0" />
-            <span>
-              Plan preseleccionado: <strong>{matchedPlan.name}</strong>
-              {isOneTime
-                ? ` ($${matchedPlan.monthlyPriceUsd} · Pago único)`
-                : isPaidPlan
-                  ? ` (${effectiveCycle === 'annual' ? 'Anual' : 'Mensual'})`
-                  : ''}
-            </span>
+      <OnboardingStepper currentStep={step} onSelectStep={(next) => { setError(null); setStep(next); }} />
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {step === 1 ? (
+          <OnboardingStepIdentity
+            fullName={fullName}
+            role={role}
+            brokerLicense={brokerLicense}
+            companyName={companyName}
+            onChangeFullName={setFullName}
+            onChangeRole={setRole}
+            onChangeBrokerLicense={setBrokerLicense}
+            onChangeCompanyName={setCompanyName}
+          />
+        ) : null}
+
+        {step === 2 ? (
+          <OnboardingStepOperation
+            isCloud={isCloud}
+            jurisdictionId={jurisdictionId}
+            incoterm={incoterm}
+            currency={currency}
+            approvalMode={approvalMode}
+            onChangeJurisdiction={setJurisdictionId}
+            onChangeIncoterm={setIncoterm}
+            onChangeCurrency={setCurrency}
+            onChangeApprovalMode={setApprovalMode}
+          />
+        ) : null}
+
+        {step === 3 ? (
+          <div className="space-y-4">
+            {!showPlanPicker && matchedPlan ? (
+              <div className="flex items-center justify-between gap-2 rounded-xl border border-accent-border bg-accent-soft/50 px-3.5 py-2.5 text-xs">
+                <div className="flex items-center gap-2 text-ink-primary">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-accent-ink" />
+                  <span>
+                    Plan preseleccionado: <strong>{matchedPlan.name}</strong>
+                    {isOneTime
+                      ? ` ($${matchedPlan.monthlyPriceUsd} · Pago único)`
+                      : isPaidPlan
+                        ? ` (${effectiveCycle === 'annual' ? 'Anual' : 'Mensual'})`
+                        : ''}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPlanPicker(true)}
+                  className="cursor-pointer text-[11px] font-semibold text-accent-ink hover:underline"
+                >
+                  Cambiar
+                </button>
+              </div>
+            ) : (
+              <OnboardingPlanPicker
+                plans={plans}
+                selectedPlanId={selectedPlanId}
+                billingCycle={billingCycle}
+                onChangeCycle={setBillingCycle}
+                onSelect={(planId, cycle) => {
+                  setSelectedPlanId(planId);
+                  if (cycle) setBillingCycle(cycle);
+                }}
+              />
+            )}
           </div>
-          <button
-            type="button"
-            onClick={() => setShowPlanPicker(true)}
-            className="text-[11px] font-semibold text-accent-ink hover:underline cursor-pointer"
-          >
-            Cambiar
-          </button>
-        </div>
-      ) : null}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <FunnelInput
-          label="Nombre completo"
-          placeholder="Ej. María González"
-          leftIcon={<User className="w-4 h-4" />}
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          required
-        />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <FunnelSelect
-            label="Rol operativo"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <option value="Agente de Aduanas">Agente de Aduanas</option>
-            <option value="Analista de Comercio Exterior">Analista de Comercio Exterior</option>
-            <option value="Importador / Consignatario">Importador / Consignatario</option>
-            <option value="Auditor de Cumplimiento">Auditor de Cumplimiento</option>
-          </FunnelSelect>
-          <FunnelInput
-            label="Patente aduanal (opcional)"
-            placeholder="Ej. SENIAT-AA-1042"
-            value={brokerLicense}
-            onChange={(e) => setBrokerLicense(e.target.value)}
-          />
-        </div>
-        <FunnelInput
-          label="Empresa o agencia"
-          placeholder="Ej. Aduanas Bolívar C.A."
-          leftIcon={<Building2 className="w-4 h-4" />}
-          value={companyName}
-          onChange={(e) => setCompanyName(e.target.value)}
-          required
-        />
-        <div className="space-y-1">
-          <FunnelSelect
-            label="Jurisdicción por defecto"
-            value={jurisdictionId}
-            onChange={(e) => setJurisdictionId(e.target.value)}
-          >
-            {FUNNEL_JURISDICTIONS.map((jur) => {
-              const disabled = isCloud && !jur.liveInCloud;
-              return (
-                <option key={jur.id} value={jur.id} disabled={disabled}>
-                  {jur.country} · {jur.authority} ({jur.nomenclature})
-                  {disabled ? ' — Próximamente (Enterprise)' : ''}
-                </option>
-              );
-            })}
-          </FunnelSelect>
-          {isCloud ? (
-            <p className="text-[11px] text-ink-muted">
-              ¿Necesitas operar en CO, MX, US o UE desde hoy?{' '}
-              <Link href="/#contacto" className="font-semibold text-accent-ink hover:underline">
-                Solicita despliegue Enterprise
-              </Link>
-              .
-            </p>
-          ) : null}
-        </div>
-
-        <OnboardingAdvancedAccordion
-          defaultIncoterm={incoterm}
-          preferredCurrency={currency}
-          approvalWorkflowMode={approvalMode}
-          onChange={(patch) => {
-            if (patch.defaultIncoterm) setIncoterm(patch.defaultIncoterm);
-            if (patch.preferredCurrency) setCurrency(patch.preferredCurrency);
-            if (patch.approvalWorkflowMode) setApprovalMode(patch.approvalWorkflowMode);
-          }}
-        />
-
-        {showPlanPicker ? (
-          <OnboardingPlanPicker
-            plans={plans}
-            selectedPlanId={selectedPlanId}
-            billingCycle={billingCycle}
-            onChangeCycle={setBillingCycle}
-            onSelect={(planId, cycle) => {
-              setSelectedPlanId(planId);
-              if (cycle) setBillingCycle(cycle);
-            }}
-          />
         ) : null}
 
         {error ? <p role="alert" className="text-xs font-medium text-rose-600 dark:text-rose-400">{error}</p> : null}
 
-        <FunnelButton type="submit" variant="primary" size="lg" className="w-full" isLoading={isSubmitting} rightIcon={<ArrowRight className="w-4 h-4" />}>
-          {isPaidPlan ? 'Continuar a activación de plan' : 'Entrar al workspace'}
-        </FunnelButton>
+        <div className="flex items-center justify-between gap-3 pt-1">
+          {step > 1 ? (
+            <FunnelButton
+              type="button"
+              variant="outline"
+              size="lg"
+              leftIcon={<ArrowLeft className="h-4 w-4" />}
+              onClick={() => { setError(null); setStep((prev) => (prev === 3 ? 2 : 1)); }}
+            >
+              Anterior
+            </FunnelButton>
+          ) : (
+            <span />
+          )}
 
-        <p className="text-[11px] text-center text-ink-muted">
-          Podrás configurar tu patente y firma digital para dictámenes PDF más adelante en tu perfil.
-        </p>
+          {step < 3 ? (
+            <FunnelButton
+              type="button"
+              variant="primary"
+              size="lg"
+              rightIcon={<ArrowRight className="h-4 w-4" />}
+              onClick={handleNextStep}
+            >
+              Siguiente
+            </FunnelButton>
+          ) : (
+            <FunnelButton
+              type="submit"
+              variant="primary"
+              size="lg"
+              isLoading={isSubmitting}
+              rightIcon={<ArrowRight className="h-4 w-4" />}
+            >
+              {isPaidPlan ? 'Continuar a activación de plan' : 'Entrar al workspace'}
+            </FunnelButton>
+          )}
+        </div>
       </form>
     </FunnelCard>
   );

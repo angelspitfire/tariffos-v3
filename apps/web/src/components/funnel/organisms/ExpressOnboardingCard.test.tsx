@@ -2,7 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ExpressOnboardingCard } from './ExpressOnboardingCard';
-import { readMockProfile, saveSelectedPlan } from '@/lib/funnel/funnel-storage';
+import {
+  readMockProfile,
+  readOnboardingDraft,
+  saveOnboardingDraft,
+  saveSelectedPlan,
+} from '@/lib/funnel/funnel-storage';
 
 const mockPush = vi.fn();
 let mockSearchParams = new URLSearchParams();
@@ -20,22 +25,29 @@ describe('ExpressOnboardingCard', () => {
     mockSearchParams = new URLSearchParams();
   });
 
-  it('completes 1-step express onboarding defaulting to pilot and routes to /activate-plan', async () => {
+  it('completes classic 3-step onboarding wizard, persists draft step across steps, and routes to /activate-plan', async () => {
     const user = userEvent.setup();
     render(<ExpressOnboardingCard cloudMode={false} />);
 
-    // Plan picker is shown when no plan was preselected
-    expect(screen.getByText(/Elige cómo empezar/i)).toBeInTheDocument();
-
+    // Step 1: Organización y perfil
+    expect(screen.getByText(/Paso 1 de 3/i)).toBeInTheDocument();
     await user.type(screen.getByLabelText(/Nombre completo/i), 'María González');
     await user.type(screen.getByLabelText(/Empresa o agencia/i), 'Aduanas Bolívar C.A.');
-    await user.selectOptions(screen.getByLabelText(/Jurisdicción por defecto/i), 've-seniat');
+    await user.click(screen.getByRole('button', { name: /Siguiente/i }));
 
-    // Open collapsible Preferencias avanzadas
-    await user.click(screen.getByRole('button', { name: /Preferencias avanzadas/i }));
+    // Step 2: Operación y aduana
+    expect(screen.getByText(/Paso 2 de 3/i)).toBeInTheDocument();
+    expect(readOnboardingDraft()?.currentStep).toBe(2);
+    await user.selectOptions(screen.getByLabelText(/Jurisdicción por defecto/i), 've-seniat');
     await user.selectOptions(screen.getByLabelText(/Incoterm por defecto/i), 'CIF');
     await user.selectOptions(screen.getByLabelText(/Moneda principal/i), 'EUR');
     await user.selectOptions(screen.getByLabelText(/Modo de revisión/i), 'always_review');
+    await user.click(screen.getByRole('button', { name: /Siguiente/i }));
+
+    // Step 3: Plan y activación
+    expect(screen.getByText(/Paso 3 de 3/i)).toBeInTheDocument();
+    expect(screen.getByText(/Elige cómo empezar/i)).toBeInTheDocument();
+    expect(readOnboardingDraft()?.currentStep).toBe(3);
 
     await user.click(screen.getByRole('button', { name: /Continuar a activación/i }));
 
@@ -50,28 +62,42 @@ describe('ExpressOnboardingCard', () => {
       selectedPlanId: 'pilot',
       onboardingCompleted: true,
     });
+    expect(readOnboardingDraft()).toBeNull();
     expect(mockPush).toHaveBeenCalledWith('/activate-plan?plan=pilot&cycle=monthly');
   });
 
-  it('skips plan picker when plan is preselected and routes paid plan to /activate-plan', async () => {
-    const user = userEvent.setup();
-    saveSelectedPlan('agencia', 'annual');
-    mockSearchParams = new URLSearchParams('plan=agencia&cycle=annual');
+  it('restores the client last saved wizard step and fields on reload', () => {
+    saveOnboardingDraft({
+      currentStep: 2,
+      fullName: 'Sofía Márquez',
+      role: 'Agente de Aduanas',
+      companyName: 'Márquez Cargo C.A.',
+      brokerLicense: 'SENIAT-4012',
+      defaultJurisdictionId: 've-seniat',
+      defaultIncoterm: 'CIF',
+      preferredCurrency: 'EUR',
+      approvalWorkflowMode: 'direct_seal',
+      selectedPlanId: 'pilot',
+      selectedBillingCycle: 'monthly',
+      updatedAt: '2026-11-27T10:40:00.000Z',
+    });
 
-    render(<ExpressOnboardingCard cloudMode={false} />);
+    render(<ExpressOnboardingCard cloudMode />);
 
-    expect(screen.queryByText(/Elige cómo empezar/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/Plan preseleccionado/i)).toBeInTheDocument();
+    expect(screen.getByText(/Paso 2 de 3/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Incoterm por defecto/i)).toHaveValue('CIF');
 
-    await user.type(screen.getByLabelText(/Nombre completo/i), 'Luis Medina');
-    await user.type(screen.getByLabelText(/Empresa o agencia/i), 'Logística Caribe S.A.');
-    await user.click(screen.getByRole('button', { name: /Continuar a activación/i }));
-
-    expect(mockPush).toHaveBeenCalledWith('/activate-plan?plan=agencia&cycle=annual');
+    const select = screen.getByLabelText(/Jurisdicción por defecto/i) as HTMLSelectElement;
+    const veOption = Array.from(select.options).find((o) => o.value === 've-seniat');
+    const coOption = Array.from(select.options).find((o) => o.value === 'co-dian');
+    expect(veOption?.disabled).toBe(false);
+    expect(coOption?.disabled).toBe(true);
+    expect(coOption?.textContent).toMatch(/Próximamente|Enterprise/i);
   });
 
-  it('posts to /api/onboarding in cloud mode before routing to /activate-plan', async () => {
+  it('skips plan picker summary when plan is preselected and posts to /api/onboarding in cloud mode', async () => {
     const user = userEvent.setup();
+    saveSelectedPlan('pilot', 'monthly');
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ ok: true, mode: 'cloud' }),
@@ -79,12 +105,16 @@ describe('ExpressOnboardingCard', () => {
     vi.stubGlobal('fetch', fetchMock);
     mockSearchParams = new URLSearchParams('plan=pilot&cycle=monthly');
 
-    render(<ExpressOnboardingCard cloudMode />);
+    render(<ExpressOnboardingCard cloudMode initialFullName="Elena Torres" />);
 
-    await user.type(screen.getByLabelText(/Nombre completo/i), 'Elena Torres');
+    expect(screen.getByLabelText(/Nombre completo/i)).toHaveValue('Elena Torres');
     await user.selectOptions(screen.getByLabelText(/Rol operativo/i), 'Auditor de Cumplimiento');
     await user.type(screen.getByLabelText(/Patente aduanal/i), 'SENIAT-AA-9001');
     await user.type(screen.getByLabelText(/Empresa o agencia/i), 'Torres Aduanas');
+    await user.click(screen.getByRole('button', { name: /Siguiente/i }));
+    await user.click(screen.getByRole('button', { name: /Siguiente/i }));
+
+    expect(screen.getByText(/Plan preseleccionado/i)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Continuar a activación/i }));
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -119,33 +149,27 @@ describe('ExpressOnboardingCard', () => {
 
     await user.type(screen.getByLabelText(/Nombre completo/i), 'Angel Fernandez');
     await user.type(screen.getByLabelText(/Empresa o agencia/i), 'TariffOS');
+    await user.click(screen.getByRole('button', { name: /Siguiente/i }));
+    await user.click(screen.getByRole('button', { name: /Siguiente/i }));
     await user.click(screen.getByRole('button', { name: /Continuar a activación/i }));
 
     expect(mockPush).toHaveBeenCalledWith('/app');
     vi.unstubAllGlobals();
   });
 
-  it('renders PlanRecommender inside onboarding when choosing a plan and applies recommendation', async () => {
+  it('renders PlanRecommender inside step 3 when choosing a plan and applies recommendation', async () => {
     const user = userEvent.setup();
     render(<ExpressOnboardingCard cloudMode={false} />);
+
+    await user.type(screen.getByLabelText(/Nombre completo/i), 'Carlos Rivas');
+    await user.type(screen.getByLabelText(/Empresa o agencia/i), 'Caribe Cargo');
+    await user.click(screen.getByRole('button', { name: /Siguiente/i }));
+    await user.click(screen.getByRole('button', { name: /Siguiente/i }));
 
     await user.click(screen.getByRole('button', { name: /Recomendar plan/i }));
     await user.click(screen.getByRole('button', { name: /250–1,000/i }));
     await user.click(screen.getByRole('button', { name: /Aplicar plan/i }));
 
     expect(screen.getAllByText(/Recomendado/i).length).toBeGreaterThanOrEqual(2);
-  });
-
-  it('pre-fills fullName from initialFullName and restricts cloud self-serve jurisdictions to active countries', () => {
-    render(<ExpressOnboardingCard cloudMode initialFullName="Sofía Márquez" />);
-
-    expect(screen.getByLabelText(/Nombre completo/i)).toHaveValue('Sofía Márquez');
-
-    const select = screen.getByLabelText(/Jurisdicción por defecto/i) as HTMLSelectElement;
-    const veOption = Array.from(select.options).find((o) => o.value === 've-seniat');
-    const coOption = Array.from(select.options).find((o) => o.value === 'co-dian');
-    expect(veOption?.disabled).toBe(false);
-    expect(coOption?.disabled).toBe(true);
-    expect(coOption?.textContent).toMatch(/Próximamente|Enterprise/i);
   });
 });

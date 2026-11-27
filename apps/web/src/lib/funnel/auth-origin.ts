@@ -45,12 +45,12 @@ export function resolveBrowserAuthOrigin(
   if (normalizedWindow && !isLoopbackOrigin(normalizedWindow)) {
     return normalizedWindow;
   }
+  if (normalizedWindow && process.env.NODE_ENV === 'development') {
+    return normalizedWindow;
+  }
   const configured = readConfiguredPublicOrigin();
   if (configured) {
     return configured;
-  }
-  if (normalizedWindow && process.env.NODE_ENV === 'development') {
-    return normalizedWindow;
   }
   return FALLBACK_PRODUCTION_ORIGIN;
 }
@@ -70,13 +70,13 @@ export function resolveServerAuthOrigin(request: Request): string {
     return requestOrigin;
   }
 
+  if (requestOrigin && process.env.NODE_ENV === 'development') {
+    return requestOrigin;
+  }
+
   const configured = readConfiguredPublicOrigin();
   if (configured) {
     return configured;
-  }
-
-  if (requestOrigin && process.env.NODE_ENV === 'development') {
-    return requestOrigin;
   }
 
   return FALLBACK_PRODUCTION_ORIGIN;

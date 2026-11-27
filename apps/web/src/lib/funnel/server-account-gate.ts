@@ -4,7 +4,7 @@ import { resolvePlatformAdminContext } from '@/lib/admin/admin-session';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 import { getAuthenticatedUser } from '@/lib/supabase/server';
 
-export type FunnelGateRoute = 'onboarding' | 'activate-plan';
+export type FunnelGateRoute = 'onboarding' | 'activate-plan' | 'app';
 
 export interface FunnelMembershipSnapshot {
   tenantId: string;
@@ -32,6 +32,11 @@ export function decideFunnelGateRedirect(params: DecideFunnelGateParams): string
       return '/app';
     }
     return route === 'activate-plan' ? '/onboarding' : null;
+  }
+
+  if (route === 'app') {
+    if (!membership?.isOnboarded) return '/onboarding';
+    return null;
   }
 
   if (route === 'onboarding') {
@@ -99,4 +104,51 @@ export async function resolveCloudFunnelGateRedirect(params: {
     membership,
     hasFunnelPlanParam: params.hasFunnelPlanParam,
   });
+}
+
+function buildPlanQuerySuffix(nextPath: string): string {
+  const qIdx = nextPath.indexOf('?');
+  if (qIdx < 0) return '';
+  const params = new URLSearchParams(nextPath.slice(qIdx + 1));
+  const plan = params.get('plan');
+  const cycle = params.get('cycle');
+  if (!plan) return '';
+  return cycle ? `?plan=${encodeURIComponent(plan)}&cycle=${encodeURIComponent(cycle)}` : `?plan=${encodeURIComponent(plan)}`;
+}
+
+export async function resolvePostAuthCallbackRedirect(params: {
+  userId: string;
+  nextPath: string;
+}): Promise<string> {
+  const [adminAuth, membershipRow] = await Promise.all([
+    resolvePlatformAdminContext('admin:read'),
+    prisma.membership.findFirst({
+      where: { userId: params.userId },
+      select: {
+        tenantId: true,
+        tenant: { select: { isOnboarded: true, billingStatus: true } },
+      },
+    }),
+  ]);
+
+  const membership = membershipRow?.tenant
+    ? {
+        tenantId: membershipRow.tenantId,
+        isOnboarded: membershipRow.tenant.isOnboarded,
+        billingStatus: membershipRow.tenant.billingStatus,
+      }
+    : null;
+
+  const planQuery = buildPlanQuerySuffix(params.nextPath);
+  if (adminAuth.ok) {
+    return membership ? (params.nextPath || '/app') : `/onboarding${planQuery}`;
+  }
+
+  if (!membership?.isOnboarded) {
+    return `/onboarding${planQuery}`;
+  }
+  if (membership.billingStatus === 'PAST_DUE') {
+    return `/activate-plan${planQuery}`;
+  }
+  return params.nextPath || '/app';
 }

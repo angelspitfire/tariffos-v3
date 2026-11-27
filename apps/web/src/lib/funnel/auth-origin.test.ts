@@ -59,4 +59,13 @@ describe('auth-origin', () => {
       'https://tariffos.app/auth/callback?next=%2Fapp',
     );
   });
+
+  it('keeps local loopback origin in development even if NEXT_PUBLIC_SITE_URL points to production', () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://tariffos.app');
+
+    expect(resolveBrowserAuthOrigin('http://localhost:3003')).toBe('http://localhost:3003');
+    const req = new Request('http://localhost:3003/auth/callback?code=abc');
+    expect(resolveServerAuthOrigin(req)).toBe('http://localhost:3003');
+  });
 });

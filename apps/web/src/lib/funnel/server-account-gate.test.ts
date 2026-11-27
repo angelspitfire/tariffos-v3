@@ -30,6 +30,7 @@ vi.mock('@tariffos/database', () => ({
 import {
   decideFunnelGateRedirect,
   resolveCloudFunnelGateRedirect,
+  resolvePostAuthCallbackRedirect,
 } from './server-account-gate';
 
 describe('server-account-gate (payment & onboarding bypass)', () => {
@@ -172,5 +173,68 @@ describe('server-account-gate (payment & onboarding bypass)', () => {
         hasFunnelPlanParam: true,
       }),
     ).toBeNull();
+  });
+
+  it('guards /app for unauthenticated or un-onboarded Google/email users while allowing onboarded PAST_DUE read-only mode', () => {
+    expect(
+      decideFunnelGateRedirect({
+        route: 'app',
+        isAuthenticated: false,
+        isPlatformAdmin: false,
+        membership: null,
+        hasFunnelPlanParam: false,
+      }),
+    ).toBe('/login?next=%2Fapp');
+
+    expect(
+      decideFunnelGateRedirect({
+        route: 'app',
+        isAuthenticated: true,
+        isPlatformAdmin: false,
+        membership: null,
+        hasFunnelPlanParam: false,
+      }),
+    ).toBe('/onboarding');
+
+    expect(
+      decideFunnelGateRedirect({
+        route: 'app',
+        isAuthenticated: true,
+        isPlatformAdmin: false,
+        membership: { tenantId: 'ten-pd', isOnboarded: true, billingStatus: 'PAST_DUE' },
+        hasFunnelPlanParam: false,
+      }),
+    ).toBeNull();
+  });
+
+  it('routes Google/OAuth callback to /onboarding for new users without membership and to /activate-plan for PAST_DUE users', async () => {
+    mocks.resolvePlatformAdminContext.mockResolvedValue({ ok: false });
+    mocks.membershipFindFirst.mockResolvedValueOnce(null);
+
+    const newGoogleUserDest = await resolvePostAuthCallbackRedirect({
+      userId: 'usr-google-new',
+      nextPath: '/app',
+    });
+    expect(newGoogleUserDest).toBe('/onboarding');
+
+    mocks.membershipFindFirst.mockResolvedValueOnce({
+      tenantId: 'ten-pd',
+      tenant: { isOnboarded: true, billingStatus: 'PAST_DUE' },
+    });
+    const pastDueDest = await resolvePostAuthCallbackRedirect({
+      userId: 'usr-google-pd',
+      nextPath: '/app',
+    });
+    expect(pastDueDest).toBe('/activate-plan');
+
+    mocks.membershipFindFirst.mockResolvedValueOnce({
+      tenantId: 'ten-ok',
+      tenant: { isOnboarded: true, billingStatus: 'ACTIVE' },
+    });
+    const activeDest = await resolvePostAuthCallbackRedirect({
+      userId: 'usr-google-ok',
+      nextPath: '/app',
+    });
+    expect(activeDest).toBe('/app');
   });
 });

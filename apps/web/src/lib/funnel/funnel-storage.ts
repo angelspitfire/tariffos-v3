@@ -11,6 +11,24 @@ const PENDING_QUERY_KEYS = [LEGACY_PENDING_QUERY_KEY, PENDING_QUERY_KEY] as cons
 const SELECTED_PLAN_KEY = 'tariffos_selected_plan_v1';
 const MOCK_SESSION_KEY = 'tariffos_mock_session_v1';
 const MOCK_PROFILE_KEY = 'tariffos_mock_profile_v1';
+const ONBOARDING_DRAFT_KEY = 'tariffos_onboarding_draft_v1';
+
+export type OnboardingWizardStep = 1 | 2 | 3;
+
+export interface OnboardingWizardDraft {
+  currentStep: OnboardingWizardStep;
+  fullName: string;
+  role: string;
+  companyName: string;
+  brokerLicense: string;
+  defaultJurisdictionId: string;
+  defaultIncoterm: IncotermCode;
+  preferredCurrency: 'USD' | 'EUR';
+  approvalWorkflowMode: ApprovalWorkflowMode;
+  selectedPlanId: string;
+  selectedBillingCycle: SubscriptionBillingCycle;
+  updatedAt: string;
+}
 
 export interface SelectedPlanPreference {
   planId: string;
@@ -174,4 +192,16 @@ export function saveMockProfile(profile: OnboardingProfileDraft): void {
 
 export function readMockProfile(): OnboardingProfileDraft | null {
   return readJson<OnboardingProfileDraft>('local', MOCK_PROFILE_KEY);
+}
+
+export function saveOnboardingDraft(draft: OnboardingWizardDraft): void {
+  writeJson('local', ONBOARDING_DRAFT_KEY, draft);
+}
+
+export function readOnboardingDraft(): OnboardingWizardDraft | null {
+  return readJson<OnboardingWizardDraft>('local', ONBOARDING_DRAFT_KEY);
+}
+
+export function clearOnboardingDraft(): void {
+  removeKey('local', ONBOARDING_DRAFT_KEY);
 }
