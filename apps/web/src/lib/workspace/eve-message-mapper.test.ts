@@ -48,6 +48,8 @@ describe('eve-message-mapper', () => {
     expect(getEveToolLabel('classify_item', true)).toContain('completada');
     expect(getEveToolLabel('web_search', false)).toContain('Parallel Fast');
     expect(getEveToolLabel('calculate_duties', true)).toContain('Tributos');
+    expect(getEveToolLabel('get_bcv_rate', false)).toContain('BCV');
+    expect(getEveToolLabel('get_bcv_rate', true)).toContain('BCV');
     expect(getEveToolLabel('unknown_tool', false)).toContain('unknown_tool');
   });
 

@@ -146,7 +146,7 @@ describe('Inline A2UI cards', () => {
     expect(onAcceptTentative).toHaveBeenCalledWith('8501.52.10.00');
 
     // Type into missing critical input and press Enter to submit
-    const specInput = screen.getByLabelText(/Especificaciones técnicas clave/i);
+    const specInput = screen.getByLabelText(/Especificaciones técnicas/i);
     await user.type(specInput, '15 kW 440V trifásico{Enter}');
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(onSubmit.mock.calls[0][0].attributes.find((a: { key: string }) => a.key === 'especificaciones_tecnicas')?.value).toContain('15 kW');

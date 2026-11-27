@@ -10,6 +10,7 @@ import type {
   UserProfileSettings,
 } from '@tariffos/shared-types';
 import type { ThreadArtifactSummary } from '@/lib/workspace/artifact-versions';
+import { resolveEffectiveCanvasTab } from '@/lib/workspace/canvas-tabs';
 import { ArtifactDirectoryDrawer } from '../molecules/ArtifactDirectoryDrawer';
 import { CanvasStatusStrip } from '../molecules/CanvasStatusStrip';
 import { CanvasTitleBar } from '../molecules/CanvasTitleBar';
@@ -97,27 +98,7 @@ export function WorkspaceCanvasPane({
   }
 
   const workflowMode: ApprovalWorkflowMode = profile.approvalWorkflowMode;
-  const effectiveTab: CanvasTabType =
-    (activeTab === 'batch_manifest' && batch) ||
-    (activeTab === 'dossier' && dossier) ||
-    (activeTab === 'calculator' && calculator) ||
-    (activeTab === 'hierarchy' && hierarchy) ||
-    (activeTab === 'comparison' && comparison) ||
-    (activeTab === 'rgi_comparator' && (dossier || comparison || hierarchy)) ||
-    (activeTab === 'regulatory_diff' && dossier)
-      ? activeTab
-      : batch
-        ? 'batch_manifest'
-        : dossier
-          ? 'dossier'
-          : calculator
-            ? 'calculator'
-            : hierarchy
-              ? 'hierarchy'
-              : comparison
-                ? 'comparison'
-                : activeTab;
-
+  const effectiveTab = resolveEffectiveCanvasTab(components, activeTab);
   const titleLabel = dossier?.hsCode ?? calculator?.hsCode ?? (batch ? `Lote (${batch.items.length} ítems)` : 'Expediente');
 
   return (

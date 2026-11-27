@@ -1,19 +1,16 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type {
   A2UICalculatorComponent,
   A2UIDossierComponent,
   IncotermCode,
   JurisdictionConfig,
 } from '@tariffos/shared-types';
-import {
-  calculateDeterministicDuties,
-  inferTradeParamsFromContext,
-} from '@/lib/workspace/duty-engine';
+import { calculateDeterministicDuties, inferTradeParamsFromContext } from '@/lib/workspace/duty-engine';
 import { useBcvRate } from '@/lib/workspace/use-bcv-rate';
 import { CifTopKpiStrip } from '../molecules/CifTopKpiStrip';
-import { DutyAdvancedAccordion } from '../molecules/DutyAdvancedAccordion';
+import { DutyAdvancedAccordion, type DutyAdvancedValues } from '../molecules/DutyAdvancedAccordion';
 
 interface DutyCalculatorViewProps {
   calculator: A2UICalculatorComponent;
@@ -30,63 +27,70 @@ function fmt(currency: string, val: number): string {
   })}`;
 }
 
-export function DutyCalculatorView({
-  calculator,
-  jurisdiction,
-  dossier,
-}: DutyCalculatorViewProps) {
+export function DutyCalculatorView({ calculator, jurisdiction, dossier }: DutyCalculatorViewProps) {
   const inferred = useMemo(
     () => inferTradeParamsFromContext({ calculator, dossier, jurisdiction }),
-    [calculator, dossier, jurisdiction]
+    [calculator, dossier, jurisdiction],
   );
 
   const [incoterm, setIncoterm] = useState<IncotermCode>(inferred.incoterm);
   const [invoiceAmount, setInvoiceAmount] = useState(10000);
   const [freightAmount, setFreightAmount] = useState(850);
   const [insuranceAmount, setInsuranceAmount] = useState(150);
-  const [originCode, setOriginCode] = useState(inferred.originCode);
-  const [adValorem, setAdValorem] = useState(calculator.adValoremPercent);
-  const [vat, setVat] = useState(calculator.vatPercent);
-  const [customsFee, setCustomsFee] = useState(calculator.customsServiceFeePercent);
-  const [exchangeRate, setExchangeRate] = useState(calculator.suggestedExchangeRate);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [userEditedRate, setUserEditedRate] = useState(false);
+  const [advanced, setAdvanced] = useState<DutyAdvancedValues>({
+    originCode: inferred.originCode,
+    adValorem: calculator.adValoremPercent,
+    vat: calculator.vatPercent,
+    customsFee: calculator.customsServiceFeePercent,
+    exchangeRate: calculator.suggestedExchangeRate,
+    hasCertificate: false,
+    applyExemption: calculator.exemptionAvailable,
+    applyAntidumping: (calculator.antidumpingPercent ?? 0) > 0,
+    antidumpingPercent: calculator.antidumpingPercent ?? 20,
+  });
+
+  const handlePatchAdvanced = useCallback((patch: Partial<DutyAdvancedValues>) => {
+    if (patch.exchangeRate !== undefined) {
+      setUserEditedRate(true);
+    }
+    setAdvanced((prev) => ({ ...prev, ...patch }));
+  }, []);
+
+  const handleBcvResolved = useCallback((rate: number) => {
+    setAdvanced((prev) => ({ ...prev, exchangeRate: rate }));
+  }, []);
+
   const bcv = useBcvRate({
     jurisdictionId: jurisdiction.id,
     currencyCode: calculator.currencyCode,
-    onRateResolved: setExchangeRate,
+    isUserEdited: userEditedRate,
+    onRateResolved: handleBcvResolved,
   });
-  const [hasCertificate, setHasCertificate] = useState(false);
-  const [applyExemption, setApplyExemption] = useState(calculator.exemptionAvailable);
-  const [applyAntidumping, setApplyAntidumping] = useState((calculator.antidumpingPercent ?? 0) > 0);
-  const [antidumpingPercent, setAntidumpingPercent] = useState(calculator.antidumpingPercent ?? 20);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const result = useMemo(
     () =>
       calculateDeterministicDuties({
         jurisdictionId: jurisdiction.id,
         hsCode: calculator.hsCode,
-        originCode,
+        originCode: advanced.originCode,
         incoterm,
         invoiceAmount,
         originChargesAmount: 0,
         freightAmount,
         insuranceAmount,
-        baseAdValoremPercent: adValorem,
-        vatPercent: vat,
-        customsFeePercent: customsFee,
-        exchangeRate,
-        applyExemption,
-        hasCertificateOfOrigin: hasCertificate,
+        baseAdValoremPercent: advanced.adValorem,
+        vatPercent: advanced.vat,
+        customsFeePercent: advanced.customsFee,
+        exchangeRate: advanced.exchangeRate,
+        applyExemption: advanced.applyExemption,
+        hasCertificateOfOrigin: advanced.hasCertificate,
         preferentialDiscountOverridePercent: calculator.preferentialDiscountPercent ?? null,
-        applyAntidumping,
-        antidumpingPercent,
+        applyAntidumping: advanced.applyAntidumping,
+        antidumpingPercent: advanced.antidumpingPercent,
       }),
-    [
-      jurisdiction.id, calculator.hsCode, calculator.preferentialDiscountPercent,
-      originCode, incoterm, invoiceAmount, freightAmount, insuranceAmount,
-      adValorem, vat, customsFee, exchangeRate, applyExemption, hasCertificate,
-      applyAntidumping, antidumpingPercent,
-    ]
+    [jurisdiction.id, calculator.hsCode, calculator.preferentialDiscountPercent, incoterm, invoiceAmount, freightAmount, insuranceAmount, advanced],
   );
 
   return (
@@ -145,28 +149,20 @@ export function DutyCalculatorView({
       <DutyAdvancedAccordion
         open={advancedOpen}
         onToggle={() => setAdvancedOpen((prev) => !prev)}
-        originCode={originCode}
-        onOriginChange={setOriginCode}
-        adValorem={adValorem}
-        onAdValoremChange={setAdValorem}
-        vat={vat}
-        onVatChange={setVat}
-        customsFee={customsFee}
-        onCustomsFeeChange={setCustomsFee}
-        exchangeRate={exchangeRate}
-        onExchangeRateChange={setExchangeRate}
+        values={advanced}
+        onPatch={handlePatchAdvanced}
         bcvDate={bcv.rateMeta?.valueDate}
+        bcvError={bcv.error}
         isRefreshingBcv={bcv.isRefreshing}
-        onRefreshBcv={bcv.isBcvJurisdiction ? bcv.refreshBcvRate : undefined}
+        onRefreshBcv={
+          bcv.isBcvJurisdiction
+            ? () => {
+                setUserEditedRate(false);
+                void bcv.refreshBcvRate();
+              }
+            : undefined
+        }
         localCurrencyCode={calculator.localCurrencyCode}
-        hasCertificate={hasCertificate}
-        onHasCertificateChange={setHasCertificate}
-        applyExemption={applyExemption}
-        onApplyExemptionChange={setApplyExemption}
-        applyAntidumping={applyAntidumping}
-        onApplyAntidumpingChange={setApplyAntidumping}
-        antidumpingPercent={antidumpingPercent}
-        onAntidumpingPercentChange={setAntidumpingPercent}
         agreement={result.agreement}
       />
 

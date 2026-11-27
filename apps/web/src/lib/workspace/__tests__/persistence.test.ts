@@ -47,8 +47,23 @@ const SAMPLE_PROFILE: UserProfileSettings = {
   updatedAt: '2026-11-25T10:00:00.000Z',
 };
 
+function makeCloudStub(overrides: Partial<IPersistence> = {}): IPersistence {
+  return {
+    loadThreads: vi.fn<IPersistence['loadThreads']>().mockResolvedValue([]),
+    saveThread: vi.fn<IPersistence['saveThread']>().mockResolvedValue(undefined),
+    deleteThread: vi.fn<IPersistence['deleteThread']>().mockResolvedValue(undefined),
+    loadSkuPrecedents: vi.fn<IPersistence['loadSkuPrecedents']>().mockResolvedValue([]),
+    saveSkuPrecedent: vi.fn<IPersistence['saveSkuPrecedent']>().mockResolvedValue(undefined),
+    deleteSkuPrecedent: vi.fn<IPersistence['deleteSkuPrecedent']>().mockResolvedValue(undefined),
+    loadUserProfile: vi.fn<IPersistence['loadUserProfile']>().mockResolvedValue(null),
+    saveUserProfile: vi.fn<IPersistence['saveUserProfile']>().mockResolvedValue(undefined),
+    clearLocal: vi.fn<IPersistence['clearLocal']>().mockResolvedValue(undefined),
+    ...overrides,
+  };
+}
+
 describe('IndexedDBAdapter and DualWritePersistence', () => {
-  it('persists threads, SKU precedents, and user profile in-memory when indexedDB is unavailable', async () => {
+  it('persists, deletes, and clears threads, SKU precedents, and user profile in-memory', async () => {
     const adapter = new IndexedDBAdapter({ forceMemoryFallback: true });
 
     await adapter.saveThread(SAMPLE_THREAD);
@@ -65,26 +80,45 @@ describe('IndexedDBAdapter and DualWritePersistence', () => {
 
     await adapter.deleteThread('thread-1');
     expect(await adapter.loadThreads()).toHaveLength(0);
+
+    await adapter.saveThread(SAMPLE_THREAD);
+    await adapter.saveSkuPrecedent(SAMPLE_SKU);
+    await adapter.clearLocal();
+    expect(await adapter.loadThreads()).toEqual([]);
+    expect(await adapter.loadSkuPrecedents()).toEqual([]);
+    expect(await adapter.loadUserProfile()).toBeNull();
   });
 
-  it('writes to local adapter and mirrors to cloud adapter without failing on cloud error', async () => {
+  it('falls back to local cache when cloud throws on load or save', async () => {
     const local = new IndexedDBAdapter({ forceMemoryFallback: true });
     const saveThreadCloud = vi.fn<IPersistence['saveThread']>().mockRejectedValue(new Error('network down'));
-    const cloud: IPersistence = {
-      loadThreads: vi.fn<IPersistence['loadThreads']>().mockResolvedValue([]),
+    const cloud = makeCloudStub({
+      loadThreads: vi.fn<IPersistence['loadThreads']>().mockRejectedValue(new Error('network down')),
       saveThread: saveThreadCloud,
-      deleteThread: vi.fn<IPersistence['deleteThread']>().mockResolvedValue(undefined),
-      loadSkuPrecedents: vi.fn<IPersistence['loadSkuPrecedents']>().mockResolvedValue([]),
-      saveSkuPrecedent: vi.fn<IPersistence['saveSkuPrecedent']>().mockResolvedValue(undefined),
-      deleteSkuPrecedent: vi.fn<IPersistence['deleteSkuPrecedent']>().mockResolvedValue(undefined),
-      loadUserProfile: vi.fn<IPersistence['loadUserProfile']>().mockResolvedValue(null),
-      saveUserProfile: vi.fn<IPersistence['saveUserProfile']>().mockResolvedValue(undefined),
-    };
+    });
 
     const dual = new DualWritePersistence(local, cloud);
     await dual.saveThread(SAMPLE_THREAD);
 
     expect(saveThreadCloud).toHaveBeenCalledWith(SAMPLE_THREAD);
     expect(await dual.loadThreads()).toEqual([SAMPLE_THREAD]);
+
+    await dual.clearLocal();
+    expect(await local.loadThreads()).toEqual([]);
+  });
+
+  it('treats successful cloud load (even empty array) as authoritative so deleted items do not resurrect', async () => {
+    const local = new IndexedDBAdapter({ forceMemoryFallback: true });
+    await local.saveThread(SAMPLE_THREAD);
+    await local.saveSkuPrecedent(SAMPLE_SKU);
+
+    const cloud = makeCloudStub({
+      loadThreads: vi.fn<IPersistence['loadThreads']>().mockResolvedValue([]),
+      loadSkuPrecedents: vi.fn<IPersistence['loadSkuPrecedents']>().mockResolvedValue([]),
+    });
+
+    const dual = new DualWritePersistence(local, cloud);
+    expect(await dual.loadThreads()).toEqual([]);
+    expect(await dual.loadSkuPrecedents()).toEqual([]);
   });
 });

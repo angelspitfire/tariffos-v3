@@ -8,7 +8,7 @@ import type { WorkspaceMessage } from './types';
 
 interface BuildInlineActionsParams {
   onSelectCanvasMessage: (messageId: string, tab: CanvasTabType) => void;
-  onExportPdf: () => void;
+  onExportPdf: (message: WorkspaceMessage) => void;
   onSaveSku: (message: WorkspaceMessage) => void;
   onClassify: (prompt: string) => void;
 }
@@ -21,7 +21,7 @@ export function buildWorkspaceInlineActions({
 }: BuildInlineActionsParams): InlineCardActions {
   return {
     onOpenCanvasTab: (msg, tab) => onSelectCanvasMessage(msg.id, tab),
-    onExportPdf: () => onExportPdf(),
+    onExportPdf: (msg) => onExportPdf(msg),
     onSaveSku,
     onSubmitSheet: (sheet: A2UIMerceologicalSheet) => {
       const summary = sheet.attributes

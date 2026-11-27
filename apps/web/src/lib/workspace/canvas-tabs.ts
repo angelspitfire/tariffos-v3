@@ -134,3 +134,35 @@ export function shouldShowArtifactStrip(openArtifactsCount: number): boolean {
 export function shouldShowVersionHistory(versionCount: number): boolean {
   return versionCount >= 2;
 }
+
+/** Resolves a valid active canvas tab, falling back to priority component tabs. */
+export function resolveEffectiveCanvasTab(
+  components: readonly A2UICanvasComponent[],
+  activeTab: CanvasTabType,
+): CanvasTabType {
+  const has = (type: A2UICanvasComponent['type']) => components.some((c) => c.type === type);
+  const dossier = has('dossier');
+  const calculator = has('calculator');
+  const hierarchy = has('hierarchy');
+  const comparison = has('comparison');
+  const batch = has('batch_manifest');
+
+  if (
+    (activeTab === 'batch_manifest' && batch) ||
+    (activeTab === 'dossier' && dossier) ||
+    (activeTab === 'calculator' && calculator) ||
+    (activeTab === 'hierarchy' && hierarchy) ||
+    (activeTab === 'comparison' && comparison) ||
+    (activeTab === 'rgi_comparator' && (dossier || comparison || hierarchy)) ||
+    (activeTab === 'regulatory_diff' && dossier)
+  ) {
+    return activeTab;
+  }
+
+  if (batch) return 'batch_manifest';
+  if (dossier) return 'dossier';
+  if (calculator) return 'calculator';
+  if (hierarchy) return 'hierarchy';
+  if (comparison) return 'comparison';
+  return activeTab;
+}

@@ -39,6 +39,10 @@ const TOOL_LABELS: Record<string, { running: string; done: string }> = {
     running: 'Marcando dictamen para revisión…',
     done: 'Enviado a revisión técnica',
   },
+  get_bcv_rate: {
+    running: 'Consultando tasa oficial BCV…',
+    done: 'Tasa BCV consultada',
+  },
 };
 
 function toRecord(value: unknown): Record<string, unknown> | null {

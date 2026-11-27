@@ -146,4 +146,47 @@ describe('EveThreadSurface', () => {
     expect(onEnvelopeDiscovered.mock.calls[0]?.[0]?.envelope?.inlineComponents[0]?.type).toBe('verdict');
     expect(onRegisterSend).toHaveBeenCalledWith(expect.any(Function));
   });
+
+  it('renders persisted external batch messages alongside live Eve messages without duplicating live IDs', () => {
+    render(
+      <EveThreadSurface
+        jurisdictionId="ve-seniat"
+        approvalWorkflowMode="agent_decides"
+        defaultIncoterm="FOB"
+        deepMode={false}
+        persistedMessages={[
+          {
+            id: 'a-1',
+            role: 'assistant',
+            text: 'Duplicado live',
+            createdAt: '2026-11-26T12:00:05.000Z',
+            jurisdictionId: 've-seniat',
+          },
+          {
+            id: 'batch-done-1',
+            role: 'assistant',
+            text: 'Lote BL_SOLAR procesado (4 ítems).',
+            createdAt: '2026-11-26T12:05:00.000Z',
+            jurisdictionId: 've-seniat',
+          },
+        ]}
+        skuPrecedents={[]}
+        pendingAttachments={[]}
+        profile={profile}
+        inlineActions={inlineActions}
+        onAddFiles={vi.fn()}
+        onRemoveAttachment={vi.fn()}
+        onConsumeAttachments={() => []}
+        onRunSample={vi.fn()}
+        onRunBatchSample={vi.fn()}
+        onUpdateProfile={vi.fn()}
+        onEnvelopeDiscovered={vi.fn()}
+        onRegisterSend={vi.fn()}
+        onErrorToast={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Lote BL_SOLAR procesado (4 ítems).')).toBeTruthy();
+    expect(screen.queryByText('Duplicado live')).toBeNull();
+  });
 });

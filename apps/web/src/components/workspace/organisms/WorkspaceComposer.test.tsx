@@ -85,4 +85,57 @@ describe('AssistantThreadSurface & WorkspaceComposer tools', () => {
     await user.click(screen.getByRole('button', { name: 'FOB' }));
     expect(onUpdateProfile).toHaveBeenCalledWith({ defaultIncoterm: 'FOB' });
   });
+
+  it('re-enables predictive SKU suggestions after dismissal when composer text changes and opens camera modal', async () => {
+    const user = userEvent.setup();
+    render(
+      <AssistantThreadSurface
+        messages={[]}
+        isRunning={false}
+        liveProgress={null}
+        skuPrecedents={[
+          {
+            id: 'sku-1',
+            sku: 'INV-5K',
+            normalizedSku: 'INV-5K',
+            title: 'Inversor solar híbrido 5 kW',
+            description: 'Inversor solar híbrido 5 kW',
+            hsCode: '8504.40.90.00',
+            jurisdictionId: 've-seniat',
+            adValoremPercent: 10,
+            vatPercent: 16,
+            legalRegime: 'Libre',
+            reviewStatus: 'approved',
+            usageCount: 1,
+            createdAt: '2026-11-26T00:00:00.000Z',
+            updatedAt: '2026-11-26T00:00:00.000Z',
+          },
+        ]}
+        pendingAttachments={[]}
+        profile={DEFAULT_USER_PROFILE}
+        inlineActions={baseInlineActions}
+        onSendMessage={vi.fn<() => Promise<void>>()}
+        onCancelRun={vi.fn<() => void>()}
+        onAddFiles={vi.fn<() => void>()}
+        onRemoveAttachment={vi.fn<() => void>()}
+        onRunSample={vi.fn<() => void>()}
+        onRunBatchSample={vi.fn<() => void>()}
+        onUpdateProfile={vi.fn<() => void>()}
+      />,
+    );
+
+    const textarea = screen.getByLabelText(/Consulta arancelaria o descripción de mercancía/i);
+    await user.type(textarea, 'INV');
+    expect(screen.getByText('INV-5K')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Cerrar sugerencias predictivas/i }));
+    expect(screen.queryByText('INV-5K')).not.toBeInTheDocument();
+
+    await user.type(textarea, '-5');
+    expect(screen.getByText('INV-5K')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Adjuntar archivo o abrir cámara/i }));
+    await user.click(screen.getByRole('menuitem', { name: /Cámara integrada/i }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
 });

@@ -128,4 +128,15 @@ export class IndexedDBAdapter implements IPersistence {
     this.memoryProfile = profile;
     await this.runStore(STORE_PROFILE, 'readwrite', (s) => s.put(profile, PROFILE_RECORD_KEY));
   }
+
+  async clearLocal(): Promise<void> {
+    this.memoryThreads.clear();
+    this.memorySkus.clear();
+    this.memoryProfile = null;
+    await Promise.all([
+      this.runStore(STORE_THREADS, 'readwrite', (s) => s.clear()),
+      this.runStore(STORE_SKUS, 'readwrite', (s) => s.clear()),
+      this.runStore(STORE_PROFILE, 'readwrite', (s) => s.clear()),
+    ]);
+  }
 }

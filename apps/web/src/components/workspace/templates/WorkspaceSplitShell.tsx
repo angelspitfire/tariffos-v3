@@ -34,6 +34,7 @@ export function WorkspaceSplitShell() {
   const batchJob = useBatchJob({
     jurisdiction: ws.jurisdiction,
     deepMode: ws.profile.detailLevel === 'exhaustive',
+    approvalWorkflowMode: ws.profile.approvalWorkflowMode,
     onBatchCompleted: ws.ingestExternalMessage,
     pushToast: ws.pushToast,
   });
@@ -55,8 +56,8 @@ export function WorkspaceSplitShell() {
     setPlanId(readSelectedPlan()?.planId ?? 'pilot');
   }, []);
 
-  const handleExportPdf = () =>
-    exportWorkspaceDossierPdf(ws.canvasComponents, ws.profile, ws.pushToast);
+  const handleExportPdf = (targetComponents = ws.canvasComponents) =>
+    exportWorkspaceDossierPdf(targetComponents, ws.profile, ws.pushToast);
 
   const showCanvasFor = (messageId: string | null, tab: CanvasTabType) => {
     ws.setSelectedCanvasMsgId(messageId);
@@ -83,11 +84,9 @@ export function WorkspaceSplitShell() {
 
   const inlineActions = buildWorkspaceInlineActions({
     onSelectCanvasMessage: (messageId, tab) => showCanvasFor(messageId, tab),
-    onExportPdf: () => {
-      ws.setActiveTab('dossier');
-      layout.setCanvasDismissed(false);
-      layout.setMobilePane('canvas');
-      handleExportPdf();
+    onExportPdf: (msg) => {
+      showCanvasFor(msg.id, 'dossier');
+      handleExportPdf(msg.envelope?.canvasComponents ?? ws.canvasComponents);
     },
     onSaveSku: (msg) => ws.saveSkuFromMessage(msg),
     onClassify: (prompt) => void guardedSendClassification(prompt),
@@ -96,6 +95,13 @@ export function WorkspaceSplitShell() {
   const goToChat = () => {
     layout.setAnalyticsOpen(false);
     layout.setMobilePane('chat');
+  };
+
+  const onNewThread = () => { ws.startNewThread(); setEveSessionKey((k) => k + 1); goToChat(); };
+  const onSelectThread = (id: string) => { ws.setActiveThreadId(id); ws.setSelectedCanvasMsgId(null); goToChat(); };
+  const onTriggerBatch = () => (readOnlyReason ? ws.pushToast(readOnlyReason, 'info') : batchInputRef.current?.click());
+  const onReeval = (specs: ReadonlyArray<{ key: string; value: string }>) => {
+    void guardedSendClassification(`Reevaluar dictamen con ficha actualizada: ${specs.map((s) => `${s.key}: ${s.value}`).join('; ')}`);
   };
 
   return (
@@ -122,16 +128,8 @@ export function WorkspaceSplitShell() {
         dashboardActive={layout.analyticsOpen}
         onToggleDesktop={() => layout.setSidebarOpen((p) => !p)}
         onCloseMobile={() => layout.setMobileDrawerOpen(false)}
-        onNewThread={() => {
-          ws.startNewThread();
-          setEveSessionKey((k) => k + 1);
-          goToChat();
-        }}
-        onSelectThread={(id) => {
-          ws.setActiveThreadId(id);
-          ws.setSelectedCanvasMsgId(null);
-          goToChat();
-        }}
+        onNewThread={onNewThread}
+        onSelectThread={onSelectThread}
         onDeleteThread={ws.deleteThread}
         onOpenDashboard={() => layout.setAnalyticsOpen((p) => !p)}
         onOpenSkuCatalog={() => layout.setSkuModalOpen(true)}
@@ -156,11 +154,7 @@ export function WorkspaceSplitShell() {
         <div className="relative flex min-h-0 flex-1 overflow-hidden">
           {layout.analyticsOpen ? (
             <main className="min-w-0 flex-1">
-              <AnalyticsWorkspaceView
-                threads={ws.threads}
-                skuPrecedents={ws.skuPrecedents}
-                onClose={() => layout.setAnalyticsOpen(false)}
-              />
+              <AnalyticsWorkspaceView threads={ws.threads} skuPrecedents={ws.skuPrecedents} onClose={() => layout.setAnalyticsOpen(false)} />
             </main>
           ) : (
             <main className="flex min-w-0 flex-1 overflow-hidden">
@@ -172,6 +166,7 @@ export function WorkspaceSplitShell() {
               >
                 <WorkspaceThreadSlot
                   runtimeMode={runtimeMode}
+                  activeThreadId={ws.activeThreadId}
                   eveSessionKey={eveSessionKey}
                   jurisdictionId={ws.jurisdiction.id}
                   messages={ws.activeThread?.messages ?? []}
@@ -193,13 +188,7 @@ export function WorkspaceSplitShell() {
                       />
                     ) : null
                   }
-                  onTriggerBatchUpload={() => {
-                    if (readOnlyReason) {
-                      ws.pushToast(readOnlyReason, 'info');
-                      return;
-                    }
-                    batchInputRef.current?.click();
-                  }}
+                  onTriggerBatchUpload={onTriggerBatch}
                   onSendMessage={guardedSendClassification}
                   onCancelRun={ws.cancelRun}
                   onAddFiles={(files) => void ws.addFiles(files)}
@@ -211,10 +200,7 @@ export function WorkspaceSplitShell() {
                   }
                   onUpdateProfile={ws.updateProfile}
                   onEnvelopeDiscovered={ws.ingestExternalMessage}
-                  onRegisterEveSend={(fn) => {
-                    eveSendRef.current = fn;
-                  }}
-                  onNotifyInfo={(msg) => ws.pushToast(msg, 'info')}
+                  onRegisterEveSend={(fn) => { eveSendRef.current = fn; }}
                   onNotifyWarning={(msg) => ws.pushToast(msg, 'warning')}
                 />
               </section>
@@ -234,27 +220,16 @@ export function WorkspaceSplitShell() {
                   onApproveDossier={ws.approveActiveDossier}
                   onRequestDossierReview={ws.requestDossierReview}
                   onChangeWorkflowMode={ws.setApprovalWorkflowMode}
-                  onReevaluateSpecs={(specs) => {
-                    const summary = specs.map((s) => `${s.key}: ${s.value}`).join('; ');
-                    void guardedSendClassification(`Reevaluar dictamen con ficha actualizada: ${summary}`);
-                  }}
+                  onReevaluateSpecs={onReeval}
                   onSaveSku={() => ws.saveSkuFromMessage()}
                   onSaveSignature={(p) =>
-                    ws.updateProfile({
-                      fullName: p.fullName,
-                      brokerLicense: p.brokerLicense,
-                      brokerSignatureDataUrl: p.signatureDataUrl,
-                    })
+                    ws.updateProfile({ fullName: p.fullName, brokerLicense: p.brokerLicense, brokerSignatureDataUrl: p.signatureDataUrl })
                   }
-                  onExportPdf={handleExportPdf}
+                  onExportPdf={() => handleExportPdf()}
                   onConfirmBatchItem={ws.confirmBatchItem}
-                  onSelectArtifact={(id) => ws.setSelectedCanvasMsgId(id)}
+                  onSelectArtifact={ws.setSelectedCanvasMsgId}
                   onToggleFullscreen={() => layout.setCanvasFullscreen((p) => !p)}
-                  onCloseCanvas={() => {
-                    layout.setCanvasFullscreen(false);
-                    layout.setCanvasDismissed(true);
-                    layout.setMobilePane('chat');
-                  }}
+                  onCloseCanvas={() => { layout.setCanvasFullscreen(false); layout.setCanvasDismissed(true); layout.setMobilePane('chat'); }}
                 />
               ) : null}
             </main>
@@ -285,6 +260,7 @@ export function WorkspaceSplitShell() {
         onCloseSettings={() => layout.setSettingsModalOpen(false)}
         onSaveSettings={ws.updateProfile}
         onClassify={(prompt) => void guardedSendClassification(prompt)}
+        onClearLocalData={() => void ws.clearLocalData()}
         onToast={ws.pushToast}
       />
 

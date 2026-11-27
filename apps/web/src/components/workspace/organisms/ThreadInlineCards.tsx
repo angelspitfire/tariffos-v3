@@ -15,7 +15,7 @@ import { VerdictCard } from '../molecules/VerdictCard';
 
 export interface InlineCardActions {
   onOpenCanvasTab: (msg: WorkspaceMessage, tab: CanvasTabType) => void;
-  onExportPdf: () => void;
+  onExportPdf: (msg: WorkspaceMessage) => void;
   onSaveSku: (msg: WorkspaceMessage) => void;
   onSubmitSheet: (sheet: A2UIMerceologicalSheet) => void;
   onAcceptTentative: (hsCode: string) => void;
@@ -44,7 +44,7 @@ export function ThreadInlineCards({
                 verdict={comp}
                 onOpenDossier={() => actions.onOpenCanvasTab(message, 'dossier')}
                 onOpenCalculator={() => actions.onOpenCanvasTab(message, 'calculator')}
-                onExportPdf={actions.onExportPdf}
+                onExportPdf={() => actions.onExportPdf(message)}
                 onSaveSku={() => actions.onSaveSku(message)}
                 onOpenRgi={() => actions.onOpenCanvasTab(message, 'rgi_comparator')}
               />

@@ -1,24 +1,16 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  AuiIf,
-  ComposerPrimitive,
-  useAui,
-  useAuiState,
-} from '@assistant-ui/react';
-import {
-  ChevronDown,
-  Mic,
-  Plus,
-  Send,
-  SlidersHorizontal,
-  Square,
-} from 'lucide-react';
+import { AuiIf, ComposerPrimitive, useAui, useAuiState } from '@assistant-ui/react';
+import { ChevronDown, Mic, Plus, Send, SlidersHorizontal, Square } from 'lucide-react';
 import type { SkuPrecedent, UserProfileSettings } from '@tariffos/shared-types';
 import type { WorkspaceAttachment } from '@/lib/workspace/types';
 import { ComposerAttachmentStrip } from '../molecules/ComposerAttachmentStrip';
-import { ComposerDictationBar, createSpeechRecognition, type SpeechRecognitionLike } from '../molecules/ComposerDictationBar';
+import {
+  ComposerDictationBar,
+  createSpeechRecognition,
+  type SpeechRecognitionLike,
+} from '../molecules/ComposerDictationBar';
 import { ComposerMenus, type ComposerMenuKind } from '../molecules/ComposerMenus';
 import { PredictiveSkuList } from '../molecules/PredictiveSkuList';
 import { CameraScannerModal } from './CameraScannerModal';
@@ -30,8 +22,8 @@ export interface WorkspaceComposerProps {
   onAddFiles: (files: FileList) => void;
   onRemoveAttachment: (id: string) => void;
   onUpdateProfile: (patch: Partial<UserProfileSettings>) => void;
+  onTriggerUpload: () => void;
   onTriggerBatchUpload?: () => void;
-  onNotifyUnavailableCamera?: () => void;
 }
 
 export function WorkspaceComposer({
@@ -41,19 +33,18 @@ export function WorkspaceComposer({
   onAddFiles,
   onRemoveAttachment,
   onUpdateProfile,
+  onTriggerUpload,
   onTriggerBatchUpload,
-  onNotifyUnavailableCamera,
 }: WorkspaceComposerProps) {
   const aui = useAui();
   const text = useAuiState((s) => s.composer.text);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const [dictating, setDictating] = useState(false);
   const [speechLang, setSpeechLang] = useState<'es-ES' | 'en-US'>('es-ES');
   const [composerMenu, setComposerMenu] = useState<ComposerMenuKind>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
-  const [predictiveDismissed, setPredictiveDismissed] = useState(false);
+  const [dismissedForText, setDismissedForText] = useState<string | null>(null);
 
   useEffect(() => {
     if (!composerMenu) return;
@@ -74,7 +65,7 @@ export function WorkspaceComposer({
   }, [composerMenu]);
 
   const suggestions = useMemo(() => {
-    if (profile.predictiveSearchEnabled === false || predictiveDismissed) return [];
+    if (profile.predictiveSearchEnabled === false || dismissedForText === text) return [];
     const q = text.trim().toLowerCase();
     if (q.length < 2) return [];
     return skuPrecedents
@@ -85,7 +76,7 @@ export function WorkspaceComposer({
           item.hsCode.includes(q),
       )
       .slice(0, 4);
-  }, [predictiveDismissed, profile.predictiveSearchEnabled, skuPrecedents, text]);
+  }, [dismissedForText, profile.predictiveSearchEnabled, skuPrecedents, text]);
 
   const handleToggleDictation = () => {
     if (dictating) {
@@ -116,13 +107,10 @@ export function WorkspaceComposer({
         menu={composerMenu}
         profile={profile}
         onClose={() => setComposerMenu(null)}
-        onTriggerUpload={() => fileInputRef.current?.click()}
+        onTriggerUpload={onTriggerUpload}
         onTriggerBatchUpload={onTriggerBatchUpload}
         onUpdateProfile={onUpdateProfile}
-        onNotifyUnavailableCamera={() => {
-          setCameraOpen(true);
-          onNotifyUnavailableCamera?.();
-        }}
+        onOpenCamera={() => setCameraOpen(true)}
       />
 
       <CameraScannerModal
@@ -139,10 +127,11 @@ export function WorkspaceComposer({
         query={text}
         suggestions={suggestions}
         onSelect={(item) => {
-          aui.composer.setText(`${item.sku}: ${item.title} (${item.hsCode})`);
-          setPredictiveDismissed(true);
+          const formatted = `${item.sku}: ${item.title} (${item.hsCode})`;
+          aui.composer.setText(formatted);
+          setDismissedForText(formatted);
         }}
-        onDismiss={() => setPredictiveDismissed(true)}
+        onDismiss={() => setDismissedForText(text)}
       />
 
       <ComposerPrimitive.Root
@@ -171,23 +160,9 @@ export function WorkspaceComposer({
           className="w-full px-4 pt-3 pb-1.5 text-sm text-ink-primary placeholder:text-ink-subtle bg-transparent resize-none focus:outline-none max-h-40"
         />
 
-        {dictating && (
+        {dictating ? (
           <ComposerDictationBar speechLang={speechLang} onChangeSpeechLang={setSpeechLang} />
-        )}
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept=".pdf,.xlsx,.xls,.csv,.txt,.png,.jpg,.jpeg,.webp"
-          className="hidden"
-          onChange={(e) => {
-            if (e.target.files && e.target.files.length > 0) {
-              onAddFiles(e.target.files);
-              e.target.value = '';
-            }
-          }}
-        />
+        ) : null}
 
         <div className="px-2.5 sm:px-3 py-2 flex items-center justify-between gap-1.5">
           <div className="flex items-center gap-1 min-w-0">

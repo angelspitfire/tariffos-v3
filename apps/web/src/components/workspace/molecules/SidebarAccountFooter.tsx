@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { CreditCard, LogOut, Settings, Sparkles } from 'lucide-react';
 import type { ApprovalWorkflowMode, UserProfileSettings } from '@tariffos/shared-types';
-import {
-  mergeCloudUsageIntoPlanStatus,
-  type WorkspacePlanStatus,
-} from '@/lib/workspace/plan-status';
+import { clearMockSession } from '@/lib/funnel/funnel-storage';
+import { isCloudModeEnabled } from '@/lib/runtime-config';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+import type { WorkspacePlanStatus } from '@/lib/workspace/plan-status';
 import { getInitials } from '@/lib/workspace/thread-meta';
-import { useCloudUsageSnapshot } from '@/lib/workspace/use-cloud-usage';
 
 export interface SidebarAccountFooterProps {
   profile: UserProfileSettings;
@@ -36,9 +36,9 @@ export function SidebarAccountFooter({
   onChangeApprovalMode,
   onOpenSettings,
 }: SidebarAccountFooterProps) {
-  const cloudUsage = useCloudUsageSnapshot();
-  const effectivePlan = mergeCloudUsageIntoPlanStatus(plan, cloudUsage);
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -55,6 +55,22 @@ export function SidebarAccountFooter({
     };
   }, [menuOpen]);
 
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    try {
+      clearMockSession();
+      if (isCloudModeEnabled()) {
+        await createSupabaseBrowserClient().auth.signOut();
+      }
+    } catch {
+      // Proceed to login screen even if client signOut hits a transient failure.
+    } finally {
+      setMenuOpen(false);
+      setSigningOut(false);
+      router.push('/login');
+    }
+  };
+
   return (
     <div ref={rootRef} className="relative shrink-0 border-t border-line-frost p-2.5">
       <button
@@ -70,23 +86,23 @@ export function SidebarAccountFooter({
         <span className="min-w-0 flex-1">
           <span className="flex items-center justify-between gap-1.5">
             <span className="truncate text-xs font-semibold text-ink-primary">{profile.fullName}</span>
-            {effectivePlan.billingStatus === 'CANCELED' ? (
+            {plan.billingStatus === 'CANCELED' ? (
               <span className="shrink-0 rounded-full px-1.5 py-0.5 font-mono text-[9px] font-semibold bg-rose-500/15 text-rose-700 dark:text-rose-300">
                 De baja
               </span>
-            ) : effectivePlan.billingStatus === 'PAST_DUE' ? (
+            ) : plan.billingStatus === 'PAST_DUE' ? (
               <span className="shrink-0 rounded-full px-1.5 py-0.5 font-mono text-[9px] font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300">
                 Pendiente
               </span>
-            ) : effectivePlan.isTrial || effectivePlan.isPilot ? (
+            ) : plan.isTrial || plan.isPilot ? (
               <span
                 className={`shrink-0 rounded-full px-1.5 py-0.5 font-mono text-[9px] font-semibold tabular-nums ${
-                  effectivePlan.exhausted
+                  plan.exhausted
                     ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
                     : 'bg-accent-soft text-accent-ink'
                 }`}
               >
-                {effectivePlan.isTrial ? 'Trial' : 'Piloto'}
+                {plan.isTrial ? 'Trial' : 'Piloto'}
               </span>
             ) : null}
           </span>
@@ -110,27 +126,27 @@ export function SidebarAccountFooter({
             <div className="flex items-center justify-between gap-2">
               <span className="inline-flex items-center gap-1.5 font-semibold text-ink-primary">
                 <Sparkles className="h-3.5 w-3.5 text-accent-ink" aria-hidden="true" />
-                {effectivePlan.planName}
+                {plan.planName}
               </span>
               <span className="font-mono text-[10px] text-ink-muted tabular-nums">
-                {effectivePlan.quotaUsed} / {effectivePlan.isUnlimited ? '∞' : effectivePlan.quotaLimit} clasif.
+                {plan.quotaUsed} / {plan.isUnlimited ? '∞' : plan.quotaLimit} clasif.
               </span>
             </div>
             <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-subtle">
               <div
-                className={`h-full rounded-full ${usageBarTone(effectivePlan)}`}
-                style={{ width: `${Math.max(effectivePlan.usagePct, 4)}%` }}
+                className={`h-full rounded-full ${usageBarTone(plan)}`}
+                style={{ width: `${Math.max(plan.usagePct, 4)}%` }}
               />
             </div>
             <Link
-              href={effectivePlan.isUnlimited ? '/admin' : '/activate-plan'}
+              href={plan.isUnlimited ? '/admin' : '/activate-plan'}
               onClick={() => setMenuOpen(false)}
               className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-full bg-surface-inverted px-3 py-1.5 text-[11px] font-semibold text-ink-on-inverted transition-colors hover:bg-surface-inverted-hover"
             >
               <CreditCard className="h-3.5 w-3.5" aria-hidden="true" />
-              {effectivePlan.isUnlimited
+              {plan.isUnlimited
                 ? 'Consola Admin'
-                : effectivePlan.isTrial || effectivePlan.isPilot || effectivePlan.billingStatus === 'PAST_DUE'
+                : plan.isTrial || plan.isPilot || plan.billingStatus === 'PAST_DUE'
                   ? 'Activar plan'
                   : 'Gestionar plan'}
             </Link>
@@ -165,13 +181,15 @@ export function SidebarAccountFooter({
                 Configuración
               </button>
             ) : null}
-            <Link
-              href="/login"
-              className="inline-flex w-full items-center gap-1.5 rounded-lg px-2 py-1.5 text-ink-muted hover:bg-surface-hover hover:text-rose-600"
+            <button
+              type="button"
+              disabled={signingOut}
+              onClick={() => void handleSignOut()}
+              className="inline-flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 text-ink-muted hover:bg-surface-hover hover:text-rose-600 disabled:opacity-50"
             >
               <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
-              Cerrar sesión
-            </Link>
+              {signingOut ? 'Cerrando sesión…' : 'Cerrar sesión'}
+            </button>
           </div>
         </div>
       ) : null}

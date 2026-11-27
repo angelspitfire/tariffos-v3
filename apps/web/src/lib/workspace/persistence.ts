@@ -13,6 +13,7 @@ export interface IPersistence {
   deleteSkuPrecedent(id: string): Promise<void>;
   loadUserProfile(): Promise<UserProfileSettings | null>;
   saveUserProfile(profile: UserProfileSettings): Promise<void>;
+  clearLocal(): Promise<void>;
 }
 
 export function normalizeSkuKey(raw: string): string {
@@ -34,7 +35,7 @@ async function bestEffort(work: () => Promise<void>): Promise<void> {
 export class DualWritePersistence implements IPersistence {
   constructor(
     private readonly local: IPersistence,
-    private readonly cloud?: IPersistence | null
+    private readonly cloud?: IPersistence | null,
   ) {}
 
   async loadThreads(): Promise<WorkspaceThread[]> {
@@ -42,16 +43,16 @@ export class DualWritePersistence implements IPersistence {
     if (!this.cloud) return localThreads;
     try {
       const remoteThreads = await this.cloud.loadThreads();
-      if (remoteThreads.length === 0) return localThreads;
-      const merged = new Map<string, WorkspaceThread>();
-      for (const item of localThreads) merged.set(item.id, item);
-      for (const item of remoteThreads) {
-        const prev = merged.get(item.id);
-        if (!prev || item.updatedAt > prev.updatedAt) {
-          merged.set(item.id, item);
+      const sortedRemote = [...remoteThreads].sort((a, b) =>
+        b.updatedAt.localeCompare(a.updatedAt),
+      );
+      const remoteIds = new Set(sortedRemote.map((t) => t.id));
+      for (const localItem of localThreads) {
+        if (!remoteIds.has(localItem.id)) {
+          await bestEffort(() => this.local.deleteThread(localItem.id));
         }
       }
-      return Array.from(merged.values()).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+      return sortedRemote;
     } catch {
       return localThreads;
     }
@@ -72,11 +73,13 @@ export class DualWritePersistence implements IPersistence {
     if (!this.cloud) return localItems;
     try {
       const remoteItems = await this.cloud.loadSkuPrecedents();
-      if (remoteItems.length === 0) return localItems;
-      const merged = new Map<string, SkuPrecedent>();
-      for (const item of localItems) merged.set(item.id, item);
-      for (const item of remoteItems) merged.set(item.id, item);
-      return Array.from(merged.values());
+      const remoteIds = new Set(remoteItems.map((p) => p.id));
+      for (const localItem of localItems) {
+        if (!remoteIds.has(localItem.id)) {
+          await bestEffort(() => this.local.deleteSkuPrecedent(localItem.id));
+        }
+      }
+      return remoteItems;
     } catch {
       return localItems;
     }
@@ -105,6 +108,10 @@ export class DualWritePersistence implements IPersistence {
   async saveUserProfile(profile: UserProfileSettings): Promise<void> {
     await this.local.saveUserProfile(profile);
     if (this.cloud) await bestEffort(() => this.cloud!.saveUserProfile(profile));
+  }
+
+  async clearLocal(): Promise<void> {
+    await this.local.clearLocal();
   }
 }
 

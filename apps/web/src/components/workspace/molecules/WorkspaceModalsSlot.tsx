@@ -32,6 +32,7 @@ export interface WorkspaceModalsSlotProps {
   onCloseSettings: () => void;
   onSaveSettings: (patch: Partial<UserProfileSettings>) => void;
   onClassify: (prompt: string) => void;
+  onClearLocalData: () => void;
   onToast: (title: string, variant?: WorkspaceToast['variant']) => void;
 }
 
@@ -55,6 +56,7 @@ export function WorkspaceModalsSlot({
   onCloseSettings,
   onSaveSettings,
   onClassify,
+  onClearLocalData,
   onToast,
 }: WorkspaceModalsSlotProps) {
   return (
@@ -109,10 +111,7 @@ export function WorkspaceModalsSlot({
           URL.revokeObjectURL(url);
           onToast('Respaldo JSON descargado.', 'success');
         }}
-        onClearLocalData={() => {
-          window.localStorage.clear();
-          onToast('Caché local limpiada. Recarga para reiniciar sesión.', 'info');
-        }}
+        onClearLocalData={onClearLocalData}
       />
     </>
   );

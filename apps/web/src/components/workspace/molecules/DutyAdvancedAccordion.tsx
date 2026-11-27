@@ -3,63 +3,43 @@
 import { ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import { ORIGIN_COUNTRIES, type PreferentialAgreementResult } from '@/lib/workspace/trade-preferences';
 
+export interface DutyAdvancedValues {
+  originCode: string;
+  adValorem: number;
+  vat: number;
+  customsFee: number;
+  exchangeRate: number;
+  hasCertificate: boolean;
+  applyExemption: boolean;
+  applyAntidumping: boolean;
+  antidumpingPercent: number;
+}
+
 interface DutyAdvancedAccordionProps {
   open: boolean;
   onToggle: () => void;
-  originCode: string;
-  onOriginChange: (code: string) => void;
-  adValorem: number;
-  onAdValoremChange: (v: number) => void;
-  vat: number;
-  onVatChange: (v: number) => void;
-  customsFee: number;
-  onCustomsFeeChange: (v: number) => void;
-  exchangeRate: number;
-  onExchangeRateChange: (v: number) => void;
+  values: DutyAdvancedValues;
+  onPatch: (patch: Partial<DutyAdvancedValues>) => void;
   bcvDate?: string;
+  bcvError?: string | null;
   isRefreshingBcv?: boolean;
   onRefreshBcv?: () => void;
   localCurrencyCode: string;
-  hasCertificate: boolean;
-  onHasCertificateChange: (v: boolean) => void;
-  applyExemption: boolean;
-  onApplyExemptionChange: (v: boolean) => void;
-  applyAntidumping: boolean;
-  onApplyAntidumpingChange: (v: boolean) => void;
-  antidumpingPercent: number;
-  onAntidumpingPercentChange: (v: number) => void;
   agreement: PreferentialAgreementResult;
 }
 
-export function DutyAdvancedAccordion(props: DutyAdvancedAccordionProps) {
-  const {
-    open,
-    onToggle,
-    originCode,
-    onOriginChange,
-    adValorem,
-    onAdValoremChange,
-    vat,
-    onVatChange,
-    customsFee,
-    onCustomsFeeChange,
-    exchangeRate,
-    onExchangeRateChange,
-    bcvDate,
-    isRefreshingBcv = false,
-    onRefreshBcv,
-    localCurrencyCode,
-    hasCertificate,
-    onHasCertificateChange,
-    applyExemption,
-    onApplyExemptionChange,
-    applyAntidumping,
-    onApplyAntidumpingChange,
-    antidumpingPercent,
-    onAntidumpingPercentChange,
-    agreement,
-  } = props;
-
+export function DutyAdvancedAccordion({
+  open,
+  onToggle,
+  values,
+  onPatch,
+  bcvDate,
+  bcvError,
+  isRefreshingBcv = false,
+  onRefreshBcv,
+  localCurrencyCode,
+  agreement,
+}: DutyAdvancedAccordionProps) {
   return (
     <section className="rounded-xl border border-border-subtle bg-surface-panel shadow-xs">
       <button
@@ -84,8 +64,8 @@ export function DutyAdvancedAccordion(props: DutyAdvancedAccordionProps) {
               <input
                 type="number"
                 step="0.1"
-                value={adValorem}
-                onChange={(e) => onAdValoremChange(Number(e.target.value) || 0)}
+                value={values.adValorem}
+                onChange={(e) => onPatch({ adValorem: Number(e.target.value) || 0 })}
                 className="rounded-lg border border-border-subtle bg-surface-input px-2.5 py-1.5 font-mono text-xs text-ink-primary"
               />
             </label>
@@ -94,8 +74,8 @@ export function DutyAdvancedAccordion(props: DutyAdvancedAccordionProps) {
               <input
                 type="number"
                 step="0.1"
-                value={vat}
-                onChange={(e) => onVatChange(Number(e.target.value) || 0)}
+                value={values.vat}
+                onChange={(e) => onPatch({ vat: Number(e.target.value) || 0 })}
                 className="rounded-lg border border-border-subtle bg-surface-input px-2.5 py-1.5 font-mono text-xs text-ink-primary"
               />
             </label>
@@ -104,8 +84,8 @@ export function DutyAdvancedAccordion(props: DutyAdvancedAccordionProps) {
               <input
                 type="number"
                 step="0.01"
-                value={customsFee}
-                onChange={(e) => onCustomsFeeChange(Number(e.target.value) || 0)}
+                value={values.customsFee}
+                onChange={(e) => onPatch({ customsFee: Number(e.target.value) || 0 })}
                 className="rounded-lg border border-border-subtle bg-surface-input px-2.5 py-1.5 font-mono text-xs text-ink-primary"
               />
             </label>
@@ -130,10 +110,11 @@ export function DutyAdvancedAccordion(props: DutyAdvancedAccordionProps) {
                 type="number"
                 step="0.01"
                 aria-label="Tasa de cambio"
-                value={exchangeRate}
-                onChange={(e) => onExchangeRateChange(Number(e.target.value) || 1)}
+                value={values.exchangeRate}
+                onChange={(e) => onPatch({ exchangeRate: Number(e.target.value) || 1 })}
                 className="rounded-lg border border-border-subtle bg-surface-input px-2.5 py-1.5 font-mono text-xs text-ink-primary"
               />
+              {bcvError ? <span className="text-[10px] text-amber-700 dark:text-amber-300">{bcvError}</span> : null}
             </label>
           </div>
 
@@ -141,8 +122,8 @@ export function DutyAdvancedAccordion(props: DutyAdvancedAccordionProps) {
             <label className="flex flex-col gap-1">
               <span className="text-[11px] text-ink-muted">País de origen</span>
               <select
-                value={originCode}
-                onChange={(e) => onOriginChange(e.target.value)}
+                value={values.originCode}
+                onChange={(e) => onPatch({ originCode: e.target.value })}
                 className="rounded-lg border border-border-subtle bg-surface-input px-2.5 py-1.5 text-xs text-ink-primary"
               >
                 {ORIGIN_COUNTRIES.map((c) => (
@@ -163,8 +144,8 @@ export function DutyAdvancedAccordion(props: DutyAdvancedAccordionProps) {
             <label className="inline-flex items-center gap-2 text-xs text-ink-secondary">
               <input
                 type="checkbox"
-                checked={hasCertificate}
-                onChange={(e) => onHasCertificateChange(e.target.checked)}
+                checked={values.hasCertificate}
+                onChange={(e) => onPatch({ hasCertificate: e.target.checked })}
                 className="rounded border-border-strong"
               />
               Certificado de Origen preferencial ({agreement.discountPercent}%)
@@ -173,8 +154,8 @@ export function DutyAdvancedAccordion(props: DutyAdvancedAccordionProps) {
             <label className="inline-flex items-center gap-2 text-xs text-ink-secondary">
               <input
                 type="checkbox"
-                checked={applyExemption}
-                onChange={(e) => onApplyExemptionChange(e.target.checked)}
+                checked={values.applyExemption}
+                onChange={(e) => onPatch({ applyExemption: e.target.checked })}
                 className="rounded border-border-strong"
               />
               Aplicar decreto de exoneración (0%)
@@ -183,18 +164,18 @@ export function DutyAdvancedAccordion(props: DutyAdvancedAccordionProps) {
             <label className="inline-flex items-center gap-2 text-xs text-ink-secondary">
               <input
                 type="checkbox"
-                checked={applyAntidumping}
-                onChange={(e) => onApplyAntidumpingChange(e.target.checked)}
+                checked={values.applyAntidumping}
+                onChange={(e) => onPatch({ applyAntidumping: e.target.checked })}
                 className="rounded border-border-strong"
               />
               Antidumping / Sobretasa
-              {applyAntidumping && (
+              {values.applyAntidumping && (
                 <input
                   type="number"
                   step="0.5"
                   aria-label="Porcentaje antidumping"
-                  value={antidumpingPercent}
-                  onChange={(e) => onAntidumpingPercentChange(Number(e.target.value) || 0)}
+                  value={values.antidumpingPercent}
+                  onChange={(e) => onPatch({ antidumpingPercent: Number(e.target.value) || 0 })}
                   className="w-16 rounded border border-border-subtle bg-surface-input px-1.5 py-0.5 font-mono text-xs"
                 />
               )}

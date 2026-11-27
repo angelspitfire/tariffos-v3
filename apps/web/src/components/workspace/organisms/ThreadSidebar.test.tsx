@@ -5,6 +5,12 @@ import { DEFAULT_USER_PROFILE } from '@/lib/workspace/types';
 import { computePlanStatus } from '@/lib/workspace/plan-status';
 import { ThreadSidebar, type ThreadSidebarProps } from './ThreadSidebar';
 
+const mockPush = vi.fn<(href: string) => void>();
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
+
 vi.mock('next/link', () => ({
   default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
     <a href={href} {...rest}>

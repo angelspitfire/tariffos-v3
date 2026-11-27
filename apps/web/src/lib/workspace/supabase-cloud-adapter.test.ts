@@ -51,11 +51,11 @@ describe('SupabaseCloudAdapter', () => {
     expect(profile?.defaultJurisdictionId).toBe('ve-seniat');
   });
 
-  it('degrades gracefully when requests fail or return non-OK status', async () => {
+  it('throws on non-OK status so DualWritePersistence can distinguish offline failure from empty cloud data', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('Unauthorized', { status: 401 })));
     const adapter = new SupabaseCloudAdapter();
-    await expect(adapter.loadThreads()).resolves.toEqual([]);
-    await expect(adapter.loadSkuPrecedents()).resolves.toEqual([]);
-    await expect(adapter.loadUserProfile()).resolves.toBeNull();
+    await expect(adapter.loadThreads()).rejects.toThrow(/HTTP 401/);
+    await expect(adapter.loadSkuPrecedents()).rejects.toThrow(/HTTP 401/);
+    await expect(adapter.loadUserProfile()).rejects.toThrow(/HTTP 401/);
   });
 });

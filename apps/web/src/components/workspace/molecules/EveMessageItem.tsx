@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { MessagePrimitive, type ThreadMessage } from '@assistant-ui/react';
 import type { ApprovalWorkflowMode } from '@tariffos/shared-types';
 import { applyApprovalPolicyToEnvelope } from '@/lib/workspace/dossier-approval-policy';
@@ -29,6 +30,22 @@ export function EveMessageItem({
     : '';
   const text = extractMessagePlainText(message.content);
 
+  const mappedAssistant = useMemo(() => {
+    if (message.role !== 'assistant') return null;
+    const raw = toWorkspaceMessageFromEve({
+      id: message.id,
+      role: 'assistant',
+      createdAt: message.createdAt,
+      content: message.content,
+      jurisdictionId,
+    });
+    if (!raw.envelope) return raw;
+    return {
+      ...raw,
+      envelope: applyApprovalPolicyToEnvelope(raw.envelope, approvalWorkflowMode),
+    };
+  }, [approvalWorkflowMode, jurisdictionId, message.content, message.createdAt, message.id, message.role]);
+
   if (message.role === 'user') {
     return (
       <MessagePrimitive.Root className="max-w-2xl mx-auto w-full flex justify-end">
@@ -43,20 +60,6 @@ export function EveMessageItem({
       </MessagePrimitive.Root>
     );
   }
-
-  const rawMapped = toWorkspaceMessageFromEve({
-    id: message.id,
-    role: 'assistant',
-    createdAt: message.createdAt,
-    content: message.content,
-    jurisdictionId,
-  });
-  const mapped = rawMapped.envelope
-    ? {
-        ...rawMapped,
-        envelope: applyApprovalPolicyToEnvelope(rawMapped.envelope, approvalWorkflowMode),
-      }
-    : rawMapped;
 
   return (
     <MessagePrimitive.Root className="max-w-2xl mx-auto w-full flex items-start gap-3">
@@ -93,7 +96,7 @@ export function EveMessageItem({
             <InlineMarkdownText text={text} />
           </div>
         ) : null}
-        <ThreadInlineCards message={mapped} actions={inlineActions} />
+        {mappedAssistant ? <ThreadInlineCards message={mappedAssistant} actions={inlineActions} /> : null}
       </div>
     </MessagePrimitive.Root>
   );

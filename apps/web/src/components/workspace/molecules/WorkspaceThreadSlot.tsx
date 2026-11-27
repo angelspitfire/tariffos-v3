@@ -15,6 +15,7 @@ import type { InlineCardActions } from '../organisms/ThreadInlineCards';
 
 export interface WorkspaceThreadSlotProps {
   runtimeMode: AgentRuntimeMode;
+  activeThreadId: string | null;
   eveSessionKey: number;
   jurisdictionId: string;
   messages: readonly WorkspaceMessage[];
@@ -40,12 +41,12 @@ export interface WorkspaceThreadSlotProps {
   onUpdateProfile: (patch: Partial<UserProfileSettings>) => void;
   onEnvelopeDiscovered: (message: WorkspaceMessage) => void;
   onRegisterEveSend: (sendFn: ((text: string) => void) | null) => void;
-  onNotifyInfo: (message: string) => void;
   onNotifyWarning: (message: string) => void;
 }
 
 export function WorkspaceThreadSlot({
   runtimeMode,
+  activeThreadId,
   eveSessionKey,
   jurisdictionId,
   messages,
@@ -68,17 +69,18 @@ export function WorkspaceThreadSlot({
   onUpdateProfile,
   onEnvelopeDiscovered,
   onRegisterEveSend,
-  onNotifyInfo,
   onNotifyWarning,
 }: WorkspaceThreadSlotProps) {
   if (runtimeMode === 'eve') {
+    const surfaceKey = activeThreadId ?? `new-${eveSessionKey}`;
     return (
       <EveThreadSurface
-        key={eveSessionKey}
+        key={surfaceKey}
         jurisdictionId={jurisdictionId}
         approvalWorkflowMode={profile.approvalWorkflowMode}
         defaultIncoterm={profile.defaultIncoterm}
         deepMode={profile.detailLevel === 'exhaustive'}
+        persistedMessages={messages}
         skuPrecedents={skuPrecedents}
         pendingAttachments={pendingAttachments}
         profile={profile}
@@ -89,14 +91,9 @@ export function WorkspaceThreadSlot({
         onAddFiles={onAddFiles}
         onRemoveAttachment={onRemoveAttachment}
         onConsumeAttachments={onConsumeAttachments}
-        onRunSample={(s) => void onSendMessage(s.description)}
-        onRunBatchSample={(b) =>
-          void onSendMessage(`${b.promptText}\n\n${b.documentText}`, { isBatchHint: true })
-        }
+        onRunSample={onRunSample}
+        onRunBatchSample={onRunBatchSample}
         onUpdateProfile={onUpdateProfile}
-        onNotifyUnavailableCamera={() =>
-          onNotifyInfo('Usa el botón + o pega una imagen con Ctrl+V para escanear documentos.')
-        }
         onEnvelopeDiscovered={onEnvelopeDiscovered}
         onRegisterSend={onRegisterEveSend}
         onErrorToast={onNotifyWarning}
@@ -123,9 +120,6 @@ export function WorkspaceThreadSlot({
       onRunSample={onRunSample}
       onRunBatchSample={onRunBatchSample}
       onUpdateProfile={onUpdateProfile}
-      onNotifyUnavailableCamera={() =>
-        onNotifyInfo('Usa el botón + o pega una imagen con Ctrl+V para escanear documentos.')
-      }
     />
   );
 }

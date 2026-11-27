@@ -12,7 +12,7 @@ export interface ComposerMenusProps {
   onTriggerUpload: () => void;
   onTriggerBatchUpload?: () => void;
   onUpdateProfile: (patch: Partial<UserProfileSettings>) => void;
-  onNotifyUnavailableCamera: () => void;
+  onOpenCamera: () => void;
 }
 
 export function ComposerMenus({
@@ -22,7 +22,7 @@ export function ComposerMenus({
   onTriggerUpload,
   onTriggerBatchUpload,
   onUpdateProfile,
-  onNotifyUnavailableCamera,
+  onOpenCamera,
 }: ComposerMenusProps) {
   if (menu === 'attach') {
     return (
@@ -70,7 +70,7 @@ export function ComposerMenus({
           role="menuitem"
           onClick={() => {
             onClose();
-            onNotifyUnavailableCamera();
+            onOpenCamera();
           }}
           className="w-full flex items-start gap-2.5 p-2.5 text-left rounded-lg hover:bg-surface-hover transition-colors cursor-pointer"
         >

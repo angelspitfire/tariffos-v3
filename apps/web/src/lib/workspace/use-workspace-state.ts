@@ -7,9 +7,9 @@ import type {
   SkuPrecedent,
   UserProfileSettings,
 } from '@tariffos/shared-types';
+import { consumePendingQuery } from '@/lib/funnel/funnel-storage';
 import { resolveDefaultCanvasTab } from './canvas-tabs';
 import { getJurisdictionById } from './jurisdictions';
-import { consumeWorkspacePendingQuery } from './pending-query';
 import { createWorkspacePersistence } from './persistence';
 import {
   buildSkuPrecedentFromMessage,
@@ -27,13 +27,17 @@ export function useWorkspaceState() {
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [selectedCanvasMsgId, setSelectedCanvasMsgId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<CanvasTabType>('dossier');
-  const [jurisdictionId, setJurisdictionId] = useState('ve-seniat');
   const [skuPrecedents, setSkuPrecedents] = useState<SkuPrecedent[]>([]);
   const [profile, setProfile] = useState<UserProfileSettings>(DEFAULT_USER_PROFILE);
+  const [hydrated, setHydrated] = useState(false);
+  const [queuedPendingQuery, setQueuedPendingQuery] = useState<string | null>(null);
   const [toast, setToast] = useState<WorkspaceToast | null>(null);
   const pendingConsumedRef = useRef(false);
 
-  const jurisdiction = useMemo(() => getJurisdictionById(jurisdictionId), [jurisdictionId]);
+  const jurisdiction = useMemo(
+    () => getJurisdictionById(profile.defaultJurisdictionId),
+    [profile.defaultJurisdictionId],
+  );
   const activeThread = useMemo(() => threads.find((t) => t.id === activeThreadId) ?? null, [threads, activeThreadId]);
   const canvasComponents = useMemo(() => getLatestCanvasComponents(activeThread, selectedCanvasMsgId), [activeThread, selectedCanvasMsgId]);
 
@@ -52,7 +56,7 @@ export function useWorkspaceState() {
       });
       void persistence.saveThread(nextThread);
     },
-    [persistence]
+    [persistence],
   );
 
   const runner = useWorkspaceClassification({
@@ -71,21 +75,24 @@ export function useWorkspaceState() {
         setThreads(loadedThreads);
         if (loadedThreads[0]) setActiveThreadId(loadedThreads[0].id);
         setSkuPrecedents(loadedSkus);
-        if (loadedProfile) {
-          setProfile(loadedProfile);
-          setJurisdictionId(loadedProfile.defaultJurisdictionId);
-        }
+        if (loadedProfile) setProfile(loadedProfile);
         if (!pendingConsumedRef.current) {
           pendingConsumedRef.current = true;
-          const pending = consumeWorkspacePendingQuery();
-          if (pending) void runner.sendClassification(pending, { forcedThreadId: `thread-${Date.now()}` });
+          const pending = consumePendingQuery();
+          if (pending) setQueuedPendingQuery(pending);
         }
-      }
+        setHydrated(true);
+      },
     );
     return () => { active = false; };
-    // Initial hydration runs once on mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [persistence]);
+
+  useEffect(() => {
+    if (!hydrated || !queuedPendingQuery) return;
+    const query = queuedPendingQuery;
+    setQueuedPendingQuery(null);
+    void runner.sendClassification(query, { forcedThreadId: `thread-${Date.now()}` });
+  }, [hydrated, queuedPendingQuery, runner]);
 
   const updateProfile = useCallback(
     (patch: Partial<UserProfileSettings>) => {
@@ -95,7 +102,7 @@ export function useWorkspaceState() {
         return next;
       });
     },
-    [persistence]
+    [persistence],
   );
 
   const approveActiveDossier = useCallback(() => {
@@ -116,7 +123,7 @@ export function useWorkspaceState() {
       })));
       pushToast('Dictamen marcado en revisión técnica.', 'info');
     },
-    [activeThread, persistThread, pushToast, selectedCanvasMsgId]
+    [activeThread, persistThread, pushToast, selectedCanvasMsgId],
   );
 
   const confirmBatchItem = useCallback(
@@ -125,7 +132,7 @@ export function useWorkspaceState() {
       persistThread(updateBatchItemInThread(activeThread, lineNumber, update));
       pushToast(`Ítem #${lineNumber} confirmado (${update.hsCode}).`, 'success');
     },
-    [activeThread, persistThread, pushToast]
+    [activeThread, persistThread, pushToast],
   );
 
   const saveSku = useCallback(
@@ -134,7 +141,7 @@ export function useWorkspaceState() {
       void persistence.saveSkuPrecedent(precedent);
       pushToast(`SKU ${precedent.sku} guardado en catálogo.`, 'success');
     },
-    [persistence, pushToast]
+    [persistence, pushToast],
   );
 
   const saveSkuFromMessage = useCallback(
@@ -144,7 +151,7 @@ export function useWorkspaceState() {
       const precedent = buildSkuPrecedentFromMessage(target, profile);
       if (precedent) saveSku(precedent);
     },
-    [activeThread, profile, saveSku]
+    [activeThread, profile, saveSku],
   );
 
   const deleteSku = useCallback((id: string) => {
@@ -164,6 +171,19 @@ export function useWorkspaceState() {
     void persistence.deleteThread(threadId);
   }, [activeThreadId, persistence]);
 
+  const clearLocalData = useCallback(async () => {
+    await persistence.clearLocal();
+    if (typeof window !== 'undefined') {
+      window.localStorage.clear();
+      window.sessionStorage.clear();
+    }
+    setThreads([]);
+    setSkuPrecedents([]);
+    setActiveThreadId(null);
+    setSelectedCanvasMsgId(null);
+    pushToast('Caché local e IndexedDB limpiados.', 'info');
+  }, [persistence, pushToast]);
+
   const ingestExternalMessage = useCallback(
     (msg: WorkspaceMessage) => {
       const targetId = activeThreadId ?? `thread-eve-${Date.now()}`;
@@ -182,11 +202,11 @@ export function useWorkspaceState() {
     threads, activeThread, activeThreadId, selectedCanvasMsgId, canvasComponents, activeTab,
     jurisdiction, skuPrecedents, profile, toast, ...runner,
     setActiveTab, setActiveThreadId, setSelectedCanvasMsgId,
-    setJurisdictionId: (id: string) => { setJurisdictionId(id); updateProfile({ defaultJurisdictionId: id }); },
+    setJurisdictionId: (id: string) => updateProfile({ defaultJurisdictionId: id }),
     setApprovalWorkflowMode: (mode: ApprovalWorkflowMode) => updateProfile({ approvalWorkflowMode: mode }),
     updateProfile,
     startNewThread: () => { setActiveThreadId(null); setSelectedCanvasMsgId(null); },
-    deleteThread, ingestExternalMessage, approveActiveDossier, requestDossierReview, confirmBatchItem,
-    saveSku, saveSkuFromMessage, deleteSku, pushToast,
+    deleteThread, clearLocalData, ingestExternalMessage, approveActiveDossier,
+    requestDossierReview, confirmBatchItem, saveSku, saveSkuFromMessage, deleteSku, pushToast,
   };
 }
