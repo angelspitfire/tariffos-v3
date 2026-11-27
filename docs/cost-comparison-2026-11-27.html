@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TariffOS v3 — Comparativa de Costos en Producción</title>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --surface: #121826;
+      --surface-2: #192235;
+      --border: #26324a;
+      --text: #e6edf7;
+      --muted: #93a4bf;
+      --accent: #38bdf8;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --purple: #a78bfa;
+      --rose: #fb7185;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      padding: 32px 20px 64px;
+    }
+    .container { max-width: 1120px; margin: 0 auto; }
+    header {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end;
+      gap: 16px; border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 28px;
+    }
+    .badge {
+      display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .04em;
+      text-transform: uppercase; color: var(--accent); background: rgba(56,189,248,.12);
+      border: 1px solid rgba(56,189,248,.3); padding: 4px 10px; border-radius: 999px; margin-bottom: 8px;
+    }
+    h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+    .subtitle { color: var(--muted); font-size: 14px; margin-top: 4px; }
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px; margin-bottom: 28px;
+    }
+    .kpi {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 18px 20px; position: relative; overflow: hidden;
+    }
+    .kpi.winner { border-color: rgba(52,211,153,.55); background: linear-gradient(180deg, rgba(52,211,153,.08), var(--surface)); }
+    .kpi-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .kpi-value { font-size: 28px; font-weight: 700; margin: 6px 0 4px; }
+    .kpi.winner .kpi-value { color: var(--green); }
+    .kpi-sub { font-size: 13px; color: var(--muted); }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 22px 24px; margin-bottom: 24px;
+    }
+    h2 { font-size: 18px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); background: var(--surface-2); }
+    th:first-child { border-top-left-radius: 8px; }
+    th:last-child { border-top-right-radius: 8px; }
+    tr:last-child td { border-bottom: none; }
+    .num { font-variant-numeric: tabular-nums; font-weight: 600; }
+    .tag {
+      display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px;
+      border-radius: 999px; margin-left: 6px; vertical-align: middle;
+    }
+    .tag-green { background: rgba(52,211,153,.15); color: var(--green); }
+    .tag-blue { background: rgba(56,189,248,.15); color: var(--accent); }
+    .tag-amber { background: rgba(251,191,36,.15); color: var(--amber); }
+    .tag-purple { background: rgba(167,139,250,.15); color: var(--purple); }
+    .bars { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+    .bar-row { display: grid; grid-template-columns: 230px 1fr 90px; align-items: center; gap: 14px; font-size: 13px; }
+    .bar-track { background: var(--surface-2); height: 14px; border-radius: 999px; overflow: hidden; display: flex; }
+    .bar-infra { background: #475569; height: 100%; }
+    .bar-ai-green { background: var(--green); height: 100%; }
+    .bar-ai-blue { background: var(--accent); height: 100%; }
+    .bar-ai-amber { background: var(--amber); height: 100%; }
+    .bar-ai-rose { background: var(--rose); height: 100%; }
+    .legend { display: flex; gap: 18px; font-size: 12px; color: var(--muted); margin-bottom: 12px; flex-wrap: wrap; }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+    .callout {
+      background: rgba(56,189,248,.08); border-left: 3px solid var(--accent);
+      padding: 14px 16px; border-radius: 0 10px 10px 0; font-size: 14px; margin-top: 14px;
+    }
+    .flow {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;
+    }
+    .node {
+      background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px 14px; font-size: 13px;
+    }
+    .node strong { display: block; font-size: 13px; color: var(--text); }
+    .node span { font-size: 12px; color: var(--muted); }
+    .arrow { color: var(--accent); font-weight: 700; }
+    @media (max-width: 680px) {
+      .bar-row { grid-template-columns: 1fr; gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <div class="badge">TariffOS v3 · Unit Economics</div>
+        <h1>Comparativa de Costos en Producción</h1>
+        <p class="subtitle">Google Directo (Gemini 4 + Decisions API) vs. Gemini 2.5 vs. Nemotron (OpenRouter &amp; Vercel AI Gateway)</p>
+      </div>
+      <div class="subtitle">27 nov 2026 · Valores en USD / mes</div>
+    </header>
+
+    <section class="kpi-grid">
+      <div class="kpi winner">
+        <div class="kpi-label">Más Económico (Arranque)</div>
+        <div class="kpi-value">~$45 / mes</div>
+        <div class="kpi-sub">Vercel AI Gateway + Nemotron<br>($5/mes gratis cubren ~2k clasif.)</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">OpenRouter + Nemotron</div>
+        <div class="kpi-value">~$48 / mes</div>
+        <div class="kpi-sub">~$2.64 por 1,000 clasif. (incl. 5.5% fee)<br>Modelos <code>:free</code> disponibles para dev</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Google Gemini 2.5</div>
+        <div class="kpi-value">~$54 / mes</div>
+        <div class="kpi-sub">~$9.20 por 1,000 clasif.<br>80% 2.5-Flash + 20% 2.5-Pro + Decisions</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Google Gemini 4 (100%)</div>
+        <div class="kpi-value">~$66 / mes</div>
+        <div class="kpi-sub">~$21.30 por 1,000 clasif.<br>80% Hydrogen + 20% Neon + Decisions</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span class="dot"></span>1. Costo Total Mensual por Etapa (Infraestructura + IA)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Opción / Proveedor</th>
+            <th>IA / 1,000 clasif.<br><span style="font-weight:400;text-transform:none">(sin caché → 40% caché SKU)</span></th>
+            <th>Arranque<br><span style="font-weight:400;text-transform:none">1–2 ag. · 1k/mes · $45 infra</span></th>
+            <th>Tracción<br><span style="font-weight:400;text-transform:none">5 ag. · 5k/mes · $50 infra</span></th>
+            <th>Escala<br><span style="font-weight:400;text-transform:none">20 ag. · 20k/mes · $180 infra</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Nemotron · Vercel AI Gateway</strong><span class="tag tag-green">Óptimo</span><br><span class="subtitle">80% super-vl + 20% ultra · $5/mes gratis</span></td>
+            <td class="num">$2.50 → $1.50</td>
+            <td class="num" style="color:var(--green)">~$45 / mes</td>
+            <td class="num" style="color:var(--green)">~$58 / mes</td>
+            <td class="num" style="color:var(--green)">~$210 / mes</td>
+          </tr>
+          <tr>
+            <td><strong>Nemotron · OpenRouter</strong><span class="tag tag-blue">Flexible</span><br><span class="subtitle">Mismo mix + 5.5% recarga (BYOK $0 &lt; $25k)</span></td>
+            <td class="num">$2.64 → $1.58</td>
+            <td class="num">~$48 / mes</td>
+            <td class="num">~$64 / mes</td>
+            <td class="num">~$212 / mes</td>
+          </tr>
+          <tr>
+            <td><strong>Google Directo · Gemini 2.5</strong><span class="tag tag-amber">Balance</span><br><span class="subtitle">80% 2.5-flash + 20% 2.5-pro + Decisions API</span></td>
+            <td class="num">$9.20 → $5.50</td>
+            <td class="num">~$54 / mes</td>
+            <td class="num">~$96 / mes</td>
+            <td class="num">~$290 / mes</td>
+          </tr>
+          <tr>
+            <td><strong>Google Directo · Gemini 4</strong><span class="tag tag-purple">Frontera</span><br><span class="subtitle">80% 4-hydrogen + 20% 4-neon + Decisions API</span></td>
+            <td class="num">$21.30 → $12.80</td>
+            <td class="num">~$66 / mes</td>
+            <td class="num">~$145–155 / mes</td>
+            <td class="num">~$435–480 / mes</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        <strong>Margen SaaS:</strong> Con el plan de agencia a <strong>$300/mes</strong>, en escala (20 agencias = <strong>$6,000/mes</strong> de ingreso) el costo total de producción es de <strong>$210/mes</strong> con Nemotron (~96.5% margen) o <strong>$435–480/mes</strong> con Gemini 4 (~92% margen).
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span class="dot"></span>2. Comparativa Visual en Escala (20 Agencias · 20,000 clasif./mes)</h2>
+      <div class="legend">
+        <span><i class="swatch" style="background:#475569"></i> Infra fija ($180: Vercel + Supabase + Inngest Pro)</span>
+        <span><i class="swatch" style="background:var(--green)"></i> IA Nemotron</span>
+        <span><i class="swatch" style="background:var(--amber)"></i> IA Gemini 2.5</span>
+        <span><i class="swatch" style="background:var(--rose)"></i> IA Gemini 4</span>
+      </div>
+      <div class="bars">
+        <div class="bar-row">
+          <div>Nemotron · Vercel AI Gateway</div>
+          <div class="bar-track"><div class="bar-infra" style="width:37.5%"></div><div class="bar-ai-green" style="width:6.2%"></div></div>
+          <div class="num">$210 / mes</div>
+        </div>
+        <div class="bar-row">
+          <div>Nemotron · OpenRouter</div>
+          <div class="bar-track"><div class="bar-infra" style="width:37.5%"></div><div class="bar-ai-green" style="width:6.7%"></div></div>
+          <div class="num">$212 / mes</div>
+        </div>
+        <div class="bar-row">
+          <div>Google Directo · Gemini 2.5</div>
+          <div class="bar-track"><div class="bar-infra" style="width:37.5%"></div><div class="bar-ai-amber" style="width:22.9%"></div></div>
+          <div class="num">$290 / mes</div>
+        </div>
+        <div class="bar-row">
+          <div>Google Directo · Gemini 4</div>
+          <div class="bar-track"><div class="bar-infra" style="width:37.5%"></div><div class="bar-ai-rose" style="width:57%"></div></div>
+          <div class="num">~$455 / mes</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid-2">
+      <section class="card">
+        <h2><span class="dot"></span>3. Tarifas Google (Familia 4 + Decisions)</h2>
+        <table>
+          <thead><tr><th>Servicio</th><th>Input / 1M</th><th>Output / 1M</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Decisions API</strong> (<code>gemini-decision-1</code>)</td><td class="num">$0.10</td><td class="num" style="color:var(--green)">$0.00</td></tr>
+            <tr><td><strong>gemini-embedding-001</strong></td><td class="num">$0.15</td><td class="num">—</td></tr>
+            <tr><td><strong>Gemini 4 Hydrogen</strong></td><td class="num">$1.50</td><td class="num">$7.50</td></tr>
+            <tr><td><strong>Gemini 4 Neon</strong></td><td class="num">$3.00</td><td class="num">$15.00</td></tr>
+            <tr><td><strong>Gemini 4 Carbon / Argon</strong></td><td class="num">$4.00</td><td class="num">$20.00</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2><span class="dot"></span>4. Tarifas Nemotron &amp; Gateways</h2>
+        <table>
+          <thead><tr><th>Modelo / Gateway</th><th>Input / 1M</th><th>Output / 1M</th></tr></thead>
+          <tbody>
+            <tr><td><strong>nemotron-3.5-lightning</strong></td><td class="num">$0.07</td><td class="num">$0.20</td></tr>
+            <tr><td><strong>nemotron-3.5-super-vl</strong></td><td class="num">$0.15</td><td class="num">$0.47</td></tr>
+            <tr><td><strong>nemotron-3-ultra-550b</strong></td><td class="num">$0.50</td><td class="num">$2.20</td></tr>
+            <tr><td><strong>Vercel AI Gateway</strong></td><td colspan="2">0% fee · $5/mes gratis</td></tr>
+            <tr><td><strong>OpenRouter</strong></td><td colspan="2">5.5% recarga · modelos <code>:free</code> dev</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2><span class="dot"></span>5. Arquitectura Híbrida Recomendada</h2>
+      <div class="flow">
+        <div class="node"><strong>1. Pre-Gate</strong><span>Google Decisions API (~$0.02 / 1k)</span></div>
+        <span class="arrow">→</span>
+        <div class="node"><strong>2. Caché Tier 0/1</strong><span>SKU + Fast-Path ($0.00 · 15–40%)</span></div>
+        <span class="arrow">→</span>
+        <div class="node"><strong>3. Vercel AI Gateway</strong><span>Nemotron Super VL (80%) + Ultra (20%)</span></div>
+        <span class="arrow">→</span>
+        <div class="node"><strong>4. Fallback</strong><span>Gemini 4 Hydrogen (thinking low/med)</span></div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
