@@ -100,7 +100,7 @@ export function FollowUpChips({
           key={chip.id}
           type="button"
           onClick={chip.action}
-          className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-border-subtle bg-surface-panel px-2.5 py-1 text-[11px] font-medium text-ink-secondary transition hover:border-accent-border hover:bg-accent-soft/50 hover:text-accent-ink"
+          className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-border-subtle bg-surface-panel px-2.5 py-1 text-[11px] font-medium text-ink-secondary transition-colors hover:border-accent-border hover:bg-accent-soft/50 hover:text-accent-ink focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
         >
           <span>{chip.label}</span>
           <ArrowRight className="h-3 w-3 opacity-65" aria-hidden="true" />

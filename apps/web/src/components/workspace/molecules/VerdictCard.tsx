@@ -114,11 +114,11 @@ export function VerdictCard({
 
       <VerdictExecutiveSummary hsCode={verdict.hsCode} points={summaryPoints} />
 
-      <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border-hairline pt-3">
+      <div className="mt-4 flex flex-wrap items-center gap-1.5 border-t border-border-hairline pt-3">
         <button
           type="button"
           onClick={onOpenDossier}
-          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-surface-inverted px-3.5 py-2 text-xs font-semibold text-ink-on-inverted transition-colors hover:bg-surface-inverted-hover whitespace-nowrap ${FOCUS_RING}`}
+          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-field bg-surface-inverted px-3.5 py-2 text-xs font-semibold text-ink-on-inverted transition-colors hover:bg-surface-inverted-hover whitespace-nowrap ${FOCUS_RING}`}
         >
           <FileText className="h-3.5 w-3.5" aria-hidden="true" />
           Ver Dossier
@@ -126,7 +126,7 @@ export function VerdictCard({
         <button
           type="button"
           onClick={onOpenCalculator}
-          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-surface-subtle px-3.5 py-2 text-xs font-medium text-ink-primary transition-colors hover:bg-surface-hover whitespace-nowrap ${FOCUS_RING}`}
+          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-field border border-border-subtle bg-surface-muted px-3 py-2 text-xs font-medium text-ink-primary transition-colors hover:bg-surface-hover whitespace-nowrap ${FOCUS_RING}`}
         >
           <Calculator className="h-3.5 w-3.5" aria-hidden="true" />
           Calcular CIF
@@ -134,7 +134,7 @@ export function VerdictCard({
         <button
           type="button"
           onClick={onExportPdf}
-          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-accent-brand px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-brand-hover whitespace-nowrap ${FOCUS_RING}`}
+          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-field px-2.5 py-2 text-xs font-medium text-ink-secondary transition-colors hover:bg-surface-hover hover:text-ink-primary whitespace-nowrap ${FOCUS_RING}`}
         >
           <FileDown className="h-3.5 w-3.5" aria-hidden="true" />
           Exportar PDF
@@ -142,7 +142,7 @@ export function VerdictCard({
         <button
           type="button"
           onClick={onSaveSku}
-          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-accent-border bg-accent-soft px-3.5 py-2 text-xs font-semibold text-accent-ink transition-opacity hover:opacity-90 whitespace-nowrap ${FOCUS_RING}`}
+          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-field px-2.5 py-2 text-xs font-medium text-ink-secondary transition-colors hover:bg-surface-hover hover:text-ink-primary whitespace-nowrap ${FOCUS_RING}`}
         >
           <BookmarkPlus className="h-3.5 w-3.5" aria-hidden="true" />
           Guardar SKU
@@ -150,7 +150,7 @@ export function VerdictCard({
         <button
           type="button"
           onClick={onOpenRgi}
-          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle bg-surface-panel px-3.5 py-2 text-xs font-medium text-ink-primary transition-colors hover:bg-surface-hover whitespace-nowrap ${FOCUS_RING}`}
+          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-field px-2.5 py-2 text-xs font-medium text-ink-secondary transition-colors hover:bg-surface-hover hover:text-ink-primary whitespace-nowrap ${FOCUS_RING}`}
         >
           <GitBranch className="h-3.5 w-3.5" aria-hidden="true" />
           Camino RGI

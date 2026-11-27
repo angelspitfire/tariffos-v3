@@ -16,7 +16,7 @@ export function DisambiguationCard({ component, onSelect }: DisambiguationCardPr
     <section className="rounded-card border border-border-subtle bg-surface-panel p-4 shadow-card">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h4 className="text-sm font-semibold text-ink-primary">{component.question}</h4>
+          <h3 className="text-sm font-semibold text-ink-primary">{component.question}</h3>
           {component.contextHint ? (
             <p className="mt-0.5 text-xs text-ink-muted">{component.contextHint}</p>
           ) : null}

@@ -100,6 +100,8 @@ function patchEnvelopeWithDossierReview(
 export function extractEnvelopeFromToolParts(content: readonly unknown[]): A2UIEnvelope | null {
   let latestEnvelope: A2UIEnvelope | null = null;
   let latestCalculator: A2UICalculatorComponent | null = null;
+  let latestBatchManifest: A2UIEnvelope['canvasComponents'][number] | null = null;
+  let latestDocSummary: A2UIEnvelope['inlineComponents'][number] | null = null;
 
   for (const part of content) {
     const tc = asToolCallPart(part);
@@ -109,12 +111,33 @@ export function extractEnvelopeFromToolParts(content: readonly unknown[]): A2UIE
 
     if (result.envelope) {
       const parsed = A2UIEnvelopeSchema.safeParse(result.envelope);
-      if (parsed.success) latestEnvelope = parsed.data;
+      if (parsed.success) {
+        const batchComp = parsed.data.canvasComponents.find((c) => c.type === 'batch_manifest');
+        if (batchComp) latestBatchManifest = batchComp;
+        const docComp = parsed.data.inlineComponents.find((c) => c.type === 'document_summary');
+        if (docComp) latestDocSummary = docComp;
+        latestEnvelope = parsed.data;
+      }
     }
     if (result.calculatorComponent) {
       const parsedCalc = A2UICalculatorComponentSchema.safeParse(result.calculatorComponent);
       if (parsedCalc.success) latestCalculator = parsedCalc.data;
     }
+  }
+
+  if (latestEnvelope && latestBatchManifest) {
+    const hasBatch = latestEnvelope.canvasComponents.some((c) => c.type === 'batch_manifest');
+    const hasDoc = latestEnvelope.inlineComponents.some((c) => c.type === 'document_summary');
+    latestEnvelope = {
+      ...latestEnvelope,
+      inlineComponents:
+        !hasDoc && latestDocSummary
+          ? [latestDocSummary, ...latestEnvelope.inlineComponents]
+          : latestEnvelope.inlineComponents,
+      canvasComponents: hasBatch
+        ? latestEnvelope.canvasComponents
+        : [latestBatchManifest, ...latestEnvelope.canvasComponents],
+    };
   }
 
   const withCalc = mergeCalculatorIntoEnvelope(latestEnvelope, latestCalculator);

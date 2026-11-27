@@ -78,6 +78,43 @@ describe('EveMessageItem status handling', () => {
     expect(screen.queryByText('Analizando consulta…')).toBeNull();
     const alert = screen.getByRole('alert');
     expect(alert.textContent).toMatch(/Créditos insuficientes/i);
+    expect(alert.className).toContain('rounded-field');
+    expect(alert.className).not.toContain('rounded-surface-sm');
+  });
+
+  it('maintains consistent hook order when switching between user and assistant roles and renders semantic <time>', () => {
+    const createdAt = new Date('2026-11-26T12:00:00.000Z');
+    const { rerender, container } = render(
+      <RenderSingleMessage
+        message={{
+          id: 'm-switch',
+          role: 'user',
+          createdAt,
+          content: [{ type: 'text', text: 'Consulta inicial' }],
+        }}
+      />,
+    );
+
+    const userTime = container.querySelector('time');
+    expect(userTime).not.toBeNull();
+    expect(userTime?.getAttribute('datetime')).toBe(createdAt.toISOString());
+
+    rerender(
+      <RenderSingleMessage
+        message={{
+          id: 'm-switch',
+          role: 'assistant',
+          createdAt,
+          content: [{ type: 'text', text: 'Respuesta técnica' }],
+          status: { type: 'complete', reason: 'stop' },
+        }}
+      />,
+    );
+
+    expect(screen.getByText('Respuesta técnica')).toBeTruthy();
+    const assistantTime = container.querySelector('time');
+    expect(assistantTime).not.toBeNull();
+    expect(assistantTime?.getAttribute('datetime')).toBe(createdAt.toISOString());
   });
 
   it('hides raw extracted [Adjunto: ...] body text in user bubbles and shows clean filename chips', () => {

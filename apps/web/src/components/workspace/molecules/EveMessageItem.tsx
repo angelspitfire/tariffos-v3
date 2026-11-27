@@ -6,10 +6,7 @@ import { AlertCircle, FileText, Loader2 } from 'lucide-react';
 import type { ApprovalWorkflowMode } from '@tariffos/shared-types';
 import { applyApprovalPolicyToEnvelope } from '@/lib/workspace/dossier-approval-policy';
 import { parseEveUserDisplay } from '@/lib/workspace/eve-attachments';
-import {
-  extractMessagePlainText,
-  toWorkspaceMessageFromEve,
-} from '@/lib/workspace/eve-message-mapper';
+import { extractMessagePlainText, toWorkspaceMessageFromEve } from '@/lib/workspace/eve-message-mapper';
 import { MarkdownProse } from '../atoms/MarkdownProse';
 import { ThreadInlineCards, type InlineCardActions } from '../organisms/ThreadInlineCards';
 import { FollowUpChips } from './FollowUpChips';
@@ -73,19 +70,18 @@ export function EveMessageItem({
 
   const mappedAssistant = useMemo(() => {
     if (message.role !== 'assistant') return null;
-    const raw = toWorkspaceMessageFromEve({
-      id: message.id,
-      role: 'assistant',
-      createdAt: message.createdAt,
-      content: message.content,
-      jurisdictionId,
-    });
-    if (!raw.envelope) return raw;
-    return {
-      ...raw,
-      envelope: applyApprovalPolicyToEnvelope(raw.envelope, approvalWorkflowMode),
-    };
+    const raw = toWorkspaceMessageFromEve({ id: message.id, role: 'assistant', createdAt: message.createdAt, content: message.content, jurisdictionId });
+    return raw.envelope
+      ? { ...raw, envelope: applyApprovalPolicyToEnvelope(raw.envelope, approvalWorkflowMode) }
+      : raw;
   }, [approvalWorkflowMode, jurisdictionId, message.content, message.createdAt, message.id, message.role]);
+
+  const isRunning = message.status?.type === 'running';
+  const isLastSettledAssistant = useAuiState((s) => {
+    if (message.role !== 'assistant' || s.thread.isRunning || isRunning) return false;
+    const msgs = s.thread.messages;
+    return msgs[msgs.length - 1]?.id === message.id;
+  });
 
   if (message.role === 'user') {
     const { displayText, attachmentNames } = parseEveUserDisplay(text);
@@ -123,9 +119,9 @@ export function EveMessageItem({
             </div>
           ) : null}
           {timestamp ? (
-            <div className="text-right font-mono text-[10px] text-ink-on-inverted/65 tabular-nums">
+            <time dateTime={message.createdAt?.toISOString()} suppressHydrationWarning className="block text-right font-mono text-[10px] text-ink-on-inverted/65 tabular-nums">
               {timestamp}
-            </div>
+            </time>
           ) : null}
         </div>
       </MessagePrimitive.Root>
@@ -133,12 +129,6 @@ export function EveMessageItem({
   }
 
   const visibleText = text || mappedAssistant?.text || '';
-  const isRunning = message.status?.type === 'running';
-  const isLastSettledAssistant = useAuiState((s) => {
-    if (s.thread.isRunning || isRunning) return false;
-    const msgs = s.thread.messages;
-    return msgs[msgs.length - 1]?.id === message.id;
-  });
   const turnError =
     message.status?.type === 'incomplete' && message.status.reason === 'error'
       ? formatTurnError(message.status.error)
@@ -156,7 +146,9 @@ export function EveMessageItem({
         <div className="flex items-center gap-2 text-xs text-ink-muted">
           <span className="font-semibold text-ink-primary">TariffOS</span>
           {timestamp ? (
-            <span className="font-mono text-[11px] text-ink-subtle tabular-nums">{timestamp}</span>
+            <time dateTime={message.createdAt?.toISOString()} suppressHydrationWarning className="font-mono text-[11px] text-ink-subtle tabular-nums">
+              {timestamp}
+            </time>
           ) : null}
         </div>
 
@@ -175,7 +167,7 @@ export function EveMessageItem({
         {turnError && !visibleText ? (
           <div
             role="alert"
-            className="inline-flex items-start gap-2 rounded-surface-sm border border-rose-500/30 bg-rose-500/5 px-3 py-2 text-xs text-rose-700 dark:text-rose-300"
+            className="inline-flex items-start gap-2 rounded-field border border-rose-500/30 bg-rose-500/5 px-3 py-2 text-xs text-rose-700 dark:text-rose-300"
           >
             <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             <span>{turnError}</span>

@@ -48,7 +48,9 @@ export function MerceologicalSheetCard({
   }, [component.id, isConfirmedSummary, sheet]);
 
   useEffect(() => {
-    if (!isConfirmedSummary && expanded && firstMissingRef.current) {
+    const isFinePointer =
+      typeof window !== 'undefined' && Boolean(window.matchMedia?.('(pointer: fine)').matches);
+    if (isFinePointer && !isConfirmedSummary && expanded && firstMissingRef.current) {
       firstMissingRef.current.focus();
     }
   }, [isConfirmedSummary, expanded]);
@@ -95,7 +97,7 @@ export function MerceologicalSheetCard({
     >
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h4 className="text-xs font-semibold text-ink-primary">{title}</h4>
+          <h3 className="text-xs font-semibold text-ink-primary">{title}</h3>
           {component.subtitle && (
             <p className="mt-0.5 text-[11px] text-ink-muted">{component.subtitle}</p>
           )}

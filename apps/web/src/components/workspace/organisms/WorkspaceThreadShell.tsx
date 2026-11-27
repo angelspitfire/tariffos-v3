@@ -25,6 +25,7 @@ export interface WorkspaceThreadShellProps {
   onRunSample: (sample: SampleMerchandise) => void;
   onRunBatchSample: (batch: SampleBatchDocument) => void;
   onUpdateProfile: (patch: Partial<UserProfileSettings>) => void;
+  onNotifyWarning?: (message: string) => void;
   children: ReactNode;
 }
 
@@ -42,6 +43,7 @@ export function WorkspaceThreadShell({
   onRunSample,
   onRunBatchSample,
   onUpdateProfile,
+  onNotifyWarning,
   children,
 }: WorkspaceThreadShellProps) {
   const hiddenUploadRef = useRef<HTMLInputElement | null>(null);
@@ -59,6 +61,7 @@ export function WorkspaceThreadShell({
     <>
       <input
         ref={hiddenUploadRef}
+        name="workspaceFiles"
         type="file"
         multiple
         accept={ACCEPTED_FILES}
@@ -120,7 +123,7 @@ export function WorkspaceThreadShell({
         <div className="relative shrink-0 bg-surface-app px-4 pt-2 pb-4 sm:px-6">
           <ThreadPrimitive.ScrollToBottom
             aria-label="Ir al último mensaje"
-            className="absolute -top-9 left-1/2 z-20 inline-flex h-8 w-8 -translate-x-1/2 cursor-pointer items-center justify-center rounded-full border border-border-subtle bg-surface-panel text-ink-secondary shadow-md transition hover:bg-surface-hover hover:text-ink-primary disabled:pointer-events-none disabled:opacity-0"
+            className="absolute -top-9 left-1/2 z-20 inline-flex h-8 w-8 -translate-x-1/2 cursor-pointer items-center justify-center rounded-full border border-border-subtle bg-surface-panel text-ink-secondary shadow-md transition-colors hover:bg-surface-hover hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none disabled:pointer-events-none disabled:opacity-0"
           >
             <ArrowDown className="h-4 w-4" aria-hidden="true" />
           </ThreadPrimitive.ScrollToBottom>
@@ -137,6 +140,7 @@ export function WorkspaceThreadShell({
               onUpdateProfile={onUpdateProfile}
               onTriggerUpload={openFilePicker}
               onTriggerBatchUpload={onTriggerBatchUpload}
+              onNotifyWarning={onNotifyWarning}
             />
           )}
         </div>

@@ -281,4 +281,133 @@ describe('Inline A2UI cards', () => {
       errorSpy.mockRestore();
     }
   });
+
+  it('MerceologicalSheetCard auto-focuses first missing input only on fine-pointer (desktop) devices', () => {
+    const originalMatchMedia = window.matchMedia;
+    const sheet = buildDefaultMerceologicalSheet('Bomba centrífuga', {});
+    const hitlComp: A2UIMerceologicalSheetComponent = {
+      type: 'merceological_sheet',
+      id: 'ms-focus-test',
+      mode: 'hitl_validation',
+      title: 'Validación Merceológica',
+      sheet,
+    };
+
+    try {
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        configurable: true,
+        value: vi.fn().mockImplementation((query: string) => ({
+          matches: false,
+          media: query,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        })),
+      });
+
+      const { unmount } = render(
+        <MerceologicalSheetCard component={hitlComp} onSubmit={vi.fn()} />,
+      );
+      expect(document.activeElement).toBe(document.body);
+      unmount();
+
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        configurable: true,
+        value: vi.fn().mockImplementation((query: string) => ({
+          matches: query === '(pointer: fine)',
+          media: query,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        })),
+      });
+
+      render(<MerceologicalSheetCard component={hitlComp} onSubmit={vi.fn()} />);
+      expect(document.activeElement?.tagName).toBe('INPUT');
+    } finally {
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        configurable: true,
+        value: originalMatchMedia,
+      });
+    }
+  });
+
+  it('VerdictCard applies unified rounded-field radius with one primary CTA, one secondary tonal, and three quiet tertiary actions', () => {
+    render(<VerdictCard verdict={sampleVerdict} />);
+
+    const dossierBtn = screen.getByRole('button', { name: /Ver Dossier/i });
+    const cifBtn = screen.getByRole('button', { name: /Calcular CIF/i });
+    const pdfBtn = screen.getByRole('button', { name: /Exportar PDF/i });
+    const skuBtn = screen.getByRole('button', { name: /Guardar SKU/i });
+    const rgiBtn = screen.getByRole('button', { name: /Camino RGI/i });
+
+    for (const btn of [dossierBtn, cifBtn, pdfBtn, skuBtn, rgiBtn]) {
+      expect(btn.className).toContain('rounded-field');
+      expect(btn.className).not.toContain('rounded-full');
+    }
+
+    expect(dossierBtn.className).toContain('bg-surface-inverted');
+    expect(dossierBtn.className).toContain('text-ink-on-inverted');
+    expect(cifBtn.className).toContain('bg-surface-muted');
+    expect(cifBtn.className).toContain('border-border-subtle');
+
+    for (const quietBtn of [pdfBtn, skuBtn, rgiBtn]) {
+      expect(quietBtn.className).not.toContain('bg-accent-brand');
+      expect(quietBtn.className).not.toContain('bg-surface-inverted');
+      expect(quietBtn.className).toContain('text-ink-secondary');
+    }
+  });
+
+  it('inline HITL and notice cards expose semantic <h3> headings', () => {
+    const sheet = buildDefaultMerceologicalSheet('Válvula industrial', {});
+    render(
+      <>
+        <MerceologicalSheetCard
+          component={{
+            type: 'merceological_sheet',
+            id: 'ms-h3',
+            mode: 'hitl_validation',
+            title: 'Ficha Técnica HITL',
+            sheet,
+          }}
+          onSubmit={vi.fn()}
+        />
+        <QuestionnaireCard
+          component={{
+            type: 'questionnaire',
+            id: 'q-h3',
+            title: 'Cuestionario técnico',
+            fields: [{ id: 'f1', label: 'Material', fieldType: 'text' }],
+          }}
+          onSubmit={vi.fn()}
+        />
+        <DisambiguationCard
+          component={{
+            type: 'disambiguation',
+            id: 'd-h3',
+            question: 'Elige la opción correcta',
+            options: [{ id: 'o1', label: 'Opción A', technicalDetail: 'Detalle A' }],
+          }}
+          onSelect={vi.fn()}
+        />
+        <LegalNoticeCard
+          component={{
+            type: 'legal_notice',
+            id: 'ln-h3',
+            severity: 'warning',
+            authority: 'SENIAT',
+            title: 'Aviso normativo SENCAMER',
+            summary: 'Requiere revisión previa.',
+            requiredPermits: [],
+          }}
+        />
+      </>,
+    );
+
+    expect(screen.getByRole('heading', { level: 3, name: 'Ficha Técnica HITL' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: 'Cuestionario técnico' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: 'Elige la opción correcta' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: 'Aviso normativo SENCAMER' })).toBeInTheDocument();
+  });
 });

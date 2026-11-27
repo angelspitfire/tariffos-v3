@@ -251,4 +251,65 @@ describe('eve-message-mapper', () => {
     expect(msg.envelope?.inlineComponents).toHaveLength(1);
     expect(msg.jurisdictionId).toBe('ve-seniat');
   });
+
+  it('preserves batch_manifest and document_summary when analyze_invoice_manifest is followed by classify_item in the same turn', () => {
+    const batchEnvelope: A2UIEnvelope = {
+      assistantMessage: 'Manifiesto PL-2026-4410 procesado (3 ítems).',
+      classificationStatus: 'classified',
+      inlineComponents: [
+        {
+          type: 'document_summary',
+          id: 'doc-pl-1',
+          docTypesDetected: ['Packing List'],
+          documentReference: 'PL-2026-4410',
+          itemsCount: 3,
+          isBatch: true,
+        },
+      ],
+      canvasComponents: [
+        {
+          type: 'batch_manifest',
+          id: 'batch-pl-1',
+          title: 'Packing List PL-2026-4410',
+          currencyCode: 'USD',
+          items: [
+            {
+              lineNumber: 1,
+              sourceDoc: 'PL-2026-4410',
+              description: 'Pastillas de freno cerámicas',
+              quantityText: '50 sets',
+              hsCode: '6813.81.10.00',
+              adValoremPercent: 14,
+              vatPercent: 16,
+              legalRegime: 'Libre',
+              fobValue: 1200,
+              currencyCode: 'USD',
+              status: 'needs_review',
+            },
+          ],
+        },
+      ],
+    };
+
+    const merged = extractEnvelopeFromToolParts([
+      {
+        type: 'tool-call',
+        toolCallId: 'tc-manifest',
+        toolName: 'analyze_invoice_manifest',
+        result: { envelope: batchEnvelope },
+      },
+      {
+        type: 'tool-call',
+        toolCallId: 'tc-item-1',
+        toolName: 'classify_item',
+        result: { line: {}, envelope: SAMPLE_ENVELOPE },
+      },
+    ]);
+
+    expect(merged).not.toBeNull();
+    expect(merged!.canvasComponents.some((c) => c.type === 'batch_manifest')).toBe(true);
+    expect(merged!.canvasComponents.some((c) => c.type === 'dossier')).toBe(true);
+    expect(merged!.inlineComponents.some((c) => c.type === 'document_summary')).toBe(true);
+    expect(merged!.inlineComponents.some((c) => c.type === 'verdict')).toBe(true);
+  });
 });

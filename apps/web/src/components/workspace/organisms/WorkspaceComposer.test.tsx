@@ -1,8 +1,10 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { AssistantRuntimeProvider, useExternalStoreRuntime, type ThreadMessageLike } from '@assistant-ui/react';
 import { DEFAULT_USER_PROFILE } from '@/lib/workspace/types';
 import { AssistantThreadSurface } from './AssistantThreadSurface';
+import { WorkspaceComposer } from './WorkspaceComposer';
 
 beforeAll(() => {
   if (typeof globalThis.ResizeObserver === 'undefined') {
@@ -79,10 +81,14 @@ describe('AssistantThreadSurface & WorkspaceComposer tools', () => {
 
     await user.click(screen.getByRole('button', { name: /Herramientas/i }));
     expect(screen.getByText(/Opciones de análisis en chat/i)).toBeInTheDocument();
-    expect(screen.getByText(/Búsqueda predictiva/i)).toBeInTheDocument();
+    expect(screen.getByRole('menuitemcheckbox', { name: /Búsqueda predictiva/i })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
     expect(screen.getByText(/Profundidad de dictamen/i)).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'FOB' }));
+    const fobRadio = screen.getByRole('menuitemradio', { name: 'FOB' });
+    await user.click(fobRadio);
     expect(onUpdateProfile).toHaveBeenCalledWith({ defaultIncoterm: 'FOB' });
   });
 
@@ -208,5 +214,163 @@ describe('AssistantThreadSurface & WorkspaceComposer tools', () => {
     expect(onSendMessage).toHaveBeenCalledWith(
       expect.stringMatching(/Analiza el documento adjunto/i),
     );
+  });
+
+  it('supports ArrowDown/ArrowUp/Enter/Escape keyboard selection in PredictiveSkuList from textarea', async () => {
+    const user = userEvent.setup();
+    render(
+      <AssistantThreadSurface
+        messages={[]}
+        isRunning={false}
+        liveProgress={null}
+        skuPrecedents={[
+          {
+            id: 'sku-1',
+            sku: 'INV-5K',
+            normalizedSku: 'INV-5K',
+            title: 'Inversor solar híbrido 5 kW',
+            description: 'Inversor solar híbrido 5 kW',
+            hsCode: '8504.40.90.00',
+            jurisdictionId: 've-seniat',
+            adValoremPercent: 10,
+            vatPercent: 16,
+            legalRegime: 'Libre',
+            reviewStatus: 'approved',
+            usageCount: 1,
+            createdAt: '2026-11-26T00:00:00.000Z',
+            updatedAt: '2026-11-26T00:00:00.000Z',
+          },
+          {
+            id: 'sku-2',
+            sku: 'INV-10K',
+            normalizedSku: 'INV-10K',
+            title: 'Inversor solar trifásico 10 kW',
+            description: 'Inversor solar trifásico 10 kW',
+            hsCode: '8504.40.90.00',
+            jurisdictionId: 've-seniat',
+            adValoremPercent: 10,
+            vatPercent: 16,
+            legalRegime: 'Libre',
+            reviewStatus: 'approved',
+            usageCount: 2,
+            createdAt: '2026-11-26T00:00:00.000Z',
+            updatedAt: '2026-11-26T00:00:00.000Z',
+          },
+        ]}
+        pendingAttachments={[]}
+        profile={DEFAULT_USER_PROFILE}
+        inlineActions={baseInlineActions}
+        onSendMessage={vi.fn<() => Promise<void>>()}
+        onCancelRun={vi.fn<() => void>()}
+        onAddFiles={vi.fn<() => void>()}
+        onRemoveAttachment={vi.fn<() => void>()}
+        onRunSample={vi.fn<() => void>()}
+        onRunBatchSample={vi.fn<() => void>()}
+        onUpdateProfile={vi.fn<() => void>()}
+      />,
+    );
+
+    const textarea = screen.getByLabelText<HTMLTextAreaElement>(
+      /Consulta arancelaria o descripción de mercancía/i,
+    );
+    await user.type(textarea, 'INV');
+    const options = screen.getAllByRole('option');
+    expect(options).toHaveLength(2);
+
+    await user.keyboard('{ArrowDown}');
+    expect(options[0]).toHaveAttribute('aria-selected', 'true');
+
+    await user.keyboard('{ArrowDown}');
+    expect(options[1]).toHaveAttribute('aria-selected', 'true');
+
+    await user.keyboard('{ArrowUp}');
+    expect(options[0]).toHaveAttribute('aria-selected', 'true');
+
+    await user.keyboard('{Enter}');
+    expect(textarea.value).toBe('INV-5K: Inversor solar híbrido 5 kW (8504.40.90.00)');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+
+    await user.clear(textarea);
+    await user.type(textarea, 'INV');
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
+  it('notifies user via onNotifyWarning (or fallback status) when SpeechRecognition is unavailable', async () => {
+    const user = userEvent.setup();
+    const onNotifyWarning = vi.fn<(msg: string) => void>();
+
+    function ComposerHarness({ warn }: { warn?: (msg: string) => void }) {
+      const runtime = useExternalStoreRuntime({
+        isRunning: false,
+        messages: [] as ThreadMessageLike[],
+        convertMessage: (m: ThreadMessageLike) => m,
+        onNew: async () => undefined,
+      });
+      return (
+        <AssistantRuntimeProvider runtime={runtime}>
+          <WorkspaceComposer
+            skuPrecedents={[]}
+            pendingAttachments={[]}
+            profile={DEFAULT_USER_PROFILE}
+            onAddFiles={vi.fn()}
+            onRemoveAttachment={vi.fn()}
+            onUpdateProfile={vi.fn()}
+            onTriggerUpload={vi.fn()}
+            onNotifyWarning={warn}
+          />
+        </AssistantRuntimeProvider>
+      );
+    }
+
+    const { rerender } = render(<ComposerHarness warn={onNotifyWarning} />);
+    await user.click(screen.getByRole('button', { name: /Dictar/i }));
+    expect(onNotifyWarning).toHaveBeenCalledWith(expect.stringMatching(/navegador|Chrome|Edge|voz/i));
+
+    rerender(<ComposerHarness />);
+    await user.click(screen.getByRole('button', { name: /Dictar/i }));
+    expect(screen.getByRole('status')).toHaveTextContent(/navegador|Chrome|Edge|voz/i);
+  });
+
+  it('renders OS-aware paste shortcut hint with non-breaking space in empty state and attach menu', async () => {
+    const user = userEvent.setup();
+    const originalPlatform = navigator.platform;
+    Object.defineProperty(navigator, 'platform', {
+      value: 'MacIntel',
+      configurable: true,
+    });
+    try {
+      render(
+        <AssistantThreadSurface
+          messages={[]}
+          isRunning={false}
+          liveProgress={null}
+          skuPrecedents={[]}
+          pendingAttachments={[]}
+          profile={DEFAULT_USER_PROFILE}
+          inlineActions={baseInlineActions}
+          onSendMessage={vi.fn<() => Promise<void>>()}
+          onCancelRun={vi.fn<() => void>()}
+          onAddFiles={vi.fn<() => void>()}
+          onRemoveAttachment={vi.fn<() => void>()}
+          onRunSample={vi.fn<() => void>()}
+          onRunBatchSample={vi.fn<() => void>()}
+          onUpdateProfile={vi.fn<() => void>()}
+        />,
+      );
+
+      const emptyHint = screen.getByText('⌘ V');
+      expect(emptyHint.textContent).toBe('⌘\u00A0V');
+      await user.click(screen.getByRole('button', { name: /Adjuntar archivo o abrir cámara/i }));
+      const allHints = screen.getAllByText('⌘ V');
+      expect(allHints).toHaveLength(2);
+      expect(allHints[1]?.textContent).toBe('⌘\u00A0V');
+    } finally {
+      Object.defineProperty(navigator, 'platform', {
+        value: originalPlatform,
+        configurable: true,
+      });
+    }
   });
 });

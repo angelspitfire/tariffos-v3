@@ -26,7 +26,7 @@ export function ComposerAttachmentStrip({
             }`}
           >
             {isExtracting ? (
-              <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden="true" />
+              <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin motion-reduce:animate-none" aria-hidden="true" />
             ) : (
               <FileText className="h-3.5 w-3.5 shrink-0 text-accent-ink" aria-hidden="true" />
             )}
@@ -38,7 +38,7 @@ export function ComposerAttachmentStrip({
               type="button"
               onClick={() => onRemove(att.id)}
               aria-label={`Quitar archivo ${att.name}`}
-              className="cursor-pointer p-0.5 text-ink-subtle hover:text-ink-primary"
+              className="cursor-pointer rounded p-0.5 text-ink-subtle transition-colors hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
             >
               <X className="h-3.5 w-3.5" aria-hidden="true" />
             </button>

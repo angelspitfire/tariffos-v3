@@ -32,7 +32,7 @@ export function QuestionnaireCard({ component, onSubmit }: QuestionnaireCardProp
       className="rounded-card border border-border-subtle bg-surface-panel p-4 shadow-card"
     >
       <div className="flex items-center justify-between gap-2">
-        <h4 className="text-xs font-semibold text-ink-primary">{component.title}</h4>
+        <h3 className="text-xs font-semibold text-ink-primary">{component.title}</h3>
         <span className="rounded-full bg-surface-subtle px-2 py-0.5 font-mono text-[11px] font-medium text-ink-secondary tabular-nums">
           {completed}/{total}
         </span>
@@ -75,13 +75,16 @@ export function QuestionnaireCard({ component, onSubmit }: QuestionnaireCardProp
               ) : field.fieldType === 'select' && options.length > MAX_CHIP_OPTIONS ? (
                 <select
                   id={`${component.id}-${field.id}`}
+                  name={field.id}
                   value={value}
                   onChange={(e) => setFieldValue(field.id, e.target.value)}
                   className="w-full rounded-lg border border-border-subtle bg-surface-input px-2.5 py-1.5 text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
                 >
-                  <option value="">Seleccionar…</option>
+                  <option value="" className="bg-surface-panel text-ink-primary">
+                    Seleccionar…
+                  </option>
                   {options.map((opt) => (
-                    <option key={opt} value={opt}>
+                    <option key={opt} value={opt} className="bg-surface-panel text-ink-primary">
                       {opt}
                     </option>
                   ))}

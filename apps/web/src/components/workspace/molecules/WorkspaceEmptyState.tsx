@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { ArrowUpRight, FileSpreadsheet, Scale, UploadCloud } from 'lucide-react';
 import {
   SAMPLE_BATCH_DOCUMENTS,
@@ -30,6 +31,12 @@ export function WorkspaceEmptyState({
   onRunBatchSample,
 }: WorkspaceEmptyStateProps) {
   const firstBatch = SAMPLE_BATCH_DOCUMENTS[0];
+  const [pasteShortcut, setPasteShortcut] = useState('Ctrl\u00A0V');
+
+  useEffect(() => {
+    const isApple = /Mac|iPhone|iPad|iPod/i.test(navigator.platform || navigator.userAgent);
+    setPasteShortcut(isApple ? '⌘\u00A0V' : 'Ctrl\u00A0V');
+  }, []);
 
   return (
     <div className="mx-auto my-auto flex max-w-2xl flex-col justify-center space-y-5 py-3">
@@ -61,7 +68,7 @@ export function WorkspaceEmptyState({
           </div>
           <div className="text-xs font-semibold text-ink-primary">Factura, B/L o Ficha PDF</div>
           <p className="text-[11px] leading-relaxed text-ink-muted">
-            Adjunta PDF, imagen o pega capturas (<span className="font-mono">Ctrl+V</span>) al hilo.
+            Adjunta PDF, imagen o pega capturas (<span className="font-mono">{pasteShortcut}</span>) al hilo.
           </p>
         </button>
 

@@ -83,11 +83,12 @@ export function ToolActivityList({ items }: { items: readonly ToolActivityItem[]
           <button
             type="button"
             onClick={() => setExpanded((prev) => !prev)}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle bg-surface-muted/80 px-2.5 py-1 text-[11px] font-medium text-ink-secondary transition hover:bg-surface-hover hover:text-ink-primary"
+            aria-expanded={expanded}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle bg-surface-muted/80 px-2.5 py-1 text-[11px] font-medium text-ink-secondary transition-colors hover:bg-surface-hover hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
             <CheckCircle2 className="h-3 w-3 shrink-0 text-[var(--color-success)]" aria-hidden="true" />
             <span>Completado · {completedItems.length} pasos</span>
-            {expanded ? <ChevronUp className="h-3 w-3 opacity-70" /> : <ChevronDown className="h-3 w-3 opacity-70" />}
+            {expanded ? <ChevronUp className="h-3 w-3 opacity-70" aria-hidden="true" /> : <ChevronDown className="h-3 w-3 opacity-70" aria-hidden="true" />}
           </button>
           {expanded ? (
             <div className="flex flex-wrap gap-1.5">

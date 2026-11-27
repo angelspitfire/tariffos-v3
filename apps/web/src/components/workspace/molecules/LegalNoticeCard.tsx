@@ -57,7 +57,7 @@ export function LegalNoticeCard({ component }: LegalNoticeCardProps) {
           <Icon className="mt-0.5 h-4 w-4 shrink-0 text-ink-primary" aria-hidden="true" />
           <div>
             <div className="flex flex-wrap items-center gap-1.5">
-              <h4 className="text-xs font-semibold text-ink-primary">{component.title}</h4>
+              <h3 className="text-xs font-semibold text-ink-primary">{component.title}</h3>
               <StatusPill variant={component.severity} />
             </div>
             <p className="mt-1 text-xs leading-relaxed text-ink-secondary">{component.summary}</p>
@@ -68,7 +68,7 @@ export function LegalNoticeCard({ component }: LegalNoticeCardProps) {
             type="button"
             onClick={() => setExpanded(false)}
             aria-label="Contraer aviso normativo"
-            className="cursor-pointer rounded-md p-1 text-ink-muted hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
+            className="cursor-pointer rounded-md p-1 text-ink-muted transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
             <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
@@ -91,6 +91,7 @@ export function LegalNoticeCard({ component }: LegalNoticeCardProps) {
                     <span className="flex min-w-0 flex-1 items-start gap-2">
                       <input
                         type="checkbox"
+                        name={key}
                         checked={checked}
                         onChange={(e) =>
                           setCheckedMap((prev) => ({ ...prev, [key]: e.target.checked }))

@@ -163,6 +163,7 @@ export function EveThreadSurface({
         onRunSample={onRunSample}
         onRunBatchSample={onRunBatchSample}
         onUpdateProfile={onUpdateProfile}
+        onNotifyWarning={onErrorToast}
       >
         <EveExternalMessages
           messages={persistedMessages}
