@@ -205,6 +205,16 @@ async function main(): Promise<void> {
       await prisma.legalKnowledgeParent.createMany({ data: exemptions.slice(i, i + chunkSize), skipDuplicates: true });
     }
     const total = await prisma.nationalTariff.count({ where: { countryCode: 'VE' } });
+    const datasetVersion = path.basename(artifactPath, '.rows.json') || 'consolidado-arancel-2026';
+    await prisma.country
+      .update({
+        where: { code: 'VE' },
+        data: {
+          datasetVersion,
+          legislation: artifact.instrument,
+        },
+      })
+      .catch(() => undefined);
     console.log(`NationalTariff VE seeded: ${total} rows (${exemptions.length} BK/BIT exemptions).`);
   } finally {
     await prisma.$disconnect();

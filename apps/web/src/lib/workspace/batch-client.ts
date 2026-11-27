@@ -1,5 +1,6 @@
 import { A2UIEnvelopeSchema, type A2UIEnvelope } from '@tariffos/shared-types';
 import type { ClientSubscriptionToken } from 'inngest/react';
+import { SIGNED_UPLOAD_THRESHOLD_BYTES } from '@/lib/inngest/batch-storage-constants';
 
 export interface SubmitBatchFileResult {
   filingId: string;
@@ -25,18 +26,69 @@ async function readErrorMessage(res: Response, fallback: string): Promise<string
   }
 }
 
-/** Uploads a commercial invoice (.xlsx, .csv, .txt, .pdf) to `POST /api/batch`. */
+async function trySignedBatchUpload(file: File): Promise<{ storageKey: string } | null> {
+  const contentType = file.type || 'application/octet-stream';
+  const urlRes = await fetch('/api/batch/upload-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fileName: file.name, contentType, sizeBytes: file.size }),
+  });
+  if (!urlRes.ok) {
+    throw new Error(await readErrorMessage(urlRes, `Error al preparar subida (HTTP ${urlRes.status}).`));
+  }
+
+  const urlJson = (await urlRes.json()) as {
+    mode?: string;
+    directInline?: boolean;
+    storageKey?: string;
+    signedUrl?: string;
+  };
+  if (urlJson.directInline || urlJson.mode === 'offline' || !urlJson.signedUrl || !urlJson.storageKey) {
+    return null;
+  }
+
+  const putRes = await fetch(urlJson.signedUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': contentType },
+    body: file,
+  });
+  if (!putRes.ok) {
+    throw new Error(`No se pudo subir el archivo a Storage (HTTP ${putRes.status}).`);
+  }
+
+  return { storageKey: urlJson.storageKey };
+}
+
+/** Uploads a commercial invoice (.xlsx, .csv, .txt, .pdf, image) to `POST /api/batch` (via Signed URL above 3.5 MB). */
 export async function submitBatchFile(params: {
   file: File;
   countryCode: string;
   deepMode?: boolean;
 }): Promise<SubmitBatchFileResult> {
-  const form = new FormData();
-  form.append('file', params.file);
-  form.append('countryCode', params.countryCode);
-  if (params.deepMode) form.append('deepMode', 'true');
+  let res: Response;
+  const signed = params.file.size > SIGNED_UPLOAD_THRESHOLD_BYTES
+    ? await trySignedBatchUpload(params.file)
+    : null;
 
-  const res = await fetch('/api/batch', { method: 'POST', body: form });
+  if (signed) {
+    res = await fetch('/api/batch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        storageKey: signed.storageKey,
+        fileName: params.file.name,
+        countryCode: params.countryCode,
+        deepMode: Boolean(params.deepMode),
+      }),
+    });
+  } else {
+    const form = new FormData();
+    form.append('file', params.file);
+    form.append('countryCode', params.countryCode);
+    if (params.deepMode) form.append('deepMode', 'true');
+    res = await fetch('/api/batch', { method: 'POST', body: form });
+  }
+
   if (!res.ok) {
     throw new Error(await readErrorMessage(res, `Error al procesar lote (HTTP ${res.status}).`));
   }

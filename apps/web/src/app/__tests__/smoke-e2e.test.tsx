@@ -1,19 +1,39 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { A2UIEnvelopeSchema } from '@tariffos/shared-types';
 import { resolveInitialDossierReview } from '@tariffos/agent';
 import { POST as classifyStreamPost } from '@/app/api/classify-stream/route';
 import { POST as batchPost } from '@/app/api/batch/route';
+import { POST as batchUploadUrlPost } from '@/app/api/batch/upload-url/route';
+import { POST as receiptUploadUrlPost } from '@/app/api/billing/receipts/upload-url/route';
+import { POST as postIngestionDoc } from '@/app/api/admin/ingestion/documents/route';
+import { GET as getIngestionDiff } from '@/app/api/admin/ingestion/documents/[id]/diff/route';
+import { POST as publishIngestionDoc } from '@/app/api/admin/ingestion/documents/[id]/publish/route';
 import {
   consumePendingQuery,
   savePendingQuery,
 } from '@/lib/funnel/funnel-storage';
+import { resetOfflineIngestionState } from '@/lib/admin/ingestion-offline-store';
+import { getOfflineAdminState, resetOfflineAdminState } from '@/lib/admin/offline-store';
 import { createWorkspacePersistence } from '@/lib/workspace/persistence';
 import { getJurisdictionById } from '@/lib/workspace/jurisdictions';
 import { buildOfflineBatchEnvelope } from '@/lib/workspace/offline-batch-samples';
+import { LoginCard } from '@/components/funnel/organisms/LoginCard';
 import { DossierApprovalBar } from '@/components/workspace/molecules/DossierApprovalBar';
 import { BatchManifestTriageView } from '@/components/workspace/organisms/BatchManifestTriageView';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+const originalCloudMode = process.env.NEXT_PUBLIC_CLOUD_MODE;
+
+afterEach(() => {
+  if (originalCloudMode === undefined) delete process.env.NEXT_PUBLIC_CLOUD_MODE;
+  else process.env.NEXT_PUBLIC_CLOUD_MODE = originalCloudMode;
+});
 
 function extractResultEnvelope(sseBody: string) {
   const blocks = sseBody.split('\n\n').filter((b) => b.includes('event: result'));
@@ -168,5 +188,92 @@ describe('Phase D.3 End-to-End Smoke Gate', () => {
       await user.click(screen.getByRole('button', { name: /Confirmar ítem/i }));
       expect(screen.getByTestId('batch-inspector-header')).toBeInTheDocument();
     }
+  });
+
+  it('5) LoginCard clear/reset flow + upload-url gates for batch invoices and payment receipts', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'false';
+    const user = userEvent.setup();
+    render(<LoginCard cloudMode={false} />);
+
+    const emailInput = screen.getByLabelText(/Correo electrónico/i);
+    await user.type(emailInput, 'error@usuario.ve');
+    await user.click(screen.getByRole('button', { name: /Limpiar correo electrónico/i }));
+    expect(emailInput).toHaveValue('');
+
+    await user.type(emailInput, 'broker@aduanas.ve');
+    await user.click(screen.getByRole('button', { name: /¿Olvidaste tu contraseña\?/i }));
+    expect(screen.getByText(/Enviamos instrucciones de recuperación/i)).toBeInTheDocument();
+
+    const batchUrlRes = await batchUploadUrlPost(
+      new Request('http://localhost/api/batch/upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: 'factura-pesada.pdf',
+          contentType: 'application/pdf',
+          sizeBytes: 6_000_000,
+        }),
+      }),
+    );
+    expect(batchUrlRes.status).toBe(200);
+    expect(await batchUrlRes.json()).toEqual({ mode: 'offline', directInline: true });
+
+    const receiptUrlRes = await receiptUploadUrlPost(
+      new Request('http://localhost/api/billing/receipts/upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: 'comprobante-zelle.png',
+          contentType: 'image/png',
+          sizeBytes: 256_000,
+        }),
+      }),
+    );
+    expect(receiptUrlRes.status).toBe(200);
+    expect(await receiptUrlRes.json()).toEqual({ mode: 'offline', directInline: true });
+  });
+
+  it('6) Admin Ingestion lifecycle: stage VE draft -> preview diff -> publish -> record audit log', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'false';
+    resetOfflineIngestionState();
+    resetOfflineAdminState();
+
+    const stageRes = await postIngestionDoc(
+      new Request('http://localhost/api/admin/ingestion/documents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          countryCode: 'VE',
+          legalType: 'LEGAL_NOTE',
+          hierarchyPath: 'seniat-smoke',
+          title: 'Providencia Smoke Test SENIAT',
+          sourceFormat: 'markdown',
+          validFromDate: '2026-11-27',
+          content: '# Artículo 1\nRegla para máquinas de la partida 85.17.',
+        }),
+      }),
+    );
+    expect(stageRes.status).toBe(201);
+    const stagedJson = (await stageRes.json()) as { document: { id: string; status: string } };
+    expect(stagedJson.document.status).toBe('DRAFT');
+
+    const diffRes = await getIngestionDiff(
+      new Request(`http://localhost/api/admin/ingestion/documents/${stagedJson.document.id}/diff`),
+      { params: Promise.resolve({ id: stagedJson.document.id }) },
+    );
+    expect(diffRes.status).toBe(200);
+
+    const publishRes = await publishIngestionDoc(
+      new Request(`http://localhost/api/admin/ingestion/documents/${stagedJson.document.id}/publish`, {
+        method: 'POST',
+      }),
+      { params: Promise.resolve({ id: stagedJson.document.id }) },
+    );
+    expect(publishRes.status).toBe(200);
+    const pubJson = (await publishRes.json()) as { result: { status: string } };
+    expect(pubJson.result.status).toBe('PUBLISHED');
+
+    const audits = getOfflineAdminState().auditLogs;
+    expect(audits.some((a) => a.action === 'ingestion.draft_published')).toBe(true);
   });
 });

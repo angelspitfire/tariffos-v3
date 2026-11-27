@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   checkBillingLimit: vi.fn(),
   executeCloudBatchInline: vi.fn(),
   extractSpy: vi.fn(),
+  downloadBatchFileFromStorage: vi.fn(),
 }));
 
 vi.mock('@/lib/inngest/client', () => ({
@@ -23,6 +24,19 @@ vi.mock('@/lib/inngest/batch-file-extractor', async (importOriginal) => {
     extractBatchItemsFromFile: (file: File, options?: unknown) => {
       mocks.extractSpy(file.name);
       return actual.extractBatchItemsFromFile(file, options as never);
+    },
+  };
+});
+
+vi.mock('@/lib/inngest/batch-storage', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/inngest/batch-storage')>();
+  return {
+    ...actual,
+    downloadBatchFileFromStorage: (key: string, expectedTenantId: string, hint?: string) => {
+      if (mocks.downloadBatchFileFromStorage.getMockImplementation()) {
+        return mocks.downloadBatchFileFromStorage(key, expectedTenantId, hint);
+      }
+      return actual.downloadBatchFileFromStorage(key, expectedTenantId, hint);
     },
   };
 });
@@ -380,6 +394,63 @@ describe('POST /api/batch', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           fileName: 'factura-csv.csv',
+        }),
+      }),
+    );
+  });
+
+  it('downloads batch invoice from Storage when storageKey is supplied and blocks cross-tenant access with 403', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    process.env.BATCH_EXECUTION_MODE = 'inngest';
+    mocks.getAuthenticatedUser.mockResolvedValue({ id: 'user-1', email: 'ops@agency.ve' });
+    mocks.membershipFindFirst.mockResolvedValue({ tenantId: 'tenant-ve', role: 'ADMIN' });
+    mocks.checkBillingLimit.mockResolvedValue({ allowed: true });
+    mocks.filingFindUnique.mockResolvedValue(null);
+    mocks.filingUpsert.mockResolvedValue({ id: 'fil-storage-1' });
+    mocks.inngestSend.mockResolvedValue({ ids: ['evt-storage'] });
+
+    const crossTenantReq = new Request('http://localhost/api/batch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        countryCode: 'VE',
+        storageKey: 'other-tenant/123-factura.csv',
+        fileName: 'factura.csv',
+      }),
+    });
+    const crossTenantRes = await POST(crossTenantReq);
+    expect(crossTenantRes.status).toBe(403);
+
+    mocks.downloadBatchFileFromStorage.mockResolvedValueOnce(
+      new File(['SKU,Descripcion,Origen,CIF\nBAT-1,Batería litio 48V,CN,900'], 'factura-pesada.csv', {
+        type: 'text/csv',
+      }),
+    );
+
+    const validReq = new Request('http://localhost/api/batch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filingId: 'fil-storage-1',
+        countryCode: 'VE',
+        storageKey: 'tenant-ve/123-factura-pesada.csv',
+        fileName: 'factura-pesada.csv',
+      }),
+    });
+    const validRes = await POST(validReq);
+    expect(validRes.status).toBe(202);
+    expect(mocks.downloadBatchFileFromStorage).toHaveBeenCalledWith(
+      'tenant-ve/123-factura-pesada.csv',
+      'tenant-ve',
+      'factura-pesada.csv',
+    );
+    expect(mocks.inngestSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          fileName: 'factura-pesada.csv',
+          items: [expect.objectContaining({ description: 'Batería litio 48V' })],
         }),
       }),
     );

@@ -51,6 +51,7 @@ export interface ExtractedBatchFileResult {
 export interface ExtractBatchFileOptions {
   extractWithLlm?: (input: ExtractInvoiceLlmInput) => Promise<ExtractedInvoiceBatch>;
   canUseLlm?: boolean;
+  maxUploadBytes?: number;
 }
 
 function toDocumentMeta(batch: ExtractedInvoiceBatch): BatchDocumentMetadata | undefined {
@@ -91,8 +92,9 @@ export async function extractBatchItemsFromFile(
   file: File,
   options: ExtractBatchFileOptions = {},
 ): Promise<ExtractedBatchFileResult> {
-  if (file.size > MAX_BATCH_UPLOAD_BYTES) {
-    throw new BatchFileExtractionError('El archivo supera el límite de 10 MB.', 413);
+  const maxBytes = options.maxUploadBytes ?? MAX_BATCH_UPLOAD_BYTES;
+  if (file.size > maxBytes) {
+    throw new BatchFileExtractionError('El archivo supera el límite permitido.', 413);
   }
 
   const mime = file.type.toLowerCase();

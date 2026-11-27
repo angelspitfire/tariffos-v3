@@ -205,4 +205,29 @@ describe('LoginCard', () => {
     expect(mockPush).toHaveBeenCalledWith('/app');
     expect(mockRefresh).toHaveBeenCalledTimes(1);
   });
+
+  it('offers 1-click email clear, trims whitespace on blur, and links validation errors with aria-describedby', async () => {
+    const user = userEvent.setup();
+    render(<LoginCard cloudMode={false} />);
+
+    const emailInput = screen.getByLabelText(/Correo electrónico/i);
+    expect(emailInput).toHaveAttribute('autocapitalize', 'none');
+    expect(emailInput).toHaveAttribute('spellcheck', 'false');
+    expect(screen.queryByRole('button', { name: /Limpiar correo electrónico/i })).not.toBeInTheDocument();
+
+    await user.type(emailInput, '  agente@aduanas.ve  ');
+    emailInput.blur();
+    expect(emailInput).toHaveValue('agente@aduanas.ve');
+
+    const clearBtn = screen.getByRole('button', { name: /Limpiar correo electrónico/i });
+    await user.click(clearBtn);
+    expect(emailInput).toHaveValue('');
+    expect(screen.queryByRole('button', { name: /Limpiar correo electrónico/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Ingresar con correo/i }));
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveAttribute('id', 'login-form-error');
+    expect(emailInput).toHaveAttribute('aria-invalid', 'true');
+    expect(emailInput).toHaveAttribute('aria-describedby', 'login-form-error');
+  });
 });

@@ -2,19 +2,24 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowRight, Globe, Sparkles } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { SAAS_PLANS } from '@tariffos/shared-types';
 import { isCloudModeEnabled, isGoogleOAuthEnabled } from '@/lib/runtime-config';
 import { readPendingQuery, readSelectedPlan, saveSelectedPlan } from '@/lib/funnel/funnel-storage';
 import {
-  executeEmailAuth, executeGoogleAuth, executePasswordReset,
-  parseBillingCycle, resolvePostLoginDestination, resolveSafeNext,
+  executeEmailAuth,
+  executeGoogleAuth,
+  executePasswordReset,
+  parseBillingCycle,
+  resolvePostLoginDestination,
+  resolveSafeNext,
   type AuthTab,
 } from '@/lib/funnel/login-actions';
 import { validateSignupCredentials } from '@/lib/funnel/password-policy';
 import { FunnelButton } from '../atoms/FunnelButton';
 import { FunnelCard } from '../atoms/FunnelCard';
 import { LoginCardFooter } from '../molecules/LoginCardFooter';
+import { LoginContextBanners } from '../molecules/LoginContextBanners';
 import { LoginEmailForm } from '../molecules/LoginEmailForm';
 
 export interface LoginCardProps {
@@ -51,7 +56,8 @@ export function LoginCard({ cloudMode, googleOAuthEnabled, initialMode = 'signin
   const callbackError = searchParams.get('error');
 
   const nextQueryIndex = urlNext?.indexOf('?') ?? -1;
-  const nextParams = nextQueryIndex >= 0 ? new URLSearchParams(urlNext?.slice(nextQueryIndex + 1)) : null;
+  const nextParams =
+    nextQueryIndex >= 0 ? new URLSearchParams(urlNext?.slice(nextQueryIndex + 1)) : null;
   const effectivePlanId = urlPlan ?? nextParams?.get('plan') ?? readSelectedPlan()?.planId ?? null;
   const effectivePlan =
     (tab === 'signup' || urlPlan || urlNext?.startsWith('/onboarding')) && effectivePlanId
@@ -67,7 +73,11 @@ export function LoginCard({ cloudMode, googleOAuthEnabled, initialMode = 'signin
   }, [urlPlan, urlCycle, callbackError]);
 
   const destination = resolvePostLoginDestination({
-    urlNext, urlPlan, urlCycle, isNewUser: tab === 'signup', isCloud,
+    urlNext,
+    urlPlan,
+    urlCycle,
+    isNewUser: tab === 'signup',
+    isCloud,
   });
 
   const handleGoogleSignIn = async () => {
@@ -140,31 +150,9 @@ export function LoginCard({ cloudMode, googleOAuthEnabled, initialMode = 'signin
           </p>
         </div>
 
-        {effectivePlan ? (
-          <div className="px-3 py-2 rounded-xl border border-accent-border bg-accent-soft/45 text-xs text-ink-primary flex items-center justify-between gap-2">
-            <span className="inline-flex items-center gap-1.5 font-medium">
-              <ArrowRight className="w-3.5 h-3.5 text-accent-ink shrink-0" aria-hidden="true" />
-              <span>
-                Activando: <strong>{effectivePlan.name}</strong>
-              </span>
-            </span>
-            <span className="font-mono font-semibold text-accent-ink tabular-nums">
-              ${effectivePlan.monthlyPriceUsd}
-              {effectivePlan.oneTimeOnly ? ' único' : '/mes'}
-            </span>
-          </div>
-        ) : null}
+        <LoginContextBanners effectivePlan={effectivePlan} pendingQuery={pendingQuery} />
 
-        {pendingQuery ? (
-          <div className="p-3 rounded-xl border border-accent-border bg-accent-soft/50 text-xs text-ink-secondary flex items-start gap-2">
-            <Sparkles className="w-4 h-4 text-accent-ink shrink-0 mt-0.5" />
-            <span>
-              Guardamos tu consulta (<strong className="text-ink-primary">«{pendingQuery}»</strong>) para clasificarla en cuanto actives tu cuenta.
-            </span>
-          </div>
-        ) : null}
-
-        <div role="tablist" aria-label="Modo de acceso" className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-surface-subtle">
+        <div role="tablist" aria-label="Modo de acceso" className="grid grid-cols-2 gap-1 rounded-xl bg-surface-subtle p-1">
           {AUTH_TABS.map((item) => (
             <button
               key={item.id}
@@ -172,7 +160,7 @@ export function LoginCard({ cloudMode, googleOAuthEnabled, initialMode = 'signin
               role="tab"
               aria-selected={tab === item.id}
               onClick={() => { setTab(item.id); setError(null); setInfo(null); }}
-              className={`py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              className={`cursor-pointer rounded-lg py-1.5 text-xs font-semibold transition-colors ${
                 tab === item.id ? 'bg-surface-panel text-ink-primary shadow-xs' : 'text-ink-secondary hover:text-ink-primary'
               }`}
             >
@@ -183,7 +171,7 @@ export function LoginCard({ cloudMode, googleOAuthEnabled, initialMode = 'signin
 
         {showGoogleAuth ? (
           <>
-            <FunnelButton type="button" variant="outline" size="lg" className="w-full" isLoading={isLoading} leftIcon={<Globe className="w-4 h-4" />} onClick={handleGoogleSignIn}>
+            <FunnelButton type="button" variant="outline" size="lg" className="w-full" isLoading={isLoading} leftIcon={<Globe className="h-4 w-4" />} onClick={handleGoogleSignIn}>
               Continuar con Google
             </FunnelButton>
             <div className="relative flex items-center">
@@ -195,20 +183,10 @@ export function LoginCard({ cloudMode, googleOAuthEnabled, initialMode = 'signin
         ) : null}
 
         <LoginEmailForm
-          tab={tab}
-          fullName={fullName}
-          email={email}
-          password={password}
-          confirmPassword={confirmPassword}
-          isLoading={isLoading}
-          error={error}
-          info={info}
-          onFullNameChange={setFullName}
-          onEmailChange={setEmail}
-          onPasswordChange={setPassword}
-          onConfirmPasswordChange={setConfirmPassword}
-          onSubmit={handleEmailSubmit}
-          onPasswordReset={handlePasswordReset}
+          tab={tab} fullName={fullName} email={email} password={password} confirmPassword={confirmPassword}
+          isLoading={isLoading} error={error} info={info}
+          onFullNameChange={setFullName} onEmailChange={setEmail} onPasswordChange={setPassword}
+          onConfirmPasswordChange={setConfirmPassword} onSubmit={handleEmailSubmit} onPasswordReset={handlePasswordReset}
         />
       </FunnelCard>
 

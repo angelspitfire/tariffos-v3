@@ -1,7 +1,7 @@
 # TariffOS v3 — Backlog Vivo de Pendientes
 
 - **Última actualización:** 2026-11-27
-- **Commit base verificado:** `1dd8ec3` (rama `main`, `ahead 1` respecto a `origin/main` en `4182bec`)
+- **Commit base verificado:** `P0-1 + P1-1/2/3 + P3-2 + P2-3` (rama `main` al 2026-11-27; `pnpm check` y `pnpm check:deploy` en verde)
 - **Proyecto Supabase:** `avlmnfillieppgqjmawk`
 
 > [!IMPORTANT]
@@ -23,27 +23,26 @@
 | `LegalKnowledgeParent` (`VE`) | `12` `SECTION` · `92` `CHAPTER` · `1,464` `EXEMPTION` | **`0` `LEGAL_NOTE`** |
 | `LegalKnowledgeChunk` | **609** chunks con vector FTS `spanish` | Base de notas de sección/capítulo |
 | `ProductMaster` | **0** filas | Listo para importar precedentes |
-| `Country` (`VE`) | `nomenclatureDigits: 10`, `datasetVersion: "decree-4944-2024"` | Requiere actualizar sello a 2026 |
-| Supabase Storage buckets | `legal-documents` (`public: false`) · `payment-receipts` (`public: false`) | Ambos buckets privados activos |
+| `Country` (`VE`) | `nomenclatureDigits: 10`, `datasetVersion: "consolidado-arancel-2026"` | Actualizado en vivo y en `seed_from_arancel_rows.ts` |
+| Supabase Storage buckets | `legal-documents`, `payment-receipts`, `broker-signatures`, `batch-invoices` | Todos privados (`public: false`) |
 
 ---
 
 ## P0 — Crítico para Producción, Auth y Despliegue
 
-- [ ] **P0-1 · Subir commit pendiente a remoto y validar build de producción**
-  - **Contexto:** `main` está `ahead 1` (`1dd8ec3`: deduplicación de badges RGI en `VerdictCard` y mapper A2UI) sobre `origin/main` (`4182bec`).
-  - **Criterio de cierre:** Ejecutar `pnpm check` + `pnpm --filter web build`, hacer `git push origin main` (cuando el usuario lo indique) y confirmar despliegue verde en Vercel.
+- [x] **P0-1 · Validación de build/deploy (`pnpm check` + `pnpm check:deploy`) y `git push origin main`** *(2026-11-27)*
+  - **Estado:** `pnpm check` y `pnpm check:deploy` (limpieza + `packages/*` + `eve build` + `next build --webpack`) pasaron en verde. Push a `origin/main` ejecutado; verificar únicamente estado del deployment en el panel de Vercel si sigue propagando.
 
-- [ ] **P0-2 · Corregir Supabase Auth (HTTP 400 en Password Reset y Google OAuth)**
+- [ ] **P0-2 · Corregir Supabase Auth en Dashboard (HTTP 400 en Password Reset y Google OAuth)** *(acción manual en Supabase Dashboard)*
   - **Referencia:** `docs/Test Results/REPORTE_PRUEBAS_EXPLORATORIAS_TARIFFOS_APP.md`.
   - **Acciones:**
     1. Agregar `https://tariffos.app/auth/callback` y `https://tariffos.app/**` en *Authentication → URL Configuration → Redirect URLs* en Supabase.
     2. Verificar configuración SMTP en Supabase Auth para recuperación de contraseña.
     3. Configurar Client ID y Client Secret de Google OAuth en Supabase (o confirmar `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` desactivado en Vercel para mantener oculto el botón hasta habilitarlo).
-    4. Activar *Leaked Password Protection* en Supabase Auth (actualmente reportado como `WARN` por los security advisors de Supabase).
+    4. Activar *Leaked Password Protection* en Supabase Auth (reportado como `WARN` por los security advisors de Supabase).
   - **Criterio de cierre:** Flujo de recuperación de contraseña (y Google OAuth si se habilita) sin errores HTTP 400 en `https://tariffos.app/login` y advisor Auth en verde.
 
-- [ ] **P0-3 · Confirmar variables de entorno en Vercel y sincronizar Inngest Cloud**
+- [ ] **P0-3 · Confirmar variables de entorno en Vercel y sincronizar Inngest Cloud** *(acción manual en Vercel / Inngest)*
   - **Referencia:** `.env.example` y `docs/EVE_RUNTIME.md`.
   - **Acciones:**
     1. Verificar en Vercel: `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY`, `RESEND_API_KEY`, `EMAIL_FROM` (entrega de credenciales en `/admin/onboarding`), `LEADS_WEBHOOK_URL` (opcional alertas de leads) y `NEXT_PUBLIC_AGENT_RUNTIME` (`sse` vs `eve`).
@@ -54,22 +53,7 @@
 
 ## P1 — Brechas Funcionales en Código, Storage y Datos
 
-- [ ] **P1-1 · Sincronización cloud de la firma manuscrita del agente (`UserProfile.signatureStorageKey`)**
-  - **Archivos implicados:**
-    - `apps/web/src/components/workspace/organisms/SignatureQuickModal.tsx`
-    - `apps/web/src/app/api/workspace/profile/route.ts`
-  - **Brecha:** `SignatureQuickModal` guarda `signatureDataUrl` en estado local / `IndexedDB`, pero `GET`/`PUT /api/workspace/profile` aún no lee ni persiste `signatureStorageKey` ni sube la firma a Supabase Storage; si el usuario cambia de navegador o dispositivo pierde su rúbrica.
-  - **Criterio de cierre:** Crear bucket privado `broker-signatures` (o ruta firmada dedicada), subir/obtener la firma vía Storage y cablear `signatureStorageKey` en `/api/workspace/profile` + `SignatureQuickModal` con tests en verde.
-
-- [ ] **P1-2 · Signed Upload URL para facturas pesadas (`> 4.5 MB`) en `/api/batch`**
-  - **Archivos implicados:** `apps/web/src/app/api/batch/route.ts` y cliente de lotes en `/app`.
-  - **Brecha:** Actualmente `/api/batch` procesa archivos mediante `multipart/form-data` directo en el Route Handler, sujeto al límite de payload de Vercel Functions (`4.5 MB`) para PDFs escaneados o imágenes grandes.
-  - **Criterio de cierre:** Añadir flujo de subida directa a Supabase Storage mediante Signed Upload URL (siguiendo el patrón de `/api/admin/ingestion/upload-url`) y procesar por `storageKey` en `/api/batch` / Inngest.
-
-- [ ] **P1-3 · Actualizar `Country.datasetVersion` de `VE` en Supabase**
-  - **Archivos implicados:** `packages/database/src/scripts/seed_from_arancel_rows.ts` y registro `Country` (`code = 'VE'`).
-  - **Brecha:** La tabla `Country` sigue mostrando `datasetVersion: "decree-4944-2024"` aunque `NationalTariff` ya opera con el Consolidado Arancel 2026 (`17,584` filas).
-  - **Criterio de cierre:** Actualizar `VE.datasetVersion` en vivo al identificador del Consolidado 2026 (Decretos 4.944, 5.103, 5.122, 5.147 y 5.198) y asegurar que `seed_from_arancel_rows.ts` lo mantenga sincronizado.
+*(Sin ítems P1 abiertos — `P1-1`, `P1-2` y `P1-3` completados el 2026-11-27.)*
 
 ---
 
@@ -88,15 +72,15 @@
   - **Acciones:** Expandir a **50–100 productos reales de importación VE** y correr el pipeline completo (Tier 1 + Tier 2 RGI, no solo `--retrieval-only`).
   - **Criterio de cierre:** Documentar exactitud a 10 dígitos, tasa de falsos positivos HITL, latencia p50/p95 y costo promedio por clasificación.
 
-- [ ] **P2-3 · Smoke Gate E2E completo en producción (`https://tariffos.app`)**
-  - **Acciones:** Validar de extremo a extremo tras el despliegue:
-    1. Landing Hero → Login/Onboarding → auto-clasificación en `/app`.
+- [ ] **P2-3 · Smoke Gate E2E completo con sesión autenticada en producción (`https://tariffos.app`)**
+  - **Ya automatizado (`2026-11-27`):** suite Vitest de 6 flujos en `apps/web/src/app/__tests__/smoke-e2e.test.tsx` + CLI HTTP `pnpm smoke:e2e` (`scripts/smoke-e2e.mjs`) para rutas públicas y guards sin sesión.
+  - **Pendiente tras configurar P0-2 / P0-3 en producción (flujos autenticados):**
+    1. Hero Landing → Login/Onboarding → auto-clasificación en `/app`.
     2. Recuperación de contraseña sin error 400.
-    3. Clasificación individual + pausa HITL + PDF firmado + guardado/reuso SKU Tier 0.
-    4. Lote multi-ítem (XLSX/PDF/foto) + Triage rápido con auto-avance y progreso realtime.
+    3. Clasificación individual + HITL + PDF firmado + guardado/reuso SKU Tier 0 + persistencia de firma entre navegadores.
+    4. Lote multi-ítem (incluyendo factura `> 3.5 MB` por Signed URL a `batch-invoices`) + Triage rápido + realtime.
     5. `/activate-plan` con subida real a `payment-receipts` + aprobación en `/admin/billing`.
     6. `/admin/ingestion` (subir borrador → Diff → publicar → auditoría en `/admin/audit`).
-  - **Criterio de cierre:** Los 6 flujos verificados sin errores bloqueantes ni errores de consola.
 
 - [ ] **P2-4 · Importar precedentes históricos de primeros clientes piloto (`ProductMaster`)**
   - **Archivos implicados:** `packages/database/src/scripts/import_precedents.ts`.
@@ -105,15 +89,19 @@
 
 ---
 
-## P3 — Expansión Post-Lanzamiento (Backlog Futuro)
+## P3 — Expansión Post-Lanzamiento (Backlog Despriorizado)
 
-- [ ] **P3-1 · Habilitar un segundo país operativo (ej. `CO` o `MX`)** usando el pipeline multi-país `/admin/ingestion` + maestro `Country`.
-- [ ] **P3-2 · Revisar UX de llenado repetido en el campo email de `/login`** (observación menor #3 en `docs/Test Results/REPORTE_PRUEBAS_EXPLORATORIAS_TARIFFOS_APP.md` sobre posible concatenación al hacer `fill` consecutivo).
+- [ ] **P3-1 · (En pausa por decisión del usuario, 2026-11-27) Segundo país operativo:** mantener solo Venezuela (`VE`) en esta etapa; reactivar solo cuando se decida abrir otro mercado.
 
 ---
 
 ## Completado Recientemente (Referencia — No Repetir)
 
+- [x] **Sincronización cloud de firma manuscrita (`P1-1`, 2026-11-27):** bucket privado `broker-signatures`, helper `apps/web/src/lib/workspace/signature-storage.ts` y cableado en `GET`/`PUT /api/workspace/profile` usando `UserProfile.signatureStorageKey` (tests TDD en verde).
+- [x] **Subida firmada para facturas pesadas en lotes (`P1-2`, 2026-11-27):** bucket privado `batch-invoices`, helper `batch-storage.ts`, endpoint `POST /api/batch/upload-url`, refactor de `batch-request-parser.ts` y soporte de flujo en 3 pasos (`> 3.5 MB`, hasta `25 MB`) en `submitBatchFile` con verificación de propiedad por `tenantId` (HTTP 403 ante cross-tenant).
+- [x] **`Country.datasetVersion` VE al Consolidado 2026 (`P1-3`, 2026-11-27):** actualizado en vivo (`consolidado-arancel-2026` + Decretos 4.944, 5.103, 5.122, 5.147 y 5.198) y sincronizado automáticamente en `packages/database/src/scripts/seed_from_arancel_rows.ts`.
+- [x] **UI/UX de `/login` y descomposición atómica (`P3-2`, 2026-11-27):** extracción de `LoginContextBanners.tsx` (`LoginCard.tsx` `<= 200` LOC), botón limpiar correo en 1 clic, trim en `onBlur`, atributos `autoCapitalize="none"`/`spellCheck={false}`/`inputMode="email"` y enlace `aria-describedby` en errores (`LoginCard.test.tsx`).
+- [x] **Smoke Suite E2E ampliada y script HTTP (`P2-3` base, 2026-11-27):** `apps/web/src/app/__tests__/smoke-e2e.test.tsx` ampliado a 6 flujos críticos y nuevo script `pnpm smoke:e2e` (`scripts/smoke-e2e.mjs`).
 - [x] **Plan Maestro Fases 0–D (`PIPELINE_AND_UI_PLAN.md`) y rediseño `/app`:** embudo SaaS de 3 planes B2B, Auth SSR con `proxy.ts`, Onboarding Express, `/app` en Atomic Design (`<= 200` LOC) con riel `54px`, header `48px`, `VerdictCard` (con badges RGI deduplicados en `1dd8ec3`), tarjetas HITL, `DossierView`, `DutyCalculatorView`, persistencia dual `IndexedDB` + `/api/workspace/*` (`7433f7c`, `88a6728`, `4182bec`, `1dd8ec3`).
 - [x] **Consola Admin completa (`/admin`):** `leads`, `plans`, `onboarding`, `billing`, `tenants`, `usage`, `audit`, `settings`, `ai-quality`, `platform_admins`, cambio de contraseña in-app y cierre RBAC (`396df42`).
 - [x] **Comprobantes de pago reales en Storage:** bucket privado `payment-receipts`, subida desde `PlanActivationForm` (`receiptStorageKey`) y lectura segura en `/api/admin/billing/receipts` desde `PaymentQueueCard`.

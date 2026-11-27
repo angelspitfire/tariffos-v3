@@ -3,61 +3,24 @@ import {
   isSupportedLiveCountry,
   mapBatchToA2UIEnvelope,
   type BatchPipelineResult,
-  type InvoiceItemInput,
 } from '@tariffos/agent';
 import { prisma } from '@tariffos/database';
-import { z } from 'zod';
 import {
   checkTenantQuota,
   formatQuotaErrorResponse,
   resolveCloudTenantContext,
 } from '@/lib/agent/cloud-session';
 import { classifyItemOffline } from '@/lib/agent/offline-classifier';
-import {
-  BatchFileExtractionError,
-  extractBatchItemsFromFile,
-  type BatchDocumentMetadata,
-} from '@/lib/inngest/batch-file-extractor';
-import { buildBatchSummary, parseBatchTextToItems } from '@/lib/inngest/batch-helpers';
+import { buildBatchSummary } from '@/lib/inngest/batch-helpers';
+import { parseJsonBatch, parseMultipartBatch } from '@/lib/inngest/batch-request-parser';
 import { inngest } from '@/lib/inngest/client';
 import { executeCloudBatchInline, resolveBatchExecutionMode } from '@/lib/inngest/run-cloud-batch';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 
-const BatchItemInputSchema = z.object({
-  lineId: z.string().trim().min(1),
-  sku: z.string().trim().optional(),
-  description: z.string().trim().min(2),
-  originCountry: z.string().trim().min(2).max(3).default('CN'),
-  cifValue: z.number().nonnegative().default(0),
-  quantity: z.number().positive().optional(),
-  unit: z.string().trim().optional(),
-  brokerNote: z.string().trim().optional(),
-});
-
-const BatchRequestSchema = z
-  .object({
-    filingId: z.string().trim().min(1).optional(),
-    countryCode: z.string().trim().length(2).default('VE'),
-    deepMode: z.boolean().default(false),
-    items: z.array(BatchItemInputSchema).optional(),
-    sourceText: z.string().trim().optional(),
-  })
-  .refine(
-    (v) => (v.items !== undefined && v.items.length > 0) || (v.sourceText !== undefined && v.sourceText.length > 0),
-    { message: 'Provide either a non-empty items array or sourceText.' },
-  );
-
-interface ParsedBatchPayload {
-  filingId?: string;
-  countryCode: string;
-  deepMode: boolean;
-  items: InvoiceItemInput[];
-  fileName?: string;
-  extractionMethod?: 'deterministic' | 'llm_vl';
-  documentMeta?: BatchDocumentMetadata;
-}
-
-function buildOfflineBatchResult(itemsCount: number, lines: ReturnType<typeof classifyItemOffline>[]): BatchPipelineResult {
+function buildOfflineBatchResult(
+  itemsCount: number,
+  lines: ReturnType<typeof classifyItemOffline>[],
+): BatchPipelineResult {
   return {
     lines,
     stats: {
@@ -69,57 +32,6 @@ function buildOfflineBatchResult(itemsCount: number, lines: ReturnType<typeof cl
       tier2Hits: lines.length,
       webGroundingUsed: 0,
     },
-  };
-}
-
-async function parseMultipartBatch(request: Request): Promise<ParsedBatchPayload | Response> {
-  const formData = await request.formData();
-  const file = formData.get('file');
-  if (!(file instanceof File)) {
-    return Response.json({ error: 'Adjunta un archivo de factura (.xlsx, .csv, .txt o .pdf).' }, { status: 400 });
-  }
-  const countryRaw = String(formData.get('countryCode') ?? 'VE').trim().toUpperCase();
-  const countryCode = countryRaw.length === 2 ? countryRaw : 'VE';
-  const deepMode = String(formData.get('deepMode') ?? 'false') === 'true';
-  const filingRaw = formData.get('filingId');
-  const filingId = typeof filingRaw === 'string' && filingRaw.trim() ? filingRaw.trim() : undefined;
-
-  try {
-    const extracted = await extractBatchItemsFromFile(file);
-    return {
-      filingId,
-      countryCode,
-      deepMode,
-      items: extracted.items,
-      fileName: extracted.fileName,
-      extractionMethod: extracted.extractionMethod,
-      documentMeta: extracted.documentMeta,
-    };
-  } catch (err) {
-    if (err instanceof BatchFileExtractionError) {
-      return Response.json({ error: err.message }, { status: err.status });
-    }
-    return Response.json({ error: 'No se pudo leer el archivo adjunto.' }, { status: 400 });
-  }
-}
-
-async function parseJsonBatch(request: Request): Promise<ParsedBatchPayload | Response> {
-  let rawBody: unknown;
-  try {
-    rawBody = await request.json();
-  } catch {
-    return Response.json({ error: 'Invalid JSON payload' }, { status: 400 });
-  }
-  const parsed = BatchRequestSchema.safeParse(rawBody);
-  if (!parsed.success) {
-    return Response.json({ error: 'Validation failed', issues: parsed.error.issues }, { status: 400 });
-  }
-  const input = parsed.data;
-  return {
-    filingId: input.filingId,
-    countryCode: input.countryCode,
-    deepMode: input.deepMode,
-    items: input.items && input.items.length > 0 ? input.items : parseBatchTextToItems(input.sourceText ?? ''),
   };
 }
 
@@ -138,11 +50,14 @@ export async function POST(request: Request): Promise<Response> {
   const contentType = request.headers.get('content-type')?.toLowerCase() ?? '';
   const payload = contentType.includes('multipart/form-data')
     ? await parseMultipartBatch(request)
-    : await parseJsonBatch(request);
+    : await parseJsonBatch(request, { cloudMode, tenantId: cloudTenantId });
   if (payload instanceof Response) return payload;
 
   if (payload.items.length === 0) {
-    return Response.json({ error: 'No se encontraron ítems clasificables en el lote.' }, { status: 400 });
+    return Response.json(
+      { error: 'No se encontraron ítems clasificables en el lote.' },
+      { status: 400 },
+    );
   }
 
   const filingId = payload.filingId ?? `batch-${Date.now()}`;
@@ -165,7 +80,10 @@ export async function POST(request: Request): Promise<Response> {
     });
     if (!quota.allowed) {
       const formatted = formatQuotaErrorResponse(quota.reason, { isBatch: true });
-      return Response.json({ error: formatted.error, reason: formatted.reason }, { status: formatted.status });
+      return Response.json(
+        { error: formatted.error, reason: formatted.reason },
+        { status: formatted.status },
+      );
     }
 
     if (payload.filingId && typeof prisma.filing.findUnique === 'function') {
@@ -248,15 +166,20 @@ export async function POST(request: Request): Promise<Response> {
   const summary = buildBatchSummary(lines);
   const envelope = mapBatchToA2UIEnvelope(buildOfflineBatchResult(payload.items.length, lines), {
     id: filingId,
-    title: payload.fileName ? `Lote: ${payload.fileName}` : 'Manifiesto de Clasificación en Lote',
-    documentReference: payload.documentMeta?.documentReference ?? payload.fileName ?? filingId,
-    ...(payload.documentMeta?.shipper ? { shipper: payload.documentMeta.shipper } : {}),
-    ...(payload.documentMeta?.consignee ? { consignee: payload.documentMeta.consignee } : {}),
-    ...(payload.documentMeta?.incoterm ? { routeOrIncoterm: payload.documentMeta.incoterm } : {}),
+    title: payload.fileName ?? (filingId.startsWith('batch-') ? 'Manifiesto de lote' : filingId),
   });
 
   return Response.json(
-    { filingId, queued: false, totalItems: payload.items.length, fileName: payload.fileName, summary, lines, envelope },
+    {
+      filingId,
+      queued: false,
+      totalItems: payload.items.length,
+      fileName: payload.fileName,
+      extractionMethod: payload.extractionMethod,
+      summary,
+      lines,
+      envelope,
+    },
     { status: 200 },
   );
 }

@@ -25,6 +25,7 @@
     "check:db": "node scripts/check-db-live.mjs",
     "check:db:static": "node scripts/check-db-static.mjs --schema",
     "smoke:llm": "node scripts/smoke-llm.mjs",
+    "smoke:e2e": "node scripts/smoke-e2e.mjs",
     "llm:models": "node scripts/llm-models.mjs",
     "eval:classify": "tsx scripts/eval-classify.ts",
     "admin:users": "pnpm --filter @tariffos/database exec tsx src/scripts/platform-admin.ts"

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { ArrowRight, Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Lock, Mail, User, X } from 'lucide-react';
 import type { AuthTab } from '@/lib/funnel/login-actions';
 import { MIN_PASSWORD_LENGTH } from '@/lib/funnel/password-policy';
 import { FunnelButton } from '../atoms/FunnelButton';
@@ -45,17 +45,29 @@ export function LoginEmailForm({
   const isSignup = tab === 'signup';
   const inputType = showPassword ? 'text' : 'password';
 
+  const clearEmailButton =
+    email.length > 0 && !isLoading ? (
+      <button
+        type="button"
+        onClick={() => onEmailChange('')}
+        aria-label="Limpiar correo electrónico"
+        className="cursor-pointer rounded-md p-1 text-ink-subtle transition-colors hover:text-ink-primary"
+      >
+        <X className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
+    ) : undefined;
+
   const visibilityToggle = (
     <button
       type="button"
       onClick={() => setShowPassword((prev) => !prev)}
       aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-      className="p-1 rounded-md text-ink-subtle hover:text-ink-primary transition-colors cursor-pointer"
+      className="cursor-pointer rounded-md p-1 text-ink-subtle transition-colors hover:text-ink-primary"
     >
       {showPassword ? (
-        <EyeOff className="w-4 h-4" aria-hidden="true" />
+        <EyeOff className="h-4 w-4" aria-hidden="true" />
       ) : (
-        <Eye className="w-4 h-4" aria-hidden="true" />
+        <Eye className="h-4 w-4" aria-hidden="true" />
       )}
     </button>
   );
@@ -67,7 +79,7 @@ export function LoginEmailForm({
           label="Nombre completo"
           placeholder="Ej. María González"
           autoComplete="name"
-          leftIcon={<User className="w-4 h-4" />}
+          leftIcon={<User className="h-4 w-4" />}
           value={fullName}
           onChange={(e) => onFullNameChange(e.target.value)}
           required
@@ -77,11 +89,22 @@ export function LoginEmailForm({
       <FunnelInput
         label="Correo electrónico"
         type="email"
-        placeholder="agente@tuagencia.com"
+        inputMode="email"
         autoComplete="email"
-        leftIcon={<Mail className="w-4 h-4" />}
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+        placeholder="agente@tuagencia.com"
+        leftIcon={<Mail className="h-4 w-4" />}
+        rightSlot={clearEmailButton}
         value={email}
         onChange={(e) => onEmailChange(e.target.value)}
+        onBlur={() => {
+          const trimmed = email.trim();
+          if (trimmed !== email) onEmailChange(trimmed);
+        }}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? 'login-form-error' : undefined}
         required
       />
 
@@ -94,10 +117,12 @@ export function LoginEmailForm({
             : 'Ingresa tu contraseña'
         }
         autoComplete={isSignup ? 'new-password' : 'current-password'}
-        leftIcon={<Lock className="w-4 h-4" />}
+        leftIcon={<Lock className="h-4 w-4" />}
         rightSlot={visibilityToggle}
         value={password}
         onChange={(e) => onPasswordChange(e.target.value)}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? 'login-form-error' : undefined}
         required
       />
 
@@ -108,7 +133,7 @@ export function LoginEmailForm({
             type={inputType}
             placeholder="Repite tu contraseña"
             autoComplete="new-password"
-            leftIcon={<Lock className="w-4 h-4" />}
+            leftIcon={<Lock className="h-4 w-4" />}
             value={confirmPassword}
             onChange={(e) => onConfirmPasswordChange(e.target.value)}
             required
@@ -119,8 +144,9 @@ export function LoginEmailForm({
         <div className="flex justify-end">
           <button
             type="button"
+            disabled={isLoading}
             onClick={onPasswordReset}
-            className="text-[11px] font-medium text-accent-ink hover:underline cursor-pointer"
+            className="cursor-pointer text-[11px] font-medium text-accent-ink hover:underline disabled:cursor-not-allowed disabled:opacity-50"
           >
             ¿Olvidaste tu contraseña?
           </button>
@@ -128,13 +154,17 @@ export function LoginEmailForm({
       )}
 
       {error ? (
-        <p role="alert" className="text-xs font-medium text-rose-600 dark:text-rose-400">
+        <p
+          id="login-form-error"
+          role="alert"
+          className="text-xs font-medium text-rose-600 dark:text-rose-400"
+        >
           {error}
         </p>
       ) : null}
 
       {info ? (
-        <p className="rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/35 p-2.5 text-xs font-medium text-emerald-800 dark:text-emerald-300">
+        <p className="rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 text-xs font-medium text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/35 dark:text-emerald-300">
           {info}
         </p>
       ) : null}
@@ -145,7 +175,7 @@ export function LoginEmailForm({
         size="lg"
         className="w-full"
         isLoading={isLoading}
-        rightIcon={<ArrowRight className="w-4 h-4" />}
+        rightIcon={<ArrowRight className="h-4 w-4" />}
       >
         {isSignup ? 'Crear cuenta gratis' : 'Ingresar con correo'}
       </FunnelButton>
