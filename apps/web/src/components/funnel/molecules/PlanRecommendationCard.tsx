@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Check } from 'lucide-react';
 import type { SubscriptionPlanConfig } from '@tariffos/shared-types';
 import {
@@ -78,15 +79,25 @@ export function PlanRecommendationCard({
         </div>
       ) : null}
 
-      <FunnelButton
-        type="button"
-        variant="primary"
-        size="sm"
-        className="w-full"
-        onClick={onApply}
-      >
-        Aplicar plan {recommendation.planName}
-      </FunnelButton>
+      {custom ? (
+        <Link
+          href="/#contacto"
+          onClick={onApply}
+          className="inline-flex w-full items-center justify-center rounded-xl bg-accent-brand px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-brand-hover"
+        >
+          Solicitar cotización Enterprise
+        </Link>
+      ) : (
+        <FunnelButton
+          type="button"
+          variant="primary"
+          size="sm"
+          className="w-full"
+          onClick={onApply}
+        >
+          Aplicar plan {recommendation.planName}
+        </FunnelButton>
+      )}
     </div>
   );
 }

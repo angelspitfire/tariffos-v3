@@ -22,6 +22,8 @@ async function ActivatePlanContent({ searchParams }: ActivatePlanPageProps) {
   const redirectTarget = await resolveCloudFunnelGateRedirect({
     route: 'activate-plan',
     hasFunnelPlanParam: Boolean(params.plan),
+    plan: params.plan,
+    cycle: params.cycle,
   });
   if (redirectTarget) {
     redirect(redirectTarget);
@@ -32,7 +34,15 @@ async function ActivatePlanContent({ searchParams }: ActivatePlanPageProps) {
     ? await prisma.membership
         .findFirst({
           where: { userId: user.id },
-          select: { name: true, tenant: { select: { name: true } } },
+          select: {
+            name: true,
+            tenant: {
+              select: {
+                name: true,
+                plan: { select: { name: true } },
+              },
+            },
+          },
         })
         .catch(() => null)
     : null;
@@ -42,6 +52,7 @@ async function ActivatePlanContent({ searchParams }: ActivatePlanPageProps) {
     membership?.tenant?.name?.trim() ||
     membership?.name?.trim() ||
     (typeof metaName === 'string' && metaName.trim() ? metaName.trim() : undefined);
+  const initialPlanId = params.plan ?? membership?.tenant?.plan?.name ?? undefined;
 
   const cycle: SubscriptionBillingCycle =
     params.cycle === 'annual' ? 'annual' : 'monthly';
@@ -49,7 +60,7 @@ async function ActivatePlanContent({ searchParams }: ActivatePlanPageProps) {
   return (
     <PlanActivationTemplate
       plans={plans}
-      initialPlanId={params.plan}
+      initialPlanId={initialPlanId}
       initialCycle={cycle}
       initialPayerName={initialPayerName}
       initialPayerEmail={initialPayerEmail}

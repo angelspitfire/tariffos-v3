@@ -14,7 +14,7 @@ export function AssistedOnboardingForm() {
   const [countryCode, setCountryCode] = useState(searchParams.get('country') || 'VE');
   const [ownerName, setOwnerName] = useState(searchParams.get('name') ?? '');
   const [ownerEmail, setOwnerEmail] = useState(searchParams.get('email') ?? '');
-  const [planId, setPlanId] = useState('pro');
+  const [planId, setPlanId] = useState('pilot');
   const [billingStatus, setBillingStatus] = useState<'TRIALING' | 'ACTIVE'>('ACTIVE');
   const [billingLimit, setBillingLimit] = useState('');
   const [sendInviteEmail, setSendInviteEmail] = useState(true);
@@ -28,7 +28,16 @@ export function AssistedOnboardingForm() {
       .then((res) => (res.ok ? res.json() : null))
       .then((json: { plans?: AdminPlanRecord[] } | null) => {
         if (json?.plans && json.plans.length > 0) {
-          setPlans(json.plans.filter((p) => !p.isArchived));
+          const activePlans = json.plans.filter((p) => !p.isArchived);
+          setPlans(activePlans);
+          if (activePlans.length > 0) {
+            setPlanId(
+              (prev) =>
+                activePlans.find((p) => p.id === prev || p.name === prev)?.id ??
+                activePlans[0]?.id ??
+                prev,
+            );
+          }
         }
       });
   }, []);
@@ -119,10 +128,9 @@ export function AssistedOnboardingForm() {
                 ))
               ) : (
                 <>
-                  <option value="trial">Trial / Piloto</option>
-                  <option value="basico">Básico</option>
-                  <option value="pro">Pro</option>
-                  <option value="enterprise">Enterprise</option>
+                  <option value="pilot">Piloto Operativo ($150 · 250 clasif.)</option>
+                  <option value="agencia">Agencia ($300/mes · 1,000 clasif.)</option>
+                  <option value="enterprise">Enterprise (A medida)</option>
                 </>
               )}
             </select>

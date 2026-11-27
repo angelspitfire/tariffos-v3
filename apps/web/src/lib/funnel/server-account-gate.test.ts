@@ -95,9 +95,15 @@ describe('server-account-gate (payment & onboarding bypass)', () => {
       hasFunnelPlanParam: false,
     });
     expect(fromOnboarding).toBe('/app');
+
+    const onWorkspaceApp = await resolveCloudFunnelGateRedirect({
+      route: 'app',
+      hasFunnelPlanParam: false,
+    });
+    expect(onWorkspaceApp).toBeNull();
   });
 
-  it('sends super_admin without a workspace yet from /activate-plan to /onboarding, not payment', () => {
+  it('sends super_admin without a workspace yet from /activate-plan or /app to /onboarding, and allows /onboarding', () => {
     expect(
       decideFunnelGateRedirect({
         route: 'activate-plan',
@@ -107,6 +113,26 @@ describe('server-account-gate (payment & onboarding bypass)', () => {
         hasFunnelPlanParam: true,
       }),
     ).toBe('/onboarding');
+
+    expect(
+      decideFunnelGateRedirect({
+        route: 'app',
+        isAuthenticated: true,
+        isPlatformAdmin: true,
+        membership: null,
+        hasFunnelPlanParam: false,
+      }),
+    ).toBe('/onboarding');
+
+    expect(
+      decideFunnelGateRedirect({
+        route: 'onboarding',
+        isAuthenticated: true,
+        isPlatformAdmin: true,
+        membership: null,
+        hasFunnelPlanParam: false,
+      }),
+    ).toBeNull();
   });
 
   it('redirects already-onboarded ACTIVE customer from /onboarding and funnel /activate-plan?plan=... to /app, while allowing explicit /activate-plan management', () => {
@@ -163,6 +189,30 @@ describe('server-account-gate (payment & onboarding bypass)', () => {
         hasFunnelPlanParam: false,
       }),
     ).toBe('/activate-plan');
+
+    expect(
+      decideFunnelGateRedirect({
+        route: 'onboarding',
+        isAuthenticated: true,
+        isPlatformAdmin: false,
+        membership: pastDueMembership,
+        hasFunnelPlanParam: true,
+        plan: 'agencia',
+        cycle: 'annual',
+      }),
+    ).toBe('/activate-plan?plan=agencia&cycle=annual');
+
+    expect(
+      decideFunnelGateRedirect({
+        route: 'onboarding',
+        isAuthenticated: false,
+        isPlatformAdmin: false,
+        membership: null,
+        hasFunnelPlanParam: true,
+        plan: 'agencia',
+        cycle: 'annual',
+      }),
+    ).toBe('/login?next=%2Fonboarding%3Fplan%3Dagencia%26cycle%3Dannual');
 
     expect(
       decideFunnelGateRedirect({

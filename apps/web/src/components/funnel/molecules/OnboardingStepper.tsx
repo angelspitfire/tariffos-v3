@@ -4,9 +4,8 @@ import { Check } from 'lucide-react';
 import type { OnboardingWizardStep } from '@/lib/funnel/funnel-storage';
 
 const WIZARD_STEPS: readonly { step: OnboardingWizardStep; label: string }[] = [
-  { step: 1, label: 'Organización' },
-  { step: 2, label: 'Operación' },
-  { step: 3, label: 'Plan y activación' },
+  { step: 1, label: 'Perfil y operación' },
+  { step: 2, label: 'Plan y activación' },
 ];
 
 export interface OnboardingStepperProps {
@@ -18,10 +17,10 @@ export function OnboardingStepper({ currentStep, onSelectStep }: OnboardingStepp
   return (
     <div className="space-y-2.5">
       <div className="flex items-center justify-between text-[11px] font-semibold text-ink-muted">
-        <span>Paso {currentStep} de 3</span>
+        <span>Paso {currentStep} de 2</span>
         <span>Progreso guardado automáticamente</span>
       </div>
-      <ol className="grid grid-cols-3 gap-2">
+      <ol className="grid grid-cols-2 gap-2">
         {WIZARD_STEPS.map((item) => {
           const isCompleted = item.step < currentStep;
           const isCurrent = item.step === currentStep;

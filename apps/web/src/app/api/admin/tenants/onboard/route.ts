@@ -6,44 +6,9 @@ import {
   findOfflinePlan,
   getOfflineAdminState,
 } from '@/lib/admin/offline-store';
+import { resolveOrInviteCloudUser } from '@/lib/admin/supabase-invite';
+import { resolveServerAuthOrigin } from '@/lib/funnel/auth-origin';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
-import { buildAuthCallbackUrl, resolveServerAuthOrigin } from '@/lib/funnel/auth-origin';
-import { createSupabaseAdminClient } from '@/lib/supabase/admin';
-
-async function resolveOrInviteCloudUser(
-  email: string,
-  fullName: string,
-  sendInviteEmail: boolean,
-  publicOrigin: string,
-): Promise<{ userId: string; invited: boolean }> {
-  const supabaseAdmin = createSupabaseAdminClient();
-  if (sendInviteEmail) {
-    const inviteRes = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      data: { full_name: fullName },
-      redirectTo: buildAuthCallbackUrl(publicOrigin, '/app'),
-    });
-    if (!inviteRes.error && inviteRes.data.user) {
-      return { userId: inviteRes.data.user.id, invited: true };
-    }
-  }
-
-  const createRes = await supabaseAdmin.auth.admin.createUser({
-    email,
-    email_confirm: !sendInviteEmail,
-    user_metadata: { full_name: fullName },
-  });
-  if (!createRes.error && createRes.data.user) {
-    return { userId: createRes.data.user.id, invited: false };
-  }
-
-  const listRes = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
-  const existing = listRes.data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
-  if (existing) {
-    return { userId: existing.id, invited: false };
-  }
-
-  throw new Error(createRes.error?.message ?? 'No se pudo aprovisionar el usuario en Supabase Auth');
-}
 
 export async function POST(request: Request): Promise<Response> {
   const guard = await requireAdmin('tenants:onboard');

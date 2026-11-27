@@ -5,30 +5,22 @@ import type {
 } from '@tariffos/shared-types';
 import { JURISDICTIONS } from '@/lib/workspace/jurisdictions';
 
+export {
+  clearOnboardingDraft,
+  DEFAULT_CUSTOMS_OFFICE,
+  readOnboardingDraft,
+  saveOnboardingDraft,
+  VE_CUSTOMS_OFFICES,
+  type OnboardingWizardDraft,
+  type OnboardingWizardStep,
+} from './onboarding-draft-storage';
+
 const LEGACY_PENDING_QUERY_KEY = 'tariffos_pending_query';
 const PENDING_QUERY_KEY = 'tariffos_pending_query_v1';
 const PENDING_QUERY_KEYS = [LEGACY_PENDING_QUERY_KEY, PENDING_QUERY_KEY] as const;
 const SELECTED_PLAN_KEY = 'tariffos_selected_plan_v1';
 const MOCK_SESSION_KEY = 'tariffos_mock_session_v1';
 const MOCK_PROFILE_KEY = 'tariffos_mock_profile_v1';
-const ONBOARDING_DRAFT_KEY = 'tariffos_onboarding_draft_v1';
-
-export type OnboardingWizardStep = 1 | 2 | 3;
-
-export interface OnboardingWizardDraft {
-  currentStep: OnboardingWizardStep;
-  fullName: string;
-  role: string;
-  companyName: string;
-  brokerLicense: string;
-  defaultJurisdictionId: string;
-  defaultIncoterm: IncotermCode;
-  preferredCurrency: 'USD' | 'EUR';
-  approvalWorkflowMode: ApprovalWorkflowMode;
-  selectedPlanId: string;
-  selectedBillingCycle: SubscriptionBillingCycle;
-  updatedAt: string;
-}
 
 export interface SelectedPlanPreference {
   planId: string;
@@ -46,8 +38,10 @@ export interface OnboardingProfileDraft {
   fullName: string;
   role?: string;
   brokerLicense?: string;
+  taxId?: string;
   companyName: string;
   defaultJurisdictionId: string;
+  defaultCustomsOffice?: string;
   defaultIncoterm: IncotermCode;
   preferredCurrency: 'USD' | 'EUR';
   approvalWorkflowMode: ApprovalWorkflowMode;
@@ -192,16 +186,4 @@ export function saveMockProfile(profile: OnboardingProfileDraft): void {
 
 export function readMockProfile(): OnboardingProfileDraft | null {
   return readJson<OnboardingProfileDraft>('local', MOCK_PROFILE_KEY);
-}
-
-export function saveOnboardingDraft(draft: OnboardingWizardDraft): void {
-  writeJson('local', ONBOARDING_DRAFT_KEY, draft);
-}
-
-export function readOnboardingDraft(): OnboardingWizardDraft | null {
-  return readJson<OnboardingWizardDraft>('local', ONBOARDING_DRAFT_KEY);
-}
-
-export function clearOnboardingDraft(): void {
-  removeKey('local', ONBOARDING_DRAFT_KEY);
 }

@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn<() => Promise<unknown>>(),
   inviteUserByEmail: vi.fn<() => Promise<unknown>>(),
+  createUser: vi.fn<() => Promise<unknown>>(),
+  listUsers: vi.fn<() => Promise<unknown>>(),
   planFindUnique: vi.fn<() => Promise<unknown>>(),
   tenantCreate: vi.fn<() => Promise<unknown>>(),
   userProfileUpsert: vi.fn<() => Promise<unknown>>(),
@@ -17,7 +19,13 @@ vi.mock('@/lib/admin/http-helpers', async (importOriginal) => {
 
 vi.mock('@/lib/supabase/admin', () => ({
   createSupabaseAdminClient: () => ({
-    auth: { admin: { inviteUserByEmail: mocks.inviteUserByEmail } },
+    auth: {
+      admin: {
+        inviteUserByEmail: mocks.inviteUserByEmail,
+        createUser: mocks.createUser,
+        listUsers: mocks.listUsers,
+      },
+    },
   }),
 }));
 
@@ -140,6 +148,76 @@ describe('POST /api/admin/tenants/onboard', () => {
     expect(mocks.recordAdminAudit).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({ action: 'tenant.onboarded', targetId: 'ten-new-1' }),
+    );
+  });
+
+  it('paginates Supabase listUsers to find an existing user beyond page 1', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    mocks.requireAdmin.mockResolvedValue({
+      ok: true,
+      context: { userId: 'adm-1', userEmail: 'adm@tariffos.app', role: 'ops_billing' },
+    });
+    mocks.planFindUnique.mockResolvedValue({
+      id: 'plan-pilot',
+      name: 'pilot',
+      classificationLimit: 250,
+      allowOverage: false,
+    });
+    mocks.inviteUserByEmail.mockResolvedValue({
+      data: { user: null },
+      error: { message: 'User already registered' },
+    });
+    mocks.createUser.mockResolvedValue({
+      data: { user: null },
+      error: { message: 'User already registered' },
+    });
+
+    const page1Users = Array.from({ length: 200 }, (_, i) => ({
+      id: `usr-${i}`,
+      email: `user-${i}@other.ve`,
+    }));
+    mocks.listUsers
+      .mockResolvedValueOnce({ data: { users: page1Users }, error: null })
+      .mockResolvedValueOnce({
+        data: { users: [{ id: 'usr-page2', email: 'existing@agency.ve' }] },
+        error: null,
+      });
+    mocks.tenantCreate.mockResolvedValue({
+      id: 'ten-page2',
+      name: 'Agencia Page 2',
+      billingLimit: 250,
+      billingStatus: 'ACTIVE',
+    });
+
+    const res = await POST(
+      new Request('http://localhost/api/admin/tenants/onboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyName: 'Agencia Page 2',
+          countryCode: 'VE',
+          ownerName: 'Ana',
+          ownerEmail: 'existing@agency.ve',
+          planId: 'pilot',
+          billingStatus: 'ACTIVE',
+          sendInviteEmail: true,
+        }),
+      }),
+    );
+
+    expect(res.status).toBe(201);
+    expect(mocks.listUsers).toHaveBeenNthCalledWith(1, { page: 1, perPage: 200 });
+    expect(mocks.listUsers).toHaveBeenNthCalledWith(2, { page: 2, perPage: 200 });
+    expect(mocks.tenantCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          memberships: {
+            create: expect.objectContaining({ userId: 'usr-page2' }),
+          },
+        }),
+      }),
     );
   });
 });

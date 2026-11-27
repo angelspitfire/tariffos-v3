@@ -22,6 +22,8 @@ async function OnboardingContent({ searchParams }: OnboardingPageProps) {
   const redirectTarget = await resolveCloudFunnelGateRedirect({
     route: 'onboarding',
     hasFunnelPlanParam: Boolean(params.plan),
+    plan: params.plan,
+    cycle: params.cycle,
   });
   if (redirectTarget) {
     redirect(redirectTarget);
@@ -36,6 +38,7 @@ async function OnboardingContent({ searchParams }: OnboardingPageProps) {
   return (
     <ExpressOnboardingCard
       plans={plans}
+      userId={user?.id}
       preselectedPlanId={params.plan}
       preselectedCycle={cycle}
       initialFullName={initialFullName}

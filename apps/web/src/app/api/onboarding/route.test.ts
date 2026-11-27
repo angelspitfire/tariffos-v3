@@ -283,4 +283,93 @@ describe('POST /api/onboarding', () => {
       }),
     );
   });
+
+  it('updates planId, taxId, and defaultCustomsOffice when existing PAST_DUE membership re-submits onboarding', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+
+    mocks.getAuthenticatedUser.mockResolvedValue({ id: 'usr-pd', email: 'pd@agencia.ve' });
+    mocks.platformAdminFindUnique.mockResolvedValue(null);
+    mocks.userProfileUpsert.mockResolvedValue({ id: 'usr-pd', fullName: 'Luis Mora' });
+    mocks.membershipFindFirst.mockResolvedValue({
+      tenantId: 'ten-pd',
+      tenant: { billingStatus: 'PAST_DUE', planId: 'plan-pilot-id' },
+    });
+    mocks.planFindUnique.mockResolvedValue({ id: 'plan-agencia-id', classificationLimit: 1000 });
+    mocks.tenantUpdate.mockResolvedValue({
+      id: 'ten-pd',
+      name: 'Mora Aduanas C.A.',
+      planId: 'plan-agencia-id',
+      billingStatus: 'PAST_DUE',
+      isOnboarded: true,
+    });
+
+    const req = new Request('http://localhost/api/onboarding', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fullName: 'Luis Mora',
+        companyName: 'Mora Aduanas C.A.',
+        taxId: 'J-40998877-1',
+        defaultCustomsOffice: '5003 - PUERTO CABELLO',
+        selectedPlanId: 'agencia',
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    expect(mocks.userProfileUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: expect.objectContaining({
+          defaultCustomsOffice: '5003 - PUERTO CABELLO',
+        }),
+      }),
+    );
+    expect(mocks.tenantUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'ten-pd' },
+        data: expect.objectContaining({
+          taxId: 'J-40998877-1',
+          planId: 'plan-agencia-id',
+        }),
+      }),
+    );
+  });
+
+  it('does not overwrite planId for non-admin ACTIVE existing membership', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+
+    mocks.getAuthenticatedUser.mockResolvedValue({ id: 'usr-act', email: 'act@agencia.ve' });
+    mocks.platformAdminFindUnique.mockResolvedValue(null);
+    mocks.userProfileUpsert.mockResolvedValue({ id: 'usr-act', fullName: 'Ana Activa' });
+    mocks.membershipFindFirst.mockResolvedValue({
+      tenantId: 'ten-act',
+      tenant: { billingStatus: 'ACTIVE', planId: 'plan-agencia-id' },
+    });
+    mocks.tenantUpdate.mockResolvedValue({
+      id: 'ten-act',
+      name: 'Activa C.A.',
+      planId: 'plan-agencia-id',
+      billingStatus: 'ACTIVE',
+      isOnboarded: true,
+    });
+
+    const req = new Request('http://localhost/api/onboarding', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fullName: 'Ana Activa',
+        companyName: 'Activa C.A.',
+        selectedPlanId: 'pilot',
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const updateArg = mocks.tenantUpdate.mock.calls[0]?.[0] as { data: Record<string, unknown> };
+    expect(updateArg.data.planId).toBeUndefined();
+  });
 });

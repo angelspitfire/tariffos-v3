@@ -45,5 +45,7 @@ describe('PlanRecommender', () => {
 
     expect(screen.getByRole('heading', { name: /Plan Enterprise/i })).toBeInTheDocument();
     expect(screen.getByText('A medida')).toBeInTheDocument();
+    const enterpriseLink = screen.getByRole('link', { name: /Solicitar cotización Enterprise/i });
+    expect(enterpriseLink).toHaveAttribute('href', '/#contacto');
   });
 });

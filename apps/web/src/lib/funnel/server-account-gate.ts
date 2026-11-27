@@ -18,20 +18,33 @@ export interface DecideFunnelGateParams {
   isPlatformAdmin: boolean;
   membership: FunnelMembershipSnapshot | null;
   hasFunnelPlanParam: boolean;
+  plan?: string | null;
+  cycle?: string | null;
+}
+
+function buildPlanQuery(plan?: string | null, cycle?: string | null): string {
+  if (!plan) return '';
+  const cycleSuffix =
+    cycle === 'annual' || cycle === 'monthly'
+      ? `&cycle=${encodeURIComponent(cycle)}`
+      : '';
+  return `?plan=${encodeURIComponent(plan)}${cycleSuffix}`;
 }
 
 export function decideFunnelGateRedirect(params: DecideFunnelGateParams): string | null {
-  const { route, isAuthenticated, isPlatformAdmin, membership, hasFunnelPlanParam } = params;
+  const { route, isAuthenticated, isPlatformAdmin, membership, hasFunnelPlanParam, plan, cycle } =
+    params;
+  const planQuery = buildPlanQuery(plan, cycle);
 
   if (!isAuthenticated) {
-    return `/login?next=${encodeURIComponent(`/${route}`)}`;
+    return `/login?next=${encodeURIComponent(`/${route}${planQuery}`)}`;
   }
 
   if (isPlatformAdmin) {
-    if (membership) {
-      return '/app';
+    if (membership?.isOnboarded) {
+      return route === 'app' ? null : '/app';
     }
-    return route === 'activate-plan' ? '/onboarding' : null;
+    return route === 'onboarding' ? null : '/onboarding';
   }
 
   if (route === 'app') {
@@ -42,7 +55,7 @@ export function decideFunnelGateRedirect(params: DecideFunnelGateParams): string
   if (route === 'onboarding') {
     if (!membership?.isOnboarded) return null;
     if (membership.billingStatus === 'PAST_DUE') {
-      return '/activate-plan';
+      return `/activate-plan${planQuery}`;
     }
     return '/app';
   }
@@ -62,6 +75,8 @@ export function decideFunnelGateRedirect(params: DecideFunnelGateParams): string
 export async function resolveCloudFunnelGateRedirect(params: {
   route: FunnelGateRoute;
   hasFunnelPlanParam: boolean;
+  plan?: string | null;
+  cycle?: string | null;
 }): Promise<string | null> {
   if (!isCloudModeEnabled()) {
     return null;
@@ -75,6 +90,8 @@ export async function resolveCloudFunnelGateRedirect(params: {
       isPlatformAdmin: false,
       membership: null,
       hasFunnelPlanParam: params.hasFunnelPlanParam,
+      plan: params.plan,
+      cycle: params.cycle,
     });
   }
 
@@ -103,6 +120,8 @@ export async function resolveCloudFunnelGateRedirect(params: {
     isPlatformAdmin: adminAuth.ok,
     membership,
     hasFunnelPlanParam: params.hasFunnelPlanParam,
+    plan: params.plan,
+    cycle: params.cycle,
   });
 }
 
