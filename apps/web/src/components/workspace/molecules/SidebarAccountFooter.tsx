@@ -157,10 +157,10 @@ export function SidebarAccountFooter({
             <select
               value={profile.approvalWorkflowMode}
               onChange={(e) => onChangeApprovalMode(e.target.value as ApprovalWorkflowMode)}
-              className="w-full rounded-field border border-border-subtle bg-surface-input px-2 py-1.5 text-xs text-ink-primary"
+              className="w-full rounded-field border border-border-subtle bg-surface-input px-2 py-1.5 text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
             >
               {APPROVAL_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
+                <option key={opt.value} value={opt.value} className="bg-surface-panel text-ink-primary">
                   {opt.label}
                 </option>
               ))}

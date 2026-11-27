@@ -37,7 +37,8 @@ export function useWorkspaceShortcuts({
         return;
       }
       if (event.key === 'Escape' && canvasOpen && !hasOpenModal) {
-        if (document.querySelector('[role="dialog"]')) return;
+        if (event.defaultPrevented) return;
+        if (document.querySelector('[role="dialog"], dialog[open], [data-workspace-dialog="open"]')) return;
         onCloseCanvas();
       }
     };

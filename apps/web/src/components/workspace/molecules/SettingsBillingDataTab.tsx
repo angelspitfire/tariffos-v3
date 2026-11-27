@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { CreditCard, Database, Download, Sparkles, Trash2 } from 'lucide-react';
 import { SAAS_PLANS } from '@tariffos/shared-types';
@@ -105,6 +106,8 @@ export function SettingsLocalDataTab({
   onExportBackup,
   onClearLocalData,
 }: SettingsLocalDataTabProps) {
+  const [confirmClear, setConfirmClear] = useState(false);
+
   return (
     <div className="space-y-4">
       <div>
@@ -133,21 +136,45 @@ export function SettingsLocalDataTab({
           <button
             type="button"
             onClick={onExportBackup}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle bg-surface-panel px-4 py-2 text-xs font-semibold text-ink-primary hover:bg-surface-hover"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle bg-surface-panel px-4 py-2 text-xs font-semibold text-ink-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
             <Download className="h-3.5 w-3.5 text-accent-ink" aria-hidden="true" />
             Exportar respaldo JSON
           </button>
         ) : null}
-        {onClearLocalData ? (
+        {onClearLocalData && !confirmClear ? (
           <button
             type="button"
-            onClick={onClearLocalData}
+            onClick={() => setConfirmClear(true)}
             className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-rose-500/35 bg-rose-500/10 px-4 py-2 text-xs font-semibold whitespace-nowrap text-rose-700 transition-colors hover:bg-rose-500/20 focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none dark:text-rose-300"
           >
             <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
             Limpiar caché local del navegador
           </button>
+        ) : null}
+        {onClearLocalData && confirmClear ? (
+          <div role="alert" className="flex flex-wrap items-center gap-2 rounded-card border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs">
+            <span className="font-medium text-rose-700 dark:text-rose-300">
+              ¿Eliminar caché e IndexedDB de este navegador?
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setConfirmClear(false);
+                onClearLocalData();
+              }}
+              className="cursor-pointer rounded-full bg-rose-600 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-rose-700 focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
+            >
+              Confirmar borrado local
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmClear(false)}
+              className="cursor-pointer rounded-full border border-border-subtle bg-surface-panel px-3 py-1 text-xs font-medium text-ink-secondary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
+            >
+              Cancelar
+            </button>
+          </div>
         ) : null}
       </div>
     </div>

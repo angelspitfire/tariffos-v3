@@ -7,6 +7,7 @@ import {
   type DiffStatus,
   type ThreadArtifactSummary,
 } from '@/lib/workspace/artifact-versions';
+import { WorkspaceDialogShell } from '../atoms/WorkspaceDialogShell';
 
 export interface ChangeTimelineModalProps {
   open: boolean;
@@ -38,8 +39,6 @@ export function ChangeTimelineModal({
   );
   const [onlyChanges, setOnlyChanges] = useState(false);
 
-  if (!open) return null;
-
   const left = dossierVersions.find((v) => v.id === leftId) ?? dossierVersions[0];
   const right =
     dossierVersions.find((v) => v.id === rightId) ??
@@ -53,26 +52,27 @@ export function ChangeTimelineModal({
       : [];
 
   return (
-    <div className="no-print fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[1px]">
-      <dialog
-        open
-        aria-label="Historial y comparador de versiones del dictamen"
-        className="static m-0 flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-surface border border-border-subtle bg-surface-panel p-0 text-ink-primary shadow-elev-2"
-      >
-        <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
-          <div className="flex items-center gap-2">
-            <GitCompareArrows className="h-4 w-4 text-accent-ink" aria-hidden="true" />
-            <h2 className="text-sm font-semibold">Línea de tiempo y comparador de versiones</h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar comparador de versiones"
-            className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-ink-muted hover:bg-surface-hover"
-          >
-            <X className="h-4 w-4" aria-hidden="true" />
-          </button>
+    <WorkspaceDialogShell
+      open={open}
+      onClose={onClose}
+      label="Historial y comparador de versiones del dictamen"
+      maxWidthClassName="max-w-4xl"
+      contentClassName="max-h-[85vh]"
+    >
+      <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
+        <div className="flex items-center gap-2">
+          <GitCompareArrows className="h-4 w-4 text-accent-ink" aria-hidden="true" />
+          <h2 className="text-sm font-semibold">Línea de tiempo y comparador de versiones</h2>
         </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Cerrar comparador de versiones"
+          className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
+        >
+          <X className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </div>
 
         <div className="flex-1 space-y-5 overflow-y-auto p-5">
           <div className="space-y-2">
@@ -109,10 +109,10 @@ export function ChangeTimelineModal({
                     aria-label="Versión base"
                     value={left.id}
                     onChange={(e) => setLeftId(e.target.value)}
-                    className="rounded-field border border-border-subtle bg-surface-input px-2.5 py-1.5 font-mono text-xs"
+                    className="rounded-field border border-border-subtle bg-surface-input px-2.5 py-1.5 font-mono text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
                   >
                     {dossierVersions.map((v) => (
-                      <option key={v.id} value={v.id}>
+                      <option key={v.id} value={v.id} className="bg-surface-panel text-ink-primary">
                         v{v.versionNumber} · {v.code}
                       </option>
                     ))}
@@ -122,10 +122,10 @@ export function ChangeTimelineModal({
                     aria-label="Versión comparada"
                     value={right.id}
                     onChange={(e) => setRightId(e.target.value)}
-                    className="rounded-field border border-border-subtle bg-surface-input px-2.5 py-1.5 font-mono text-xs"
+                    className="rounded-field border border-border-subtle bg-surface-input px-2.5 py-1.5 font-mono text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
                   >
                     {dossierVersions.map((v) => (
-                      <option key={v.id} value={v.id}>
+                      <option key={v.id} value={v.id} className="bg-surface-panel text-ink-primary">
                         v{v.versionNumber} · {v.code}
                       </option>
                     ))}
@@ -158,7 +158,6 @@ export function ChangeTimelineModal({
             </div>
           ) : null}
         </div>
-      </dialog>
-    </div>
+    </WorkspaceDialogShell>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 import { formatHsCode } from '@tariffos/shared-types';
 import { Check, Copy } from 'lucide-react';
 
@@ -22,7 +22,8 @@ export function CopyHsButton({ hsCode, size = 'md', className = '' }: CopyHsButt
   const [copied, setCopied] = useState(false);
   const formattedCode = formatHsCode(hsCode);
 
-  const handleCopy = async () => {
+  const handleCopy = async (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
     try {
       await navigator.clipboard?.writeText(formattedCode);
     } catch {
@@ -39,14 +40,19 @@ export function CopyHsButton({ hsCode, size = 'md', className = '' }: CopyHsButt
       aria-label={`Copiar código ${formattedCode}`}
       className={`group inline-flex max-w-full min-w-0 cursor-pointer items-center gap-1.5 rounded-lg border border-border-subtle bg-surface-muted font-mono font-semibold tracking-tight text-ink-primary transition-colors hover:border-accent-border hover:bg-accent-soft hover:text-accent-ink focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none ${SIZE_CLASSES[size]} ${className}`}
     >
-      <span className="truncate">{formattedCode}</span>
+      <span translate="no" className="truncate">
+        {formattedCode}
+      </span>
       {copied ? (
         <span className="inline-flex shrink-0 items-center gap-0.5 font-sans text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
           <Check className="h-3.5 w-3.5" aria-hidden="true" />
           Copiado
         </span>
       ) : (
-        <Copy className="h-3.5 w-3.5 shrink-0 text-ink-muted transition-colors group-hover:text-accent-ink" aria-hidden="true" />
+        <Copy
+          className="h-3.5 w-3.5 shrink-0 text-ink-muted transition-colors group-hover:text-accent-ink"
+          aria-hidden="true"
+        />
       )}
     </button>
   );

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { FileSpreadsheet, FileText, FolderOpen, Image as ImageIcon, RefreshCw, Search, X } from 'lucide-react';
 import type { WorkspaceAttachment, WorkspaceMessage } from '@/lib/workspace/types';
+import { WorkspaceDialogShell } from '../atoms/WorkspaceDialogShell';
 
 export interface ChatFilesPanelProps {
   open: boolean;
@@ -67,43 +68,38 @@ export function ChatFilesPanel({
     });
   }, [allFiles, kindFilter, query]);
 
-  if (!open) return null;
-
   return (
-    <div className="no-print fixed inset-0 z-50 flex justify-end bg-slate-950/40 backdrop-blur-[1px]">
-      <aside
-        aria-label="Archivos del chat"
-        className="flex h-full w-full max-w-md flex-col border-l border-border-subtle bg-surface-panel shadow-elev-2"
-      >
-        <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
-          <div className="flex items-center gap-2">
-            <FolderOpen className="h-4 w-4 text-accent-ink" aria-hidden="true" />
-            <div>
-              <h2 className="text-sm font-semibold text-ink-primary">Archivos del expediente ({allFiles.length})</h2>
-              <p className="text-[11px] text-ink-muted">Documentos, hojas de cálculo y capturas adjuntas</p>
-            </div>
+    <WorkspaceDialogShell open={open} onClose={onClose} label="Archivos del chat" variant="drawer">
+      <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
+        <div className="flex items-center gap-2">
+          <FolderOpen className="h-4 w-4 text-accent-ink" aria-hidden="true" />
+          <div>
+            <h2 className="text-sm font-semibold text-ink-primary">Archivos del expediente ({allFiles.length})</h2>
+            <p className="text-[11px] text-ink-muted">Documentos, hojas de cálculo y capturas adjuntas</p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar panel de archivos"
-            className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-ink-muted hover:bg-surface-hover"
-          >
-            <X className="h-4 w-4" aria-hidden="true" />
-          </button>
         </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Cerrar panel de archivos"
+          className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
+        >
+          <X className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </div>
 
-        <div className="space-y-2.5 border-b border-border-hairline px-5 py-3">
-          <div className="relative">
-            <Search className="pointer-events-none absolute top-2.5 left-3 h-3.5 w-3.5 text-ink-muted" aria-hidden="true" />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar archivo o contenido extraído..."
-              className="w-full rounded-field border border-border-subtle bg-surface-input py-1.5 pr-3 pl-8 text-xs text-ink-primary focus:border-accent-brand focus:outline-none"
-            />
-          </div>
+      <div className="space-y-2.5 border-b border-border-hairline px-5 py-3">
+        <div className="relative">
+          <Search className="pointer-events-none absolute top-2.5 left-3 h-3.5 w-3.5 text-ink-muted" aria-hidden="true" />
+          <input
+            type="search"
+            aria-label="Buscar archivo o contenido extraído"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar archivo o contenido extraído…"
+            className="w-full rounded-field border border-border-subtle bg-surface-input py-1.5 pr-3 pl-8 text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
+          />
+        </div>
           <div className="flex flex-wrap gap-1.5">
             {(
               [
@@ -189,7 +185,6 @@ export function ChatFilesPanel({
             </ul>
           )}
         </div>
-      </aside>
-    </div>
+    </WorkspaceDialogShell>
   );
 }

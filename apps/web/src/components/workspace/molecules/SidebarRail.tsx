@@ -15,6 +15,7 @@ export interface SidebarRailProps {
   onNewThread: () => void;
   onOpenDashboard: () => void;
   onOpenSkuCatalog: () => void;
+  onOpenSettings?: () => void;
 }
 
 const RAIL_ICON_BTN =
@@ -37,10 +38,11 @@ export function SidebarRail({
   onNewThread,
   onOpenDashboard,
   onOpenSkuCatalog,
+  onOpenSettings,
 }: SidebarRailProps) {
   return (
     <div className="flex h-full w-14 flex-col items-center border-r border-line-frost bg-surface-frost backdrop-blur-xl">
-      <div className="flex h-[52px] w-full shrink-0 items-center justify-center border-b border-line-frost">
+      <div className="flex h-12 w-full shrink-0 items-center justify-center border-b border-line-frost">
         <RailTooltip label="Expandir barra lateral">
           <button type="button" onClick={onExpand} aria-label="Expandir barra lateral" className={`${RAIL_ICON_BTN} rounded-full`}>
             <PanelLeftOpen className="h-4 w-4" aria-hidden="true" />
@@ -103,7 +105,7 @@ export function SidebarRail({
         <RailTooltip label="Cuenta y ajustes">
           <button
             type="button"
-            onClick={onExpand}
+            onClick={onOpenSettings ?? onExpand}
             aria-label="Cuenta y ajustes"
             className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-accent-brand text-[11px] font-bold text-white transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none motion-reduce:transition-none motion-reduce:hover:scale-100"
           >

@@ -51,4 +51,28 @@ describe('useWorkspaceShortcuts', () => {
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(onCloseCanvas).toHaveBeenCalledTimes(1);
   });
+
+  it('ignores Escape when data-workspace-dialog="open", dialog[open], or defaultPrevented is present', () => {
+    const onCloseCanvas = vi.fn();
+    render(
+      <div>
+        <ShortcutHarness
+          canvasOpen={true}
+          hasOpenModal={false}
+          onFocusComposer={vi.fn()}
+          onNewThread={vi.fn()}
+          onCloseCanvas={onCloseCanvas}
+        />
+        <div data-workspace-dialog="open" />
+      </div>,
+    );
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onCloseCanvas).not.toHaveBeenCalled();
+
+    const prevented = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
+    prevented.preventDefault();
+    window.dispatchEvent(prevented);
+    expect(onCloseCanvas).not.toHaveBeenCalled();
+  });
 });

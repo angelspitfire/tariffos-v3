@@ -82,7 +82,7 @@ export function SettingsProfileTab({ draft, onChange }: SettingsProfileTabProps)
             type="text"
             value={draft.fullName}
             onChange={(e) => onChange({ fullName: e.target.value })}
-            className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 text-xs text-ink-primary focus:border-accent-brand focus:outline-none"
+            className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           />
         </label>
         <label className="space-y-1">
@@ -91,7 +91,7 @@ export function SettingsProfileTab({ draft, onChange }: SettingsProfileTabProps)
             type="email"
             value={draft.email}
             onChange={(e) => onChange({ email: e.target.value })}
-            className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 text-xs text-ink-primary focus:border-accent-brand focus:outline-none"
+            className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           />
         </label>
         <label className="space-y-1">
@@ -99,10 +99,10 @@ export function SettingsProfileTab({ draft, onChange }: SettingsProfileTabProps)
           <select
             value={draft.role}
             onChange={(e) => onChange({ role: e.target.value })}
-            className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 text-xs text-ink-primary focus:border-accent-brand focus:outline-none"
+            className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
             {ROLE_OPTIONS.map((role) => (
-              <option key={role} value={role}>
+              <option key={role} value={role} className="bg-surface-panel text-ink-primary">
                 {role}
               </option>
             ))}
@@ -114,7 +114,7 @@ export function SettingsProfileTab({ draft, onChange }: SettingsProfileTabProps)
             type="text"
             value={draft.companyName}
             onChange={(e) => onChange({ companyName: e.target.value })}
-            className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 text-xs text-ink-primary focus:border-accent-brand focus:outline-none"
+            className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           />
         </label>
         <label className="space-y-1 sm:col-span-2">
@@ -124,7 +124,7 @@ export function SettingsProfileTab({ draft, onChange }: SettingsProfileTabProps)
             value={draft.brokerLicense}
             onChange={(e) => onChange({ brokerLicense: e.target.value })}
             placeholder="Ej. Patente SENIAT #4821"
-            className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 font-mono text-xs text-ink-primary focus:border-accent-brand focus:outline-none"
+            className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 font-mono text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           />
         </label>
 

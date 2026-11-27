@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Camera, Paperclip, RefreshCw, ScanLine, Upload, X } from 'lucide-react';
+import { WorkspaceDialogShell } from '../atoms/WorkspaceDialogShell';
 
 export interface CameraScannerModalProps {
   open: boolean;
@@ -80,8 +81,6 @@ export function CameraScannerModal({ open, onClose, onCaptureFile }: CameraScann
     return stopCamera;
   }, [open, startCamera, stopCamera]);
 
-  if (!open) return null;
-
   const handleCaptureFrame = () => {
     const video = videoRef.current;
     if (!video || !cameraReady || video.videoWidth === 0) return;
@@ -97,13 +96,13 @@ export function CameraScannerModal({ open, onClose, onCaptureFile }: CameraScann
   };
 
   return (
-    <div className="no-print fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
-      <dialog
-        open
-        aria-label="Escáner de cámara para etiquetas y facturas"
-        className="static m-0 w-full max-w-xl overflow-hidden overscroll-contain rounded-surface border border-border-subtle bg-surface-panel p-0 text-ink-primary shadow-elev-2"
-      >
-        <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
+    <WorkspaceDialogShell
+      open={open}
+      onClose={onClose}
+      label="Escáner de cámara para etiquetas y facturas"
+      maxWidthClassName="max-w-xl"
+    >
+      <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
           <div className="flex items-center gap-2">
             <Camera className="h-4 w-4 text-accent-ink" aria-hidden="true" />
             <h3 className="text-sm font-semibold">Escáner de etiquetas y facturas</h3>
@@ -189,7 +188,6 @@ export function CameraScannerModal({ open, onClose, onCaptureFile }: CameraScann
             </div>
           </div>
         </div>
-      </dialog>
-    </div>
+    </WorkspaceDialogShell>
   );
 }

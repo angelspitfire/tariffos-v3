@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { ApprovalWorkflowMode, CanvasTabType, SkuPrecedent, UserProfileSettings } from '@tariffos/shared-types';
+import type { WorkspaceToastState } from '@/components/workspace/atoms/WorkspaceToastBanner';
 import { resolveDefaultCanvasTab } from './canvas-tabs';
 import { getJurisdictionById } from './jurisdictions';
 import { createWorkspacePersistence } from './persistence';
@@ -15,7 +16,11 @@ import {
   updateDossierInThread,
 } from './thread-mutations';
 import { DEFAULT_USER_PROFILE, type WorkspaceMessage, type WorkspaceThread, type WorkspaceToast } from './types';
+import { useUndoableDelete, type UndoToastAction } from './use-undoable-delete';
 import { useWorkspaceClassification } from './use-workspace-classification';
+import { useWorkspaceHydration } from './use-workspace-hydration';
+
+const DEFAULT_TOAST_MS = 2800;
 
 export function useWorkspaceState() {
   const persistence = useMemo(() => createWorkspacePersistence(), []);
@@ -26,27 +31,32 @@ export function useWorkspaceState() {
   const [activeTab, setActiveTab] = useState<CanvasTabType>('dossier');
   const [skuPrecedents, setSkuPrecedents] = useState<SkuPrecedent[]>([]);
   const [profile, setProfile] = useState<UserProfileSettings>(DEFAULT_USER_PROFILE);
-  const [toast, setToast] = useState<WorkspaceToast | null>(null);
+  const [toast, setToast] = useState<WorkspaceToastState | null>(null);
 
   const threadsRef = useRef<WorkspaceThread[]>([]);
   const activeThreadIdRef = useRef<string | null>(null);
+  const skuRef = useRef<SkuPrecedent[]>([]);
   threadsRef.current = threads;
   activeThreadIdRef.current = activeThreadId;
+  skuRef.current = skuPrecedents;
 
   const jurisdiction = useMemo(() => getJurisdictionById(profile.defaultJurisdictionId), [profile.defaultJurisdictionId]);
   const activeThread = useMemo(() => threads.find((t) => t.id === activeThreadId) ?? null, [threads, activeThreadId]);
   const canvasComponents = useMemo(() => getLatestCanvasComponents(activeThread, selectedCanvasMsgId), [activeThread, selectedCanvasMsgId]);
 
-  const pushToast = useCallback((title: string, variant: WorkspaceToast['variant'] = 'info') => {
+  const dismissToast = useCallback(() => setToast(null), []);
+  const pushToast = useCallback((title: string, variant: WorkspaceToast['variant'] = 'info', action?: UndoToastAction) => {
     const id = `toast-${Date.now()}`;
-    setToast({ id, title, variant });
-    window.setTimeout(() => setToast((curr) => (curr?.id === id ? null : curr)), 2800);
+    setToast({ id, title, variant, actionLabel: action?.actionLabel, onAction: action?.onAction });
+    window.setTimeout(() => setToast((curr) => (curr?.id === id ? null : curr)), action?.durationMs ?? DEFAULT_TOAST_MS);
   }, []);
+  const { scheduleDelete } = useUndoableDelete(pushToast, dismissToast);
+
+  useWorkspaceHydration({ persistence, threadsRef, activeThreadIdRef, setThreads, setThreadsLoading, setActiveThreadId, setSkuPrecedents, setProfile });
 
   const persistThread = useCallback((nextThread: WorkspaceThread) => {
     const prev = threadsRef.current;
-    const exists = prev.some((t) => t.id === nextThread.id);
-    const updated = (exists ? prev.map((t) => (t.id === nextThread.id ? nextThread : t)) : [nextThread, ...prev])
+    const updated = (prev.some((t) => t.id === nextThread.id) ? prev.map((t) => (t.id === nextThread.id ? nextThread : t)) : [nextThread, ...prev])
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
     threadsRef.current = updated;
     setThreads(updated);
@@ -62,78 +72,13 @@ export function useWorkspaceState() {
   }, []);
 
   const runner = useWorkspaceClassification({
-    threads, activeThreadId, jurisdiction,
-    approvalWorkflowMode: profile.approvalWorkflowMode,
-    defaultIncoterm: profile.defaultIncoterm,
-    deepMode: profile.detailLevel === 'exhaustive',
+    threads, activeThreadId, jurisdiction, approvalWorkflowMode: profile.approvalWorkflowMode,
+    defaultIncoterm: profile.defaultIncoterm, deepMode: profile.detailLevel === 'exhaustive',
     setActiveThreadId, setSelectedCanvasMsgId, setActiveTab, persistThread, pushToast,
   });
 
-  useEffect(() => {
-    let active = true;
-    let threadsSyncedFromCloud = false;
-    let skusSyncedFromCloud = false;
-    let profileSyncedFromCloud = false;
-
-    const hydrateLocal = persistence.loadLocalBootstrap?.();
-    if (hydrateLocal) {
-      void hydrateLocal.then(({ threads: localThreads, skuPrecedents: localSkus, profile: localProfile }) => {
-        if (!active) return;
-        if (!threadsSyncedFromCloud && localThreads.length > 0) {
-          if (threadsRef.current.length === 0) {
-            threadsRef.current = localThreads;
-            setThreads(localThreads);
-          }
-          setThreadsLoading(false);
-        }
-        if (!skusSyncedFromCloud && localSkus.length > 0) setSkuPrecedents(localSkus);
-        if (!profileSyncedFromCloud && localProfile) setProfile(localProfile);
-      });
-    }
-
-    void persistence
-      .loadThreads()
-      .then((loadedThreads) => {
-        if (!active) return;
-        threadsSyncedFromCloud = true;
-        const activeId = activeThreadIdRef.current;
-        const localActive = activeId
-          ? threadsRef.current.find((t) => t.id === activeId && !loadedThreads.some((r) => r.id === t.id))
-          : undefined;
-        const mergedThreads = localActive ? [localActive, ...loadedThreads] : loadedThreads;
-        threadsRef.current = mergedThreads;
-        setThreads(mergedThreads);
-        if (activeId && !mergedThreads.some((t) => t.id === activeId)) {
-          activeThreadIdRef.current = null;
-          setActiveThreadId(null);
-        }
-        setThreadsLoading(false);
-      })
-      .catch(() => {
-        if (active) setThreadsLoading(false);
-      });
-
-    void persistence.loadSkuPrecedents().then((loadedSkus) => {
-      if (!active) return;
-      skusSyncedFromCloud = true;
-      setSkuPrecedents(loadedSkus);
-    });
-
-    void persistence.loadUserProfile().then((loadedProfile) => {
-      if (!active) return;
-      profileSyncedFromCloud = true;
-      if (loadedProfile) setProfile(loadedProfile);
-    });
-
-    return () => { active = false; };
-  }, [persistence]);
-
   const updateProfile = useCallback((patch: Partial<UserProfileSettings>) => {
-    setProfile((prev) => {
-      const next = { ...prev, ...patch, updatedAt: new Date().toISOString() };
-      void persistence.saveUserProfile(next);
-      return next;
-    });
+    setProfile((prev) => { const next = { ...prev, ...patch, updatedAt: new Date().toISOString() }; void persistence.saveUserProfile(next); return next; });
   }, [persistence]);
 
   const approveActiveDossier = useCallback(() => {
@@ -148,14 +93,11 @@ export function useWorkspaceState() {
     pushToast('Dictamen marcado en revisión técnica.', 'info');
   }, [activeThread, persistThread, pushToast, selectedCanvasMsgId]);
 
-  const confirmBatchItem = useCallback(
-    (lineNumber: number, update: { hsCode: string; adValoremPercent: number; legalRegime: string; answers: Record<string, string> }) => {
-      if (!activeThread) return;
-      persistThread(updateBatchItemInThread(activeThread, lineNumber, update));
-      pushToast(`Ítem #${lineNumber} confirmado (${update.hsCode}).`, 'success');
-    },
-    [activeThread, persistThread, pushToast],
-  );
+  const confirmBatchItem = useCallback((lineNumber: number, update: { hsCode: string; adValoremPercent: number; legalRegime: string; answers: Record<string, string> }) => {
+    if (!activeThread) return;
+    persistThread(updateBatchItemInThread(activeThread, lineNumber, update));
+    pushToast(`Ítem #${lineNumber} confirmado (${update.hsCode}).`, 'success');
+  }, [activeThread, persistThread, pushToast]);
 
   const saveSku = useCallback((precedent: SkuPrecedent) => {
     setSkuPrecedents((prev) => [precedent, ...prev.filter((p) => p.id !== precedent.id)]);
@@ -169,19 +111,36 @@ export function useWorkspaceState() {
     if (precedent) saveSku(precedent);
   }, [activeThread, profile, saveSku]);
 
-  const deleteSku = useCallback((id: string) => { setSkuPrecedents((prev) => prev.filter((p) => p.id !== id)); void persistence.deleteSkuPrecedent(id); }, [persistence]);
+  const deleteSku = useCallback((id: string) => {
+    const removed = skuRef.current.find((p) => p.id === id);
+    if (!removed) return;
+    setSkuPrecedents((prev) => prev.filter((p) => p.id !== id));
+    scheduleDelete({
+      key: `sku:${id}`, toastTitle: `SKU ${removed.sku} eliminado.`,
+      onRestore: () => setSkuPrecedents((prev) => (prev.some((p) => p.id === id) ? prev : [removed, ...prev])),
+      onCommit: () => { void persistence.deleteSkuPrecedent(id); },
+    });
+  }, [persistence, scheduleDelete]);
 
   const deleteThread = useCallback((threadId: string) => {
+    const removed = threadsRef.current.find((t) => t.id === threadId);
+    if (!removed) return;
+    const wasActive = activeThreadIdRef.current === threadId;
     const remaining = threadsRef.current.filter((t) => t.id !== threadId);
     threadsRef.current = remaining;
     setThreads(remaining);
-    if (activeThreadIdRef.current === threadId) {
-      activeThreadIdRef.current = null;
-      setActiveThreadId(null);
-      setSelectedCanvasMsgId(null);
-    }
-    void persistence.deleteThread(threadId);
-  }, [persistence]);
+    if (wasActive) { activeThreadIdRef.current = null; setActiveThreadId(null); setSelectedCanvasMsgId(null); }
+    scheduleDelete({
+      key: `thread:${threadId}`, toastTitle: `Conversación «${removed.title}» eliminada.`,
+      onRestore: () => {
+        const restored = [removed, ...threadsRef.current.filter((t) => t.id !== threadId)].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+        threadsRef.current = restored;
+        setThreads(restored);
+        if (wasActive) { activeThreadIdRef.current = threadId; setActiveThreadId(threadId); }
+      },
+      onCommit: () => { void persistence.deleteThread(threadId); },
+    });
+  }, [persistence, scheduleDelete]);
 
   const clearLocalData = useCallback(async () => {
     await persistence.clearLocal();

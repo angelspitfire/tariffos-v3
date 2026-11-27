@@ -3,6 +3,7 @@ import type { NextConfig } from 'next';
 const DEFAULT_LOCAL_EVE_ORIGIN = 'http://127.0.0.1:2000';
 
 const nextConfig: NextConfig = {
+  distDir: process.env.NEXT_DIST_DIR?.trim() || '.next',
   serverExternalPackages: ['pdfjs-dist'],
   async rewrites() {
     // When running `pnpm dev` + `pnpm dev:eve` without `vercel dev --local`,

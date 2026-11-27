@@ -93,4 +93,18 @@ describe('ThreadSidebar (mockup shell)', () => {
     expect(screen.getByRole('button', { name: /Dashboard/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Catálogo SKU \(2\)/i })).toBeInTheDocument();
   });
+
+  it('opens settings directly from collapsed SidebarRail "Cuenta y ajustes" button and aligns h-12 horizon (Plan 2.1)', async () => {
+    const user = userEvent.setup();
+    const onOpenSettings = vi.fn<() => void>();
+    const onToggle = vi.fn<() => void>();
+    renderSidebar({ open: false, onOpenSettings, onToggle });
+
+    const expandBtn = screen.getByRole('button', { name: /Expandir barra lateral/i });
+    expect(expandBtn.closest('.h-12')).not.toBeNull();
+
+    await user.click(screen.getByRole('button', { name: /Cuenta y ajustes/i }));
+    expect(onOpenSettings).toHaveBeenCalledTimes(1);
+    expect(onToggle).not.toHaveBeenCalled();
+  });
 });

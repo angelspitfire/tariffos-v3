@@ -30,6 +30,7 @@ const mocks = vi.hoisted(() => ({
   loadUserProfile: vi.fn(),
   saveThread: vi.fn(),
   deleteThread: vi.fn(),
+  deleteSkuPrecedent: vi.fn(),
 }));
 
 vi.mock('../persistence', () => ({
@@ -41,7 +42,7 @@ vi.mock('../persistence', () => ({
     saveThread: mocks.saveThread,
     deleteThread: mocks.deleteThread,
     saveSkuPrecedent: vi.fn().mockResolvedValue(undefined),
-    deleteSkuPrecedent: vi.fn().mockResolvedValue(undefined),
+    deleteSkuPrecedent: mocks.deleteSkuPrecedent,
     saveUserProfile: vi.fn().mockResolvedValue(undefined),
     clearLocal: vi.fn().mockResolvedValue(undefined),
   }),
@@ -63,6 +64,12 @@ function Harness() {
       <button type="button" onClick={() => ws.deleteThread(SAMPLE_THREAD.id)}>
         delete-old
       </button>
+      <span data-testid="toast-title">{ws.toast?.title ?? ''}</span>
+      {ws.toast?.actionLabel && ws.toast?.onAction ? (
+        <button type="button" onClick={ws.toast.onAction}>
+          {ws.toast.actionLabel}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -133,5 +140,39 @@ describe('useWorkspaceState startup thread selection', () => {
       expect(screen.getByTestId('count').textContent).toBe('1');
       expect(screen.getByTestId('loading').textContent).toBe('false');
     });
+  });
+
+  it('defers thread deletion for 5s with an Undo action that restores the thread and cancels persistence.deleteThread', async () => {
+    mocks.deleteThread.mockReset();
+    mocks.deleteThread.mockResolvedValue(undefined);
+    mocks.loadLocalBootstrap.mockResolvedValue({
+      threads: [SAMPLE_THREAD, SECOND_THREAD],
+      skuPrecedents: [],
+      profile: null,
+    });
+    mocks.loadThreads.mockResolvedValue([SAMPLE_THREAD, SECOND_THREAD]);
+    mocks.loadSkuPrecedents.mockResolvedValue([]);
+    mocks.loadUserProfile.mockResolvedValue(null);
+
+    render(<Harness />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('count').textContent).toBe('2');
+    });
+
+    act(() => {
+      screen.getByRole('button', { name: 'delete-old' }).click();
+    });
+
+    expect(screen.getByTestId('count').textContent).toBe('1');
+    expect(mocks.deleteThread).not.toHaveBeenCalled();
+
+    const undoBtn = screen.getByRole('button', { name: 'Deshacer' });
+    act(() => {
+      undoBtn.click();
+    });
+
+    expect(screen.getByTestId('count').textContent).toBe('2');
+    expect(mocks.deleteThread).not.toHaveBeenCalled();
   });
 });

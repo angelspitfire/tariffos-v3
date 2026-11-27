@@ -113,7 +113,7 @@ export function SettingsNotificationsTab({
             value={notifications.notificationEmail}
             onChange={(e) => onUpdateNotifications({ notificationEmail: e.target.value })}
             placeholder={profileEmail}
-            className="mt-1 w-full rounded-field border border-border-subtle bg-surface-input px-3 py-1.5 text-xs text-ink-primary focus:border-accent-brand focus:outline-none"
+            className="mt-1 w-full rounded-field border border-border-subtle bg-surface-input px-3 py-1.5 text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           />
         ) : null}
       </div>

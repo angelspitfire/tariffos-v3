@@ -24,7 +24,7 @@ export interface WorkspaceHeader48Props {
 const ICON_BTN =
   'relative inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none';
 
-/** 52px chat-column header matching mockup toolbar: jurisdiction pill popover, theme, files, and canvas toggle. */
+/** 48px chat-column header matching mockup toolbar: jurisdiction pill popover, theme, files, and canvas toggle. */
 export function WorkspaceHeader48({
   jurisdiction,
   isDark,
@@ -60,7 +60,7 @@ export function WorkspaceHeader48({
 
   return (
     <>
-      <header className="no-print relative z-20 flex h-[52px] shrink-0 items-center justify-between gap-3 border-b border-border-subtle bg-surface-panel px-4">
+      <header className="no-print relative z-20 flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border-subtle bg-surface-panel px-4">
         <div className="flex min-w-0 items-center gap-2">
           <button
             type="button"

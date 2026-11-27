@@ -85,7 +85,7 @@ export function SettingsSecurityTab({ mustChangePassword, cloudMode }: SettingsS
               onChange={(e) => setNewPassword(e.target.value)}
               autoComplete="new-password"
               placeholder="Mínimo 8 caracteres"
-              className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 text-xs text-ink-primary focus:border-accent-brand focus:outline-none"
+              className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
             />
           </label>
           <label className="space-y-1">
@@ -96,7 +96,7 @@ export function SettingsSecurityTab({ mustChangePassword, cloudMode }: SettingsS
               onChange={(e) => setConfirmPassword(e.target.value)}
               autoComplete="new-password"
               placeholder="Repite la nueva contraseña"
-              className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 text-xs text-ink-primary focus:border-accent-brand focus:outline-none"
+              className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
             />
           </label>
         </div>
@@ -104,9 +104,9 @@ export function SettingsSecurityTab({ mustChangePassword, cloudMode }: SettingsS
         <button
           type="button"
           onClick={() => setShowPasswords((v) => !v)}
-          className="inline-flex cursor-pointer items-center gap-1.5 text-[11px] font-medium text-ink-muted hover:text-ink-primary"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded text-[11px] font-medium text-ink-muted transition-colors hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
         >
-          {showPasswords ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+          {showPasswords ? <EyeOff className="h-3.5 w-3.5" aria-hidden="true" /> : <Eye className="h-3.5 w-3.5" aria-hidden="true" />}
           {showPasswords ? 'Ocultar contraseñas' : 'Mostrar contraseñas'}
         </button>
 
@@ -121,7 +121,7 @@ export function SettingsSecurityTab({ mustChangePassword, cloudMode }: SettingsS
                 : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
             }`}
           >
-            {feedback.tone === 'ok' ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> : null}
+            {feedback.tone === 'ok' ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> : null}
             <span>{feedback.text}</span>
           </div>
         ) : null}
@@ -131,10 +131,10 @@ export function SettingsSecurityTab({ mustChangePassword, cloudMode }: SettingsS
             type="button"
             disabled={busy}
             onClick={() => void handleUpdatePassword()}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-surface-inverted px-4 py-2 text-xs font-semibold text-ink-on-inverted transition-colors hover:bg-surface-inverted-hover disabled:opacity-50"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-surface-inverted px-4 py-2 text-xs font-semibold text-ink-on-inverted transition-colors hover:bg-surface-inverted-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none disabled:opacity-50"
           >
             <KeyRound className="h-3.5 w-3.5" aria-hidden="true" />
-            {busy ? 'Actualizando...' : 'Actualizar contraseña'}
+            {busy ? 'Actualizando…' : 'Actualizar contraseña'}
           </button>
         </div>
       </div>

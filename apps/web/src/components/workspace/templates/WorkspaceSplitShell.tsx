@@ -16,8 +16,10 @@ import { usePendingQueryAutorun } from '@/lib/workspace/use-pending-query-autoru
 import { useWorkspaceShortcuts } from '@/lib/workspace/use-workspace-shortcuts';
 import { useWorkspaceShellLayout } from '@/lib/workspace/use-split-layout';
 import { useWorkspaceState } from '@/lib/workspace/use-workspace-state';
+import { useWorkspaceUrlSync } from '@/lib/workspace/use-workspace-url-sync';
 import { AnalyticsWorkspaceView } from '../organisms/AnalyticsWorkspaceView';
 import { WorkspaceHeader48 } from '../organisms/WorkspaceHeader48';
+import { WorkspaceToastBanner } from '../atoms/WorkspaceToastBanner';
 import { BatchProgressBanner } from '../molecules/BatchProgressBanner';
 import { WorkspaceCanvasSlot } from '../molecules/WorkspaceCanvasSlot';
 import { WorkspaceMobilePaneTabs } from '../molecules/WorkspaceMobilePaneTabs';
@@ -50,38 +52,27 @@ export function WorkspaceSplitShell() {
   }, [visibleActiveThread?.id]);
 
   const batchJob = useBatchJob({
-    jurisdiction: ws.jurisdiction,
-    deepMode: ws.profile.detailLevel === 'exhaustive',
-    approvalWorkflowMode: ws.profile.approvalWorkflowMode,
-    onBatchCompleted: (msg) => {
-      const boundId = ws.ingestExternalMessage(msg);
-      if (!ownedThreadIdRef.current) ownedThreadIdRef.current = boundId;
-    },
+    jurisdiction: ws.jurisdiction, deepMode: ws.profile.detailLevel === 'exhaustive', approvalWorkflowMode: ws.profile.approvalWorkflowMode,
+    onBatchCompleted: (msg) => { const boundId = ws.ingestExternalMessage(msg); if (!ownedThreadIdRef.current) ownedThreadIdRef.current = boundId; },
     pushToast: ws.pushToast,
   });
 
   const hasCanvas = visibleCanvasComponents.length > 0;
+  const mobileCanvasLabel = visibleCanvasComponents.some((c) => c.type === 'batch_manifest') ? 'Lote' : 'Dictamen';
   const threadArtifacts = extractThreadArtifacts(visibleActiveThread?.messages ?? []);
   const filesCount = ws.pendingAttachments.length + (visibleActiveThread?.messages.reduce((acc, m) => acc + (m.attachments?.length ?? 0), 0) ?? 0);
   const layout = useWorkspaceShellLayout({ activeThreadId: visibleActiveThread?.id ?? ws.activeThreadId, hasCanvas, themePreference: ws.profile.themePreference, onSaveTheme: (themePreference) => ws.updateProfile({ themePreference }) });
   const plan = mergeCloudUsageIntoPlanStatus(computePlanStatus(ws.threads, planId), cloudUsage);
 
   useEffect(() => { setPlanId(readSelectedPlan()?.planId ?? 'pilot'); }, []);
-
   const handleExportPdf = (targetComponents = visibleCanvasComponents) => exportWorkspaceDossierPdf(targetComponents, ws.profile, ws.pushToast);
-  const showCanvasFor = (messageId: string | null, tab: CanvasTabType) => {
-    ws.setSelectedCanvasMsgId(messageId); ws.setActiveTab(tab); layout.setCanvasDismissed(false); layout.setMobilePane('canvas');
-  };
+  const showCanvasFor = (messageId: string | null, tab: CanvasTabType) => { ws.setSelectedCanvasMsgId(messageId); ws.setActiveTab(tab); layout.setCanvasDismissed(false); layout.setMobilePane('canvas'); };
 
   const sendToAgent = async (prompt: string, opts?: { attachmentsText?: string; isBatchHint?: boolean }) => {
     if (readOnlyReason) { ws.pushToast(readOnlyReason, 'info'); return; }
-    if (agentSendRef.current) {
-      agentSendRef.current(opts?.attachmentsText ? `${prompt}\n\n${opts.attachmentsText}` : prompt);
-      return;
-    }
+    if (agentSendRef.current) { agentSendRef.current(opts?.attachmentsText ? `${prompt}\n\n${opts.attachmentsText}` : prompt); return; }
     await ws.sendClassification(prompt, opts);
   };
-
   usePendingQueryAutorun({ cloudMode: isCloudModeEnabled(), usageLoaded: cloudUsageLoaded, readOnlyReason, onRunQuery: (q) => void sendToAgent(q) });
 
   const inlineActions = buildWorkspaceInlineActions({
@@ -94,24 +85,26 @@ export function WorkspaceSplitShell() {
   const goToChat = () => { layout.setAnalyticsOpen(false); layout.setMobilePane('chat'); };
   const focusComposer = () => {
     goToChat();
-    requestAnimationFrame(() => {
-      document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Consulta arancelaria o descripción de mercancía"]')?.focus();
-    });
+    requestAnimationFrame(() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Consulta arancelaria o descripción de mercancía"]')?.focus());
   };
   const onNewThread = () => { ownedThreadIdRef.current = null; ws.startNewThread(); setSurfaceKey(`eve-new-${Date.now()}`); focusComposer(); };
+  const closeCanvas = () => {
+    layout.setCanvasFullscreen(false);
+    layout.setMobilePane('chat');
+    if (typeof window === 'undefined' || window.innerWidth >= 1024) layout.setCanvasDismissed(true);
+  };
 
+  useWorkspaceUrlSync({
+    activeThreadId: visibleActiveThread?.id ?? ws.activeThreadId, activeTab: ws.activeTab, analyticsOpen: layout.analyticsOpen, hasCanvas: layout.showCanvas,
+    onHydrateThread: ws.setActiveThreadId, onHydrateTab: ws.setActiveTab, onHydrateAnalytics: layout.setAnalyticsOpen,
+  });
   useWorkspaceShortcuts({
-    canvasOpen: layout.showCanvas,
-    hasOpenModal: layout.skuModalOpen || layout.settingsModalOpen || layout.filesPanelOpen,
-    onFocusComposer: focusComposer,
-    onNewThread,
-    onCloseCanvas: () => { layout.setCanvasFullscreen(false); layout.setCanvasDismissed(true); layout.setMobilePane('chat'); },
+    canvasOpen: layout.showCanvas, hasOpenModal: layout.skuModalOpen || layout.settingsModalOpen || layout.filesPanelOpen,
+    onFocusComposer: focusComposer, onNewThread, onCloseCanvas: closeCanvas,
   });
   const onSelectThread = (id: string) => { ownedThreadIdRef.current = id; ws.setActiveThreadId(id); ws.setSelectedCanvasMsgId(null); setSurfaceKey(`eve-thread-${id}`); goToChat(); };
   const onTriggerBatch = () => (readOnlyReason ? ws.pushToast(readOnlyReason, 'info') : batchInputRef.current?.click());
-  const handleRegisterAgentSend = useCallback((fn: ((text: string) => void) | null) => {
-    agentSendRef.current = fn;
-  }, []);
+  const handleRegisterAgentSend = useCallback((fn: ((text: string) => void) | null) => { agentSendRef.current = fn; }, []);
   const { bindEveSessionId, syncChatMessages } = ws;
   const handleSessionIdDiscovered = useCallback((sid: string) => { ownedThreadIdRef.current = bindEveSessionId(sid); }, [bindEveSessionId]);
   const handleSyncChatMessages = useCallback((msgs: Parameters<typeof syncChatMessages>[0], latestId: string | null) => { ownedThreadIdRef.current = syncChatMessages(msgs, latestId); }, [syncChatMessages]);
@@ -138,51 +131,55 @@ export function WorkspaceSplitShell() {
             onOpenMobileSidebar={() => layout.setMobileDrawerOpen(true)} onChangeJurisdiction={ws.setJurisdictionId}
             onToggleTheme={layout.handleToggleTheme} onToggleCanvas={() => undefined} onOpenFilesPanel={() => layout.setFilesPanelOpen(true)} onNewThread={onNewThread}
           />
-          <main className="min-h-0 min-w-0 flex-1">
+          <main id="workspace-main" className="min-h-0 min-w-0 flex-1">
             <AnalyticsWorkspaceView threads={ws.threads} skuPrecedents={ws.skuPrecedents} onClose={() => layout.setAnalyticsOpen(false)} />
           </main>
         </div>
       ) : (
-        <main className="flex min-w-0 flex-1 overflow-hidden">
-          <div
-            style={layout.showCanvas && !layout.canvasFullscreen ? ({ '--chat-w': `${layout.chatWidthPct}%` } as React.CSSProperties) : undefined}
-            className={`min-h-0 min-w-0 flex-1 flex-col ${layout.showCanvas && !layout.canvasFullscreen ? 'lg:w-[var(--chat-w)] lg:flex-none' : ''} ${layout.canvasFullscreen ? 'hidden' : layout.mobilePane === 'chat' || !layout.showCanvas ? 'flex' : 'hidden lg:flex'}`}
-          >
-            <WorkspaceHeader48
-              jurisdiction={ws.jurisdiction} isDark={layout.isDark} canvasAvailable={hasCanvas} canvasVisible={layout.showCanvas} filesCount={filesCount}
-              onOpenMobileSidebar={() => layout.setMobileDrawerOpen(true)} onChangeJurisdiction={ws.setJurisdictionId}
-              onToggleTheme={layout.handleToggleTheme} onToggleCanvas={() => layout.setCanvasDismissed((p) => !p)}
-              onOpenFilesPanel={() => layout.setFilesPanelOpen(true)} onNewThread={onNewThread}
-            />
-            <WorkspaceThreadSlot
-              surfaceKey={surfaceKey} eveSessionId={showDemoFallback ? null : (visibleActiveThread?.eveSessionId ?? null)}
-              jurisdictionId={ws.jurisdiction.id} countryCode={ws.jurisdiction.countryCode} messages={visibleActiveThread?.messages ?? []}
-              skuPrecedents={ws.skuPrecedents} pendingAttachments={ws.pendingAttachments} profile={ws.profile} inlineActions={inlineActions} readOnlyReason={readOnlyReason}
-              batchBanner={batchJob.bannerState ? <BatchProgressBanner fileName={batchJob.bannerState.fileName} totalItems={batchJob.bannerState.totalItems} connectionStatus={batchJob.bannerState.connectionStatus} progress={batchJob.bannerState.progress} onDismiss={batchJob.dismissJob} /> : null}
-              onTriggerBatchUpload={onTriggerBatch} onAddFiles={(files) => void ws.addFiles(files)} onRemoveAttachment={ws.removeAttachment}
-              onConsumeAttachments={ws.consumePendingAttachments} onRunSample={(s) => void sendToAgent(s.description)}
-              onRunBatchSample={(b) => void sendToAgent(b.promptText, { attachmentsText: b.documentText, isBatchHint: true })}
-              onUpdateProfile={ws.updateProfile}
-              onSessionIdDiscovered={handleSessionIdDiscovered}
-              onSyncChatMessages={handleSyncChatMessages}
-              onRegisterAgentSend={handleRegisterAgentSend} onNotifyWarning={(msg) => ws.pushToast(msg, 'warning')}
-            />
-            {layout.showCanvas ? <WorkspaceMobilePaneTabs activePane={layout.mobilePane} onSelectPane={layout.setMobilePane} /> : null}
-          </div>
+        <main id="workspace-main" className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
+            <div
+              style={layout.showCanvas && !layout.canvasFullscreen ? ({ '--chat-w': `${layout.chatWidthPct}%` } as React.CSSProperties) : undefined}
+              className={`min-h-0 min-w-0 flex-1 flex-col ${layout.showCanvas && !layout.canvasFullscreen ? 'lg:w-[var(--chat-w)] lg:flex-none' : ''} ${layout.canvasFullscreen ? 'hidden' : layout.mobilePane === 'chat' || !layout.showCanvas ? 'flex' : 'hidden lg:flex'}`}
+            >
+              <WorkspaceHeader48
+                jurisdiction={ws.jurisdiction} isDark={layout.isDark} canvasAvailable={hasCanvas} canvasVisible={layout.showCanvas} filesCount={filesCount}
+                onOpenMobileSidebar={() => layout.setMobileDrawerOpen(true)} onChangeJurisdiction={ws.setJurisdictionId}
+                onToggleTheme={layout.handleToggleTheme} onToggleCanvas={() => layout.setCanvasDismissed((p) => !p)}
+                onOpenFilesPanel={() => layout.setFilesPanelOpen(true)} onNewThread={onNewThread}
+              />
+              <WorkspaceThreadSlot
+                surfaceKey={surfaceKey} eveSessionId={showDemoFallback ? null : (visibleActiveThread?.eveSessionId ?? null)}
+                jurisdictionId={ws.jurisdiction.id} countryCode={ws.jurisdiction.countryCode} messages={visibleActiveThread?.messages ?? []}
+                skuPrecedents={ws.skuPrecedents} pendingAttachments={ws.pendingAttachments} profile={ws.profile} inlineActions={inlineActions} readOnlyReason={readOnlyReason}
+                batchBanner={batchJob.bannerState ? <BatchProgressBanner fileName={batchJob.bannerState.fileName} totalItems={batchJob.bannerState.totalItems} connectionStatus={batchJob.bannerState.connectionStatus} progress={batchJob.bannerState.progress} onDismiss={batchJob.dismissJob} /> : null}
+                onTriggerBatchUpload={onTriggerBatch} onAddFiles={(files) => void ws.addFiles(files)} onRemoveAttachment={ws.removeAttachment}
+                onConsumeAttachments={ws.consumePendingAttachments} onRunSample={(s) => void sendToAgent(s.description)}
+                onRunBatchSample={(b) => void sendToAgent(b.promptText, { attachmentsText: b.documentText, isBatchHint: true })}
+                onUpdateProfile={ws.updateProfile}
+                onSessionIdDiscovered={handleSessionIdDiscovered}
+                onSyncChatMessages={handleSyncChatMessages}
+                onRegisterAgentSend={handleRegisterAgentSend} onNotifyWarning={(msg) => ws.pushToast(msg, 'warning')}
+              />
+            </div>
 
-          {layout.showCanvas ? (
-            <WorkspaceCanvasSlot
-              components={visibleCanvasComponents} activeTab={ws.activeTab} jurisdiction={ws.jurisdiction} profile={ws.profile}
-              artifacts={threadArtifacts} activeArtifactId={ws.selectedCanvasMsgId} canvasFullscreen={layout.canvasFullscreen} mobileVisible={layout.mobilePane === 'canvas'}
-              onStartResize={layout.handleStartResize} onSelectTab={ws.setActiveTab} onApproveDossier={ws.approveActiveDossier}
-              onRequestDossierReview={ws.requestDossierReview} onChangeWorkflowMode={ws.setApprovalWorkflowMode}
-              onReevaluateSpecs={(specs) => void sendToAgent(`Reevaluar dictamen con ficha actualizada: ${specs.map((s) => `${s.key}: ${s.value}`).join('; ')}`)}
-              onSaveSku={() => ws.saveSkuFromMessage()}
-              onSaveSignature={(p) => ws.updateProfile({ fullName: p.fullName, brokerLicense: p.brokerLicense, brokerSignatureDataUrl: p.signatureDataUrl })}
-              onExportPdf={() => handleExportPdf()} onConfirmBatchItem={ws.confirmBatchItem} onSelectArtifact={ws.setSelectedCanvasMsgId}
-              onToggleFullscreen={() => layout.setCanvasFullscreen((p) => !p)}
-              onCloseCanvas={() => { layout.setCanvasFullscreen(false); layout.setCanvasDismissed(true); layout.setMobilePane('chat'); }}
-            />
+            {layout.showCanvas ? (
+              <WorkspaceCanvasSlot
+                components={visibleCanvasComponents} messages={visibleActiveThread?.messages} activeTab={ws.activeTab} jurisdiction={ws.jurisdiction} profile={ws.profile}
+                artifacts={threadArtifacts} activeArtifactId={ws.selectedCanvasMsgId} canvasFullscreen={layout.canvasFullscreen} mobileVisible={layout.mobilePane === 'canvas'}
+                chatWidthPct={layout.chatWidthPct} onStartResize={layout.handleStartResize} onResizeKeyDown={layout.handleResizeKeyDown} onSelectTab={ws.setActiveTab} onApproveDossier={ws.approveActiveDossier}
+                onRequestDossierReview={ws.requestDossierReview} onChangeWorkflowMode={ws.setApprovalWorkflowMode}
+                onReevaluateSpecs={(specs) => void sendToAgent(`Reevaluar dictamen con ficha actualizada: ${specs.map((s) => `${s.key}: ${s.value}`).join('; ')}`)}
+                onSaveSku={() => ws.saveSkuFromMessage()}
+                onSaveSignature={(p) => ws.updateProfile({ fullName: p.fullName, brokerLicense: p.brokerLicense, brokerSignatureDataUrl: p.signatureDataUrl })}
+                onExportPdf={() => handleExportPdf()} onConfirmBatchItem={ws.confirmBatchItem} onSelectArtifact={ws.setSelectedCanvasMsgId}
+                onToggleFullscreen={() => layout.setCanvasFullscreen((p) => !p)}
+                onCloseCanvas={closeCanvas}
+              />
+            ) : null}
+          </div>
+          {layout.showCanvas && !layout.canvasFullscreen ? (
+            <WorkspaceMobilePaneTabs activePane={layout.mobilePane} canvasLabel={mobileCanvasLabel} onSelectPane={layout.setMobilePane} />
           ) : null}
         </main>
       )}
@@ -196,11 +193,7 @@ export function WorkspaceSplitShell() {
         onSaveSettings={ws.updateProfile} onClassify={(prompt) => void sendToAgent(prompt)} onClearLocalData={() => void ws.clearLocalData()} onToast={ws.pushToast}
       />
 
-      {ws.toast ? (
-        <output className="no-print fixed right-4 bottom-14 z-50 rounded-xl border border-border-subtle bg-surface-inverted px-3.5 py-2 text-xs font-medium text-ink-on-inverted shadow-lg lg:bottom-4">
-          {ws.toast.title}
-        </output>
-      ) : null}
+      <WorkspaceToastBanner toast={ws.toast} />
     </div>
   );
 }

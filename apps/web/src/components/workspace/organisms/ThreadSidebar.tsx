@@ -66,6 +66,7 @@ export function ThreadSidebar({
         onNewThread={onNewThread}
         onOpenDashboard={onOpenDashboard}
         onOpenSkuCatalog={onOpenSkuCatalog}
+        onOpenSettings={onOpenSettings}
       />
     );
   }
@@ -75,7 +76,7 @@ export function ThreadSidebar({
       aria-label="Historial y navegación"
       className="no-print flex h-full w-64 shrink-0 flex-col border-r border-border-subtle bg-surface-panel"
     >
-      <div className="flex h-[52px] shrink-0 items-center justify-between gap-2 border-b border-line-frost px-3.5">
+      <div className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-line-frost px-3.5">
         <BrandMark size="sm" showBadge={false} />
         <button
           type="button"

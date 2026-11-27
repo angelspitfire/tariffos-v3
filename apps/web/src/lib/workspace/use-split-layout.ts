@@ -5,6 +5,7 @@ import type { UserProfileSettings } from '@tariffos/shared-types';
 
 const MIN_CHAT_PCT = 32;
 const MAX_CHAT_PCT = 68;
+const KEYBOARD_STEP_PCT = 4;
 const WIDE_VIEWPORT_PX = 1280;
 
 /** Manages responsive sidebar, split-pane resizing, theme toggle, and workspace modals. */
@@ -53,21 +54,36 @@ export function useWorkspaceShellLayout(params: {
     params.onSaveTheme(nextDark ? 'dark' : 'light');
   };
 
-  const handleStartResize = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleStartResize = (event: React.PointerEvent<HTMLElement>) => {
     event.preventDefault();
     const container = event.currentTarget.parentElement;
     if (!container) return;
     const rect = container.getBoundingClientRect();
-    const onMove = (e: MouseEvent) => {
+    const prevUserSelect = document.body.style.userSelect;
+    document.body.style.userSelect = 'none';
+    const onMove = (e: PointerEvent) => {
       const pct = ((e.clientX - rect.left) / rect.width) * 100;
       setChatWidthPct(Math.max(MIN_CHAT_PCT, Math.min(MAX_CHAT_PCT, pct)));
     };
     const onUp = () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
+      document.body.style.userSelect = prevUserSelect;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
     };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+  };
+
+  const handleResizeKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      setChatWidthPct((prev) => Math.max(MIN_CHAT_PCT, prev - KEYBOARD_STEP_PCT));
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      setChatWidthPct((prev) => Math.min(MAX_CHAT_PCT, prev + KEYBOARD_STEP_PCT));
+    }
   };
 
   return {
@@ -81,6 +97,6 @@ export function useWorkspaceShellLayout(params: {
     analyticsOpen, setAnalyticsOpen,
     mobilePane, setMobilePane,
     chatWidthPct, isDark, showCanvas,
-    handleToggleTheme, handleStartResize,
+    handleToggleTheme, handleStartResize, handleResizeKeyDown,
   };
 }
