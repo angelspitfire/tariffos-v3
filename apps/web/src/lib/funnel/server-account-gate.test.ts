@@ -60,7 +60,7 @@ describe('server-account-gate (payment & onboarding bypass)', () => {
     ).toBe('/login?next=%2Factivate-plan');
   });
 
-  it('always skips /activate-plan for super_admin with a workspace and sends straight to /app', async () => {
+  it('grants super_admin unrestricted access to /app, /onboarding, and /activate-plan regardless of membership', async () => {
     mocks.getAuthenticatedUser.mockResolvedValue({
       id: 'usr-admin',
       email: 'angel.alberto.fernandez@gmail.com',
@@ -78,37 +78,50 @@ describe('server-account-gate (payment & onboarding bypass)', () => {
       tenant: { isOnboarded: true, billingStatus: 'ACTIVE' },
     });
 
-    const fromActivatePlan = await resolveCloudFunnelGateRedirect({
-      route: 'activate-plan',
-      hasFunnelPlanParam: true,
-    });
-    expect(fromActivatePlan).toBe('/app');
+    expect(
+      await resolveCloudFunnelGateRedirect({
+        route: 'activate-plan',
+        hasFunnelPlanParam: true,
+      }),
+    ).toBeNull();
+    expect(
+      await resolveCloudFunnelGateRedirect({
+        route: 'activate-plan',
+        hasFunnelPlanParam: false,
+      }),
+    ).toBeNull();
+    expect(
+      await resolveCloudFunnelGateRedirect({
+        route: 'onboarding',
+        hasFunnelPlanParam: false,
+      }),
+    ).toBeNull();
+    expect(
+      await resolveCloudFunnelGateRedirect({
+        route: 'app',
+        hasFunnelPlanParam: false,
+      }),
+    ).toBeNull();
 
-    const fromManageLink = await resolveCloudFunnelGateRedirect({
-      route: 'activate-plan',
-      hasFunnelPlanParam: false,
-    });
-    expect(fromManageLink).toBe('/app');
-
-    const fromOnboarding = await resolveCloudFunnelGateRedirect({
-      route: 'onboarding',
-      hasFunnelPlanParam: false,
-    });
-    expect(fromOnboarding).toBe('/app');
-
-    const onWorkspaceApp = await resolveCloudFunnelGateRedirect({
-      route: 'app',
-      hasFunnelPlanParam: false,
-    });
-    expect(onWorkspaceApp).toBeNull();
+    expect(
+      decideFunnelGateRedirect({
+        route: 'app',
+        isAuthenticated: true,
+        isPlatformAdmin: true,
+        isSuperAdmin: true,
+        membership: null,
+        hasFunnelPlanParam: false,
+      }),
+    ).toBeNull();
   });
 
-  it('sends super_admin without a workspace yet from /activate-plan or /app to /onboarding, and allows /onboarding', () => {
+  it('keeps non-super_admin staff gated to /onboarding when missing workspace and to /app once onboarded', () => {
     expect(
       decideFunnelGateRedirect({
         route: 'activate-plan',
         isAuthenticated: true,
         isPlatformAdmin: true,
+        isSuperAdmin: false,
         membership: null,
         hasFunnelPlanParam: true,
       }),
@@ -119,6 +132,7 @@ describe('server-account-gate (payment & onboarding bypass)', () => {
         route: 'app',
         isAuthenticated: true,
         isPlatformAdmin: true,
+        isSuperAdmin: false,
         membership: null,
         hasFunnelPlanParam: false,
       }),
@@ -129,10 +143,11 @@ describe('server-account-gate (payment & onboarding bypass)', () => {
         route: 'onboarding',
         isAuthenticated: true,
         isPlatformAdmin: true,
-        membership: null,
+        isSuperAdmin: false,
+        membership: { tenantId: 'ten-staff', isOnboarded: true, billingStatus: 'ACTIVE' },
         hasFunnelPlanParam: false,
       }),
-    ).toBeNull();
+    ).toBe('/app');
   });
 
   it('redirects already-onboarded ACTIVE customer from /onboarding and funnel /activate-plan?plan=... to /app, while allowing explicit /activate-plan management', () => {
@@ -286,5 +301,17 @@ describe('server-account-gate (payment & onboarding bypass)', () => {
       nextPath: '/app',
     });
     expect(activeDest).toBe('/app');
+
+    mocks.resolvePlatformAdminContext.mockResolvedValueOnce({
+      ok: true,
+      context: { userId: 'usr-super', userEmail: 'erickampg25@gmail.com', role: 'super_admin' },
+    });
+    mocks.membershipFindFirst.mockResolvedValueOnce(null);
+    expect(
+      await resolvePostAuthCallbackRedirect({
+        userId: 'usr-super',
+        nextPath: '',
+      }),
+    ).toBe('/app');
   });
 });

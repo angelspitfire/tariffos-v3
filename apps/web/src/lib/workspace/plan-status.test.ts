@@ -151,5 +151,9 @@ describe('plan status', () => {
     expect(merged.exhausted).toBe(false);
     expect(merged.usagePct).toBe(0);
     expect(resolveWorkspaceReadOnlyReason(snapshot)).toBeNull();
+
+    const canceledUnlimited = { ...snapshot, billingStatus: 'CANCELED' as const };
+    expect(mergeCloudUsageIntoPlanStatus(local, canceledUnlimited).exhausted).toBe(false);
+    expect(resolveWorkspaceReadOnlyReason(canceledUnlimited)).toBeNull();
   });
 });

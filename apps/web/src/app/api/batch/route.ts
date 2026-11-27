@@ -39,12 +39,14 @@ export async function POST(request: Request): Promise<Response> {
   const cloudMode = isCloudModeEnabled();
   let cloudTenantId = 'offline-tenant';
   let cloudUserId = 'offline-user';
+  let cloudIsSuperAdmin = false;
 
   if (cloudMode) {
     const auth = await resolveCloudTenantContext();
     if (!auth.ok) return Response.json({ error: auth.error }, { status: auth.status });
     cloudTenantId = auth.context.tenantId;
     cloudUserId = auth.context.userId;
+    cloudIsSuperAdmin = Boolean(auth.context.isSuperAdmin);
   }
 
   const contentType = request.headers.get('content-type')?.toLowerCase() ?? '';
@@ -77,6 +79,7 @@ export async function POST(request: Request): Promise<Response> {
     const quota = await checkTenantQuota(cloudTenantId, {
       requestedCount: payload.items.length,
       isBatch: true,
+      ...(cloudIsSuperAdmin ? { isSuperAdmin: true } : {}),
     });
     if (!quota.allowed) {
       const formatted = formatQuotaErrorResponse(quota.reason, { isBatch: true });

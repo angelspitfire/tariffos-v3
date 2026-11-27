@@ -1,16 +1,6 @@
 import { z } from 'zod';
 import { ApprovalWorkflowModeSchema, IncotermCodeSchema } from '@tariffos/shared-types';
-
-export function isBootstrapAdminEmail(email: string | null | undefined): boolean {
-  if (!email) return false;
-  const raw = process.env.PLATFORM_ADMIN_EMAILS ?? '';
-  if (!raw.trim()) return false;
-  const normalized = email.trim().toLowerCase();
-  return raw
-    .split(',')
-    .map((entry) => entry.trim().toLowerCase())
-    .some((entry) => entry.length > 0 && entry === normalized);
-}
+export { isBootstrapAdminEmail } from '@/lib/admin/super-admin';
 
 export const ExpressOnboardingSchema = z.object({
   fullName: z.string().trim().min(2, 'Nombre completo requerido.'),

@@ -71,19 +71,36 @@ describe('resolvePlatformAdminContext', () => {
     });
   });
 
-  it('denies access when platform_admins entry is revoked (isActive: false)', async () => {
+  it('denies access when platform_admins entry is revoked (isActive: false) even if profile or bootstrap env says super_admin', async () => {
     process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    process.env.PLATFORM_ADMIN_EMAILS = 'ex@tariffos.app';
     mocks.getAuthenticatedUser.mockResolvedValue({ id: 'u-rev', email: 'ex@tariffos.app' });
     mocks.platformAdminFindUnique.mockResolvedValue({ role: 'super_admin', isActive: false });
-    mocks.userProfileFindUnique.mockResolvedValue({ role: 'user' });
+    mocks.userProfileFindUnique.mockResolvedValue({ role: 'super_admin' });
 
     const res = await resolvePlatformAdminContext('admin:read');
     expect(res).toEqual({
       ok: false,
       status: 403,
       error: 'Platform administrator privileges required',
+    });
+  });
+
+  it('enforces downgraded platform_admins role even if profiles.role is still super_admin', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    mocks.getAuthenticatedUser.mockResolvedValue({ id: 'u-sup', email: 'sup@tariffos.app' });
+    mocks.platformAdminFindUnique.mockResolvedValue({ role: 'support', isActive: true });
+    mocks.userProfileFindUnique.mockResolvedValue({ role: 'super_admin' });
+
+    const res = await resolvePlatformAdminContext('plans:manage');
+    expect(res).toEqual({
+      ok: false,
+      status: 403,
+      error: 'Insufficient permissions for plans:manage',
     });
   });
 

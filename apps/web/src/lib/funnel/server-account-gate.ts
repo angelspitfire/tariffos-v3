@@ -16,6 +16,7 @@ export interface DecideFunnelGateParams {
   route: FunnelGateRoute;
   isAuthenticated: boolean;
   isPlatformAdmin: boolean;
+  isSuperAdmin?: boolean;
   membership: FunnelMembershipSnapshot | null;
   hasFunnelPlanParam: boolean;
   plan?: string | null;
@@ -32,12 +33,24 @@ function buildPlanQuery(plan?: string | null, cycle?: string | null): string {
 }
 
 export function decideFunnelGateRedirect(params: DecideFunnelGateParams): string | null {
-  const { route, isAuthenticated, isPlatformAdmin, membership, hasFunnelPlanParam, plan, cycle } =
-    params;
+  const {
+    route,
+    isAuthenticated,
+    isPlatformAdmin,
+    isSuperAdmin,
+    membership,
+    hasFunnelPlanParam,
+    plan,
+    cycle,
+  } = params;
   const planQuery = buildPlanQuery(plan, cycle);
 
   if (!isAuthenticated) {
     return `/login?next=${encodeURIComponent(`/${route}${planQuery}`)}`;
+  }
+
+  if (isSuperAdmin) {
+    return null;
   }
 
   if (isPlatformAdmin) {
@@ -118,6 +131,7 @@ export async function resolveCloudFunnelGateRedirect(params: {
     route: params.route,
     isAuthenticated: true,
     isPlatformAdmin: adminAuth.ok,
+    isSuperAdmin: adminAuth.ok && adminAuth.context.role === 'super_admin',
     membership,
     hasFunnelPlanParam: params.hasFunnelPlanParam,
     plan: params.plan,
@@ -160,7 +174,10 @@ export async function resolvePostAuthCallbackRedirect(params: {
 
   const planQuery = buildPlanQuerySuffix(params.nextPath);
   if (adminAuth.ok) {
-    return membership ? (params.nextPath || '/app') : `/onboarding${planQuery}`;
+    if (adminAuth.context.role === 'super_admin') {
+      return params.nextPath || '/app';
+    }
+    return membership?.isOnboarded ? (params.nextPath || '/app') : `/onboarding${planQuery}`;
   }
 
   if (!membership?.isOnboarded) {

@@ -192,4 +192,38 @@ describe('runAuthorizedClassificationLine & Eve classify_item cloud enforcement'
 
     expect(mocks.classifyInvoiceBatch).not.toHaveBeenCalled();
   });
+
+  it('bypasses quota checks when isSuperAdmin is true', async () => {
+    mocks.getActiveLlmRuntimeConfig.mockResolvedValueOnce({
+      source: 'env',
+      provider: 'google',
+      model: 'gemini-2.5-flash',
+      deepModel: 'gemini-2.5-pro',
+      baseUrl: null,
+      canRunLive: true,
+      updatedAt: '2026-11-27T00:00:00Z',
+    });
+    mocks.createPrismaPipelinePorts.mockReturnValueOnce({ verifyHsCode: vi.fn() });
+    mocks.classifyInvoiceBatch.mockResolvedValueOnce({
+      lines: [SAMPLE_LINE],
+      stats: { totalLines: 1, uniqueItems: 1, blockedByPreGate: 0, tier0Hits: 0, tier1Hits: 0, tier2Hits: 1, webGroundingUsed: 0 },
+    });
+    mocks.persistClassificationOutcome.mockResolvedValueOnce(undefined);
+
+    const out = await runAuthorizedClassificationLine({
+      tenantId: 'ten-sa',
+      isSuperAdmin: true,
+      countryCode: 'VE',
+      item: {
+        lineId: 'interactive-1',
+        description: 'Inversor solar híbrido 5kW',
+        originCountry: 'CN',
+        cifValue: 1000,
+      },
+      queryForAudit: 'Inversor solar híbrido 5kW',
+    });
+
+    expect(mocks.checkTenantQuota).not.toHaveBeenCalled();
+    expect(out.line.hsCode).toBe('8504.40.90.00');
+  });
 });

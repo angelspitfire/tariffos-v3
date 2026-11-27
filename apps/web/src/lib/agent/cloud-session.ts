@@ -1,12 +1,19 @@
-import { billingService, prisma } from '@tariffos/database';
+import {
+  billingService,
+  prisma,
+  provisionInternalAdminWorkspace,
+  type ProvisionInternalWorkspaceClient,
+} from '@tariffos/database';
 import type { ClassificationLinePayload } from '@tariffos/shared-types';
 import { estimateTokenCostUsd } from '../admin/llm-pricing';
+import { isSuperAdminUser } from '../admin/super-admin';
 
 export interface CloudTenantContext {
   userId: string;
   userEmail: string | null;
   tenantId: string;
   role: string;
+  isSuperAdmin?: boolean;
 }
 
 export type CloudAuthResult =
@@ -20,12 +27,37 @@ export async function resolveCloudTenantContext(): Promise<CloudAuthResult> {
     return { ok: false, status: 401, error: 'Authentication required' };
   }
 
-  const membership = await prisma.membership.findFirst({
-    where: { userId: user.id },
-    select: { tenantId: true, role: true },
-  });
+  const [isSuperAdmin, membership] = await Promise.all([
+    isSuperAdminUser({ userId: user.id, email: user.email }),
+    prisma.membership.findFirst({
+      where: { userId: user.id },
+      select: { tenantId: true, role: true },
+    }),
+  ]);
 
-  if (!membership?.tenantId) {
+  let tenantId = membership?.tenantId ?? null;
+  let role = membership?.role ?? 'OWNER';
+
+  if (!tenantId && isSuperAdmin) {
+    const metaName = user.user_metadata?.full_name;
+    const fullName =
+      typeof metaName === 'string' && metaName.trim()
+        ? metaName.trim()
+        : (user.email?.split('@')[0] ?? 'Super Admin');
+    const provisioned = await provisionInternalAdminWorkspace(
+      prisma as unknown as ProvisionInternalWorkspaceClient,
+      {
+        userId: user.id,
+        email: user.email ?? `${user.id}@tariffos.internal`,
+        fullName,
+        role: 'super_admin',
+      },
+    );
+    tenantId = provisioned.tenantId;
+    role = 'OWNER';
+  }
+
+  if (!tenantId) {
     return { ok: false, status: 403, error: 'No tenant membership found for user' };
   }
 
@@ -34,17 +66,28 @@ export async function resolveCloudTenantContext(): Promise<CloudAuthResult> {
     context: {
       userId: user.id,
       userEmail: user.email ?? null,
-      tenantId: membership.tenantId,
-      role: membership.role,
+      tenantId,
+      role,
+      ...(isSuperAdmin ? { isSuperAdmin: true } : {}),
     },
   };
 }
 
 export async function checkTenantQuota(
   tenantId: string,
-  options?: { requestedCount?: number; isBatch?: boolean },
+  options?: { requestedCount?: number; isBatch?: boolean; isSuperAdmin?: boolean },
 ) {
-  return billingService.checkBillingLimit(tenantId, options);
+  if (options?.isSuperAdmin) {
+    return { allowed: true };
+  }
+  const billingOptions =
+    options?.requestedCount !== undefined || options?.isBatch !== undefined
+      ? {
+          ...(options.requestedCount !== undefined ? { requestedCount: options.requestedCount } : {}),
+          ...(options.isBatch !== undefined ? { isBatch: options.isBatch } : {}),
+        }
+      : undefined;
+  return billingService.checkBillingLimit(tenantId, billingOptions);
 }
 
 export function formatQuotaErrorResponse(

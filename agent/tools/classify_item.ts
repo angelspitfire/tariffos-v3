@@ -56,6 +56,7 @@ export default defineTool({
       );
       const authorized = await runAuthorizedClassificationLine({
         tenantId,
+        userId: ctx.session.auth?.current?.principalId,
         countryCode: input.countryCode,
         item,
         queryForAudit: input.description,

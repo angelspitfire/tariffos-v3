@@ -2,7 +2,9 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import type { SubscriptionBillingCycle } from '@tariffos/shared-types';
 import { BrandMark } from '@/components/funnel/atoms/BrandMark';
+import { SuperAdminPreviewBanner } from '@/components/funnel/molecules/SuperAdminPreviewBanner';
 import { ExpressOnboardingCard } from '@/components/funnel/organisms/ExpressOnboardingCard';
+import { resolvePlatformAdminContext } from '@/lib/admin/admin-session';
 import { loadPublicPlans } from '@/lib/funnel/public-plans';
 import { resolveCloudFunnelGateRedirect } from '@/lib/funnel/server-account-gate';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
@@ -28,21 +30,29 @@ async function OnboardingContent({ searchParams }: OnboardingPageProps) {
   if (redirectTarget) {
     redirect(redirectTarget);
   }
-  const plans = await loadPublicPlans();
-  const user = isCloudModeEnabled() ? await getAuthenticatedUser().catch(() => null) : null;
+  const cloudMode = isCloudModeEnabled();
+  const [plans, user, adminAuth] = await Promise.all([
+    loadPublicPlans(),
+    cloudMode ? getAuthenticatedUser().catch(() => null) : Promise.resolve(null),
+    cloudMode ? resolvePlatformAdminContext('admin:read').catch(() => null) : Promise.resolve(null),
+  ]);
+  const isSuperAdmin = Boolean(adminAuth?.ok && adminAuth.context.role === 'super_admin');
   const metaName = user?.user_metadata?.full_name;
   const initialFullName = typeof metaName === 'string' && metaName.trim() ? metaName.trim() : undefined;
   const cycle: SubscriptionBillingCycle | undefined =
     params.cycle === 'annual' || params.cycle === 'monthly' ? params.cycle : undefined;
 
   return (
-    <ExpressOnboardingCard
-      plans={plans}
-      userId={user?.id}
-      preselectedPlanId={params.plan}
-      preselectedCycle={cycle}
-      initialFullName={initialFullName}
-    />
+    <div className="space-y-4">
+      {isSuperAdmin ? <SuperAdminPreviewBanner /> : null}
+      <ExpressOnboardingCard
+        plans={plans}
+        userId={user?.id}
+        preselectedPlanId={params.plan}
+        preselectedCycle={cycle}
+        initialFullName={initialFullName}
+      />
+    </div>
   );
 }
 

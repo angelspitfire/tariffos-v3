@@ -248,4 +248,56 @@ describe('GET /api/usage/current', () => {
       rejectionReason: 'Referencia duplicada',
     });
   });
+
+  it('forces unlimited ACTIVE snapshot for any super_admin even if tenant row was PAST_DUE or CANCELED', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+
+    mocks.resolveCloudTenantContext.mockResolvedValue({
+      ok: true,
+      context: {
+        userId: 'u-sa',
+        userEmail: 'erickampg25@gmail.com',
+        tenantId: 'ten-sa',
+        role: 'OWNER',
+        isSuperAdmin: true,
+      },
+    });
+    mocks.tenantFindUnique.mockResolvedValue({
+      id: 'ten-sa',
+      name: 'TariffOS',
+      planId: 'pilot',
+      billingLimit: 0,
+      billingStatus: 'PAST_DUE',
+      allowOverage: false,
+      plan: { name: 'pilot', classificationLimit: 250, features: { allowBatch: false } },
+    });
+    mocks.getEffectiveUsage.mockResolvedValue({
+      month: 11,
+      year: 2026,
+      count: 999,
+      inputTokens: 10000,
+      outputTokens: 5000,
+    });
+
+    const res = await GET();
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      usage: {
+        unlimited?: boolean;
+        billingStatus: string;
+        allowOverage: boolean;
+        allowBatch?: boolean;
+        percentUsed: number;
+        planName: string;
+      };
+    };
+    expect(body.usage.unlimited).toBe(true);
+    expect(body.usage.billingStatus).toBe('ACTIVE');
+    expect(body.usage.allowOverage).toBe(true);
+    expect(body.usage.allowBatch).toBe(true);
+    expect(body.usage.percentUsed).toBe(0);
+    expect(body.usage.planName).toBe('TariffOS Interno (Ilimitado)');
+  });
 });

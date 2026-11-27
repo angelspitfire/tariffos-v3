@@ -103,7 +103,7 @@ export function mergeCloudUsageIntoPlanStatus(
       isPilot: false,
       isUnlimited: true,
       nearLimit: false,
-      exhausted: cloud.billingStatus === 'CANCELED',
+      exhausted: false,
       billingStatus: cloud.billingStatus,
     };
   }
@@ -130,11 +130,11 @@ export function resolveWorkspaceReadOnlyReason(
   cloud: ClientCurrentUsageSnapshot | null,
 ): string | null {
   if (!cloud) return null;
-  if (cloud.billingStatus === 'CANCELED') {
-    return 'Cuenta dada de baja. Puedes consultar tus dictámenes históricos en modo lectura.';
-  }
   if (cloud.unlimited) {
     return null;
+  }
+  if (cloud.billingStatus === 'CANCELED') {
+    return 'Cuenta dada de baja. Puedes consultar tus dictámenes históricos en modo lectura.';
   }
   if (cloud.billingStatus === 'PAST_DUE' && cloud.latestPayment?.status === 'pending_verification') {
     return `Pago en verificación (Ref. ${cloud.latestPayment.referenceCode}). Activaremos tu plan ${cloud.latestPayment.planName} en breve.`;

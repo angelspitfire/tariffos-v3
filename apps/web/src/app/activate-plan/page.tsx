@@ -2,7 +2,9 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { prisma } from '@tariffos/database';
 import type { SubscriptionBillingCycle } from '@tariffos/shared-types';
+import { SuperAdminPreviewBanner } from '@/components/funnel/molecules/SuperAdminPreviewBanner';
 import { PlanActivationTemplate } from '@/components/funnel/templates/PlanActivationTemplate';
+import { resolvePlatformAdminContext } from '@/lib/admin/admin-session';
 import { loadPublicPlans } from '@/lib/funnel/public-plans';
 import { resolveCloudFunnelGateRedirect } from '@/lib/funnel/server-account-gate';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
@@ -28,8 +30,13 @@ async function ActivatePlanContent({ searchParams }: ActivatePlanPageProps) {
   if (redirectTarget) {
     redirect(redirectTarget);
   }
-  const plans = await loadPublicPlans();
-  const user = isCloudModeEnabled() ? await getAuthenticatedUser().catch(() => null) : null;
+  const cloudMode = isCloudModeEnabled();
+  const [plans, user, adminAuth] = await Promise.all([
+    loadPublicPlans(),
+    cloudMode ? getAuthenticatedUser().catch(() => null) : Promise.resolve(null),
+    cloudMode ? resolvePlatformAdminContext('admin:read').catch(() => null) : Promise.resolve(null),
+  ]);
+  const isSuperAdmin = Boolean(adminAuth?.ok && adminAuth.context.role === 'super_admin');
   const membership = user
     ? await prisma.membership
         .findFirst({
@@ -58,13 +65,22 @@ async function ActivatePlanContent({ searchParams }: ActivatePlanPageProps) {
     params.cycle === 'annual' ? 'annual' : 'monthly';
 
   return (
-    <PlanActivationTemplate
-      plans={plans}
-      initialPlanId={initialPlanId}
-      initialCycle={cycle}
-      initialPayerName={initialPayerName}
-      initialPayerEmail={initialPayerEmail}
-    />
+    <>
+      {isSuperAdmin ? (
+        <div className="bg-surface-app pt-4 px-4">
+          <div className="max-w-4xl mx-auto">
+            <SuperAdminPreviewBanner />
+          </div>
+        </div>
+      ) : null}
+      <PlanActivationTemplate
+        plans={plans}
+        initialPlanId={initialPlanId}
+        initialCycle={cycle}
+        initialPayerName={initialPayerName}
+        initialPayerEmail={initialPayerEmail}
+      />
+    </>
   );
 }
 

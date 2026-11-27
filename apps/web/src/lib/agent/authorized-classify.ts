@@ -6,6 +6,7 @@ import {
 } from '@tariffos/agent';
 import type { ClassificationLinePayload, StreamProgressEvent } from '@tariffos/shared-types';
 import { getActiveLlmRuntimeConfig, toRgiLlmRuntimeOverride } from '../admin/llm-settings';
+import { isSuperAdminUser } from '../admin/super-admin';
 import {
   checkTenantQuota,
   formatQuotaErrorResponse,
@@ -27,6 +28,8 @@ export class AuthorizedClassificationError extends Error {
 
 export interface RunAuthorizedClassificationParams {
   tenantId: string;
+  userId?: string;
+  isSuperAdmin?: boolean;
   countryCode: string;
   item: InvoiceItemInput;
   queryForAudit: string;
@@ -54,10 +57,15 @@ export async function runAuthorizedClassificationLine(
     );
   }
 
-  const quota = await checkTenantQuota(params.tenantId);
-  if (!quota.allowed) {
-    const formatted = formatQuotaErrorResponse(quota.reason);
-    throw new AuthorizedClassificationError(formatted.error, formatted.status, formatted.reason);
+  const bypassQuota =
+    Boolean(params.isSuperAdmin) ||
+    (params.userId ? await isSuperAdminUser({ userId: params.userId }) : false);
+  if (!bypassQuota) {
+    const quota = await checkTenantQuota(params.tenantId);
+    if (!quota.allowed) {
+      const formatted = formatQuotaErrorResponse(quota.reason);
+      throw new AuthorizedClassificationError(formatted.error, formatted.status, formatted.reason);
+    }
   }
 
   const runtimeLlm = await getActiveLlmRuntimeConfig();

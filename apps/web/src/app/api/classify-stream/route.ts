@@ -74,7 +74,10 @@ export async function POST(request: Request): Promise<Response> {
     if (!auth.ok) return Response.json({ error: auth.error }, { status: auth.status });
     tenantId = auth.context.tenantId;
 
-    const quota = await checkTenantQuota(tenantId);
+    const quota = await checkTenantQuota(
+      tenantId,
+      auth.context.isSuperAdmin ? { isSuperAdmin: true } : undefined,
+    );
     if (!quota.allowed) {
       const formatted = formatQuotaErrorResponse(quota.reason);
       return Response.json(

@@ -53,8 +53,10 @@ export async function GET(): Promise<Response> {
     return Response.json({ error: 'Tenant not found' }, { status: 404 });
   }
 
+  const isSuperAdmin = Boolean(auth.context.isSuperAdmin);
   const planMeta = extractPlanFeaturesMeta(tenant.plan?.features);
-  const isUnlimited = planMeta.unlimited || isInternalTariffosPlanSlug(tenant.plan?.name);
+  const isUnlimited =
+    isSuperAdmin || planMeta.unlimited || isInternalTariffosPlanSlug(tenant.plan?.name);
   const isOneTime = !isUnlimited && (planMeta.oneTimeOnly || tenant.billingStatus === 'TRIALING');
   const monthly = await billingService.getEffectiveUsage(tenant.id, isOneTime);
   const isPendingInitialActivation =
@@ -90,8 +92,10 @@ export async function GET(): Promise<Response> {
     tenantId: tenant.id,
     tenantName: tenant.name,
     planId: tenant.planId ?? tenant.plan?.name ?? 'pilot',
-    planName: planMeta.displayName ?? fallbackPlanName,
-    billingStatus: tenant.billingStatus,
+    planName: isSuperAdmin
+      ? 'TariffOS Interno (Ilimitado)'
+      : (planMeta.displayName ?? fallbackPlanName),
+    billingStatus: isSuperAdmin ? 'ACTIVE' : tenant.billingStatus,
     allowOverage: isUnlimited || tenant.allowOverage,
     ...(isUnlimited ? { unlimited: true } : {}),
     oneTimeOnly: isOneTime,
