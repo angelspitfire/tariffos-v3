@@ -3,14 +3,11 @@
 // One port, one factory, one production adapter:
 //
 //   • LlmProviderPort — the interface every model call crosses
-//     (generateText / generateJson / embedText).
+//     (generateText / generateJson / embedText / embedMany).
 //   • getLlmProvider() — the only factory; resolves the provider per call.
-//   • OpenAICompatibleAdapter — the production adapter (OpenRouter, Ollama,
-//     vLLM, any OpenAI-compatible `/v1` server).
+//   • OpenAICompatibleAdapter — the production adapter (OpenRouter, Nvidia,
+//     Google, vLLM, any OpenAI-compatible `/v1` server).
 //   • createFakeProvider() — the in-memory double, for tests.
-//
-// Everything else is provider-agnostic and reusable: the prompt registry,
-// the token budget tracker, the timeout helper.
 //
 // The provider is a deployment decision (`LLM_PROVIDER`), never a code
 // change. Importing this module touches no network.
@@ -29,8 +26,6 @@ export type {
   LlmProviderPort,
   TextStream,
 } from './port.js';
-
-
 
 // Adapters
 export {
@@ -78,24 +73,3 @@ export {
   type LlmProvider,
   type LlmProviderAvailability,
 } from './config.js';
-
-// Throttling
-export { paceGenerateCall, resetPacing } from './throttle.js';
-
-// Provider-agnostic utilities
-export {
-  PROMPTS,
-  getPrompt,
-  listPrompts,
-  renderPrompt,
-  type PromptDef,
-} from './prompts/registry.js';
-export {
-  TokenBudgetTracker,
-  defaultBudget,
-  defaultTracker,
-  type BudgetSnapshot,
-  type TokenBudget,
-  type TokenUsage,
-} from './token-budget.js';
-export { TimeoutError, withTimeout } from './util/with-timeout.js';

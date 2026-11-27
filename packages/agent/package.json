@@ -28,7 +28,6 @@
     "@tariffos/shared-types": "workspace:*",
     "@typesafe-ai/sdk": "^0.7.0",
     "ai": "^7.0.171",
-    "pdfjs-dist": "^6.5.438",
     "unpdf": "^2.2.0",
     "zod": "^4.6.7"
   },

@@ -401,12 +401,9 @@ importers:
       ai:
         specifier: ^7.0.171
         version: 7.0.181(zod@4.6.7)
-      pdfjs-dist:
-        specifier: ^6.5.438
-        version: 6.5.438
       unpdf:
         specifier: ^2.2.0
-        version: 2.2.2(@napi-rs/canvas@1.2.0)(pdfjs-dist@6.5.438)
+        version: 2.2.2(@napi-rs/canvas@1.2.0)(pdfjs-dist@4.10.38)
       zod:
         specifier: ^4.6.6
         version: 4.6.7
@@ -5541,10 +5538,6 @@ packages:
   pdfjs-dist@4.10.38:
     resolution: {integrity: sha512-/Y3fcFrXEAsMjJXeL9J8+ZG9U01LbuWaYypvDW2ycW1jL269L3js3DVBjDJ0Up9Np1uqDXsDrRihHANhZOlwdQ==}
     engines: {node: '>=20'}
-
-  pdfjs-dist@6.5.438:
-    resolution: {integrity: sha512-vg8Pw1x+AFKy4AMDvhuWl5cOYV8d698UoEANoFFhc79hqXDnZQqnOXoxw3HG907WHOg1JYOvLhP756boddFxpA==}
-    engines: {node: '>=22.13.0 || >=24'}
 
   perfect-debounce@2.1.0:
     resolution: {integrity: sha512-LjgdTytVFXeUgtHZr9WYViYSM/g8MkcTPYDlPa3cDqMirHjKiSZPYd6DoL7pK8AJQr+uWkQvCjHNdiMqsrJs+g==}
@@ -11462,10 +11455,6 @@ snapshots:
     optionalDependencies:
       '@napi-rs/canvas': 0.1.100
 
-  pdfjs-dist@6.5.438:
-    optionalDependencies:
-      '@napi-rs/canvas': 1.2.0
-
   perfect-debounce@2.1.0: {}
 
   pg-cloudflare@1.4.1:
@@ -12283,10 +12272,10 @@ snapshots:
 
   undici@8.13.1: {}
 
-  unpdf@2.2.2(@napi-rs/canvas@1.2.0)(pdfjs-dist@6.5.438):
+  unpdf@2.2.2(@napi-rs/canvas@1.2.0)(pdfjs-dist@4.10.38):
     optionalDependencies:
       '@napi-rs/canvas': 1.2.0
-      pdfjs-dist: 6.5.438
+      pdfjs-dist: 4.10.38
 
   unrs-resolver@1.13.0:
     dependencies:
