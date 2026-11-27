@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import type { SubscriptionBillingCycle } from '@tariffos/shared-types';
 import { BrandMark } from '@/components/funnel/atoms/BrandMark';
 import { ExpressOnboardingCard } from '@/components/funnel/organisms/ExpressOnboardingCard';
+import { loadPublicPlans } from '@/lib/funnel/public-plans';
 import { resolveCloudFunnelGateRedirect } from '@/lib/funnel/server-account-gate';
 
 export const dynamic = 'force-dynamic';
@@ -23,11 +24,13 @@ async function OnboardingContent({ searchParams }: OnboardingPageProps) {
   if (redirectTarget) {
     redirect(redirectTarget);
   }
+  const plans = await loadPublicPlans();
   const cycle: SubscriptionBillingCycle | undefined =
     params.cycle === 'annual' || params.cycle === 'monthly' ? params.cycle : undefined;
 
   return (
     <ExpressOnboardingCard
+      plans={plans}
       preselectedPlanId={params.plan}
       preselectedCycle={cycle}
     />

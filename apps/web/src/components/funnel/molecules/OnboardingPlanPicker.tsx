@@ -5,6 +5,7 @@ import { useState } from 'react';
 import {
   SAAS_PLANS,
   type SubscriptionBillingCycle,
+  type SubscriptionPlanConfig,
 } from '@tariffos/shared-types';
 import {
   isPlanAnnualOnly,
@@ -17,6 +18,7 @@ import { FunnelBadge } from '../atoms/FunnelBadge';
 import { PlanRecommender } from '../organisms/PlanRecommender';
 
 export interface OnboardingPlanPickerProps {
+  plans?: readonly SubscriptionPlanConfig[];
   selectedPlanId: string;
   billingCycle?: SubscriptionBillingCycle;
   onChangeCycle?: (cycle: SubscriptionBillingCycle) => void;
@@ -25,6 +27,7 @@ export interface OnboardingPlanPickerProps {
 }
 
 export function OnboardingPlanPicker({
+  plans = SAAS_PLANS,
   selectedPlanId,
   billingCycle = 'monthly',
   onChangeCycle,
@@ -33,7 +36,7 @@ export function OnboardingPlanPicker({
 }: OnboardingPlanPickerProps) {
   const [recommendedPlanId, setRecommendedPlanId] = useState<string | null>(null);
 
-  const visiblePlans = [...SAAS_PLANS]
+  const visiblePlans = [...plans]
     .filter((p) => p.published && !isPlanCustomPricing(p))
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -77,7 +80,7 @@ export function OnboardingPlanPicker({
       </div>
 
       <PlanRecommender
-        plans={[...SAAS_PLANS]}
+        plans={[...plans]}
         onApplyRecommendation={handleApplyRecommendation}
       />
 

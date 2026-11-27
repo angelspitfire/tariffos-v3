@@ -60,6 +60,8 @@ export async function persistOnboardingProfile(
     body: JSON.stringify({
       fullName: profile.fullName,
       companyName: profile.companyName,
+      role: profile.role,
+      brokerLicense: profile.brokerLicense,
       countryCode: profile.defaultJurisdictionId.slice(0, 2).toUpperCase(),
       defaultJurisdictionId: profile.defaultJurisdictionId,
       defaultIncoterm: profile.defaultIncoterm,

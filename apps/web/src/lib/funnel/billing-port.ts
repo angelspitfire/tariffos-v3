@@ -1,13 +1,5 @@
-import {
-  SAAS_PLANS,
-  type ClientCurrentUsageSnapshot,
-  type ManualPaymentRecord,
-} from '@tariffos/shared-types';
+import type { ManualPaymentRecord } from '@tariffos/shared-types';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
-import {
-  deriveWorkspacePlanStatus,
-  type WorkspacePlanStatusSnapshot,
-} from './billing-mock-state';
 import {
   buildLocalPaymentRecord,
   readStoredBillingState,
@@ -19,10 +11,8 @@ import {
 
 export {
   MANUAL_PAYMENT_METHOD_OPTIONS,
-  deriveWorkspacePlanStatus,
   type MockWorkspaceBillingState,
-  type WorkspacePlanLifecycleStatus,
-  type WorkspacePlanStatusSnapshot,
+  type PendingActivationSummary,
 } from './billing-mock-state';
 export type { SubmitManualPaymentPayload } from './billing-local-store';
 
@@ -31,17 +21,18 @@ export interface IBillingActivationPort {
   submitPayment(payload: SubmitManualPaymentPayload): Promise<ManualPaymentRecord>;
   approvePayment(paymentId: string): Promise<ManualPaymentRecord>;
   rejectPayment(paymentId: string, reason: string): Promise<ManualPaymentRecord>;
-  getWorkspacePlanStatus(quotaUsed?: number): Promise<WorkspacePlanStatusSnapshot>;
 }
 
-async function fetchJson<T>(url: string, init?: RequestInit): Promise<T | null> {
-  try {
-    const res = await fetch(url, init);
-    if (!res.ok) return null;
-    return (await res.json()) as T;
-  } catch {
-    return null;
+async function fetchJsonOrThrow<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, init);
+  const payload = (await res.json().catch(() => null)) as { error?: string } & T | null;
+  if (!res.ok) {
+    throw new Error(payload?.error || `Error HTTP ${res.status}`);
   }
+  if (!payload) {
+    throw new Error('Respuesta vacía del servidor.');
+  }
+  return payload;
 }
 
 export function createBillingActivationAdapter(options?: {
@@ -56,19 +47,17 @@ export function createBillingActivationAdapter(options?: {
   return {
     async listPayments(): Promise<ManualPaymentRecord[]> {
       if (cloudMode) {
-        const data = await fetchJson<{ payments?: ManualPaymentRecord[] }>(paymentsEndpoint, {
+        const data = await fetchJsonOrThrow<{ payments?: ManualPaymentRecord[] }>(paymentsEndpoint, {
           method: 'GET',
         });
-        if (data && Array.isArray(data.payments)) return data.payments;
+        return Array.isArray(data.payments) ? data.payments : [];
       }
       return readStoredPayments();
     },
 
     async submitPayment(payload: SubmitManualPaymentPayload): Promise<ManualPaymentRecord> {
-      let finalRecord = buildLocalPaymentRecord(payload);
-
       if (cloudMode) {
-        const data = await fetchJson<{ payment?: ManualPaymentRecord }>(
+        const data = await fetchJsonOrThrow<{ payment?: ManualPaymentRecord }>(
           '/api/billing/payments',
           {
             method: 'POST',
@@ -76,9 +65,13 @@ export function createBillingActivationAdapter(options?: {
             body: JSON.stringify(payload),
           },
         );
-        if (data?.payment) finalRecord = data.payment;
+        if (!data.payment) {
+          throw new Error('El servidor no devolvió el comprobante creado.');
+        }
+        return data.payment;
       }
 
+      const finalRecord = buildLocalPaymentRecord(payload);
       writeStoredPayments([finalRecord, ...readStoredPayments()]);
       writeStoredBillingState({
         ...readStoredBillingState(),
@@ -100,7 +93,7 @@ export function createBillingActivationAdapter(options?: {
 
     async approvePayment(paymentId: string): Promise<ManualPaymentRecord> {
       if (cloudMode) {
-        const data = await fetchJson<{ payment?: ManualPaymentRecord }>(
+        const data = await fetchJsonOrThrow<{ payment?: ManualPaymentRecord }>(
           '/api/admin/billing/payments',
           {
             method: 'PATCH',
@@ -108,7 +101,10 @@ export function createBillingActivationAdapter(options?: {
             body: JSON.stringify({ paymentId, action: 'verify' }),
           },
         );
-        if (data?.payment) return data.payment;
+        if (!data.payment) {
+          throw new Error('El servidor no devolvió el pago aprobado.');
+        }
+        return data.payment;
       }
 
       const items = readStoredPayments();
@@ -136,7 +132,7 @@ export function createBillingActivationAdapter(options?: {
     async rejectPayment(paymentId: string, reason: string): Promise<ManualPaymentRecord> {
       const cleanReason = reason.trim() || 'Referencia no localizada en estado de cuenta.';
       if (cloudMode) {
-        const data = await fetchJson<{ payment?: ManualPaymentRecord }>(
+        const data = await fetchJsonOrThrow<{ payment?: ManualPaymentRecord }>(
           '/api/admin/billing/payments',
           {
             method: 'PATCH',
@@ -144,7 +140,10 @@ export function createBillingActivationAdapter(options?: {
             body: JSON.stringify({ paymentId, action: 'reject', rejectionReason: cleanReason }),
           },
         );
-        if (data?.payment) return data.payment;
+        if (!data.payment) {
+          throw new Error('El servidor no devolvió el pago rechazado.');
+        }
+        return data.payment;
       }
 
       const items = readStoredPayments();
@@ -164,26 +163,6 @@ export function createBillingActivationAdapter(options?: {
         rejectionReason: cleanReason,
       });
       return updated;
-    },
-
-    async getWorkspacePlanStatus(quotaUsed = 0): Promise<WorkspacePlanStatusSnapshot> {
-      if (cloudMode) {
-        const data = await fetchJson<{ usage?: ClientCurrentUsageSnapshot }>('/api/usage/current', {
-          method: 'GET',
-        });
-        if (data?.usage) {
-          const u = data.usage;
-          const reached = !u.allowOverage && u.limit > 0 && u.used >= u.limit;
-          return {
-            planId: u.planId,
-            planName: u.planName,
-            status: reached ? 'quota_reached' : u.billingStatus === 'ACTIVE' ? 'active' : 'trial',
-            quotaUsed: u.used,
-            quotaLimit: u.limit,
-          };
-        }
-      }
-      return deriveWorkspacePlanStatus(readStoredBillingState(), quotaUsed, SAAS_PLANS);
     },
   };
 }

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { FunnelCard } from '@/components/funnel/atoms/FunnelCard';
+import { adminFetchJson } from '@/lib/admin/admin-fetch';
 
 interface RateRecord {
   id?: string;
@@ -26,12 +27,16 @@ export function BcvRatesAdminPanel() {
   const loadRates = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/exchange-rates/sync');
-      if (res.ok) {
-        const json = (await res.json()) as { rates?: RateRecord[]; history?: RateRecord[] };
-        setRates(json.rates ?? []);
-        setHistory(json.history ?? []);
-      }
+      const json = await adminFetchJson<{ rates?: RateRecord[]; history?: RateRecord[] }>(
+        '/api/admin/exchange-rates/sync',
+      );
+      setRates(json.rates ?? []);
+      setHistory(json.history ?? []);
+    } catch (err) {
+      setMessage({
+        tone: 'error',
+        text: err instanceof Error ? err.message : 'Error al consultar tasas BCV.',
+      });
     } finally {
       setLoading(false);
     }
@@ -45,18 +50,21 @@ export function BcvRatesAdminPanel() {
     setBusy(true);
     setMessage(null);
     try {
-      const res = await fetch('/api/admin/exchange-rates/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+      const json = await adminFetchJson<{ saved?: RateRecord[] }>(
+        '/api/admin/exchange-rates/sync',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        },
+      );
+      setMessage({ tone: 'ok', text: `Sincronización completada (${json.saved?.length ?? 0} tasas guardadas).` });
+      await loadRates();
+    } catch (err) {
+      setMessage({
+        tone: 'error',
+        text: err instanceof Error ? err.message : 'Error al sincronizar tasas BCV.',
       });
-      const json = (await res.json()) as { ok?: boolean; saved?: RateRecord[]; error?: string };
-      if (!res.ok) {
-        setMessage({ tone: 'error', text: json.error ?? 'Error al sincronizar tasas BCV.' });
-      } else {
-        setMessage({ tone: 'ok', text: `Sincronización completada (${json.saved?.length ?? 0} tasas guardadas).` });
-        await loadRates();
-      }
     } finally {
       setBusy(false);
     }
@@ -72,21 +80,21 @@ export function BcvRatesAdminPanel() {
     setBusy(true);
     setMessage(null);
     try {
-      const res = await fetch('/api/admin/exchange-rates/sync', {
+      await adminFetchJson<{ ok?: boolean }>('/api/admin/exchange-rates/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ manual: { pair, rate: numeric, reason: manualReason.trim() } }),
       });
-      const json = (await res.json()) as { error?: string };
-      if (!res.ok) {
-        setMessage({ tone: 'error', text: json.error ?? 'No se pudo registrar la tasa manual.' });
-      } else {
-        setManualRate('');
-        setManualReason('');
-        setShowManual(false);
-        setMessage({ tone: 'ok', text: `Tasa manual ${pair} registrada y auditada.` });
-        await loadRates();
-      }
+      setManualRate('');
+      setManualReason('');
+      setShowManual(false);
+      setMessage({ tone: 'ok', text: `Tasa manual ${pair} registrada y auditada.` });
+      await loadRates();
+    } catch (err) {
+      setMessage({
+        tone: 'error',
+        text: err instanceof Error ? err.message : 'No se pudo registrar la tasa manual.',
+      });
     } finally {
       setBusy(false);
     }
@@ -98,7 +106,7 @@ export function BcvRatesAdminPanel() {
         <div>
           <h2 className="text-sm font-bold text-ink-primary">Tasas Oficiales BCV (Interno)</h2>
           <p className="text-xs text-ink-muted">
-            Sincronización automática L-V (8:00, 17:00, 19:00 VET) para cálculos internos.
+            Sincronización automática L-S cada 2h (7:00–21:00 VET) para cálculos internos.
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs">

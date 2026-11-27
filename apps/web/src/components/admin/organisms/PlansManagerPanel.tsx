@@ -4,21 +4,23 @@ import { useCallback, useEffect, useState } from 'react';
 import type { AdminPlanRecord } from '@tariffos/shared-types';
 import { Archive, Edit3, Plus } from 'lucide-react';
 import { FunnelCard } from '@/components/funnel/atoms/FunnelCard';
+import { adminFetchJson } from '@/lib/admin/admin-fetch';
 import { PlanFormModal } from '../molecules/PlanFormModal';
 
 export function PlansManagerPanel() {
   const [plans, setPlans] = useState<AdminPlanRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [modalPlan, setModalPlan] = useState<AdminPlanRecord | null | 'new'>(null);
 
   const loadPlans = useCallback(async () => {
     setLoading(true);
+    setErrorMessage(null);
     try {
-      const res = await fetch('/api/admin/plans');
-      if (res.ok) {
-        const json = (await res.json()) as { plans?: AdminPlanRecord[] };
-        setPlans(json.plans ?? []);
-      }
+      const json = await adminFetchJson<{ plans?: AdminPlanRecord[] }>('/api/admin/plans');
+      setPlans(json.plans ?? []);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'No se pudo cargar el catálogo de planes.');
     } finally {
       setLoading(false);
     }
@@ -29,12 +31,17 @@ export function PlansManagerPanel() {
   }, [loadPlans]);
 
   const handleToggleArchive = async (plan: AdminPlanRecord) => {
-    const res = await fetch(`/api/admin/plans/${plan.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isArchived: !plan.isArchived }),
-    });
-    if (res.ok) void loadPlans();
+    setErrorMessage(null);
+    try {
+      await adminFetchJson(`/api/admin/plans/${plan.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isArchived: !plan.isArchived }),
+      });
+      await loadPlans();
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'No se pudo actualizar el estado del plan.');
+    }
   };
 
   return (
@@ -55,6 +62,12 @@ export function PlansManagerPanel() {
           Crear plan
         </button>
       </div>
+
+      {errorMessage ? (
+        <div role="alert" className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-500">
+          {errorMessage}
+        </div>
+      ) : null}
 
       {loading ? (
         <FunnelCard padding="p-6" className="text-xs text-ink-muted">

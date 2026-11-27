@@ -4,12 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Clock, ShieldCheck } from 'lucide-react';
 import type { ManualPaymentRecord, ManualPaymentStatus } from '@tariffos/shared-types';
+import { FunnelCard } from '@/components/funnel/atoms/FunnelCard';
+import { PaymentQueueCard } from '@/components/funnel/molecules/PaymentQueueCard';
 import {
   createBillingActivationAdapter,
   type IBillingActivationPort,
 } from '@/lib/funnel/billing-port';
-import { FunnelCard } from '../atoms/FunnelCard';
-import { PaymentQueueCard } from '../molecules/PaymentQueueCard';
 
 export interface AdminBillingQueueProps {
   billingPort?: IBillingActivationPort;
@@ -17,16 +17,22 @@ export interface AdminBillingQueueProps {
 
 export function AdminBillingQueue({ billingPort }: AdminBillingQueueProps) {
   const port = useMemo(
-    () => billingPort ?? createBillingActivationAdapter(),
+    () => billingPort ?? createBillingActivationAdapter({ adminMode: true }),
     [billingPort],
   );
   const [items, setItems] = useState<ManualPaymentRecord[]>([]);
   const [filter, setFilter] = useState<ManualPaymentStatus>('pending_verification');
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const loadQueue = useCallback(async () => {
-    const list = await port.listPayments();
-    setItems(list);
+    try {
+      setErrorMessage(null);
+      const list = await port.listPayments();
+      setItems(list);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'No se pudo cargar la cola de pagos.');
+    }
   }, [port]);
 
   useEffect(() => {
@@ -53,11 +59,14 @@ export function AdminBillingQueue({ billingPort }: AdminBillingQueueProps) {
 
   const handleApprove = async (paymentId: string) => {
     setBusyId(paymentId);
+    setErrorMessage(null);
     try {
       const updated = await port.approvePayment(paymentId);
       setItems((prev) =>
         prev.map((row) => (row.paymentId === updated.paymentId ? updated : row)),
       );
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'No se pudo aprobar el pago.');
     } finally {
       setBusyId(null);
     }
@@ -65,11 +74,14 @@ export function AdminBillingQueue({ billingPort }: AdminBillingQueueProps) {
 
   const handleReject = async (paymentId: string, reason: string) => {
     setBusyId(paymentId);
+    setErrorMessage(null);
     try {
       const updated = await port.rejectPayment(paymentId, reason);
       setItems((prev) =>
         prev.map((row) => (row.paymentId === updated.paymentId ? updated : row)),
       );
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'No se pudo rechazar el pago.');
     } finally {
       setBusyId(null);
     }
@@ -107,6 +119,18 @@ export function AdminBillingQueue({ billingPort }: AdminBillingQueueProps) {
             Volver al workspace
           </Link>
         </div>
+
+        {errorMessage ? (
+          <div
+            role="alert"
+            className="flex items-center justify-between gap-3 rounded-xl border border-rose-300 bg-rose-50 px-4 py-2.5 text-xs text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200"
+          >
+            <span>{errorMessage}</span>
+            <button type="button" onClick={() => setErrorMessage(null)} className="font-semibold underline cursor-pointer">
+              Cerrar
+            </button>
+          </div>
+        ) : null}
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <FunnelCard padding="p-3.5">

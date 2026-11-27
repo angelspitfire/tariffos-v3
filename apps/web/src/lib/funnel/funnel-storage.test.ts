@@ -25,6 +25,12 @@ describe('funnel-storage', () => {
     expect(readPendingQuery()).toBeNull();
   });
 
+  it('consumes legacy tariffos_pending_query key from session or local storage', () => {
+    window.localStorage.setItem('tariffos_pending_query', '  Motor eléctrico 5 HP  ');
+    expect(consumePendingQuery()).toBe('Motor eléctrico 5 HP');
+    expect(window.localStorage.getItem('tariffos_pending_query')).toBeNull();
+  });
+
   it('persists selected planId and billingCycle', () => {
     saveSelectedPlan('corporate', 'annual');
     expect(readSelectedPlan()).toEqual({

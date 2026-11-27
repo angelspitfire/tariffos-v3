@@ -1,46 +1,28 @@
-import {
-  SAAS_PLANS,
-  type ManualPaymentMethod,
-  type ManualPaymentRecord,
-  type SubscriptionBillingCycle,
-  type SubscriptionPlanConfig,
+import type {
+  ManualPaymentMethod,
+  ManualPaymentRecord,
+  SubscriptionBillingCycle,
 } from '@tariffos/shared-types';
 
 export const MOCK_PAYMENTS_STORAGE_KEY = 'tariffos_mock_manual_payments_v1';
 export const MOCK_BILLING_STATE_STORAGE_KEY = 'tariffos_mock_billing_state_v1';
 
-export type WorkspacePlanLifecycleStatus =
-  | 'trial'
-  | 'quota_reached'
-  | 'pending_verification'
-  | 'active'
-  | 'rejected';
-
-export interface WorkspacePlanStatusSnapshot {
+export interface PendingActivationSummary {
+  paymentId: string;
   planId: string;
   planName: string;
-  status: WorkspacePlanLifecycleStatus;
-  quotaUsed: number;
-  quotaLimit: number;
-  billingCycle?: SubscriptionBillingCycle;
-  pendingActivation?: {
-    paymentId: string;
-    planId: string;
-    planName: string;
-    billingCycle: SubscriptionBillingCycle;
-    amount: number;
-    currency: string;
-    referenceCode: string;
-    paidAt: string;
-  };
-  rejectionReason?: string;
+  billingCycle: SubscriptionBillingCycle;
+  amount: number;
+  currency: string;
+  referenceCode: string;
+  paidAt: string;
 }
 
 export interface MockWorkspaceBillingState {
   planId: string;
   status: 'trial' | 'pending_verification' | 'active' | 'rejected';
   billingCycle: SubscriptionBillingCycle;
-  pendingActivation?: WorkspacePlanStatusSnapshot['pendingActivation'];
+  pendingActivation?: PendingActivationSummary;
   rejectionReason?: string;
 }
 
@@ -119,61 +101,3 @@ export const SEED_MANUAL_PAYMENTS: readonly ManualPaymentRecord[] = [
     verifiedAt: '2026-11-21T16:40:00Z',
   },
 ];
-
-export function deriveWorkspacePlanStatus(
-  billing: MockWorkspaceBillingState,
-  quotaUsed: number,
-  plans: readonly SubscriptionPlanConfig[] = SAAS_PLANS,
-): WorkspacePlanStatusSnapshot {
-  const currentPlan =
-    plans.find((p) => p.planId === billing.planId) ??
-    plans.find((p) => p.planId === 'pilot') ??
-    plans[0];
-
-  const quotaLimit = currentPlan?.monthlyQuota ?? 250;
-  const planName = currentPlan?.name ?? 'Piloto Operativo';
-
-  if (billing.status === 'pending_verification') {
-    return {
-      planId: billing.planId,
-      planName,
-      status: 'pending_verification',
-      quotaUsed,
-      quotaLimit,
-      billingCycle: billing.billingCycle,
-      pendingActivation: billing.pendingActivation,
-    };
-  }
-
-  if (billing.status === 'rejected') {
-    return {
-      planId: billing.planId,
-      planName,
-      status: 'rejected',
-      quotaUsed,
-      quotaLimit,
-      billingCycle: billing.billingCycle,
-      rejectionReason: billing.rejectionReason,
-    };
-  }
-
-  if (billing.status === 'active') {
-    return {
-      planId: billing.planId,
-      planName,
-      status: quotaUsed >= quotaLimit ? 'quota_reached' : 'active',
-      quotaUsed,
-      quotaLimit,
-      billingCycle: billing.billingCycle,
-    };
-  }
-
-  return {
-    planId: billing.planId,
-    planName,
-    status: quotaUsed >= quotaLimit ? 'quota_reached' : 'trial',
-    quotaUsed,
-    quotaLimit,
-    billingCycle: billing.billingCycle,
-  };
-}

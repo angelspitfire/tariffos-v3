@@ -8,6 +8,7 @@ import {
   type ApprovalWorkflowMode,
   type IncotermCode,
   type SubscriptionBillingCycle,
+  type SubscriptionPlanConfig,
 } from '@tariffos/shared-types';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 import { FUNNEL_JURISDICTIONS, readMockSession } from '@/lib/funnel/funnel-storage';
@@ -25,12 +26,14 @@ import { OnboardingPlanPicker } from '../molecules/OnboardingPlanPicker';
 
 export interface ExpressOnboardingCardProps {
   cloudMode?: boolean;
+  plans?: readonly SubscriptionPlanConfig[];
   preselectedPlanId?: string;
   preselectedCycle?: SubscriptionBillingCycle;
 }
 
 export function ExpressOnboardingCard({
   cloudMode,
+  plans = SAAS_PLANS,
   preselectedPlanId,
   preselectedCycle,
 }: ExpressOnboardingCardProps) {
@@ -58,7 +61,7 @@ export function ExpressOnboardingCard({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const matchedPlan = SAAS_PLANS.find((p) => p.planId === selectedPlanId) ?? SAAS_PLANS[0];
+  const matchedPlan = plans.find((p) => p.planId === selectedPlanId) ?? plans[0];
   const isOneTime = matchedPlan ? isPlanOneTime(matchedPlan) : false;
   const isPaidPlan = matchedPlan ? !isPlanFree(matchedPlan) && !matchedPlan.customPricing : true;
   const effectiveCycle: SubscriptionBillingCycle = isOneTime
@@ -79,6 +82,8 @@ export function ExpressOnboardingCard({
       const result = await persistOnboardingProfile(
         {
           fullName: fullName.trim(),
+          role,
+          brokerLicense: brokerLicense.trim(),
           companyName: companyName.trim(),
           defaultJurisdictionId: jurisdictionId,
           defaultIncoterm: incoterm,
@@ -196,6 +201,7 @@ export function ExpressOnboardingCard({
 
         {showPlanPicker ? (
           <OnboardingPlanPicker
+            plans={plans}
             selectedPlanId={selectedPlanId}
             billingCycle={billingCycle}
             onChangeCycle={setBillingCycle}

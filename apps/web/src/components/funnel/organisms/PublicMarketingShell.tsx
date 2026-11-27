@@ -135,9 +135,6 @@ export function PublicMarketingShell({
               <Link href="/activate-plan" className="hover:text-ink-primary transition-colors">
                 Activar plan
               </Link>
-              <Link href="/admin/billing" className="hover:text-ink-primary transition-colors">
-                Admin pagos
-              </Link>
               <span>© 2026 TariffOS</span>
             </div>
           </div>

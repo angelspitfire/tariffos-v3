@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { AdminLlmProvider, AdminLlmSettingsPayload } from '@tariffos/shared-types';
 import { LlmProviderFields } from '@/components/admin/molecules/LlmProviderFields';
 import { FunnelCard } from '@/components/funnel/atoms/FunnelCard';
+import { adminFetchJson } from '@/lib/admin/admin-fetch';
 
 interface ProbeState {
   ok: boolean;
@@ -36,9 +37,12 @@ export function LlmSettingsPanel() {
   const loadSettings = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/settings/llm');
-      if (res.ok) hydrate((await res.json()) as AdminLlmSettingsPayload);
-      else setFeedback({ tone: 'error', text: 'Solo super_admin puede gestionar el modelo LLM.' });
+      hydrate(await adminFetchJson<AdminLlmSettingsPayload>('/api/admin/settings/llm'));
+    } catch (err) {
+      setFeedback({
+        tone: 'error',
+        text: err instanceof Error ? err.message : 'Solo super_admin puede gestionar el modelo LLM.',
+      });
     } finally {
       setLoading(false);
     }
@@ -62,18 +66,26 @@ export function LlmSettingsPanel() {
     setBusy('test');
     setProbe(null);
     try {
-      const res = await fetch('/api/admin/settings/llm/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider, model: model.trim(), baseUrl: baseUrl.trim() || undefined }),
-      });
-      const json = (await res.json()) as { ok?: boolean; latencyMs?: number; error?: string };
+      const json = await adminFetchJson<{ ok?: boolean; latencyMs?: number; error?: string }>(
+        '/api/admin/settings/llm/test',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ provider, model: model.trim(), baseUrl: baseUrl.trim() || undefined }),
+        },
+      );
       setProbe({
         ok: Boolean(json.ok),
         latencyMs: json.latencyMs ?? 0,
         message: json.ok
           ? `Conexión y salida JSON verificadas en ${json.latencyMs ?? 0} ms.`
           : json.error ?? 'El modelo no respondió con JSON válido.',
+      });
+    } catch (err) {
+      setProbe({
+        ok: false,
+        latencyMs: 0,
+        message: err instanceof Error ? err.message : 'No se pudo probar el modelo.',
       });
     } finally {
       setBusy(null);
@@ -85,7 +97,7 @@ export function LlmSettingsPanel() {
     setFeedback(null);
     try {
       const parsedRpm = maxRpm.trim() ? Number.parseInt(maxRpm.trim(), 10) : undefined;
-      const res = await fetch('/api/admin/settings/llm', {
+      const json = await adminFetchJson<AdminLlmSettingsPayload>('/api/admin/settings/llm', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -97,14 +109,14 @@ export function LlmSettingsPanel() {
           reason: reason.trim() || undefined,
         }),
       });
-      const json = (await res.json()) as AdminLlmSettingsPayload & { error?: string };
-      if (!res.ok) {
-        setFeedback({ tone: 'error', text: json.error ?? 'Error al guardar configuración.' });
-        return;
-      }
       hydrate(json);
       setReason('');
       setFeedback({ tone: 'ok', text: `Modelo activo actualizado a ${json.active.provider}/${json.active.model}.` });
+    } catch (err) {
+      setFeedback({
+        tone: 'error',
+        text: err instanceof Error ? err.message : 'Error al guardar configuración.',
+      });
     } finally {
       setBusy(null);
     }
@@ -114,15 +126,19 @@ export function LlmSettingsPanel() {
     setBusy('reset');
     setFeedback(null);
     try {
-      const res = await fetch('/api/admin/settings/llm', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reset: true, reason: reason.trim() || undefined }),
+      hydrate(
+        await adminFetchJson<AdminLlmSettingsPayload>('/api/admin/settings/llm', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reset: true, reason: reason.trim() || undefined }),
+        }),
+      );
+      setFeedback({ tone: 'ok', text: 'Configuración restablecida a variables de entorno.' });
+    } catch (err) {
+      setFeedback({
+        tone: 'error',
+        text: err instanceof Error ? err.message : 'No se pudo restablecer configuración.',
       });
-      if (res.ok) {
-        hydrate((await res.json()) as AdminLlmSettingsPayload);
-        setFeedback({ tone: 'ok', text: 'Configuración restablecida a variables de entorno.' });
-      }
     } finally {
       setBusy(null);
     }

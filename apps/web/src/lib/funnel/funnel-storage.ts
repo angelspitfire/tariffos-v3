@@ -3,8 +3,11 @@ import type {
   IncotermCode,
   SubscriptionBillingCycle,
 } from '@tariffos/shared-types';
+import { JURISDICTIONS } from '@/lib/workspace/jurisdictions';
 
+const LEGACY_PENDING_QUERY_KEY = 'tariffos_pending_query';
 const PENDING_QUERY_KEY = 'tariffos_pending_query_v1';
+const PENDING_QUERY_KEYS = [LEGACY_PENDING_QUERY_KEY, PENDING_QUERY_KEY] as const;
 const SELECTED_PLAN_KEY = 'tariffos_selected_plan_v1';
 const MOCK_SESSION_KEY = 'tariffos_mock_session_v1';
 const MOCK_PROFILE_KEY = 'tariffos_mock_profile_v1';
@@ -23,6 +26,8 @@ export interface FunnelMockUser {
 
 export interface OnboardingProfileDraft {
   fullName: string;
+  role?: string;
+  brokerLicense?: string;
   companyName: string;
   defaultJurisdictionId: string;
   defaultIncoterm: IncotermCode;
@@ -40,32 +45,12 @@ export interface FunnelJurisdictionOption {
   nomenclature: string;
 }
 
-export const FUNNEL_JURISDICTIONS: readonly FunnelJurisdictionOption[] = [
-  {
-    id: 've-seniat',
-    country: 'Venezuela',
-    authority: 'SENIAT',
-    nomenclature: 'NCM 10 dígitos · Consolidado 2026 (Decreto 4.944 / 5.198)',
-  },
-  {
-    id: 'co-dian',
-    country: 'Colombia',
-    authority: 'DIAN',
-    nomenclature: 'NANDINA 10 dígitos',
-  },
-  {
-    id: 'pa-ana',
-    country: 'Panamá',
-    authority: 'ANA',
-    nomenclature: 'SA 12 dígitos',
-  },
-  {
-    id: 'mx-sat',
-    country: 'México',
-    authority: 'SAT / ANAM',
-    nomenclature: 'LIGIE + NICO 10 dígitos',
-  },
-] as const;
+export const FUNNEL_JURISDICTIONS: readonly FunnelJurisdictionOption[] = JURISDICTIONS.map((jur) => ({
+  id: jur.id,
+  country: jur.country,
+  authority: jur.authority,
+  nomenclature: jur.nomenclature,
+}));
 
 function getStorage(kind: 'local' | 'session'): Storage | null {
   if (typeof window === 'undefined') return null;
@@ -111,8 +96,10 @@ function removeKey(kind: 'local' | 'session', key: string): void {
 export function savePendingQuery(query: string): void {
   const trimmed = query.trim();
   if (!trimmed) {
-    removeKey('session', PENDING_QUERY_KEY);
-    removeKey('local', PENDING_QUERY_KEY);
+    for (const key of PENDING_QUERY_KEYS) {
+      removeKey('session', key);
+      removeKey('local', key);
+    }
     return;
   }
   const session = getStorage('session');
@@ -129,7 +116,11 @@ export function readPendingQuery(): string | null {
   const session = getStorage('session');
   const local = getStorage('local');
   try {
-    return session?.getItem(PENDING_QUERY_KEY) ?? local?.getItem(PENDING_QUERY_KEY) ?? null;
+    for (const key of PENDING_QUERY_KEYS) {
+      const value = session?.getItem(key) ?? local?.getItem(key);
+      if (value && value.trim().length > 0) return value.trim();
+    }
+    return null;
   } catch {
     return null;
   }
@@ -137,8 +128,10 @@ export function readPendingQuery(): string | null {
 
 export function consumePendingQuery(): string | null {
   const value = readPendingQuery();
-  removeKey('session', PENDING_QUERY_KEY);
-  removeKey('local', PENDING_QUERY_KEY);
+  for (const key of PENDING_QUERY_KEYS) {
+    removeKey('session', key);
+    removeKey('local', key);
+  }
   return value;
 }
 

@@ -82,6 +82,8 @@ describe('ExpressOnboardingCard', () => {
     render(<ExpressOnboardingCard cloudMode />);
 
     await user.type(screen.getByLabelText(/Nombre completo/i), 'Elena Torres');
+    await user.selectOptions(screen.getByLabelText(/Rol operativo/i), 'Auditor de Cumplimiento');
+    await user.type(screen.getByLabelText(/Patente aduanal/i), 'SENIAT-AA-9001');
     await user.type(screen.getByLabelText(/Empresa o agencia/i), 'Torres Aduanas');
     await user.click(screen.getByRole('button', { name: /Continuar a activación/i }));
 
@@ -89,6 +91,12 @@ describe('ExpressOnboardingCard', () => {
       '/api/onboarding',
       expect.objectContaining({ method: 'POST' }),
     );
+    const postedBody = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body ?? '{}'));
+    expect(postedBody).toMatchObject({
+      fullName: 'Elena Torres',
+      role: 'Auditor de Cumplimiento',
+      brokerLicense: 'SENIAT-AA-9001',
+    });
     expect(mockPush).toHaveBeenCalledWith('/activate-plan?plan=pilot&cycle=monthly');
     vi.unstubAllGlobals();
   });

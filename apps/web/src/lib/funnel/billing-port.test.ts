@@ -1,13 +1,18 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { readStoredBillingState } from './billing-local-store';
 import { createBillingActivationAdapter } from './billing-port';
 
-describe('billing-port (offline/mock adapter)', () => {
+describe('billing-port', () => {
   beforeEach(() => {
     window.localStorage.clear();
     window.sessionStorage.clear();
   });
 
-  it('seeds realistic demo payments and submits a new manual payment', async () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('seeds demo payments and submits/approves/rejects in offline mode', async () => {
     const adapter = createBillingActivationAdapter({ cloudMode: false });
     const initial = await adapter.listPayments();
     expect(initial.length).toBeGreaterThanOrEqual(2);
@@ -23,61 +28,57 @@ describe('billing-port (offline/mock adapter)', () => {
       payerName: 'Importadora Sol C.A.',
       payerEmail: 'pagos@sol.ve',
     });
-
     expect(created.status).toBe('pending_verification');
-    expect(created.referenceCode).toBe('ZEL-778899');
-
-    const status = await adapter.getWorkspacePlanStatus(2);
-    expect(status.status).toBe('pending_verification');
-    expect(status.pendingActivation?.referenceCode).toBe('ZEL-778899');
-  });
-
-  it('approves a pending payment and activates the workspace plan', async () => {
-    const adapter = createBillingActivationAdapter({ cloudMode: false });
-    const created = await adapter.submitPayment({
-      planId: 'agencia',
-      billingCycle: 'annual',
-      method: 'transferencia_usd',
-      amount: 3000,
-      currency: 'USD',
-      referenceCode: 'WIRE-9011',
-      paidAt: '2026-11-25',
-      payerName: 'Agencia Marítima Sur',
-      payerEmail: 'admin@maritimasur.ve',
-    });
+    expect(readStoredBillingState().status).toBe('pending_verification');
 
     const approved = await adapter.approvePayment(created.paymentId);
     expect(approved.status).toBe('verified');
+    expect(readStoredBillingState().status).toBe('active');
 
-    const status = await adapter.getWorkspacePlanStatus(10);
-    expect(status.status).toBe('active');
-    expect(status.planId).toBe('agencia');
-    expect(status.quotaLimit).toBe(1000);
+    const rejected = await adapter.rejectPayment(created.paymentId, 'Referencia bancaria no encontrada');
+    expect(rejected.status).toBe('rejected');
+    expect(readStoredBillingState().status).toBe('rejected');
   });
 
-  it('rejects a pending payment with an explicit rejection reason', async () => {
-    const adapter = createBillingActivationAdapter({ cloudMode: false });
-    const created = await adapter.submitPayment({
-      planId: 'pilot',
-      billingCycle: 'monthly',
-      method: 'pago_movil',
-      amount: 150,
-      currency: 'VES',
-      referenceCode: 'PM-001122',
-      paidAt: '2026-11-25',
-      payerName: 'Comercial Norte',
-      payerEmail: 'norte@comercial.ve',
-    });
-
-    const rejected = await adapter.rejectPayment(
-      created.paymentId,
-      'Referencia bancaria no encontrada',
+  it('throws server errors in cloudMode without writing fake local pending state', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ error: 'Referencia duplicada en este ciclo.' }), { status: 400 }),
+      ),
     );
-    expect(rejected.status).toBe('rejected');
-    expect(rejected.rejectionReason).toBe('Referencia bancaria no encontrada');
+    const adapter = createBillingActivationAdapter({ cloudMode: true });
 
-    const status = await adapter.getWorkspacePlanStatus(1);
-    expect(status.status).toBe('rejected');
-    expect(status.rejectionReason).toBe('Referencia bancaria no encontrada');
+    await expect(
+      adapter.submitPayment({
+        planId: 'pilot',
+        billingCycle: 'monthly',
+        method: 'zelle',
+        amount: 150,
+        currency: 'USD',
+        referenceCode: 'ZEL-DUP',
+        paidAt: '2026-11-25',
+        payerName: 'Empresa Test',
+        payerEmail: 'test@empresa.ve',
+      }),
+    ).rejects.toThrow(/Referencia duplicada/);
+
+    expect(window.localStorage.length).toBe(0);
+  });
+
+  it('throws HTTP errors on listPayments and admin mutations in cloudMode', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(() =>
+        Promise.resolve(
+          new Response(JSON.stringify({ error: 'Server error' }), { status: 500 }),
+        ),
+      ),
+    );
+    const adapter = createBillingActivationAdapter({ cloudMode: true, adminMode: true });
+
+    await expect(adapter.listPayments()).rejects.toThrow(/Server error/);
+    await expect(adapter.approvePayment('pay-1')).rejects.toThrow(/Server error/);
+    await expect(adapter.rejectPayment('pay-1', 'Inválido')).rejects.toThrow(/Server error/);
   });
 });

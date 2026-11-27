@@ -71,12 +71,26 @@ export function PlanActivationTemplate({
   const [payments, setPayments] = useState<ManualPaymentRecord[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastSubmitted, setLastSubmitted] = useState<ManualPaymentRecord | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const session = readMockSession();
   const profile = readMockProfile();
 
   useEffect(() => {
-    void port.listPayments().then(setPayments);
+    let active = true;
+    void port
+      .listPayments()
+      .then((rows) => {
+        if (active) setPayments(rows);
+      })
+      .catch((err: unknown) => {
+        if (active) {
+          setErrorMessage(err instanceof Error ? err.message : 'No pudimos cargar tus pagos reportados.');
+        }
+      });
+    return () => {
+      active = false;
+    };
   }, [port]);
 
   const activePlan = paidPlans.find((p) => p.planId === planId) ?? paidPlans[0];
@@ -109,11 +123,16 @@ export function PlanActivationTemplate({
   };
 
   const handleSubmitPayment = async (payload: SubmitManualPaymentPayload) => {
+    setErrorMessage(null);
     setIsSubmitting(true);
     try {
       const created = await port.submitPayment(payload);
       setLastSubmitted(created);
       setPayments((prev) => [created, ...prev]);
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error ? err.message : 'No se pudo registrar el reporte de pago.',
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -135,16 +154,26 @@ export function PlanActivationTemplate({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Link href="/admin/billing" className="px-3 py-1.5 rounded-lg border border-border-subtle bg-surface-panel hover:bg-surface-hover text-xs font-medium text-ink-secondary transition-colors">
-              Cola Admin
-            </Link>
-            <Link href="/app" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-strong bg-surface-panel hover:bg-surface-hover text-xs font-semibold text-ink-primary transition-colors">
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Volver a TariffOS
-            </Link>
-          </div>
+          <Link
+            href="/app"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-strong bg-surface-panel hover:bg-surface-hover text-xs font-semibold text-ink-primary transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Volver a TariffOS
+          </Link>
         </div>
+
+        {errorMessage ? (
+          <div
+            role="alert"
+            className="flex items-center justify-between gap-3 rounded-xl border border-rose-300 bg-rose-50 px-4 py-2.5 text-xs text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200"
+          >
+            <span>{errorMessage}</span>
+            <button type="button" onClick={() => setErrorMessage(null)} className="font-semibold underline cursor-pointer">
+              Cerrar
+            </button>
+          </div>
+        ) : null}
 
         {lastSubmitted ? (
           <FunnelCard padding="p-5" className="border-emerald-300 dark:border-emerald-900/60 bg-emerald-50/70 dark:bg-emerald-950/25 flex flex-wrap items-center justify-between gap-4">

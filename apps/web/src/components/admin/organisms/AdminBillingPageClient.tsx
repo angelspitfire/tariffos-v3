@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AdminPlanRecord, AdminTenantSummary } from '@tariffos/shared-types';
 import { Plus } from 'lucide-react';
-import { AdminBillingQueue } from '@/components/funnel/organisms/AdminBillingQueue';
+import { adminFetchJson } from '@/lib/admin/admin-fetch';
 import { createBillingActivationAdapter } from '@/lib/funnel/billing-port';
 import { RecordManualPaymentModal } from '../molecules/RecordManualPaymentModal';
+import { AdminBillingQueue } from './AdminBillingQueue';
 
 export function AdminBillingPageClient() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -19,17 +20,15 @@ export function AdminBillingPageClient() {
   );
 
   const loadMeta = useCallback(async () => {
-    const [tRes, pRes] = await Promise.all([
-      fetch('/api/admin/tenants'),
-      fetch('/api/admin/plans'),
-    ]);
-    if (tRes.ok) {
-      const tJson = (await tRes.json()) as { tenants?: AdminTenantSummary[] };
+    try {
+      const [tJson, pJson] = await Promise.all([
+        adminFetchJson<{ tenants?: AdminTenantSummary[] }>('/api/admin/tenants'),
+        adminFetchJson<{ plans?: AdminPlanRecord[] }>('/api/admin/plans'),
+      ]);
       setTenants(tJson.tenants ?? []);
-    }
-    if (pRes.ok) {
-      const pJson = (await pRes.json()) as { plans?: AdminPlanRecord[] };
       setPlans(pJson.plans ?? []);
+    } catch {
+      // Meta modal lists are optional when billing page loads without admin metadata.
     }
   }, []);
 
