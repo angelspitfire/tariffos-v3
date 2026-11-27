@@ -3,6 +3,7 @@ import type { A2UICanvasComponent } from '@tariffos/shared-types';
 import {
   resolveConsolidatedTabs,
   resolveDefaultCanvasTab,
+  resolveEffectiveCanvasTab,
   shouldShowArtifactStrip,
   shouldShowVersionHistory,
 } from '../canvas-tabs';
@@ -81,6 +82,14 @@ describe('canvas-tabs dynamic A2UI contract', () => {
     });
     expect(afterClickingRegulatory.tabs.map((t) => t.id)).toEqual(['dossier', 'regulatory_diff']);
     expect(afterClickingRegulatory.showRegulatoryShortcut).toBe(false);
+
+    const afterClickingCalculateCif = resolveConsolidatedTabs({
+      components: [DOSSIER_COMP],
+      activeTab: 'calculator',
+      unreadAlertsCount: 0,
+    });
+    expect(afterClickingCalculateCif.tabs.map((t) => t.id)).toEqual(['dossier', 'calculator']);
+    expect(resolveEffectiveCanvasTab([DOSSIER_COMP], 'calculator')).toBe('calculator');
   });
 
   it('hides artifact strip when <= 1 artifact and version history when < 2 versions', () => {

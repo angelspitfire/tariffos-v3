@@ -51,10 +51,11 @@ export function ArtifactDirectoryDrawer({
         <Search className="pointer-events-none absolute top-2 left-2.5 h-3.5 w-3.5 text-ink-subtle" aria-hidden="true" />
         <input
           type="text"
+          aria-label="Buscar artefacto por código SA o descripción"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Buscar artefacto por código SA o descripción..."
-          className="w-full rounded-field border border-border-subtle bg-surface-input py-1.5 pr-7 pl-8 text-xs text-ink-primary focus:border-accent-brand focus:outline-none"
+          placeholder="Buscar artefacto por código SA o descripción…"
+          className="w-full rounded-field border border-border-subtle bg-surface-input py-1.5 pr-7 pl-8 text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
         />
         {filter ? (
           <button

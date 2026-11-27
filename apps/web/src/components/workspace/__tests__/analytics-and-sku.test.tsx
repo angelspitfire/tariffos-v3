@@ -105,7 +105,7 @@ describe('ArtifactDirectoryDrawer, AnalyticsWorkspaceView, and SkuCatalogModal e
     expect(screen.getByText('2026-10')).toBeInTheDocument();
     expect(screen.getByText('2026-11')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /Comparar dictámenes/i }));
+    await user.click(screen.getByRole('tab', { name: /Comparar dictámenes/i }));
     expect(screen.getByText(/Selecciona hasta 3 dictámenes recientes/i)).toBeInTheDocument();
   });
 

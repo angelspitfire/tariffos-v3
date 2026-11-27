@@ -10,7 +10,9 @@ import type {
   UserProfileSettings,
 } from '@tariffos/shared-types';
 import type { ThreadArtifactSummary } from '@/lib/workspace/artifact-versions';
+import { resolveEffectiveCalculatorComponent } from '@/lib/workspace/calculator-fallback';
 import { resolveEffectiveCanvasTab } from '@/lib/workspace/canvas-tabs';
+import type { WorkspaceMessage } from '@/lib/workspace/types';
 import { ArtifactDirectoryDrawer } from '../molecules/ArtifactDirectoryDrawer';
 import { ConsolidatedTabStrip } from '../molecules/ConsolidatedTabStrip';
 import type { TechnicalSpecItem } from '../molecules/MerceologicalSpecsCard';
@@ -26,6 +28,7 @@ import { RgiPathAndComparatorView } from './RgiPathAndComparatorView';
 
 export interface WorkspaceCanvasPaneProps {
   components: readonly A2UICanvasComponent[];
+  messages?: readonly WorkspaceMessage[];
   activeTab: CanvasTabType;
   jurisdiction: JurisdictionConfig;
   profile: UserProfileSettings;
@@ -33,11 +36,7 @@ export interface WorkspaceCanvasPaneProps {
   onApproveDossier: () => void;
   onRequestDossierReview: (note: string) => void;
   onSaveSku: () => void;
-  onSaveSignature: (payload: {
-    fullName: string;
-    brokerLicense: string;
-    signatureDataUrl: string;
-  }) => void;
+  onSaveSignature: (payload: { fullName: string; brokerLicense: string; signatureDataUrl: string }) => void;
   onExportPdf: () => void;
   onConfirmBatchItem: (lineNumber: number, update: BatchItemConfirmation) => void;
   onChangeWorkflowMode?: (mode: ApprovalWorkflowMode) => void;
@@ -52,6 +51,7 @@ export interface WorkspaceCanvasPaneProps {
 
 export function WorkspaceCanvasPane({
   components,
+  messages,
   activeTab,
   jurisdiction,
   profile,
@@ -74,10 +74,16 @@ export function WorkspaceCanvasPane({
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [directoryOpen, setDirectoryOpen] = useState(false);
   const dossier = components.find((c) => c.type === 'dossier');
-  const calculator = components.find((c) => c.type === 'calculator');
   const hierarchy = components.find((c) => c.type === 'hierarchy');
   const comparison = components.find((c) => c.type === 'comparison');
   const batch = components.find((c) => c.type === 'batch_manifest');
+  const effectiveCalculator = resolveEffectiveCalculatorComponent({
+    components,
+    jurisdiction,
+    profile,
+    messages,
+    activeArtifactId,
+  });
 
   if (components.length === 0) {
     return (
@@ -85,9 +91,7 @@ export function WorkspaceCanvasPane({
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft text-accent-ink">
           <Scale className="h-6 w-6" aria-hidden="true" />
         </div>
-        <h2 className="mt-3 text-sm font-semibold text-ink-primary">
-          Canvas de Dictamen y Liquidación CIF
-        </h2>
+        <h2 className="mt-3 text-sm font-semibold text-ink-primary">Canvas de Dictamen y Liquidación CIF</h2>
         <p className="mt-1 max-w-sm text-xs leading-relaxed text-ink-muted">
           Describe una mercancía o carga una factura comercial en el chat para generar automáticamente el dictamen RGI, el cálculo CIF y el triage de lote.
         </p>
@@ -133,12 +137,7 @@ export function WorkspaceCanvasPane({
 
       <div className="flex-1 overflow-y-auto">
         {effectiveTab === 'batch_manifest' && batch && (
-          <BatchManifestTriageView
-            key={batch.id}
-            manifest={batch}
-            jurisdiction={jurisdiction}
-            onConfirmItem={onConfirmBatchItem}
-          />
+          <BatchManifestTriageView key={batch.id} manifest={batch} jurisdiction={jurisdiction} onConfirmItem={onConfirmBatchItem} />
         )}
 
         {effectiveTab === 'dossier' && dossier && (
@@ -157,21 +156,12 @@ export function WorkspaceCanvasPane({
           />
         )}
 
-        {effectiveTab === 'calculator' && calculator && (
-          <DutyCalculatorView
-            key={calculator.id}
-            calculator={calculator}
-            jurisdiction={jurisdiction}
-            dossier={dossier}
-          />
+        {effectiveTab === 'calculator' && effectiveCalculator && (
+          <DutyCalculatorView key={effectiveCalculator.id} calculator={effectiveCalculator} jurisdiction={jurisdiction} dossier={dossier} />
         )}
 
         {(effectiveTab === 'rgi_comparator' || effectiveTab === 'comparison') && (
-          <RgiPathAndComparatorView
-            dossier={dossier}
-            comparison={comparison}
-            hierarchy={hierarchy}
-          />
+          <RgiPathAndComparatorView dossier={dossier} comparison={comparison} hierarchy={hierarchy} />
         )}
 
         {effectiveTab === 'hierarchy' && hierarchy && (
@@ -180,18 +170,11 @@ export function WorkspaceCanvasPane({
           </div>
         )}
 
-        {effectiveTab === 'regulatory_diff' && (
-          <RegulatoryDiffView jurisdiction={jurisdiction} dossier={dossier} />
-        )}
+        {effectiveTab === 'regulatory_diff' && <RegulatoryDiffView jurisdiction={jurisdiction} dossier={dossier} />}
       </div>
 
       {onSelectArtifact ? (
-        <ChangeTimelineModal
-          open={timelineOpen}
-          artifacts={artifacts}
-          onClose={() => setTimelineOpen(false)}
-          onSelectArtifact={onSelectArtifact}
-        />
+        <ChangeTimelineModal open={timelineOpen} artifacts={artifacts} onClose={() => setTimelineOpen(false)} onSelectArtifact={onSelectArtifact} />
       ) : null}
     </div>
   );

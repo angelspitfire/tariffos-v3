@@ -1,14 +1,11 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import type {
-  A2UICalculatorComponent,
-  A2UIDossierComponent,
-  IncotermCode,
-  JurisdictionConfig,
-} from '@tariffos/shared-types';
+import type { A2UICalculatorComponent, A2UIDossierComponent, IncotermCode, JurisdictionConfig } from '@tariffos/shared-types';
 import { calculateDeterministicDuties, inferTradeParamsFromContext } from '@/lib/workspace/duty-engine';
+import { formatCurrencyAmount } from '@/lib/workspace/format-locale';
 import { useBcvRate } from '@/lib/workspace/use-bcv-rate';
+import { DecimalField } from '../atoms/DecimalField';
 import { CifTopKpiStrip } from '../molecules/CifTopKpiStrip';
 import { DutyAdvancedAccordion, type DutyAdvancedValues } from '../molecules/DutyAdvancedAccordion';
 
@@ -19,12 +16,18 @@ interface DutyCalculatorViewProps {
 }
 
 const INCOTERMS: readonly IncotermCode[] = ['EXW', 'FOB', 'CFR', 'CIF', 'DDP'];
+const DEFAULT_INVOICE = 10000;
+const DEFAULT_FREIGHT = 850;
+const DEFAULT_INSURANCE = 150;
 
-function fmt(currency: string, val: number): string {
-  return `${currency} ${val.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+function extractDeclaredInvoice(dossier?: A2UIDossierComponent): number | null {
+  for (const spec of dossier?.technicalSpecs ?? []) {
+    if (!/valor|factura|fob|cif|monto|precio/i.test(spec.key)) continue;
+    const match = spec.value.replace(/,/g, '').match(/(\d+(?:\.\d+)?)/);
+    const parsed = match ? Number(match[1]) : NaN;
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  }
+  return null;
 }
 
 export function DutyCalculatorView({ calculator, jurisdiction, dossier }: DutyCalculatorViewProps) {
@@ -32,11 +35,10 @@ export function DutyCalculatorView({ calculator, jurisdiction, dossier }: DutyCa
     () => inferTradeParamsFromContext({ calculator, dossier, jurisdiction }),
     [calculator, dossier, jurisdiction],
   );
-
   const [incoterm, setIncoterm] = useState<IncotermCode>(inferred.incoterm);
-  const [invoiceAmount, setInvoiceAmount] = useState(10000);
-  const [freightAmount, setFreightAmount] = useState(850);
-  const [insuranceAmount, setInsuranceAmount] = useState(150);
+  const [invoiceAmount, setInvoiceAmount] = useState(() => extractDeclaredInvoice(dossier) ?? DEFAULT_INVOICE);
+  const [freightAmount, setFreightAmount] = useState(DEFAULT_FREIGHT);
+  const [insuranceAmount, setInsuranceAmount] = useState(DEFAULT_INSURANCE);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [userEditedRate, setUserEditedRate] = useState(false);
   const [advanced, setAdvanced] = useState<DutyAdvancedValues>({
@@ -52,9 +54,7 @@ export function DutyCalculatorView({ calculator, jurisdiction, dossier }: DutyCa
   });
 
   const handlePatchAdvanced = useCallback((patch: Partial<DutyAdvancedValues>) => {
-    if (patch.exchangeRate !== undefined) {
-      setUserEditedRate(true);
-    }
+    if (patch.exchangeRate !== undefined) setUserEditedRate(true);
     setAdvanced((prev) => ({ ...prev, ...patch }));
   }, []);
 
@@ -93,6 +93,8 @@ export function DutyCalculatorView({ calculator, jurisdiction, dossier }: DutyCa
     [jurisdiction.id, calculator.hsCode, calculator.preferentialDiscountPercent, incoterm, invoiceAmount, freightAmount, insuranceAmount, advanced],
   );
 
+  const fmt = (amount: number) => formatCurrencyAmount(calculator.currencyCode, amount);
+
   return (
     <div className="space-y-4 p-4">
       <CifTopKpiStrip
@@ -109,7 +111,7 @@ export function DutyCalculatorView({ calculator, jurisdiction, dossier }: DutyCa
       <section className="rounded-xl border border-border-subtle bg-surface-panel p-4 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-xs font-semibold text-ink-secondary">
-            Parámetros de valoración ({calculator.hsCode})
+            Parámetros de valoración (<span translate="no" className="font-mono">{calculator.hsCode}</span>)
           </h3>
           <fieldset className="flex items-center gap-1 border-0 p-0">
             <legend className="sr-only">Seleccionar Incoterm</legend>
@@ -117,11 +119,10 @@ export function DutyCalculatorView({ calculator, jurisdiction, dossier }: DutyCa
               <button
                 key={code}
                 type="button"
+                aria-pressed={incoterm === code}
                 onClick={() => setIncoterm(code)}
-                className={`rounded-md px-2 py-1 font-mono text-[11px] font-medium transition ${
-                  incoterm === code
-                    ? 'bg-accent-brand text-white'
-                    : 'bg-surface-muted text-ink-secondary hover:bg-surface-hover'
+                className={`cursor-pointer rounded-md px-2 py-1 font-mono text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none ${
+                  incoterm === code ? 'bg-accent-brand text-white' : 'bg-surface-muted text-ink-secondary hover:bg-surface-hover'
                 }`}
               >
                 {code}
@@ -131,18 +132,9 @@ export function DutyCalculatorView({ calculator, jurisdiction, dossier }: DutyCa
         </div>
 
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="font-medium text-ink-secondary">Valor Factura ({calculator.currencyCode})</span>
-            <input type="number" min="0" step="100" value={invoiceAmount} onChange={(e) => setInvoiceAmount(Number(e.target.value) || 0)} className="rounded-lg border border-border-subtle bg-surface-input px-3 py-2 font-mono text-sm text-ink-primary outline-none focus:border-accent-brand" />
-          </label>
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="font-medium text-ink-secondary">Flete Internacional ({calculator.currencyCode})</span>
-            <input type="number" min="0" step="50" value={freightAmount} onChange={(e) => setFreightAmount(Number(e.target.value) || 0)} className="rounded-lg border border-border-subtle bg-surface-input px-3 py-2 font-mono text-sm text-ink-primary outline-none focus:border-accent-brand" />
-          </label>
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="font-medium text-ink-secondary">Seguro ({calculator.currencyCode})</span>
-            <input type="number" min="0" step="10" value={insuranceAmount} onChange={(e) => setInsuranceAmount(Number(e.target.value) || 0)} className="rounded-lg border border-border-subtle bg-surface-input px-3 py-2 font-mono text-sm text-ink-primary outline-none focus:border-accent-brand" />
-          </label>
+          <DecimalField label={`Valor Factura (${calculator.currencyCode})`} name="invoiceAmount" value={invoiceAmount} onChange={setInvoiceAmount} />
+          <DecimalField label={`Flete Internacional (${calculator.currencyCode})`} name="freightAmount" value={freightAmount} onChange={setFreightAmount} />
+          <DecimalField label={`Seguro (${calculator.currencyCode})`} name="insuranceAmount" value={insuranceAmount} onChange={setInsuranceAmount} />
         </div>
       </section>
 
@@ -154,40 +146,31 @@ export function DutyCalculatorView({ calculator, jurisdiction, dossier }: DutyCa
         bcvDate={bcv.rateMeta?.valueDate}
         bcvError={bcv.error}
         isRefreshingBcv={bcv.isRefreshing}
-        onRefreshBcv={
-          bcv.isBcvJurisdiction
-            ? () => {
-                setUserEditedRate(false);
-                void bcv.refreshBcvRate();
-              }
-            : undefined
-        }
+        onRefreshBcv={bcv.isBcvJurisdiction ? () => { setUserEditedRate(false); void bcv.refreshBcvRate(); } : undefined}
         localCurrencyCode={calculator.localCurrencyCode}
         agreement={result.agreement}
       />
 
       <section className="rounded-xl border border-border-subtle bg-surface-panel p-4 shadow-xs">
-        <h3 className="text-xs font-semibold text-ink-secondary">
-          Desglose determinista de tributos
-        </h3>
+        <h3 className="text-xs font-semibold text-ink-secondary">Desglose determinista de tributos</h3>
         <dl className="mt-2.5 divide-y divide-border-hairline text-xs">
           <div className="flex justify-between py-1.5">
             <dt className="text-ink-secondary">Ad Valorem ({result.effectiveAdValoremPercent}%)</dt>
-            <dd className="font-mono font-medium text-ink-primary tabular-nums">{fmt(calculator.currencyCode, result.adValoremAmount)}</dd>
+            <dd className="font-mono font-medium text-ink-primary tabular-nums">{fmt(result.adValoremAmount)}</dd>
           </div>
-          {result.antidumpingAmount > 0 && (
+          {result.antidumpingAmount > 0 ? (
             <div className="flex justify-between py-1.5">
               <dt className="text-amber-700 dark:text-amber-300">Antidumping ({result.effectiveAntidumpingPercent}%)</dt>
-              <dd className="font-mono font-medium text-amber-700 tabular-nums dark:text-amber-300">{fmt(calculator.currencyCode, result.antidumpingAmount)}</dd>
+              <dd className="font-mono font-medium text-amber-700 tabular-nums dark:text-amber-300">{fmt(result.antidumpingAmount)}</dd>
             </div>
-          )}
+          ) : null}
           <div className="flex justify-between py-1.5">
             <dt className="text-ink-secondary">Tasa de Servicio Aduanero ({result.effectiveCustomsFeePercent}%)</dt>
-            <dd className="font-mono font-medium text-ink-primary tabular-nums">{fmt(calculator.currencyCode, result.customsFeeAmount)}</dd>
+            <dd className="font-mono font-medium text-ink-primary tabular-nums">{fmt(result.customsFeeAmount)}</dd>
           </div>
           <div className="flex justify-between py-1.5">
             <dt className="text-ink-secondary">IVA de Importación ({result.effectiveVatPercent}%)</dt>
-            <dd className="font-mono font-medium text-ink-primary tabular-nums">{fmt(calculator.currencyCode, result.vatAmount)}</dd>
+            <dd className="font-mono font-medium text-ink-primary tabular-nums">{fmt(result.vatAmount)}</dd>
           </div>
         </dl>
       </section>

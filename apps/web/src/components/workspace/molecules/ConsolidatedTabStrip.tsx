@@ -29,7 +29,7 @@ export function ConsolidatedTabStrip({
   onToggleFullscreen,
   onCloseCanvas,
 }: ConsolidatedTabStripProps) {
-  const { tabs, showCompareShortcut, showRegulatoryShortcut } = resolveConsolidatedTabs({
+  const { tabs, showCalculatorShortcut, showCompareShortcut, showRegulatoryShortcut } = resolveConsolidatedTabs({
     components,
     activeTab,
     unreadAlertsCount,
@@ -37,8 +37,25 @@ export function ConsolidatedTabStrip({
   const reduceMotion = useReducedMotion();
 
   return (
-    <div className="no-print flex items-center justify-between gap-2 border-b border-border-subtle bg-surface-panel px-3 min-w-0">
-      <div role="tablist" className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto">
+    <div className="no-print flex h-12 min-w-0 shrink-0 items-center justify-between gap-2 border-b border-border-subtle bg-surface-panel px-3">
+      <div
+        role="tablist"
+        aria-label="Vistas del panel Canvas"
+        onKeyDown={(e) => {
+          if (tabs.length < 2) return;
+          const idx = tabs.findIndex((t) => t.matchesTabs.includes(activeTab));
+          if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            const next = tabs[(idx + 1) % tabs.length];
+            if (next) onSelectTab(next.targetTab);
+          } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            const prev = tabs[(idx - 1 + tabs.length) % tabs.length];
+            if (prev) onSelectTab(prev.targetTab);
+          }
+        }}
+        className="flex h-full min-w-0 flex-1 items-center gap-0.5 overflow-x-auto"
+      >
         {tabs.map((tab) => {
           const isActive = tab.matchesTabs.includes(activeTab);
           return (
@@ -72,6 +89,15 @@ export function ConsolidatedTabStrip({
       </div>
 
       <div className="flex shrink-0 items-center gap-1.5 py-1.5">
+        {showCalculatorShortcut ? (
+          <button
+            type="button"
+            onClick={() => onSelectTab('calculator')}
+            className="cursor-pointer rounded-md px-2 py-1 text-[11px] font-medium text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
+          >
+            + CIF
+          </button>
+        ) : null}
         {showCompareShortcut ? (
           <button
             type="button"

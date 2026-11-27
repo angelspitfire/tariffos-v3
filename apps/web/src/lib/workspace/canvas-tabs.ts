@@ -23,6 +23,7 @@ export interface ResolveConsolidatedTabsInput {
 
 export interface ResolvedConsolidatedTabs {
   tabs: ConsolidatedCanvasTabDef[];
+  showCalculatorShortcut?: boolean;
   showCompareShortcut: boolean;
   showRegulatoryShortcut: boolean;
 }
@@ -72,6 +73,7 @@ export function resolveConsolidatedTabs(
     activeTab === 'hierarchy';
 
   const hasRegulatoryContext = unreadAlertsCount > 0 || activeTab === 'regulatory_diff';
+  const hasCalculatorContext = hasCalculator || Boolean(dossier && activeTab === 'calculator');
 
   const tabs: ConsolidatedCanvasTabDef[] = [];
 
@@ -93,7 +95,7 @@ export function resolveConsolidatedTabs(
     });
   }
 
-  if (hasCalculator) {
+  if (hasCalculatorContext) {
     tabs.push({
       id: 'calculator',
       label: 'Tributos CIF',
@@ -122,6 +124,7 @@ export function resolveConsolidatedTabs(
 
   return {
     tabs,
+    showCalculatorShortcut: Boolean(dossier) && !hasCalculatorContext,
     showCompareShortcut: !hasRgiOrCompareContext,
     showRegulatoryShortcut: !hasRegulatoryContext,
   };
@@ -150,7 +153,7 @@ export function resolveEffectiveCanvasTab(
   if (
     (activeTab === 'batch_manifest' && batch) ||
     (activeTab === 'dossier' && dossier) ||
-    (activeTab === 'calculator' && calculator) ||
+    (activeTab === 'calculator' && (calculator || dossier)) ||
     (activeTab === 'hierarchy' && hierarchy) ||
     (activeTab === 'comparison' && comparison) ||
     (activeTab === 'rgi_comparator' && (dossier || comparison || hierarchy)) ||

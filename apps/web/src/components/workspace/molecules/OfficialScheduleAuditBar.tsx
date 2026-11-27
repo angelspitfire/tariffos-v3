@@ -9,6 +9,7 @@ export interface OfficialScheduleAuditBarProps {
   verified: boolean;
   jurisdictionName: string;
   discrepancyDetail?: string;
+  embedded?: boolean;
 }
 
 export function OfficialScheduleAuditBar({
@@ -16,6 +17,7 @@ export function OfficialScheduleAuditBar({
   verified,
   jurisdictionName,
   discrepancyDetail,
+  embedded = false,
 }: OfficialScheduleAuditBarProps) {
   const [expanded, setExpanded] = useState(!verified);
 
@@ -26,33 +28,46 @@ export function OfficialScheduleAuditBar({
   return (
     <div
       className={cn(
-        'rounded-xl border px-3.5 py-2 text-xs',
-        verified
-          ? 'border-emerald-300/70 bg-emerald-50/60 dark:border-emerald-900/50 dark:bg-emerald-950/20'
-          : 'border-amber-300 bg-amber-50/80 dark:border-amber-900/60 dark:bg-amber-950/25',
+        'text-xs',
+        embedded
+          ? verified
+            ? 'bg-emerald-500/[0.03] px-5 py-2.5'
+            : 'border-l-2 border-l-amber-500 bg-amber-500/[0.06] px-5 py-2.5'
+          : verified
+            ? 'rounded-xl border border-emerald-300/70 bg-emerald-50/60 px-3.5 py-2 dark:border-emerald-900/50 dark:bg-emerald-950/20'
+            : 'rounded-xl border border-amber-300 bg-amber-50/80 px-3.5 py-2 dark:border-amber-900/60 dark:bg-amber-950/25',
       )}
     >
       <button
         type="button"
+        aria-expanded={expanded}
         onClick={() => setExpanded((prev) => !prev)}
-        className="flex w-full cursor-pointer items-center justify-between gap-2 text-left"
+        className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-md text-left focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
       >
         <span className="flex min-w-0 items-center gap-2">
           {verified ? (
-            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <CheckCircle2
+              className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400"
+              aria-hidden="true"
+            />
           ) : (
-            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <AlertTriangle
+              className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400"
+              aria-hidden="true"
+            />
           )}
           <span className="font-medium text-ink-primary">
-            {verified
-              ? `Arancel oficial verificado · ${hsCode}`
-              : `Discrepancia detectada en arancel oficial (${hsCode})`}
+            {verified ? 'Arancel oficial verificado · ' : 'Discrepancia detectada en arancel oficial ('}
+            <span translate="no" className="font-mono">
+              {hsCode}
+            </span>
+            {verified ? '' : ')'}
           </span>
         </span>
         {expanded ? (
-          <ChevronUp className="h-3.5 w-3.5 shrink-0 text-ink-muted" />
+          <ChevronUp className="h-3.5 w-3.5 shrink-0 text-ink-muted" aria-hidden="true" />
         ) : (
-          <ChevronDown className="h-3.5 w-3.5 shrink-0 text-ink-muted" />
+          <ChevronDown className="h-3.5 w-3.5 shrink-0 text-ink-muted" aria-hidden="true" />
         )}
       </button>
 

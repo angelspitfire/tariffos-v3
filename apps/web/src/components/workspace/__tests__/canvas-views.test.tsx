@@ -270,4 +270,53 @@ describe('Canvas views and controls', () => {
     // Auto-advanced to line 3
     expect(screen.getByTestId('batch-inspector-header').textContent).toContain('SG-CAB6');
   });
+
+  it('BatchManifestTriageView collapses 7-attribute sheet on classified items, filters by status/search, and preserves selected row on CopyHsButton click', async () => {
+    const user = userEvent.setup();
+    render(<BatchManifestTriageView manifest={sampleBatch} />);
+
+    // Line 1 is classified with no clarifying questions: 7-attribute sheet is collapsed
+    expect(screen.getByTestId('batch-inspector-header').textContent).toContain('SG-INV5K');
+    expect(screen.queryByText(/Naturaleza y materia constitutiva/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Editar ficha merceológica de 7 atributos/i })).toBeInTheDocument();
+
+    // Clicking CopyHsButton on row 2 does not change selectedLine
+    await user.click(screen.getByRole('button', { name: 'Copiar código 8541.43.00.00' }));
+    expect(screen.getByTestId('batch-inspector-header').textContent).toContain('SG-INV5K');
+
+    // Filter by Pendientes shows only needs_review rows (2 rows)
+    await user.click(screen.getByRole('button', { name: /^Pendientes/i }));
+    expect(screen.queryByText('SG-INV5K')).not.toBeInTheDocument();
+    expect(screen.getByText('SG-PV550')).toBeInTheDocument();
+    expect(screen.getByText('SG-CAB6')).toBeInTheDocument();
+
+    // Keyboard selection on row 3 selects it
+    const row3 = screen.getByText('SG-CAB6').closest('tr');
+    expect(row3).not.toBeNull();
+    row3!.focus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByTestId('batch-inspector-header').textContent).toContain('SG-CAB6');
+  });
+
+  it('DutyCalculatorView allows clearing numeric fields cleanly without leading zero and sets aria-pressed on Incoterms', async () => {
+    const user = userEvent.setup();
+    render(
+      <DutyCalculatorView
+        calculator={sampleCalculator}
+        jurisdiction={getJurisdictionById('ve-seniat')}
+      />,
+    );
+
+    const fobBtn = screen.getByRole('button', { name: 'FOB' });
+    const cifBtn = screen.getByRole('button', { name: 'CIF' });
+    expect(fobBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(cifBtn).toHaveAttribute('aria-pressed', 'false');
+
+    const invoiceInput = screen.getByLabelText(/Valor Factura/i);
+    await user.clear(invoiceInput);
+    expect(invoiceInput).toHaveValue('');
+    await user.type(invoiceInput, '2450');
+    expect(invoiceInput).toHaveValue('2450');
+    expect(screen.getByTestId('kpi-cif-value').textContent).toContain('3,450.00');
+  });
 });

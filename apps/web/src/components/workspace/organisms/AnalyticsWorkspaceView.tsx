@@ -20,18 +20,16 @@ const TABS: Array<{ id: AnalyticsTabId; label: string }> = [
   { id: 'recent_compare', label: 'Comparar dictámenes' },
 ];
 
-export function AnalyticsWorkspaceView({
-  threads,
-  skuPrecedents,
-  onClose,
-}: AnalyticsWorkspaceViewProps) {
+export function AnalyticsWorkspaceView({ threads, skuPrecedents, onClose }: AnalyticsWorkspaceViewProps) {
   const [activeTab, setActiveTab] = useState<AnalyticsTabId>('summary');
-  const metrics = useMemo(
-    () => computeWorkspaceAnalytics(threads, skuPrecedents),
-    [threads, skuPrecedents],
-  );
-
+  const metrics = useMemo(() => computeWorkspaceAnalytics(threads, skuPrecedents), [threads, skuPrecedents]);
   const maxMonthly = Math.max(1, ...metrics.monthlyTrend.map((m) => m.total));
+
+  const onTabKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const idx = TABS.findIndex((t) => t.id === activeTab);
+    if (e.key === 'ArrowRight') { e.preventDefault(); setActiveTab(TABS[(idx + 1) % TABS.length]!.id); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); setActiveTab(TABS[(idx - 1 + TABS.length) % TABS.length]!.id); }
+  };
 
   return (
     <div className="flex h-full flex-col bg-surface-app">
@@ -40,26 +38,22 @@ export function AnalyticsWorkspaceView({
           <BarChart3 className="h-4 w-4 text-accent-ink" aria-hidden="true" />
           <h2 className="text-sm font-semibold text-ink-primary">Analítica Operativa</h2>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-border-subtle px-2.5 py-1 text-xs font-medium text-ink-secondary hover:bg-surface-hover"
-        >
+        <button type="button" onClick={onClose} className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-border-subtle px-2.5 py-1 text-xs font-medium text-ink-secondary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none">
           <X className="h-3.5 w-3.5" aria-hidden="true" />
           Volver al workspace
         </button>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto border-b border-border-subtle bg-surface-panel px-4">
+      <div role="tablist" aria-label="Secciones de analítica operativa" onKeyDown={onTabKeyDown} className="flex gap-1 overflow-x-auto border-b border-border-subtle bg-surface-panel px-4">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             type="button"
+            role="tab"
+            aria-selected={activeTab === tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`shrink-0 cursor-pointer border-b-2 px-3 py-2 text-xs font-medium whitespace-nowrap transition ${
-              activeTab === tab.id
-                ? 'border-accent-brand text-accent-ink'
-                : 'border-transparent text-ink-muted hover:text-ink-primary'
+            className={`shrink-0 cursor-pointer border-b-2 px-3 py-2 text-xs font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none ${
+              activeTab === tab.id ? 'border-accent-brand text-accent-ink' : 'border-transparent text-ink-muted hover:text-ink-primary'
             }`}
           >
             {tab.label}

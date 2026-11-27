@@ -1,5 +1,7 @@
 'use client';
 
+import { formatCurrencyAmount } from '@/lib/workspace/format-locale';
+
 interface CifTopKpiStripProps {
   currencyCode: string;
   localCurrencyCode: string;
@@ -9,13 +11,6 @@ interface CifTopKpiStripProps {
   landedCost: number;
   effectiveTaxBurdenPercent: number;
   localLandedCost: number;
-}
-
-function formatMoney(currency: string, amount: number): string {
-  return `${currency} ${amount.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
 }
 
 export function CifTopKpiStrip({
@@ -36,7 +31,7 @@ export function CifTopKpiStrip({
           data-testid="kpi-cif-value"
           className="mt-1 font-mono text-base font-semibold text-ink-primary tabular-nums"
         >
-          {formatMoney(currencyCode, customsValue)}
+          {formatCurrencyAmount(currencyCode, customsValue)}
         </div>
         <div className="mt-0.5 text-[11px] text-ink-subtle">{valuationBasisLabel}</div>
       </div>
@@ -47,7 +42,7 @@ export function CifTopKpiStrip({
           data-testid="kpi-taxes-value"
           className="mt-1 font-mono text-base font-semibold text-accent-ink tabular-nums"
         >
-          {formatMoney(currencyCode, totalTaxes)}
+          {formatCurrencyAmount(currencyCode, totalTaxes)}
         </div>
         <div className="mt-0.5 text-[11px] text-ink-subtle tabular-nums">
           Carga efectiva: {effectiveTaxBurdenPercent.toFixed(1)}%
@@ -60,13 +55,13 @@ export function CifTopKpiStrip({
           data-testid="kpi-landed-value"
           className="mt-1 font-mono text-base font-bold text-ink-primary tabular-nums"
         >
-          {formatMoney(currencyCode, landedCost)}
+          {formatCurrencyAmount(currencyCode, landedCost)}
         </div>
-        {localCurrencyCode !== currencyCode && (
+        {localCurrencyCode !== currencyCode ? (
           <div className="mt-0.5 font-mono text-[11px] text-ink-secondary tabular-nums">
-            ≈ {formatMoney(localCurrencyCode, localLandedCost)}
+            ≈ {formatCurrencyAmount(localCurrencyCode, localLandedCost)}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
