@@ -20,6 +20,7 @@ import { useWorkspaceClassification } from './use-workspace-classification';
 export function useWorkspaceState() {
   const persistence = useMemo(() => createWorkspacePersistence(), []);
   const [threads, setThreads] = useState<WorkspaceThread[]>([]);
+  const [threadsLoading, setThreadsLoading] = useState(true);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [selectedCanvasMsgId, setSelectedCanvasMsgId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<CanvasTabType>('dossier');
@@ -70,25 +71,31 @@ export function useWorkspaceState() {
 
   useEffect(() => {
     let active = true;
-    let userMutatedLocally = false;
+    let threadsSyncedFromCloud = false;
+    let skusSyncedFromCloud = false;
+    let profileSyncedFromCloud = false;
 
     const hydrateLocal = persistence.loadLocalBootstrap?.();
     if (hydrateLocal) {
       void hydrateLocal.then(({ threads: localThreads, skuPrecedents: localSkus, profile: localProfile }) => {
-        if (!active || userMutatedLocally) return;
-        if (localThreads.length > 0 && threadsRef.current.length === 0) {
-          threadsRef.current = localThreads;
-          setThreads(localThreads);
+        if (!active) return;
+        if (!threadsSyncedFromCloud && localThreads.length > 0) {
+          if (threadsRef.current.length === 0) {
+            threadsRef.current = localThreads;
+            setThreads(localThreads);
+          }
+          setThreadsLoading(false);
         }
-        if (localSkus.length > 0) setSkuPrecedents(localSkus);
-        if (localProfile) setProfile(localProfile);
+        if (!skusSyncedFromCloud && localSkus.length > 0) setSkuPrecedents(localSkus);
+        if (!profileSyncedFromCloud && localProfile) setProfile(localProfile);
       });
     }
 
-    void Promise.all([persistence.loadThreads(), persistence.loadSkuPrecedents(), persistence.loadUserProfile()]).then(
-      ([loadedThreads, loadedSkus, loadedProfile]) => {
+    void persistence
+      .loadThreads()
+      .then((loadedThreads) => {
         if (!active) return;
-        userMutatedLocally = true;
+        threadsSyncedFromCloud = true;
         const activeId = activeThreadIdRef.current;
         const localActive = activeId
           ? threadsRef.current.find((t) => t.id === activeId && !loadedThreads.some((r) => r.id === t.id))
@@ -100,10 +107,24 @@ export function useWorkspaceState() {
           activeThreadIdRef.current = null;
           setActiveThreadId(null);
         }
-        setSkuPrecedents(loadedSkus);
-        if (loadedProfile) setProfile(loadedProfile);
-      },
-    );
+        setThreadsLoading(false);
+      })
+      .catch(() => {
+        if (active) setThreadsLoading(false);
+      });
+
+    void persistence.loadSkuPrecedents().then((loadedSkus) => {
+      if (!active) return;
+      skusSyncedFromCloud = true;
+      setSkuPrecedents(loadedSkus);
+    });
+
+    void persistence.loadUserProfile().then((loadedProfile) => {
+      if (!active) return;
+      profileSyncedFromCloud = true;
+      if (loadedProfile) setProfile(loadedProfile);
+    });
+
     return () => { active = false; };
   }, [persistence]);
 
@@ -203,7 +224,7 @@ export function useWorkspaceState() {
   }, [ensureActiveThreadId, jurisdiction.id, persistThread, profile.autoOpenCanvas]);
 
   return {
-    threads, activeThread, activeThreadId, selectedCanvasMsgId, canvasComponents, activeTab,
+    threads, threadsLoading, activeThread, activeThreadId, selectedCanvasMsgId, canvasComponents, activeTab,
     jurisdiction, skuPrecedents, profile, toast, ...runner,
     setActiveTab, setActiveThreadId, setSelectedCanvasMsgId,
     setJurisdictionId: (id: string) => updateProfile({ defaultJurisdictionId: id }),

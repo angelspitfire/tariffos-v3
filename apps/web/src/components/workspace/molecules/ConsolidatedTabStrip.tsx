@@ -1,6 +1,6 @@
 'use client';
 
-import { X } from 'lucide-react';
+import { GitCompareArrows, Maximize2, Minimize2, X } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import type { A2UICanvasComponent, CanvasTabType } from '@tariffos/shared-types';
 import { resolveConsolidatedTabs } from '@/lib/workspace/canvas-tabs';
@@ -10,7 +10,11 @@ export interface ConsolidatedTabStripProps {
   components: readonly A2UICanvasComponent[];
   activeTab: CanvasTabType;
   unreadAlertsCount: number;
+  versionsCount?: number;
+  isFullscreen?: boolean;
   onSelectTab: (tab: CanvasTabType) => void;
+  onOpenTimeline?: () => void;
+  onToggleFullscreen?: () => void;
   onCloseCanvas?: () => void;
 }
 
@@ -18,7 +22,11 @@ export function ConsolidatedTabStrip({
   components,
   activeTab,
   unreadAlertsCount,
+  versionsCount = 0,
+  isFullscreen = false,
   onSelectTab,
+  onOpenTimeline,
+  onToggleFullscreen,
   onCloseCanvas,
 }: ConsolidatedTabStripProps) {
   const { tabs, showCompareShortcut, showRegulatoryShortcut } = resolveConsolidatedTabs({
@@ -87,12 +95,38 @@ export function ConsolidatedTabStrip({
             ) : null}
           </button>
         ) : null}
+        {versionsCount >= 2 && onOpenTimeline ? (
+          <button
+            type="button"
+            onClick={onOpenTimeline}
+            aria-label="Historial y comparador de versiones"
+            className="inline-flex h-7 cursor-pointer items-center gap-1 rounded-md border border-border-subtle bg-surface-muted px-2 text-[11px] font-medium text-ink-secondary transition-colors hover:bg-surface-hover hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
+          >
+            <GitCompareArrows className="h-3 w-3 text-accent-ink" aria-hidden="true" />
+            <span>v{versionsCount}</span>
+          </button>
+        ) : null}
+        {onToggleFullscreen ? (
+          <button
+            type="button"
+            onClick={onToggleFullscreen}
+            aria-label={isFullscreen ? 'Restaurar tamaño del Canvas' : 'Expandir Canvas'}
+            title={isFullscreen ? 'Restaurar' : 'Expandir'}
+            className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
+          >
+            {isFullscreen ? (
+              <Minimize2 className="h-3.5 w-3.5" aria-hidden="true" />
+            ) : (
+              <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />
+            )}
+          </button>
+        ) : null}
         {onCloseCanvas ? (
           <button
             type="button"
             onClick={onCloseCanvas}
             aria-label="Cerrar panel de dictamen"
-            title="Cerrar panel"
+            title="Cerrar panel (Esc)"
             className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
             <X className="h-3.5 w-3.5" aria-hidden="true" />

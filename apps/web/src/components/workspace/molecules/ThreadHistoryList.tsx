@@ -7,6 +7,7 @@ import { getThreadMeta } from '@/lib/workspace/thread-meta';
 
 export interface ThreadHistoryListProps {
   threads: readonly WorkspaceThread[];
+  loading?: boolean;
   activeThreadId: string | null;
   onSelectThread: (threadId: string) => void;
   onDeleteThread: (threadId: string) => void;
@@ -14,6 +15,7 @@ export interface ThreadHistoryListProps {
 
 export function ThreadHistoryList({
   threads,
+  loading = false,
   activeThreadId,
   onSelectThread,
   onDeleteThread,
@@ -30,6 +32,20 @@ export function ThreadHistoryList({
         t.messages.some((m) => m.text.toLowerCase().includes(q)),
     );
   }, [query, threads]);
+
+  if (threads.length === 0 && loading) {
+    return (
+      <div role="status" aria-label="Cargando conversaciones" className="space-y-2 px-1 py-2">
+        <span className="sr-only">Cargando conversaciones...</span>
+        {[0, 1, 2, 3].map((row) => (
+          <div key={row} className="animate-pulse rounded-card bg-surface-subtle px-2.5 py-2.5">
+            <div className="h-2.5 w-20 rounded bg-border-subtle" />
+            <div className="mt-1.5 h-3 w-4/5 rounded bg-border-subtle" />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   if (threads.length === 0) {
     return (

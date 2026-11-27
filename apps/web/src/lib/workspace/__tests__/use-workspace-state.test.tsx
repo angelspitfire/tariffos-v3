@@ -54,6 +54,7 @@ function Harness() {
   return (
     <div>
       <span data-testid="count">{ws.threads.length}</span>
+      <span data-testid="loading">{String(ws.threadsLoading)}</span>
       <span data-testid="active-id">{ws.activeThreadId ?? 'null'}</span>
       <span data-testid="active-title">{ws.activeThread?.title ?? 'none'}</span>
       <button type="button" onClick={() => ws.setActiveThreadId(SAMPLE_THREAD.id)}>
@@ -96,5 +97,41 @@ describe('useWorkspaceState startup thread selection', () => {
       screen.getByRole('button', { name: 'delete-old' }).click();
     });
     expect(screen.getByTestId('active-id').textContent).toBe('null');
+  });
+
+  it('hydrates sidebar threads and clears threadsLoading as soon as loadThreads resolves without waiting for precedents or profile', async () => {
+    mocks.loadLocalBootstrap.mockResolvedValue({
+      threads: [],
+      skuPrecedents: [],
+      profile: null,
+    });
+    mocks.loadThreads.mockResolvedValue([SAMPLE_THREAD]);
+    mocks.loadSkuPrecedents.mockReturnValue(new Promise(() => {}));
+    mocks.loadUserProfile.mockReturnValue(new Promise(() => {}));
+
+    render(<Harness />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('count').textContent).toBe('1');
+      expect(screen.getByTestId('loading').textContent).toBe('false');
+    });
+  });
+
+  it('clears threadsLoading immediately when loadLocalBootstrap returns cached threads even while cloud loadThreads is still pending', async () => {
+    mocks.loadLocalBootstrap.mockResolvedValue({
+      threads: [SAMPLE_THREAD],
+      skuPrecedents: [],
+      profile: null,
+    });
+    mocks.loadThreads.mockReturnValue(new Promise(() => {}));
+    mocks.loadSkuPrecedents.mockResolvedValue([]);
+    mocks.loadUserProfile.mockResolvedValue(null);
+
+    render(<Harness />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('count').textContent).toBe('1');
+      expect(screen.getByTestId('loading').textContent).toBe('false');
+    });
   });
 });

@@ -139,4 +139,44 @@ describe('IndexedDBAdapter and DualWritePersistence', () => {
     expect(localState.profile).toEqual(SAMPLE_PROFILE);
     expect(cloudLoadThreads).not.toHaveBeenCalled();
   });
+
+  it('coalesces rapid consecutive saveThread calls to cloud when cloudSaveDebounceMs is set while writing local immediately', async () => {
+    vi.useFakeTimers();
+    const local = new IndexedDBAdapter({ forceMemoryFallback: true });
+    const saveThreadCloud = vi.fn<IPersistence['saveThread']>().mockResolvedValue(undefined);
+    const cloud = makeCloudStub({ saveThread: saveThreadCloud });
+
+    const dual = new DualWritePersistence(local, cloud, { cloudSaveDebounceMs: 400 });
+    await dual.saveThread({ ...SAMPLE_THREAD, title: 'v1' });
+    await dual.saveThread({ ...SAMPLE_THREAD, title: 'v2' });
+    await dual.saveThread({ ...SAMPLE_THREAD, title: 'v3' });
+
+    // Local storage reflects latest immediately; cloud hasn't been hammered yet.
+    expect((await local.loadThreads())[0]?.title).toBe('v3');
+    expect(saveThreadCloud).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(450);
+    expect(saveThreadCloud).toHaveBeenCalledTimes(1);
+    expect(saveThreadCloud).toHaveBeenCalledWith(expect.objectContaining({ title: 'v3' }));
+    vi.useRealTimers();
+  });
+
+  it('writes cloud-loaded threads, SKUs, and profile back into local IndexedDB so subsequent loadLocalBootstrap hydrates immediately', async () => {
+    const local = new IndexedDBAdapter({ forceMemoryFallback: true });
+    const cloud = makeCloudStub({
+      loadThreads: vi.fn<IPersistence['loadThreads']>().mockResolvedValue([SAMPLE_THREAD]),
+      loadSkuPrecedents: vi.fn<IPersistence['loadSkuPrecedents']>().mockResolvedValue([SAMPLE_SKU]),
+      loadUserProfile: vi.fn<IPersistence['loadUserProfile']>().mockResolvedValue(SAMPLE_PROFILE),
+    });
+
+    const dual = new DualWritePersistence(local, cloud);
+    await dual.loadThreads();
+    await dual.loadSkuPrecedents();
+    await dual.loadUserProfile();
+
+    const cached = await dual.loadLocalBootstrap();
+    expect(cached.threads).toEqual([SAMPLE_THREAD]);
+    expect(cached.skuPrecedents).toEqual([SAMPLE_SKU]);
+    expect(cached.profile).toEqual(SAMPLE_PROFILE);
+  });
 });

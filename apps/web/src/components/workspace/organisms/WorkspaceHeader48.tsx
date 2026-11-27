@@ -60,7 +60,7 @@ export function WorkspaceHeader48({
 
   return (
     <>
-      <header className="no-print relative z-20 flex h-[52px] shrink-0 items-center justify-between gap-3 border-b border-border-subtle bg-surface-panel/80 px-4 backdrop-blur-xl">
+      <header className="no-print relative z-20 flex h-[52px] shrink-0 items-center justify-between gap-3 border-b border-border-subtle bg-surface-panel px-4">
         <div className="flex min-w-0 items-center gap-2">
           <button
             type="button"

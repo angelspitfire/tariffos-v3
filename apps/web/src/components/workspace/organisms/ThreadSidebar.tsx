@@ -16,6 +16,7 @@ export interface ThreadSidebarProps {
   /** Mobile drawer variant: always expanded, shows a close button. */
   drawer?: boolean;
   threads: readonly WorkspaceThread[];
+  threadsLoading?: boolean;
   activeThreadId: string | null;
   profile: UserProfileSettings;
   plan: WorkspacePlanStatus;
@@ -38,6 +39,7 @@ export function ThreadSidebar({
   open,
   drawer = false,
   threads,
+  threadsLoading = false,
   activeThreadId,
   profile,
   plan,
@@ -71,7 +73,7 @@ export function ThreadSidebar({
   return (
     <aside
       aria-label="Historial y navegación"
-      className="no-print flex h-full w-64 shrink-0 flex-col border-r border-line-frost bg-surface-frost backdrop-blur-xl"
+      className="no-print flex h-full w-64 shrink-0 flex-col border-r border-border-subtle bg-surface-panel"
     >
       <div className="flex h-[52px] shrink-0 items-center justify-between gap-2 border-b border-line-frost px-3.5">
         <BrandMark size="sm" showBadge={false} />
@@ -129,6 +131,7 @@ export function ThreadSidebar({
       <div className="min-h-0 flex-1 overflow-y-auto p-2.5">
         <ThreadHistoryList
           threads={threads}
+          loading={threadsLoading}
           activeThreadId={activeThreadId}
           onSelectThread={onSelectThread}
           onDeleteThread={onDeleteThread}

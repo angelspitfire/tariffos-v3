@@ -13,6 +13,7 @@ import { computePlanStatus, mergeCloudUsageIntoPlanStatus, resolveWorkspaceReadO
 import { useBatchJob } from '@/lib/workspace/use-batch-job';
 import { useCloudUsageState } from '@/lib/workspace/use-cloud-usage';
 import { usePendingQueryAutorun } from '@/lib/workspace/use-pending-query-autorun';
+import { useWorkspaceShortcuts } from '@/lib/workspace/use-workspace-shortcuts';
 import { useWorkspaceShellLayout } from '@/lib/workspace/use-split-layout';
 import { useWorkspaceState } from '@/lib/workspace/use-workspace-state';
 import { AnalyticsWorkspaceView } from '../organisms/AnalyticsWorkspaceView';
@@ -91,7 +92,21 @@ export function WorkspaceSplitShell() {
   });
 
   const goToChat = () => { layout.setAnalyticsOpen(false); layout.setMobilePane('chat'); };
-  const onNewThread = () => { ownedThreadIdRef.current = null; ws.startNewThread(); setSurfaceKey(`eve-new-${Date.now()}`); goToChat(); };
+  const focusComposer = () => {
+    goToChat();
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Consulta arancelaria o descripción de mercancía"]')?.focus();
+    });
+  };
+  const onNewThread = () => { ownedThreadIdRef.current = null; ws.startNewThread(); setSurfaceKey(`eve-new-${Date.now()}`); focusComposer(); };
+
+  useWorkspaceShortcuts({
+    canvasOpen: layout.showCanvas,
+    hasOpenModal: layout.skuModalOpen || layout.settingsModalOpen || layout.filesPanelOpen,
+    onFocusComposer: focusComposer,
+    onNewThread,
+    onCloseCanvas: () => { layout.setCanvasFullscreen(false); layout.setCanvasDismissed(true); layout.setMobilePane('chat'); },
+  });
   const onSelectThread = (id: string) => { ownedThreadIdRef.current = id; ws.setActiveThreadId(id); ws.setSelectedCanvasMsgId(null); setSurfaceKey(`eve-thread-${id}`); goToChat(); };
   const onTriggerBatch = () => (readOnlyReason ? ws.pushToast(readOnlyReason, 'info') : batchInputRef.current?.click());
   const handleRegisterAgentSend = useCallback((fn: ((text: string) => void) | null) => {
@@ -107,7 +122,7 @@ export function WorkspaceSplitShell() {
 
       {!layout.canvasFullscreen ? (
         <WorkspaceSidebarSlot
-          desktopOpen={layout.sidebarOpen} mobileOpen={layout.mobileDrawerOpen} threads={visibleThreads} activeThreadId={visibleActiveThread?.id ?? ws.activeThreadId}
+          desktopOpen={layout.sidebarOpen} mobileOpen={layout.mobileDrawerOpen} threads={visibleThreads} threadsLoading={ws.threadsLoading} activeThreadId={visibleActiveThread?.id ?? ws.activeThreadId}
           profile={ws.profile} plan={plan} skuCount={ws.skuPrecedents.length} dashboardActive={layout.analyticsOpen}
           onToggleDesktop={() => layout.setSidebarOpen((p) => !p)} onCloseMobile={() => layout.setMobileDrawerOpen(false)}
           onNewThread={onNewThread} onSelectThread={onSelectThread} onDeleteThread={ws.deleteThread}

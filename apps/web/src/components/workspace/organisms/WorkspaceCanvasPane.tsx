@@ -12,8 +12,6 @@ import type {
 import type { ThreadArtifactSummary } from '@/lib/workspace/artifact-versions';
 import { resolveEffectiveCanvasTab } from '@/lib/workspace/canvas-tabs';
 import { ArtifactDirectoryDrawer } from '../molecules/ArtifactDirectoryDrawer';
-import { CanvasStatusStrip } from '../molecules/CanvasStatusStrip';
-import { CanvasTitleBar } from '../molecules/CanvasTitleBar';
 import { ConsolidatedTabStrip } from '../molecules/ConsolidatedTabStrip';
 import type { TechnicalSpecItem } from '../molecules/MerceologicalSpecsCard';
 import { OpenArtifactTabsStrip } from '../molecules/OpenArtifactTabsStrip';
@@ -99,17 +97,19 @@ export function WorkspaceCanvasPane({
 
   const workflowMode: ApprovalWorkflowMode = profile.approvalWorkflowMode;
   const effectiveTab = resolveEffectiveCanvasTab(components, activeTab);
-  const titleLabel = dossier?.hsCode ?? calculator?.hsCode ?? (batch ? `Lote (${batch.items.length} ítems)` : 'Expediente');
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-surface-panel">
-      <CanvasTitleBar
-        codeLabel={titleLabel}
+      <ConsolidatedTabStrip
+        components={components}
+        activeTab={effectiveTab}
+        unreadAlertsCount={0}
         versionsCount={artifacts.length}
         isFullscreen={isFullscreen}
+        onSelectTab={onSelectTab}
         onOpenTimeline={() => setTimelineOpen(true)}
         onToggleFullscreen={onToggleFullscreen}
-        onClose={onCloseCanvas}
+        onCloseCanvas={onCloseCanvas}
       />
 
       {onSelectArtifact ? (
@@ -130,20 +130,6 @@ export function WorkspaceCanvasPane({
           />
         </>
       ) : null}
-
-      <ConsolidatedTabStrip
-        components={components}
-        activeTab={effectiveTab}
-        unreadAlertsCount={0}
-        onSelectTab={onSelectTab}
-      />
-
-      <CanvasStatusStrip
-        dossier={dossier}
-        calculator={calculator}
-        batch={batch}
-        onSelectTab={onSelectTab}
-      />
 
       <div className="flex-1 overflow-y-auto">
         {effectiveTab === 'batch_manifest' && batch && (

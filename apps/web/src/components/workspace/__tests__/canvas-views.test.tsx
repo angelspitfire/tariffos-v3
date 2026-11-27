@@ -195,6 +195,32 @@ describe('Canvas views and controls', () => {
     expect(onSelectTab).toHaveBeenCalledWith('regulatory_diff');
   });
 
+  it('ConsolidatedTabStrip exposes compact version timeline and fullscreen controls when provided', async () => {
+    const user = userEvent.setup();
+    const onOpenTimeline = vi.fn<() => void>();
+    const onToggleFullscreen = vi.fn<() => void>();
+
+    render(
+      <ConsolidatedTabStrip
+        components={[sampleDossier, sampleCalculator]}
+        activeTab="dossier"
+        unreadAlertsCount={0}
+        versionsCount={2}
+        isFullscreen={false}
+        onSelectTab={vi.fn<() => void>()}
+        onOpenTimeline={onOpenTimeline}
+        onToggleFullscreen={onToggleFullscreen}
+        onCloseCanvas={vi.fn<() => void>()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /Historial y comparador de versiones/i }));
+    expect(onOpenTimeline).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole('button', { name: /Expandir Canvas/i }));
+    expect(onToggleFullscreen).toHaveBeenCalledTimes(1);
+  });
+
   it('DutyCalculatorView displays 3 live KPIs, primary inputs, and keeps advanced fields inside accordion', async () => {
     const user = userEvent.setup();
     render(

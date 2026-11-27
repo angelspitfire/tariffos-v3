@@ -38,7 +38,7 @@ export function VerdictCard({
   const isLongDesc = verdict.description.length > 210;
 
   return (
-    <section className="@container tos-rise rounded-card border border-border-subtle border-t-2 border-t-accent-brand/85 bg-surface-panel p-4 shadow-card sm:p-5">
+    <section className="@container tos-rise rounded-card border border-border-subtle border-t-2 border-t-accent-brand/85 bg-surface-panel p-3.5 shadow-card sm:p-4">
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-semibold text-[var(--color-success)]">

@@ -67,7 +67,7 @@ export async function GET(): Promise<Response> {
     where: { tenantId: auth.context.tenantId },
     include: { messages: { orderBy: { createdAt: 'asc' } } },
     orderBy: { updatedAt: 'desc' },
-    take: 50,
+    take: 25,
   });
 
   const threads: WorkspaceThread[] = sessions.map((s) => {

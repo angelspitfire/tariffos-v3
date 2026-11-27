@@ -9,6 +9,7 @@ export interface WorkspaceSidebarSlotProps {
   desktopOpen: boolean;
   mobileOpen: boolean;
   threads: readonly WorkspaceThread[];
+  threadsLoading?: boolean;
   activeThreadId: string | null;
   profile: UserProfileSettings;
   plan: WorkspacePlanStatus;

@@ -17,10 +17,10 @@ export interface WorkspaceEmptyStateProps {
 }
 
 const WORKFLOW_CARD =
-  'tos-rise group cursor-pointer space-y-2 rounded-surface border border-border-subtle bg-surface-panel p-4 text-left shadow-elev-1 transition-colors hover:border-accent-brand focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none';
+  'tos-rise group cursor-pointer space-y-1.5 rounded-surface border border-border-subtle bg-surface-panel p-3 text-left shadow-elev-1 transition-colors hover:border-accent-brand focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none';
 
 const QUICK_CHIP =
-  'inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle bg-surface-panel px-3.5 py-1.5 text-xs text-ink-secondary transition-colors hover:border-accent-brand hover:text-accent-ink focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none';
+  'inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle bg-surface-panel px-3 py-1 text-xs text-ink-secondary transition-colors hover:border-accent-brand hover:text-accent-ink focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none';
 
 export function WorkspaceEmptyState({
   onFocusComposer,
@@ -32,17 +32,17 @@ export function WorkspaceEmptyState({
   const firstBatch = SAMPLE_BATCH_DOCUMENTS[0];
 
   return (
-    <div className="mx-auto my-auto flex max-w-2xl flex-col justify-center space-y-7 py-4">
-      <div className="space-y-2.5 text-center">
-        <h1 className="mx-auto text-3xl font-medium tracking-[-0.03em] text-ink-primary [text-wrap:balance] sm:text-4xl">
+    <div className="mx-auto my-auto flex max-w-2xl flex-col justify-center space-y-5 py-3">
+      <div className="space-y-1.5 text-center">
+        <h1 className="mx-auto text-2xl font-medium tracking-[-0.03em] text-ink-primary [text-wrap:balance] sm:text-3xl">
           ¿Qué mercancía clasificamos hoy?
         </h1>
-        <p className="mx-auto max-w-lg text-sm leading-relaxed text-ink-secondary">
-          Conversa sobre normativa aduanera, describe un producto o arrastra facturas, fichas técnicas y manifiestos aquí.
+        <p className="mx-auto max-w-lg text-xs leading-relaxed text-ink-secondary sm:text-sm">
+          Consulta normativa aduanera, describe un producto o arrastra facturas y fichas aquí.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
         <button type="button" onClick={onFocusComposer} className={WORKFLOW_CARD}>
           <div className="flex items-center justify-between gap-2">
             <Scale className="h-4 w-4 shrink-0 text-accent-ink" aria-hidden="true" />
