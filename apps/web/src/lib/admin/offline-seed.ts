@@ -4,6 +4,7 @@ import {
   type AdminLeadRecord,
   type AdminPlanRecord,
   type ManualPaymentRecord,
+  type PlatformAdminRecord,
   type TenantBillingStatus,
 } from '@tariffos/shared-types';
 
@@ -197,6 +198,22 @@ export function createInitialOfflinePayments(): ManualPaymentRecord[] {
       paidAt: '2026-11-25T18:00:00.000Z',
       status: 'pending_verification',
       notes: 'Comprobante enviado desde activar plan.',
+    },
+  ];
+}
+
+export function createInitialOfflinePlatformAdmins(): PlatformAdminRecord[] {
+  const now = '2026-11-26T00:00:00.000Z';
+  return [
+    {
+      id: 'pa-demo-1',
+      email: 'admin@tariffos.app',
+      role: 'super_admin',
+      isActive: true,
+      notes: 'Super Admin Demo (TariffOS)',
+      createdBy: 'offline-seed',
+      createdAt: now,
+      updatedAt: now,
     },
   ];
 }

@@ -1,7 +1,9 @@
-import { randomBytes } from 'node:crypto';
 import * as path from 'node:path';
 import * as dotenv from 'dotenv';
-import { sendSuperAdminCredentialsEmail } from '../admin-credentials-email';
+import {
+  generateTemporaryAdminPassword,
+  sendSuperAdminCredentialsEmail,
+} from '../admin-credentials-email';
 import { provisionInternalAdminWorkspace } from '../internal-plan';
 import {
   grantPlatformAdmin,
@@ -20,46 +22,24 @@ function getFlagValue(args: readonly string[], flag: string): string | undefined
   return idx === -1 ? undefined : args[idx + 1];
 }
 
-function generateTemporaryPassword(): string {
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
-  const bytes = randomBytes(16);
-  let core = '';
-  for (const b of bytes) core += alphabet[b % alphabet.length];
-  return `TfOS!${core.slice(0, 6)}-${core.slice(6, 12)}#${core.slice(12, 16)}9a`;
-}
-
 async function upsertSupabaseAuthUser(params: {
   email: string;
   password: string;
   fullName: string;
   role: string;
+  mustChangePassword: boolean;
 }): Promise<{ userId: string; action: 'created' | 'updated' }> {
   const url = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL)?.replace(/\/+$/, '');
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error('Faltan NEXT_PUBLIC_SUPABASE_URL/SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY.');
-  }
-  const headers = {
-    apikey: key,
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  };
-
+  if (!url || !key) throw new Error('Faltan NEXT_PUBLIC_SUPABASE_URL/SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY.');
+  const headers = { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' };
   const listRes = await fetch(`${url}/auth/v1/admin/users?page=1&per_page=200`, { headers });
-  if (!listRes.ok) {
-    throw new Error(`Supabase listUsers respondió ${listRes.status}: ${await listRes.text()}`);
-  }
+  if (!listRes.ok) throw new Error(`Supabase listUsers respondió ${listRes.status}: ${await listRes.text()}`);
   const listJson = (await listRes.json()) as {
-    users?: Array<{
-      id: string;
-      email?: string;
-      user_metadata?: Record<string, unknown>;
-      app_metadata?: Record<string, unknown>;
-    }>;
+    users?: Array<{ id: string; email?: string; user_metadata?: Record<string, unknown>; app_metadata?: Record<string, unknown> }>;
   };
-  const existing = (listJson.users ?? []).find(
-    (u) => u.email?.trim().toLowerCase() === params.email,
-  );
+  const existing = (listJson.users ?? []).find((u) => u.email?.trim().toLowerCase() === params.email);
+  const metadataPatch = { full_name: params.fullName, must_change_password: params.mustChangePassword };
 
   if (existing) {
     const upd = await fetch(`${url}/auth/v1/admin/users/${existing.id}`, {
@@ -69,13 +49,11 @@ async function upsertSupabaseAuthUser(params: {
         password: params.password,
         email_confirm: true,
         ban_duration: 'none',
-        user_metadata: { ...(existing.user_metadata ?? {}), full_name: params.fullName },
+        user_metadata: { ...(existing.user_metadata ?? {}), ...metadataPatch },
         app_metadata: { ...(existing.app_metadata ?? {}), platform_role: params.role },
       }),
     });
-    if (!upd.ok) {
-      throw new Error(`Supabase updateUser respondió ${upd.status}: ${await upd.text()}`);
-    }
+    if (!upd.ok) throw new Error(`Supabase updateUser respondió ${upd.status}: ${await upd.text()}`);
     return { userId: existing.id, action: 'updated' };
   }
 
@@ -86,13 +64,11 @@ async function upsertSupabaseAuthUser(params: {
       email: params.email,
       password: params.password,
       email_confirm: true,
-      user_metadata: { full_name: params.fullName },
+      user_metadata: metadataPatch,
       app_metadata: { platform_role: params.role },
     }),
   });
-  if (!crt.ok) {
-    throw new Error(`Supabase createUser respondió ${crt.status}: ${await crt.text()}`);
-  }
+  if (!crt.ok) throw new Error(`Supabase createUser respondió ${crt.status}: ${await crt.text()}`);
   const created = (await crt.json()) as { id: string };
   return { userId: created.id, action: 'created' };
 }
@@ -149,9 +125,16 @@ async function main(): Promise<void> {
       const role = getFlagValue(rest, '--role') ?? 'super_admin';
       const fullName = getFlagValue(rest, '--name') ?? email.split('@')[0] ?? 'Super Admin';
       const companyName = getFlagValue(rest, '--company') ?? 'TariffOS';
-      const temporaryPassword = getFlagValue(rest, '--password') ?? generateTemporaryPassword();
+      const explicitPassword = getFlagValue(rest, '--password');
+      const temporaryPassword = explicitPassword ?? generateTemporaryAdminPassword();
 
-      const auth = await upsertSupabaseAuthUser({ email, password: temporaryPassword, fullName, role });
+      const auth = await upsertSupabaseAuthUser({
+        email,
+        password: temporaryPassword,
+        fullName,
+        role,
+        mustChangePassword: !explicitPassword,
+      });
       const ws = await prisma.$transaction((tx) =>
         provisionInternalAdminWorkspace(tx, {
           userId: auth.userId,

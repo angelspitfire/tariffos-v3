@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   buildSuperAdminCredentialsEmail,
+  generateTemporaryAdminPassword,
+  getSuperAdminEmailProviderStatus,
   sendSuperAdminCredentialsEmail,
 } from '../admin-credentials-email';
 
@@ -71,5 +73,45 @@ describe('admin-credentials-email', () => {
     expect(res.provider).toBe('none');
     expect(res.includedTemporaryPassword).toBe(false);
     expect(res.error).toMatch(/RESEND_API_KEY/i);
+  });
+
+  it('detects configured email provider status for Resend, Cloudflare, and none', () => {
+    expect(
+      getSuperAdminEmailProviderStatus({
+        RESEND_API_KEY: 're_123',
+        EMAIL_FROM: 'TariffOS <acceso@tariffos.app>',
+      }),
+    ).toEqual({
+      configured: true,
+      provider: 'resend',
+      fromAddress: 'TariffOS <acceso@tariffos.app>',
+    });
+
+    expect(
+      getSuperAdminEmailProviderStatus({
+        CLOUDFLARE_ACCOUNT_ID: 'cf_acc',
+        CLOUDFLARE_API_TOKEN: 'cf_tok',
+        EMAIL_FROM_ADDRESS: 'acceso@tariffos.app',
+      }),
+    ).toEqual({
+      configured: true,
+      provider: 'cloudflare',
+      fromAddress: 'acceso@tariffos.app',
+    });
+
+    expect(getSuperAdminEmailProviderStatus({})).toEqual({
+      configured: false,
+      provider: 'none',
+      fromAddress: null,
+    });
+  });
+
+  it('generates temporary passwords meeting strong password policy', () => {
+    const pwd = generateTemporaryAdminPassword();
+    expect(pwd.length).toBeGreaterThanOrEqual(10);
+    expect(/[A-Z]/.test(pwd)).toBe(true);
+    expect(/[a-z]/.test(pwd)).toBe(true);
+    expect(/\d/.test(pwd)).toBe(true);
+    expect(/[^A-Za-z0-9\s]/.test(pwd)).toBe(true);
   });
 });

@@ -1,10 +1,6 @@
 import { defineTool } from 'eve/tools';
 import { z } from 'zod';
-import {
-  searchParallelFast,
-  searchWebSpecs,
-  type WebSearchResultItem,
-} from '@tariffos/agent';
+import type { WebSearchResultItem } from '@tariffos/agent';
 
 export const WebSearchInputSchema = z.object({
   query: z.string().trim().min(2),
@@ -43,6 +39,8 @@ export async function executeWebSearch(
       summary: response.formattedSummary,
     };
   }
+
+  const { searchParallelFast, searchWebSpecs } = await import('@tariffos/agent');
 
   if (process.env.WEB_SEARCH_PROVIDER?.trim()) {
     const response = await searchWebSpecs(input.query, { limit: input.limit });

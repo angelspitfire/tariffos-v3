@@ -3,12 +3,14 @@ import type {
   AdminLeadRecord,
   AdminPlanRecord,
   ManualPaymentRecord,
+  PlatformAdminRecord,
 } from '@tariffos/shared-types';
 import {
   createInitialOfflineAuditLogs,
   createInitialOfflineLeads,
   createInitialOfflinePayments,
   createInitialOfflinePlans,
+  createInitialOfflinePlatformAdmins,
   createInitialOfflineTenants,
   type OfflineTenantRecord,
 } from './offline-seed';
@@ -18,6 +20,7 @@ interface OfflineAdminState {
   leads: AdminLeadRecord[];
   tenants: OfflineTenantRecord[];
   payments: ManualPaymentRecord[];
+  platformAdmins: PlatformAdminRecord[];
   auditLogs: AdminAuditLogItem[];
 }
 
@@ -31,6 +34,7 @@ function createFreshState(): OfflineAdminState {
     leads: createInitialOfflineLeads(),
     tenants: createInitialOfflineTenants(),
     payments: createInitialOfflinePayments(),
+    platformAdmins: createInitialOfflinePlatformAdmins(),
     auditLogs: createInitialOfflineAuditLogs(),
   };
 }

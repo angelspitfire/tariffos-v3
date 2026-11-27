@@ -112,6 +112,13 @@ export interface AdminAuditLogItem {
   createdAt: string;
 }
 
+export interface ClientLatestPaymentSummary {
+  status: 'pending_verification' | 'verified' | 'rejected';
+  referenceCode: string;
+  planName: string;
+  rejectionReason?: string;
+}
+
 export interface ClientCurrentUsageSnapshot {
   tenantId: string;
   tenantName: string;
@@ -129,4 +136,43 @@ export interface ClientCurrentUsageSnapshot {
   percentUsed: number;
   inputTokens: number;
   outputTokens: number;
+  latestPayment?: ClientLatestPaymentSummary;
+}
+
+export const PlatformAdminAccountRoleSchema = z.enum(['super_admin', 'ops_billing', 'support']);
+export type PlatformAdminAccountRole = z.infer<typeof PlatformAdminAccountRoleSchema>;
+
+export const PlatformAdminRecordSchema = z.object({
+  id: z.string(),
+  email: z.string(),
+  role: PlatformAdminAccountRoleSchema,
+  isActive: z.boolean(),
+  notes: z.string().nullable(),
+  createdBy: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type PlatformAdminRecord = z.infer<typeof PlatformAdminRecordSchema>;
+
+export const CreatePlatformAdminInputSchema = z.object({
+  email: z.string().trim().email(),
+  fullName: z.string().trim().min(2).max(120),
+  companyName: z.string().trim().min(2).max(120).default('TariffOS'),
+  role: PlatformAdminAccountRoleSchema.default('super_admin'),
+  password: z.string().min(8).max(72).optional(),
+});
+export type CreatePlatformAdminInput = z.infer<typeof CreatePlatformAdminInputSchema>;
+
+export const UpdatePlatformAdminInputSchema = z.object({
+  email: z.string().trim().email(),
+  action: z.enum(['revoke', 'grant']),
+  role: PlatformAdminAccountRoleSchema.optional(),
+  reason: z.string().trim().max(300).optional(),
+});
+export type UpdatePlatformAdminInput = z.infer<typeof UpdatePlatformAdminInputSchema>;
+
+export interface AdminEmailProviderStatus {
+  configured: boolean;
+  provider: 'resend' | 'cloudflare' | 'none';
+  fromAddress: string | null;
 }

@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto';
+import type { AdminEmailProviderStatus } from '@tariffos/shared-types';
 import { INTERNAL_TARIFFOS_PLAN_DISPLAY_NAME } from './internal-plan';
 
 export interface SuperAdminCredentialsEmailInput {
@@ -20,6 +22,37 @@ export interface RenderedEmailMessage {
   subject: string;
   text: string;
   html: string;
+}
+
+const TEMP_PASSWORD_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+
+/** Generates a random temporary password satisfying the strong password policy. */
+export function generateTemporaryAdminPassword(): string {
+  const bytes = randomBytes(16);
+  let core = '';
+  for (const b of bytes) core += TEMP_PASSWORD_ALPHABET[b % TEMP_PASSWORD_ALPHABET.length];
+  return `TfOS!${core.slice(0, 6)}-${core.slice(6, 12)}#${core.slice(12, 16)}9a`;
+}
+
+/** Detects whether a transactional email provider is configured for admin credential delivery. */
+export function getSuperAdminEmailProviderStatus(
+  env: Record<string, string | undefined> = process.env,
+): AdminEmailProviderStatus {
+  const resendKey = env.RESEND_API_KEY?.trim();
+  if (resendKey) {
+    const fromAddress =
+      (env.EMAIL_FROM ?? env.RESEND_FROM_EMAIL ?? 'TariffOS <no-reply@tariffos.app>').trim();
+    return { configured: true, provider: 'resend', fromAddress };
+  }
+
+  const cfAccountId = env.CLOUDFLARE_ACCOUNT_ID?.trim();
+  const cfApiToken = env.CLOUDFLARE_API_TOKEN?.trim();
+  const cfFromAddress = env.EMAIL_FROM_ADDRESS?.trim() ?? env.EMAIL_FROM?.trim();
+  if (cfAccountId && cfApiToken && cfFromAddress) {
+    return { configured: true, provider: 'cloudflare', fromAddress: cfFromAddress };
+  }
+
+  return { configured: false, provider: 'none', fromAddress: null };
 }
 
 function escapeHtml(raw: string): string {
@@ -71,36 +104,34 @@ export function buildSuperAdminCredentialsEmail(
 
 export async function sendSuperAdminCredentialsEmail(
   input: SuperAdminCredentialsEmailInput,
-  options?: {
-    env?: Record<string, string | undefined>;
-    fetchImpl?: typeof fetch;
-  },
+  options?: { env?: Record<string, string | undefined>; fetchImpl?: typeof fetch },
 ): Promise<SuperAdminEmailDeliveryResult> {
   const env = options?.env ?? process.env;
   const fetchFn = options?.fetchImpl ?? fetch;
+  const status = getSuperAdminEmailProviderStatus(env);
+  if (!status.configured || !status.fromAddress) {
+    return {
+      delivered: false,
+      provider: 'none',
+      includedTemporaryPassword: false,
+      error:
+        'No hay proveedor de correo transaccional configurado (RESEND_API_KEY o CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID + EMAIL_FROM_ADDRESS). Supabase Auth nativo no permite enviar claves temporales en texto plano.',
+    };
+  }
+
   const appBaseUrl =
-    input.appBaseUrl ??
-    env.NEXT_PUBLIC_SITE_URL ??
-    env.NEXT_PUBLIC_APP_URL ??
-    'https://tariffos.app';
+    input.appBaseUrl ?? env.NEXT_PUBLIC_SITE_URL ?? env.NEXT_PUBLIC_APP_URL ?? 'https://tariffos.app';
   const rendered = buildSuperAdminCredentialsEmail({ ...input, appBaseUrl });
 
-  const resendApiKey = env.RESEND_API_KEY?.trim();
-  const fromEmail = (
-    env.EMAIL_FROM ??
-    env.RESEND_FROM_EMAIL ??
-    'TariffOS <no-reply@tariffos.app>'
-  ).trim();
-
-  if (resendApiKey) {
+  if (status.provider === 'resend') {
     const res = await fetchFn('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${resendApiKey}`,
+        Authorization: `Bearer ${env.RESEND_API_KEY?.trim()}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: fromEmail,
+        from: status.fromAddress,
         to: [input.recipientEmail],
         subject: rendered.subject,
         text: rendered.text,
@@ -108,66 +139,41 @@ export async function sendSuperAdminCredentialsEmail(
       }),
     });
     if (!res.ok) {
-      const errBody = await res.text();
       return {
         delivered: false,
         provider: 'resend',
         includedTemporaryPassword: false,
-        error: `Resend respondió ${res.status}: ${errBody}`,
+        error: `Resend respondió ${res.status}: ${await res.text()}`,
       };
     }
     const json = (await res.json().catch(() => ({}))) as { id?: string };
-    return {
-      delivered: true,
-      provider: 'resend',
-      includedTemporaryPassword: true,
-      messageId: json.id,
-    };
+    return { delivered: true, provider: 'resend', includedTemporaryPassword: true, messageId: json.id };
   }
 
-  const cfAccountId = env.CLOUDFLARE_ACCOUNT_ID?.trim();
-  const cfApiToken = env.CLOUDFLARE_API_TOKEN?.trim();
-  const cfFromAddress = env.EMAIL_FROM_ADDRESS?.trim() ?? env.EMAIL_FROM?.trim();
-
-  if (cfAccountId && cfApiToken && cfFromAddress) {
-    const res = await fetchFn(
-      `https://api.cloudflare.com/client/v4/accounts/${cfAccountId}/email/sending/send`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${cfApiToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          to: input.recipientEmail,
-          from: { address: cfFromAddress, name: 'TariffOS' },
-          subject: rendered.subject,
-          text: rendered.text,
-          html: rendered.html,
-        }),
+  const res = await fetchFn(
+    `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID?.trim()}/email/sending/send`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.CLOUDFLARE_API_TOKEN?.trim()}`,
+        'Content-Type': 'application/json',
       },
-    );
-    if (!res.ok) {
-      const errBody = await res.text();
-      return {
-        delivered: false,
-        provider: 'cloudflare',
-        includedTemporaryPassword: false,
-        error: `Cloudflare Email Sending respondió ${res.status}: ${errBody}`,
-      };
-    }
+      body: JSON.stringify({
+        to: input.recipientEmail,
+        from: { address: status.fromAddress, name: 'TariffOS' },
+        subject: rendered.subject,
+        text: rendered.text,
+        html: rendered.html,
+      }),
+    },
+  );
+  if (!res.ok) {
     return {
-      delivered: true,
+      delivered: false,
       provider: 'cloudflare',
-      includedTemporaryPassword: true,
+      includedTemporaryPassword: false,
+      error: `Cloudflare Email Sending respondió ${res.status}: ${await res.text()}`,
     };
   }
-
-  return {
-    delivered: false,
-    provider: 'none',
-    includedTemporaryPassword: false,
-    error:
-      'No hay proveedor de correo transaccional configurado (RESEND_API_KEY o CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID + EMAIL_FROM_ADDRESS). Supabase Auth nativo no permite enviar claves temporales en texto plano.',
-  };
+  return { delivered: true, provider: 'cloudflare', includedTemporaryPassword: true };
 }

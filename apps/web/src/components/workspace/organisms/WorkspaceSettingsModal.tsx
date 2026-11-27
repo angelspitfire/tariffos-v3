@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Bell, BellRing, CreditCard, Database, SlidersHorizontal, User, X } from 'lucide-react';
+import { Bell, BellRing, CreditCard, Database, KeyRound, SlidersHorizontal, User, X } from 'lucide-react';
 import type { JurisdictionConfig, UserProfileSettings } from '@tariffos/shared-types';
 import type { WorkspacePlanStatus } from '@/lib/workspace/plan-status';
 import {
@@ -16,9 +16,11 @@ import { SettingsBillingTab, SettingsLocalDataTab } from '../molecules/SettingsB
 import { SettingsNotificationsTab } from '../molecules/SettingsNotificationsTab';
 import { SettingsPreferencesTab } from '../molecules/SettingsPreferencesTab';
 import { SettingsProfileTab } from '../molecules/SettingsProfileTab';
+import { SettingsSecurityTab } from '../molecules/SettingsSecurityTab';
 
 export type SettingsModalTab =
   | 'profile'
+  | 'security'
   | 'preferences'
   | 'alerts'
   | 'notifications'
@@ -41,6 +43,7 @@ export interface WorkspaceSettingsModalProps {
 
 const TABS: ReadonlyArray<{ id: SettingsModalTab; label: string; icon: typeof User }> = [
   { id: 'profile', label: 'Cuenta y Firma', icon: User },
+  { id: 'security', label: 'Seguridad', icon: KeyRound },
   { id: 'preferences', label: 'Preferencias', icon: SlidersHorizontal },
   { id: 'alerts', label: 'Alertas normativas', icon: Bell },
   { id: 'notifications', label: 'Notificaciones', icon: BellRing },
@@ -147,6 +150,7 @@ export function WorkspaceSettingsModal({
             {activeTab === 'profile' ? (
               <SettingsProfileTab draft={draft} onChange={(patch) => setDraft((p) => ({ ...p, ...patch }))} />
             ) : null}
+            {activeTab === 'security' ? <SettingsSecurityTab /> : null}
             {activeTab === 'preferences' ? (
               <SettingsPreferencesTab
                 draft={draft}
