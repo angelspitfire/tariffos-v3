@@ -129,6 +129,13 @@ export async function POST(request: Request): Promise<Response> {
     select: { tenantId: true },
   });
 
+  const normalizedCountry = data.countryCode.trim().toUpperCase();
+  const seededCountry = await prisma.country?.findUnique({
+    where: { code: normalizedCountry },
+    select: { code: true },
+  });
+  const resolvedCountryCode = seededCountry?.code ?? 'VE';
+
   const internalPlan = isPlatformAdmin ? await ensureInternalTariffosPlan(prisma) : null;
   const safeRequestedSlug = isInternalTariffosPlanSlug(data.selectedPlanId)
     ? 'pilot'
@@ -152,7 +159,7 @@ export async function POST(request: Request): Promise<Response> {
         data: {
           name: data.companyName,
           taxId: data.taxId,
-          countryCode: data.countryCode,
+          countryCode: resolvedCountryCode,
           ownerName: data.fullName,
           ownerEmail: user.email ?? undefined,
           isOnboarded: true,
@@ -171,7 +178,7 @@ export async function POST(request: Request): Promise<Response> {
         data: {
           name: data.companyName,
           taxId: data.taxId,
-          countryCode: data.countryCode,
+          countryCode: resolvedCountryCode,
           ownerName: data.fullName,
           ownerEmail: user.email ?? undefined,
           planId: internalPlan ? internalPlan.id : (selectedPlan?.id ?? null),

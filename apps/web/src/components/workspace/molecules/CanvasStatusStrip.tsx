@@ -39,7 +39,7 @@ export function CanvasStatusStrip({
       <button
         type="button"
         onClick={() => onSelectTab('regulatory_diff')}
-        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap transition-colors ${
+        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none ${
           isControlled
             ? 'border-amber-200 bg-amber-50/90 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/35 dark:text-amber-200'
             : 'border-emerald-200 bg-emerald-50/85 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
@@ -56,7 +56,7 @@ export function CanvasStatusStrip({
       <button
         type="button"
         onClick={() => onSelectTab(dossier ? 'dossier' : 'batch_manifest')}
-        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap transition-colors ${
+        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none ${
           permitsCount > 0
             ? 'border-amber-200 bg-amber-50/90 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/35 dark:text-amber-200'
             : 'border-emerald-200 bg-emerald-50/85 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
@@ -74,7 +74,7 @@ export function CanvasStatusStrip({
         <button
           type="button"
           onClick={() => onSelectTab('calculator')}
-          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap transition-colors ${
+          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap tabular-nums transition-colors focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none ${
             isExempt
               ? 'border-emerald-200 bg-emerald-50/85 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
               : 'border-border-subtle bg-surface-panel text-ink-primary'

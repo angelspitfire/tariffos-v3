@@ -28,8 +28,12 @@ export function resolvePostLoginDestination(params: {
   urlPlan: string | null;
   urlCycle: SubscriptionBillingCycle;
   isNewUser: boolean;
+  isCloud?: boolean;
 }): string {
   if (params.urlNext) return params.urlNext;
+  if (params.isCloud && !params.isNewUser) {
+    return '/app';
+  }
   const storedPlan = params.urlPlan
     ? { planId: params.urlPlan, billingCycle: params.urlCycle }
     : readSelectedPlan();
@@ -151,7 +155,13 @@ export async function executePasswordReset(params: {
     const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
       redirectTo,
     });
-    if (error) return { error: error.message, info: null };
+    if (error) {
+      return {
+        error:
+          'No pudimos enviar el enlace de recuperación en este momento. Escríbenos a soporte@tariffos.app para restablecer tu acceso.',
+        info: null,
+      };
+    }
   }
   return {
     error: null,

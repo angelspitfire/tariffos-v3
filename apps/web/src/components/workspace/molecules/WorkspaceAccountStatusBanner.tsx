@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { AlertTriangle, Ban } from 'lucide-react';
+import { AlertTriangle, Ban, Clock } from 'lucide-react';
 import type { ClientCurrentUsageSnapshot } from '@tariffos/shared-types';
 
 export function WorkspaceAccountStatusBanner({
@@ -22,11 +22,52 @@ export function WorkspaceAccountStatusBanner({
           </span>
         </div>
         <a
-          href="mailto:soporte@tariffos.com"
+          href="mailto:soporte@tariffos.app"
           className="font-semibold underline underline-offset-2 hover:opacity-80"
         >
           Contactar soporte
         </a>
+      </div>
+    );
+  }
+
+  if (usage.billingStatus === 'PAST_DUE' && usage.latestPayment?.status === 'pending_verification') {
+    return (
+      <div
+        role="status"
+        className="no-print flex flex-wrap items-center justify-between gap-2 border-b border-emerald-500/30 bg-emerald-500/12 px-4 py-2 text-xs text-emerald-900 dark:text-emerald-200"
+      >
+        <div className="flex items-center gap-2 font-medium">
+          <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span>
+            <strong>Pago recibido en verificación</strong> (Ref.{' '}
+            <span className="font-mono">{usage.latestPayment.referenceCode}</span> ·{' '}
+            {usage.latestPayment.planName}). Tu estación se habilitará al confirmarse.
+          </span>
+        </div>
+        <Link href="/activate-plan" className="font-semibold underline underline-offset-2 hover:opacity-80">
+          Ver estado
+        </Link>
+      </div>
+    );
+  }
+
+  if (usage.billingStatus === 'PAST_DUE' && usage.latestPayment?.status === 'rejected') {
+    return (
+      <div
+        role="alert"
+        className="no-print flex flex-wrap items-center justify-between gap-2 border-b border-rose-500/30 bg-rose-500/12 px-4 py-2 text-xs text-rose-900 dark:text-rose-200"
+      >
+        <div className="flex items-center gap-2 font-medium">
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span>
+            <strong>Pago rechazado (Ref. {usage.latestPayment.referenceCode}):</strong>{' '}
+            {usage.latestPayment.rejectionReason ?? 'verifica tu referencia y comprobante.'}
+          </span>
+        </div>
+        <Link href="/activate-plan" className="font-semibold underline underline-offset-2 hover:opacity-80">
+          Corregir comprobante
+        </Link>
       </div>
     );
   }

@@ -37,6 +37,19 @@ describe('Next.js 16 proxy route gate', () => {
     });
   });
 
+  it('redirects unauthenticated /onboarding traffic to /login with mode=signup', () => {
+    const action = resolveProxyAction({
+      pathname: '/onboarding',
+      search: '?plan=pilot&cycle=monthly',
+      hasSession: false,
+      cloudMode: true,
+    });
+    expect(action).toEqual({
+      kind: 'redirect',
+      destination: '/login?mode=signup&next=%2Fonboarding%3Fplan%3Dpilot%26cycle%3Dmonthly',
+    });
+  });
+
   it('allows protected routes when authenticated or in offline mock mode', () => {
     expect(
       resolveProxyAction({

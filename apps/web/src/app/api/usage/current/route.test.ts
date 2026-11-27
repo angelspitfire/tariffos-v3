@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   resolveCloudTenantContext: vi.fn<() => Promise<unknown>>(),
   tenantFindUnique: vi.fn<() => Promise<unknown>>(),
+  paymentFindFirst: vi.fn<() => Promise<unknown>>(),
   getCurrentMonthUsage: vi.fn<() => Promise<unknown>>(),
   getEffectiveUsage: vi.fn<() => Promise<unknown>>(),
 }));
@@ -17,6 +18,7 @@ vi.mock('@tariffos/database', async (importOriginal) => {
     ...actual,
     prisma: {
       tenant: { findUnique: mocks.tenantFindUnique },
+      payment: { findFirst: mocks.paymentFindFirst },
     },
     billingService: {
       getCurrentMonthUsage: mocks.getCurrentMonthUsage,
@@ -182,5 +184,68 @@ describe('GET /api/usage/current', () => {
     expect(body.usage.percentUsed).toBe(0);
     expect(body.usage.planName).toBe('TariffOS Interno (Ilimitado)');
     expect(body.usage.allowOverage).toBe(true);
+  });
+
+  it('includes latestPayment summary for PAST_DUE tenants when a payment was submitted or rejected', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+
+    mocks.resolveCloudTenantContext.mockResolvedValue({
+      ok: true,
+      context: { userId: 'u-2', userEmail: 'p@b.com', tenantId: 'ten-pending', role: 'OWNER' },
+    });
+    mocks.tenantFindUnique.mockResolvedValue({
+      id: 'ten-pending',
+      name: 'Agencia Nueva',
+      planId: 'pilot',
+      billingLimit: 0,
+      billingStatus: 'PAST_DUE',
+      allowOverage: false,
+      plan: {
+        name: 'pilot',
+        classificationLimit: 250,
+        features: { displayName: 'Piloto Operativo', oneTimeOnly: true, allowBatch: true },
+      },
+    });
+    mocks.getEffectiveUsage.mockResolvedValue({
+      month: 11,
+      year: 2026,
+      count: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+    });
+    mocks.paymentFindFirst.mockResolvedValue({
+      status: 'PENDING',
+      referenceCode: 'ZEL-4455',
+      planId: 'pilot',
+      rejectionReason: null,
+    });
+
+    const pendingRes = await GET();
+    const pendingBody = (await pendingRes.json()) as {
+      usage: { latestPayment?: { status: string; referenceCode: string; planName: string } };
+    };
+    expect(pendingBody.usage.latestPayment).toEqual({
+      status: 'pending_verification',
+      referenceCode: 'ZEL-4455',
+      planName: 'Piloto Operativo',
+    });
+
+    mocks.paymentFindFirst.mockResolvedValue({
+      status: 'REJECTED',
+      referenceCode: 'ZEL-0000',
+      planId: 'pilot',
+      rejectionReason: 'Referencia duplicada',
+    });
+
+    const rejectedRes = await GET();
+    const rejectedBody = (await rejectedRes.json()) as {
+      usage: { latestPayment?: { status: string; rejectionReason?: string } };
+    };
+    expect(rejectedBody.usage.latestPayment).toMatchObject({
+      status: 'rejected',
+      rejectionReason: 'Referencia duplicada',
+    });
   });
 });

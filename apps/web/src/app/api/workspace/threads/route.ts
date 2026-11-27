@@ -8,6 +8,7 @@ const ThreadPayloadSchema = z.object({
   title: z.string().min(1),
   jurisdictionId: z.string().min(1).default('ve-seniat'),
   status: z.enum(['regular', 'archived']).default('regular'),
+  eveSessionId: z.string().trim().min(1).optional(),
   messages: z.array(z.record(z.string(), z.unknown())),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -16,16 +17,21 @@ const ThreadPayloadSchema = z.object({
 function parseSessionMeta(description: string | null): {
   jurisdictionId: string;
   status: 'regular' | 'archived';
+  eveSessionId?: string;
 } {
   if (!description) return { jurisdictionId: 've-seniat', status: 'regular' };
   try {
     const parsed = JSON.parse(description) as {
       jurisdictionId?: string;
       status?: string;
+      eveSessionId?: string;
     };
     return {
       jurisdictionId: parsed.jurisdictionId || 've-seniat',
       status: parsed.status === 'archived' ? 'archived' : 'regular',
+      ...(typeof parsed.eveSessionId === 'string' && parsed.eveSessionId.trim()
+        ? { eveSessionId: parsed.eveSessionId.trim() }
+        : {}),
     };
   } catch {
     return { jurisdictionId: 've-seniat', status: 'regular' };
@@ -71,6 +77,7 @@ export async function GET(): Promise<Response> {
       title: s.title,
       jurisdictionId: meta.jurisdictionId,
       status: meta.status,
+      ...(meta.eveSessionId ? { eveSessionId: meta.eveSessionId } : {}),
       messages: s.messages.map((m) => parseChatMessage(m, meta.jurisdictionId)),
       createdAt: s.createdAt.toISOString(),
       updatedAt: s.updatedAt.toISOString(),
@@ -109,6 +116,7 @@ export async function PUT(request: Request): Promise<Response> {
   const sessionMeta = JSON.stringify({
     jurisdictionId: thread.jurisdictionId,
     status: thread.status,
+    ...(thread.eveSessionId ? { eveSessionId: thread.eveSessionId } : {}),
   });
 
   await prisma.$transaction(async (tx) => {

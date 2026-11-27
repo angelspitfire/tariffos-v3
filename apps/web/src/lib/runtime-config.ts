@@ -1,4 +1,4 @@
-export type AgentRuntimeMode = 'sse' | 'eve';
+export type AgentRuntimeMode = 'eve';
 
 export interface DualRuntimeConfig {
   cloudMode: boolean;
@@ -29,10 +29,12 @@ export function isGoogleOAuthEnabled(isCloud = isCloudModeEnabled()): boolean {
   return process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED === 'true';
 }
 
-export function getAgentRuntimeMode(isCloud = isCloudModeEnabled()): AgentRuntimeMode {
-  if (!isCloud) return 'sse';
-  const raw = process.env.NEXT_PUBLIC_AGENT_RUNTIME?.trim().toLowerCase();
-  return raw === 'eve' ? 'eve' : 'sse';
+/**
+ * Eve (`@assistant-ui/eve`) is the single durable chat runtime across local dev and Cloud.
+ * `NEXT_PUBLIC_AGENT_RUNTIME` defaults to `'eve'`.
+ */
+export function getAgentRuntimeMode(_isCloud = isCloudModeEnabled()): AgentRuntimeMode {
+  return 'eve';
 }
 
 export function getEveBaseUrl(): string {

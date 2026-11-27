@@ -29,7 +29,7 @@ export function DossierComplianceSection({
     <div className="space-y-4">
       {flags.length > 0 ? (
         <section className="rounded-xl border border-border-subtle bg-surface-panel p-4 shadow-xs">
-          <h3 className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+          <h3 className="text-xs font-semibold text-ink-secondary">
             Flags de medidas y cumplimiento ({flags.length})
           </h3>
           <div className="mt-2.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -68,7 +68,7 @@ export function DossierComplianceSection({
 
       {rejectedAlternatives.length > 0 ? (
         <section className="rounded-xl border border-border-subtle bg-surface-panel p-4 shadow-xs">
-          <h3 className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-ink-muted uppercase">
+          <h3 className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-secondary">
             <XCircle className="h-3.5 w-3.5 text-rose-500" aria-hidden="true" />
             Alternativas Rechazadas ({rejectedAlternatives.length})
           </h3>
@@ -99,7 +99,7 @@ export function DossierComplianceSection({
 
       {unresolved.length > 0 ? (
         <section className="rounded-xl border border-border-subtle bg-surface-panel p-4 shadow-xs">
-          <h3 className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+          <h3 className="text-xs font-semibold text-ink-secondary">
             Información no resuelta ({unresolved.length})
           </h3>
           <ul className="mt-2.5 space-y-2 text-xs">

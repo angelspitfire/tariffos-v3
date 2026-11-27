@@ -4,8 +4,6 @@ import { useState } from 'react';
 import {
   BookmarkPlus,
   Calculator,
-  ChevronDown,
-  ChevronUp,
   FileDown,
   FileText,
   GitBranch,
@@ -13,6 +11,7 @@ import {
 import type { A2UIVerdictComponent } from '@tariffos/shared-types';
 import { ConfidenceBadge } from '../atoms/ConfidenceBadge';
 import { CopyHsButton } from '../atoms/CopyHsButton';
+import { VerdictExecutiveSummary } from './VerdictExecutiveSummary';
 
 interface VerdictCardProps {
   verdict: A2UIVerdictComponent;
@@ -23,6 +22,9 @@ interface VerdictCardProps {
   onOpenRgi?: () => void;
 }
 
+const FOCUS_RING =
+  'focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none';
+
 export function VerdictCard({
   verdict,
   onOpenDossier,
@@ -31,101 +33,89 @@ export function VerdictCard({
   onSaveSku,
   onOpenRgi,
 }: VerdictCardProps) {
-  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [descExpanded, setDescExpanded] = useState(false);
   const summaryPoints = verdict.executiveSummary ?? [];
-  const hasHighRisk = summaryPoints.some((pt) => pt.severity === 'high');
+  const isLongDesc = verdict.description.length > 210;
 
   return (
-    <section className="@container tos-rise rounded-surface border border-border-subtle bg-surface-panel p-4 sm:p-5 shadow-card">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-semibold text-ink-muted">
-          Clasificación sugerida
-        </span>
-        <ConfidenceBadge label={verdict.confidenceLabel} />
-        {verdict.rgiApplied.slice(0, 2).map((rgi) => (
-          <span
-            key={rgi}
-            className="rounded-full border border-border-subtle bg-surface-muted px-2 py-0.5 font-mono text-[10px] font-medium text-ink-secondary"
-          >
-            {rgi}
+    <section className="@container tos-rise rounded-card border border-border-subtle border-t-2 border-t-accent-brand/85 bg-surface-panel p-4 shadow-card sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-semibold text-[var(--color-success)]">
+            Clasificación sugerida
           </span>
-        ))}
+          <ConfidenceBadge label={verdict.confidenceLabel} />
+          {verdict.rgiApplied.slice(0, 2).map((rgi) => (
+            <span
+              key={rgi}
+              className="rounded-full border border-border-subtle bg-surface-muted px-2 py-0.5 font-mono text-[10px] font-medium text-ink-secondary"
+            >
+              {rgi}
+            </span>
+          ))}
+        </div>
       </div>
 
-      <div className="mt-2 min-w-0">
+      <div className="mt-2.5 min-w-0">
         <CopyHsButton
           hsCode={verdict.hsCode}
           size="lg"
-          className="border-0 bg-transparent px-0 py-0 text-[clamp(1.25rem,5.5cqw,1.75rem)] font-bold hover:bg-transparent"
+          className={`border-0 bg-transparent px-0 py-0 text-[clamp(1.35rem,5.5cqw,1.875rem)] font-semibold tracking-tight hover:bg-transparent ${FOCUS_RING}`}
         />
       </div>
 
-      <p className="mt-2 text-sm leading-relaxed text-ink-secondary">{verdict.description}</p>
+      <div className="mt-1.5">
+        <p className={`text-sm leading-relaxed text-ink-secondary ${isLongDesc && !descExpanded ? 'line-clamp-3' : ''}`}>
+          {verdict.description}
+        </p>
+        {isLongDesc ? (
+          <button
+            type="button"
+            onClick={() => setDescExpanded((prev) => !prev)}
+            className={`mt-1 cursor-pointer rounded text-[11px] font-medium text-accent-ink hover:underline ${FOCUS_RING}`}
+          >
+            {descExpanded ? 'Mostrar menos' : 'Ver designación completa'}
+          </button>
+        ) : null}
+      </div>
 
-      <div className="mt-3.5 grid grid-cols-3 divide-x divide-border-hairline border-y border-border-hairline py-2.5">
-        <div className="pr-3">
+      <div className="mt-3.5 grid grid-cols-3 gap-2.5">
+        <div className="rounded-lg border border-border-hairline bg-surface-muted/70 px-3 py-2">
           <div className="text-[11px] text-ink-muted">Ad Valorem</div>
-          <div className="mt-0.5 text-sm font-semibold text-ink-primary tabular-nums">
+          <div className="mt-0.5 font-mono text-sm font-semibold text-ink-primary tabular-nums">
             {verdict.adValoremPercent}%
           </div>
         </div>
-        <div className="px-3">
+        <div className="rounded-lg border border-border-hairline bg-surface-muted/70 px-3 py-2">
           <div className="text-[11px] text-ink-muted">IVA</div>
-          <div className="mt-0.5 text-sm font-semibold text-ink-primary tabular-nums">
+          <div className="mt-0.5 font-mono text-sm font-semibold text-ink-primary tabular-nums">
             {verdict.vatPercent}%
           </div>
         </div>
-        <div className="pl-3 min-w-0">
+        <div className="min-w-0 rounded-lg border border-border-hairline bg-surface-muted/70 px-3 py-2">
           <div className="text-[11px] text-ink-muted">Régimen</div>
-          <div className="mt-0.5 truncate text-sm font-semibold text-ink-primary" title={verdict.legalRegimeSummary}>
+          <div
+            className="mt-0.5 truncate font-mono text-sm font-semibold text-ink-primary tabular-nums"
+            title={verdict.legalRegimeSummary}
+          >
             {verdict.legalRegimeCode}
           </div>
         </div>
       </div>
 
-      {summaryPoints.length > 0 && (
-        <div className="mt-3 border-t border-border-hairline pt-2.5">
-          <button
-            type="button"
-            onClick={() => setSummaryOpen((prev) => !prev)}
-            className="flex w-full cursor-pointer items-center justify-between text-xs font-medium text-ink-secondary hover:text-ink-primary"
-          >
-            <span className="inline-flex items-center gap-2">
-              <span>Resumen ejecutivo ({summaryPoints.length})</span>
-              {hasHighRisk ? (
-                <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold text-rose-700 dark:text-rose-300">
-                  Riesgo alto detectado
-                </span>
-              ) : null}
-            </span>
-            {summaryOpen ? (
-              <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
-            ) : (
-              <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
-            )}
-          </button>
-          {summaryOpen && (
-            <ul className="mt-2 space-y-2">
-              {summaryPoints.map((pt) => (
-                <li
-                  key={pt.title}
-                  className="rounded-lg border border-border-subtle bg-surface-muted px-3 py-2 text-xs"
-                >
-                  <div className="font-semibold text-ink-primary">{pt.title}</div>
-                  <p className="mt-0.5 text-ink-secondary">{pt.risk}</p>
-                  <p className="mt-0.5 text-ink-muted">Recomendación: {pt.recommendation}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
+      {verdict.legalRegimeSummary ? (
+        <p className="mt-3 border-t border-border-hairline pt-2.5 text-xs leading-relaxed text-ink-secondary">
+          {verdict.legalRegimeSummary}
+        </p>
+      ) : null}
 
-      <div className="mt-3 flex flex-wrap gap-1.5 border-t border-border-hairline pt-3">
+      <VerdictExecutiveSummary hsCode={verdict.hsCode} points={summaryPoints} />
+
+      <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border-hairline pt-3">
         <button
           type="button"
           onClick={onOpenDossier}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-accent-brand px-2.5 py-1.5 text-xs font-medium text-white transition hover:bg-accent-brand-hover"
+          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-surface-inverted px-3.5 py-2 text-xs font-semibold text-ink-on-inverted transition-colors hover:bg-surface-inverted-hover whitespace-nowrap ${FOCUS_RING}`}
         >
           <FileText className="h-3.5 w-3.5" aria-hidden="true" />
           Ver Dossier
@@ -133,7 +123,7 @@ export function VerdictCard({
         <button
           type="button"
           onClick={onOpenCalculator}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-primary transition hover:bg-surface-hover"
+          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-surface-subtle px-3.5 py-2 text-xs font-medium text-ink-primary transition-colors hover:bg-surface-hover whitespace-nowrap ${FOCUS_RING}`}
         >
           <Calculator className="h-3.5 w-3.5" aria-hidden="true" />
           Calcular CIF
@@ -141,7 +131,7 @@ export function VerdictCard({
         <button
           type="button"
           onClick={onExportPdf}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-primary transition hover:bg-surface-hover"
+          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-accent-brand px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-brand-hover whitespace-nowrap ${FOCUS_RING}`}
         >
           <FileDown className="h-3.5 w-3.5" aria-hidden="true" />
           Exportar PDF
@@ -149,7 +139,7 @@ export function VerdictCard({
         <button
           type="button"
           onClick={onSaveSku}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-primary transition hover:bg-surface-hover"
+          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-accent-border bg-accent-soft px-3.5 py-2 text-xs font-semibold text-accent-ink transition-opacity hover:opacity-90 whitespace-nowrap ${FOCUS_RING}`}
         >
           <BookmarkPlus className="h-3.5 w-3.5" aria-hidden="true" />
           Guardar SKU
@@ -157,7 +147,7 @@ export function VerdictCard({
         <button
           type="button"
           onClick={onOpenRgi}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border-subtle bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-primary transition hover:bg-surface-hover"
+          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle bg-surface-panel px-3.5 py-2 text-xs font-medium text-ink-primary transition-colors hover:bg-surface-hover whitespace-nowrap ${FOCUS_RING}`}
         >
           <GitBranch className="h-3.5 w-3.5" aria-hidden="true" />
           Camino RGI

@@ -136,6 +136,12 @@ export function resolveWorkspaceReadOnlyReason(
   if (cloud.unlimited) {
     return null;
   }
+  if (cloud.billingStatus === 'PAST_DUE' && cloud.latestPayment?.status === 'pending_verification') {
+    return `Pago en verificación (Ref. ${cloud.latestPayment.referenceCode}). Activaremos tu plan ${cloud.latestPayment.planName} en breve.`;
+  }
+  if (cloud.billingStatus === 'PAST_DUE' && cloud.latestPayment?.status === 'rejected') {
+    return `Tu pago (Ref. ${cloud.latestPayment.referenceCode}) fue rechazado: ${cloud.latestPayment.rejectionReason ?? 'verifica el comprobante'}.`;
+  }
   if (cloud.billingStatus === 'PAST_DUE' && cloud.limit === 0) {
     return 'Activa tu Piloto Operativo ($150 · 250 clasificaciones) o Plan Agencia ($300/mes) para clasificar con IA.';
   }

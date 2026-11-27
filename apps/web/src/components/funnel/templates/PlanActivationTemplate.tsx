@@ -15,6 +15,7 @@ import {
   type SubmitManualPaymentPayload,
 } from '@/lib/funnel/billing-port';
 import { readMockProfile, readMockSession } from '@/lib/funnel/funnel-storage';
+import { computeEligiblePilotCredit } from '@/lib/funnel/pilot-credit';
 import {
   isPlanAnnualOnly,
   isPlanCustomPricing,
@@ -32,6 +33,8 @@ export interface PlanActivationTemplateProps {
   plans?: readonly SubscriptionPlanConfig[];
   initialPlanId?: string;
   initialCycle?: SubscriptionBillingCycle;
+  initialPayerName?: string;
+  initialPayerEmail?: string;
   billingPort?: IBillingActivationPort;
 }
 
@@ -39,6 +42,8 @@ export function PlanActivationTemplate({
   plans = SAAS_PLANS,
   initialPlanId,
   initialCycle = 'monthly',
+  initialPayerName,
+  initialPayerEmail,
   billingPort,
 }: PlanActivationTemplateProps) {
   const port = useMemo(() => billingPort ?? createBillingActivationAdapter(), [billingPort]);
@@ -69,6 +74,7 @@ export function PlanActivationTemplate({
         : initialCycle,
   );
   const [payments, setPayments] = useState<ManualPaymentRecord[]>([]);
+  const [showRecommender, setShowRecommender] = useState(!initialPlanId);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastSubmitted, setLastSubmitted] = useState<ManualPaymentRecord | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -101,13 +107,19 @@ export function PlanActivationTemplate({
     : activeAnnualOnly
       ? 'annual'
       : billingCycle;
-  const expectedAmount = activePlan
+  const rawExpectedAmount = activePlan
     ? activeOneTime
       ? activePlan.monthlyPriceUsd
       : effectiveCycle === 'annual'
         ? activePlan.annualPriceUsd
         : activePlan.monthlyPriceUsd
     : 0;
+  const pilotCredit = useMemo(() => computeEligiblePilotCredit(payments), [payments]);
+  const appliedPilotCredit =
+    activePlan?.planId === 'agencia' && pilotCredit ? pilotCredit : null;
+  const expectedAmount = appliedPilotCredit
+    ? Math.max(0, rawExpectedAmount - appliedPilotCredit.amountUsd)
+    : rawExpectedAmount;
 
   const handleSelectPlan = (plan: SubscriptionPlanConfig) => {
     setPlanId(plan.planId);
@@ -187,8 +199,8 @@ export function PlanActivationTemplate({
                 </p>
                 <p className="text-[11px] text-ink-muted">
                   Tu espacio permanecerá en modo lectura mientras verificamos tu pago (menos de 24h hábiles). ¿Urgente? Escríbenos a{' '}
-                  <a href="mailto:soporte@tariffos.com" className="font-medium text-accent-ink hover:underline">
-                    soporte@tariffos.com
+                  <a href="mailto:soporte@tariffos.app" className="font-medium text-accent-ink hover:underline">
+                    soporte@tariffos.app
                   </a>{' '}
                   indicando tu referencia.
                 </p>
@@ -206,7 +218,19 @@ export function PlanActivationTemplate({
           </FunnelCard>
         ) : null}
 
-        <PlanRecommender plans={paidPlans} paidOnly onApplyRecommendation={handleApplyRecommendation} />
+        {showRecommender ? (
+          <PlanRecommender plans={paidPlans} paidOnly onApplyRecommendation={handleApplyRecommendation} />
+        ) : (
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setShowRecommender(true)}
+              className="text-xs font-medium text-accent-ink hover:underline cursor-pointer"
+            >
+              ¿Dudas entre Piloto y Agencia? Comparar planes
+            </button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           <PlanActivationSummary
@@ -223,9 +247,11 @@ export function PlanActivationTemplate({
             key={`${planId}-${effectiveCycle}`}
             activePlan={activePlan}
             effectiveCycle={effectiveCycle}
+            rawAmount={rawExpectedAmount}
             expectedAmount={expectedAmount}
-            defaultPayerName={profile?.companyName || profile?.fullName || session?.fullName}
-            defaultPayerEmail={session?.email}
+            appliedPilotCredit={appliedPilotCredit}
+            defaultPayerName={initialPayerName || profile?.companyName || profile?.fullName || session?.fullName}
+            defaultPayerEmail={initialPayerEmail || session?.email}
             isSubmitting={isSubmitting}
             onSubmitPayment={handleSubmitPayment}
           />

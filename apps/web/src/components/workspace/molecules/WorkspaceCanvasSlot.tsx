@@ -52,14 +52,14 @@ export function WorkspaceCanvasSlot({
           type="button"
           aria-label="Redimensionar panel de chat y dictamen"
           onMouseDown={onStartResize}
-          className="no-print hidden w-1.5 shrink-0 cursor-col-resize bg-transparent transition hover:bg-accent-brand/40 lg:block"
+          className="no-print hidden w-1.5 shrink-0 cursor-col-resize bg-transparent transition-colors hover:bg-accent-brand/40 focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none lg:block"
         />
       ) : null}
       <section
         className={`min-w-0 flex-1 bg-surface-panel ${
           canvasFullscreen
-            ? 'lg:m-2.5 lg:overflow-hidden lg:rounded-surface lg:border lg:border-line-frost lg:shadow-elev-2'
-            : 'lg:my-2.5 lg:mr-2.5 lg:overflow-hidden lg:rounded-surface lg:border lg:border-line-frost lg:shadow-elev-2'
+            ? 'fixed inset-0 z-40 h-full lg:static lg:z-auto lg:m-2.5 lg:h-auto lg:overflow-hidden lg:rounded-surface lg:border lg:border-border-subtle lg:shadow-elev-2'
+            : 'fixed inset-0 z-40 h-full lg:static lg:z-auto lg:my-2.5 lg:mr-2.5 lg:h-auto lg:overflow-hidden lg:rounded-surface lg:border lg:border-border-subtle lg:shadow-elev-2'
         } ${mobileVisible ? 'block' : 'hidden lg:block'}`}
       >
         <WorkspaceCanvasPane {...canvasProps} isFullscreen={canvasFullscreen} />

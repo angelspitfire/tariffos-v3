@@ -16,7 +16,7 @@ import {
   type AdminLlmSettingsPayload,
   type LlmRuntimeConfig,
 } from '@tariffos/shared-types';
-import { isCloudModeEnabled } from '@/lib/runtime-config';
+import { isCloudModeEnabled } from '../runtime-config';
 import {
   ADMIN_LLM_PRESETS,
   LLM_RUNTIME_SETTING_KEY,

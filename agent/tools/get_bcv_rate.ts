@@ -34,5 +34,9 @@ export default defineTool({
   description:
     'Get current official BCV USD/VES and EUR/VES exchange rates (served from cache with optional live refresh).',
   inputSchema: GetBcvRateInputSchema,
+  label: {
+    start: ({ pair }) => `Consultando tasa oficial BCV (${pair})…`,
+    complete: ({ pair }) => `Tasa BCV consultada (${pair})`,
+  },
   execute: (input) => executeGetBcvRate(input),
 });

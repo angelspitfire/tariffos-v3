@@ -63,12 +63,12 @@ export function MerceologicalSheetCard({
       <button
         type="button"
         onClick={() => setExpanded(true)}
-        className="flex w-full items-center justify-between gap-2 rounded-xl border border-emerald-500/25 bg-emerald-500/5 px-3 py-2 text-left text-xs transition hover:bg-emerald-500/10"
+        className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl border border-[var(--color-success-border)] bg-[var(--color-success-soft)] px-3 py-2 text-left text-xs transition-colors hover:opacity-95 focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
       >
         <span className="inline-flex min-w-0 items-center gap-2 truncate font-medium text-ink-primary">
-          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[var(--color-success)]" aria-hidden="true" />
           <span className="truncate">{title}</span>
-          <span className="text-ink-muted">· {sheet.attributes.length} atributos</span>
+          <span className="text-ink-muted">({sheet.attributes.length} atributos)</span>
         </span>
         <span className="inline-flex shrink-0 items-center gap-1.5">
           <ConfidenceBadge
@@ -91,7 +91,7 @@ export function MerceologicalSheetCard({
         e.preventDefault();
         handleConfirm();
       }}
-      className="rounded-xl border border-border-subtle bg-surface-panel p-3.5 shadow-xs"
+      className="rounded-card border border-border-subtle bg-surface-panel p-4 shadow-card"
     >
       <div className="flex items-center justify-between gap-2">
         <div>
@@ -110,7 +110,7 @@ export function MerceologicalSheetCard({
               type="button"
               onClick={() => setExpanded(false)}
               aria-label="Contraer ficha merceológica"
-              className="rounded-md p-1 text-ink-muted hover:bg-surface-hover"
+              className="cursor-pointer rounded-md p-1 text-ink-muted transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
             >
               <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
@@ -130,7 +130,7 @@ export function MerceologicalSheetCard({
           <button
             type="button"
             onClick={() => onAcceptTentative(tentativeProposal.hsCode)}
-            className="shrink-0 rounded-lg bg-accent-brand px-2.5 py-1 text-xs font-medium text-white transition hover:bg-accent-brand-hover"
+            className="shrink-0 cursor-pointer rounded-lg bg-accent-brand px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-accent-brand-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
             Usar {tentativeProposal.hsCode}
           </button>
@@ -155,11 +155,13 @@ export function MerceologicalSheetCard({
               <input
                 ref={attr.key === firstMissingKey ? firstMissingRef : undefined}
                 id={inputId}
+                name={attr.key}
+                autoComplete="off"
                 type="text"
                 value={val}
                 placeholder={attr.placeholder}
                 onChange={(e) => setDraft((prev) => ({ ...prev, [attr.key]: e.target.value }))}
-                className={`rounded-lg border px-2.5 py-1.5 text-xs text-ink-primary outline-none transition ${
+                className={`rounded-lg border px-2.5 py-1.5 text-xs text-ink-primary transition-colors focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none ${
                   isMissingCritical
                     ? 'border-amber-500/60 bg-amber-500/5 focus:border-amber-500'
                     : 'border-border-subtle bg-surface-input focus:border-accent-brand'
@@ -176,7 +178,7 @@ export function MerceologicalSheetCard({
         </span>
         <button
           type="submit"
-          className="rounded-lg bg-accent-brand px-3 py-1.5 text-xs font-medium text-white transition hover:bg-accent-brand-hover"
+          className="cursor-pointer rounded-lg bg-accent-brand px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-brand-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
         >
           Confirmar ficha
         </button>

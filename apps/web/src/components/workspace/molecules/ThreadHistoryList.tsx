@@ -53,16 +53,16 @@ export function ThreadHistoryList({
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar SKU, HS o texto..."
+          placeholder="Buscar SKU, HS o texto…"
           aria-label="Buscar en historial"
-          className="h-8 w-full rounded-full border border-border-subtle bg-surface-input pr-7 pl-8 text-[11px] text-ink-primary placeholder:text-ink-subtle focus:ring-2 focus:ring-accent-brand/40 focus:outline-none"
+          className="h-8 w-full rounded-full border border-border-subtle bg-surface-input pr-7 pl-8 text-[11px] text-ink-primary placeholder:text-ink-subtle focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
         />
         {query ? (
           <button
             type="button"
             onClick={() => setQuery('')}
             aria-label="Limpiar búsqueda"
-            className="absolute top-[9px] right-2.5 cursor-pointer text-ink-subtle hover:text-ink-primary"
+            className="absolute top-[9px] right-2.5 cursor-pointer rounded text-ink-subtle hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
             <X className="h-3 w-3" aria-hidden="true" />
           </button>
@@ -84,15 +84,14 @@ export function ThreadHistoryList({
                   type="button"
                   onClick={() => onSelectThread(thread.id)}
                   aria-current={isActive ? 'true' : undefined}
-                  className={`w-full cursor-pointer rounded-card px-2.5 py-2 pr-8 text-left transition-colors ${
+                  className={`w-full cursor-pointer rounded-card px-2.5 py-2 pr-8 text-left transition-colors focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none ${
                     isActive
                       ? 'bg-surface-subtle text-ink-primary'
                       : 'text-ink-secondary hover:bg-surface-hover'
                   }`}
                 >
-                  <span className="flex items-center gap-1.5 font-mono text-[11px] tabular-nums">
+                  <span className="flex items-center justify-between gap-2 font-mono text-[11px] tabular-nums">
                     <span className="truncate font-semibold text-accent-ink">{headline ?? 'Consulta'}</span>
-                    <span aria-hidden="true" className="text-border-strong">·</span>
                     <span className="shrink-0 text-ink-subtle">{timeLabel}</span>
                   </span>
                   <span className="mt-0.5 block truncate text-xs font-medium text-ink-primary">
@@ -103,7 +102,7 @@ export function ThreadHistoryList({
                   type="button"
                   onClick={() => onDeleteThread(thread.id)}
                   aria-label={`Eliminar sesión ${thread.title}`}
-                  className="absolute top-2 right-1.5 cursor-pointer rounded-md p-1 text-ink-subtle opacity-0 transition hover:text-rose-600 group-hover:opacity-100 focus:opacity-100 dark:hover:text-rose-400"
+                  className="absolute top-2 right-1.5 cursor-pointer rounded-md p-1 text-ink-subtle opacity-0 transition-opacity group-hover:opacity-100 hover:text-rose-600 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none dark:hover:text-rose-400"
                 >
                   <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>

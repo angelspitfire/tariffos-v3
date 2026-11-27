@@ -37,10 +37,21 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
         : isCloudModeEnabled() && !(hasSession ?? Boolean(readMockSession()));
 
     if (needsAuth) {
-      router.push(`/login?next=${encodeURIComponent('/app')}`);
+      router.push('/onboarding?plan=pilot&cycle=monthly');
       return;
     }
     router.push('/app');
+  };
+
+  const handleRequestGuidedDemo = () => {
+    window.dispatchEvent(
+      new CustomEvent(SELECT_LEAD_INTENT_EVENT, {
+        detail: {
+          intent: 'demo',
+          notes: heroPrompt.trim() ? `Mercancía de prueba: ${heroPrompt.trim()}` : undefined,
+        },
+      }),
+    );
   };
 
   const handleHeroSubmit = (e: FormEvent) => {
@@ -124,6 +135,7 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
             heroPrompt={heroPrompt}
             onChangePrompt={setHeroPrompt}
             onSubmitPrompt={handleHeroSubmit}
+            onRequestGuidedDemo={handleRequestGuidedDemo}
             isAuthenticated={isAuthenticated}
           />
 

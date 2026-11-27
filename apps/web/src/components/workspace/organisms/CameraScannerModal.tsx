@@ -9,22 +9,13 @@ export interface CameraScannerModalProps {
   onCaptureFile: (file: File) => void;
 }
 
+const CAMERA_POSTER =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3Crect width='16' height='9' fill='%230f172a'/%3E%3C/svg%3E";
+
 const SAMPLE_LABELS = [
-  {
-    id: 'sample-inverter',
-    label: 'Inversor Solar 5kW',
-    lines: ['INVERTER SOLAR HÍBRIDO 5000W', 'MODELO: SUN-5K-SG04LP1', 'ORIGEN: CHINA · 48V DC / 220V AC'],
-  },
-  {
-    id: 'sample-ultrasound',
-    label: 'Ecógrafo Portátil',
-    lines: ['ULTRASOUND DIAGNOSTIC SYSTEM', 'MOD: MINDRAY Z60 · CAP. 90', 'TRANSDUCTOR LINEAL + CONVEXO'],
-  },
-  {
-    id: 'sample-valve',
-    label: 'Válvula Acero Inox.',
-    lines: ['INDUSTRIAL BALL VALVE 2"', 'MATERIAL: AISI 316 STAINLESS', 'PN40 · USO PETROLERO / QUÍMICO'],
-  },
+  { id: 'sample-inverter', label: 'Inversor Solar 5kW', lines: ['INVERTER SOLAR HÍBRIDO 5000W', 'MODELO: SUN-5K-SG04LP1', 'ORIGEN: CHINA, 48V DC / 220V AC'] },
+  { id: 'sample-ultrasound', label: 'Ecógrafo Portátil', lines: ['ULTRASOUND DIAGNOSTIC SYSTEM', 'MOD: MINDRAY Z60, CAP. 90', 'TRANSDUCTOR LINEAL + CONVEXO'] },
+  { id: 'sample-valve', label: 'Válvula Acero Inox.', lines: ['INDUSTRIAL BALL VALVE 2"', 'MATERIAL: AISI 316 STAINLESS', 'PN40, USO PETROLERO / QUÍMICO'] },
 ] as const;
 
 function renderSampleToFile(sample: (typeof SAMPLE_LABELS)[number]): File | null {
@@ -32,9 +23,7 @@ function renderSampleToFile(sample: (typeof SAMPLE_LABELS)[number]): File | null
   canvas.width = 640;
   canvas.height = 360;
   const ctx = canvas.getContext('2d');
-  if (!ctx) {
-    return new File([sample.lines.join('\n')], `${sample.id}.txt`, { type: 'text/plain' });
-  }
+  if (!ctx) return new File([sample.lines.join('\n')], `${sample.id}.txt`, { type: 'text/plain' });
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = '#0f172a';
@@ -45,8 +34,7 @@ function renderSampleToFile(sample: (typeof SAMPLE_LABELS)[number]): File | null
   ctx.fillStyle = '#0f172a';
   ctx.font = '18px monospace';
   sample.lines.forEach((line, i) => ctx.fillText(line, 36, 128 + i * 44));
-  const dataUrl = canvas.toDataURL('image/png');
-  const bytes = atob(dataUrl.split(',')[1] ?? '');
+  const bytes = atob(canvas.toDataURL('image/png').split(',')[1] ?? '');
   const arr = new Uint8Array(bytes.length);
   for (let i = 0; i < bytes.length; i += 1) arr[i] = bytes.charCodeAt(i);
   return new File([arr], `${sample.id}.png`, { type: 'image/png' });
@@ -109,11 +97,11 @@ export function CameraScannerModal({ open, onClose, onCaptureFile }: CameraScann
   };
 
   return (
-    <div className="no-print fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-[1px]">
+    <div className="no-print fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
       <dialog
         open
         aria-label="Escáner de cámara para etiquetas y facturas"
-        className="static m-0 w-full max-w-xl overflow-hidden rounded-surface border border-border-subtle bg-surface-panel p-0 text-ink-primary shadow-elev-2"
+        className="static m-0 w-full max-w-xl overflow-hidden overscroll-contain rounded-surface border border-border-subtle bg-surface-panel p-0 text-ink-primary shadow-elev-2"
       >
         <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
           <div className="flex items-center gap-2">
@@ -124,17 +112,17 @@ export function CameraScannerModal({ open, onClose, onCaptureFile }: CameraScann
             type="button"
             onClick={onClose}
             aria-label="Cerrar escáner"
-            className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-ink-muted hover:bg-surface-hover"
+            className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
 
         <div className="space-y-4 p-5">
-          <div className="relative aspect-video overflow-hidden rounded-card border border-border-subtle bg-slate-950">
-            <video ref={videoRef} playsInline muted className="h-full w-full object-cover" />
+          <div className="relative aspect-video overflow-hidden rounded-card border border-border-subtle bg-surface-inverted">
+            <video ref={videoRef} poster={CAMERA_POSTER} playsInline muted className="h-full w-full object-cover" />
             {cameraError ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-950/90 p-6 text-center text-xs text-slate-300">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-surface-inverted/95 p-6 text-center text-xs text-ink-on-inverted/80">
                 <ScanLine className="h-7 w-7 text-accent-ink" aria-hidden="true" />
                 <p className="max-w-sm leading-relaxed">{cameraError}</p>
               </div>
@@ -146,7 +134,7 @@ export function CameraScannerModal({ open, onClose, onCaptureFile }: CameraScann
               <button
                 type="button"
                 onClick={() => setFacingMode((m) => (m === 'environment' ? 'user' : 'environment'))}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle px-3 py-1.5 text-xs font-medium text-ink-secondary hover:bg-surface-hover"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle px-3 py-1.5 text-xs font-medium text-ink-secondary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
               >
                 <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
                 Cambiar cámara
@@ -158,16 +146,13 @@ export function CameraScannerModal({ open, onClose, onCaptureFile }: CameraScann
                 className="hidden"
                 onChange={(e) => {
                   const f = e.target.files?.[0];
-                  if (f) {
-                    onCaptureFile(f);
-                    onClose();
-                  }
+                  if (f) { onCaptureFile(f); onClose(); }
                 }}
               />
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle px-3 py-1.5 text-xs font-medium text-ink-secondary hover:bg-surface-hover"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle px-3 py-1.5 text-xs font-medium text-ink-secondary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
               >
                 <Upload className="h-3.5 w-3.5" aria-hidden="true" />
                 Subir foto
@@ -178,7 +163,7 @@ export function CameraScannerModal({ open, onClose, onCaptureFile }: CameraScann
               type="button"
               disabled={!cameraReady}
               onClick={handleCaptureFrame}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-accent-brand px-4 py-1.5 text-xs font-semibold text-white hover:bg-accent-brand-hover disabled:opacity-40"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-accent-brand px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-brand-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none disabled:opacity-40"
             >
               <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
               Capturar y adjuntar
@@ -186,9 +171,7 @@ export function CameraScannerModal({ open, onClose, onCaptureFile }: CameraScann
           </div>
 
           <div className="space-y-1.5 border-t border-border-hairline pt-3">
-            <div className="text-[11px] font-semibold tracking-wider text-ink-muted uppercase">
-              Etiquetas de muestra para probar
-            </div>
+            <div className="text-xs font-semibold text-ink-secondary">Etiquetas de muestra para probar</div>
             <div className="flex flex-wrap gap-1.5">
               {SAMPLE_LABELS.map((sample) => (
                 <button
@@ -196,12 +179,9 @@ export function CameraScannerModal({ open, onClose, onCaptureFile }: CameraScann
                   type="button"
                   onClick={() => {
                     const file = renderSampleToFile(sample);
-                    if (file) {
-                      onCaptureFile(file);
-                      onClose();
-                    }
+                    if (file) { onCaptureFile(file); onClose(); }
                   }}
-                  className="cursor-pointer rounded-full border border-border-subtle bg-surface-muted px-3 py-1 text-xs font-medium text-ink-primary hover:border-accent-brand hover:bg-accent-soft/40"
+                  className="cursor-pointer rounded-full border border-border-subtle bg-surface-muted px-3 py-1 text-xs font-medium text-ink-primary transition-colors hover:border-accent-brand hover:bg-accent-soft/40 focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
                 >
                   {sample.label}
                 </button>

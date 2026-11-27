@@ -36,8 +36,9 @@ export function resolveProxyAction(params: {
   }
 
   const target = encodeURIComponent(`${pathname}${search}`);
+  const isOnboardingRoute = pathname === '/onboarding' || pathname.startsWith('/onboarding/');
   return {
     kind: 'redirect',
-    destination: `/login?next=${target}`,
+    destination: isOnboardingRoute ? `/login?mode=signup&next=${target}` : `/login?next=${target}`,
   };
 }

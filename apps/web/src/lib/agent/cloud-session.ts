@@ -1,7 +1,6 @@
 import { billingService, prisma } from '@tariffos/database';
 import type { ClassificationLinePayload } from '@tariffos/shared-types';
-import { estimateTokenCostUsd } from '@/lib/admin/llm-pricing';
-import { getAuthenticatedUser } from '@/lib/supabase/server';
+import { estimateTokenCostUsd } from '../admin/llm-pricing';
 
 export interface CloudTenantContext {
   userId: string;
@@ -15,6 +14,7 @@ export type CloudAuthResult =
   | { ok: false; status: 401 | 403; error: string };
 
 export async function resolveCloudTenantContext(): Promise<CloudAuthResult> {
+  const { getAuthenticatedUser } = await import('../supabase/server');
   const user = await getAuthenticatedUser();
   if (!user) {
     return { ok: false, status: 401, error: 'Authentication required' };

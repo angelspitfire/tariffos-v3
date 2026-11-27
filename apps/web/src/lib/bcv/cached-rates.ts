@@ -1,4 +1,4 @@
-import { isCloudModeEnabled } from '@/lib/runtime-config';
+import { isCloudModeEnabled } from '../runtime-config';
 import {
   getBcvCacheBucket,
   invalidateBcvRateCache,

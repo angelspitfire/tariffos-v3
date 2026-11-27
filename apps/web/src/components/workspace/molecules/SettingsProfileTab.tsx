@@ -43,7 +43,7 @@ export function SettingsProfileTab({ draft, onChange }: SettingsProfileTabProps)
           </span>
         </div>
 
-        <div role="radiogroup" aria-label="Selector de tema" className="grid grid-cols-3 gap-2 rounded-card bg-surface-subtle p-1">
+        <div role="radiogroup" aria-label="Selector de tema" className="grid grid-cols-3 gap-2 rounded-field bg-surface-subtle p-1">
           {(
             [
               { id: 'light', label: 'Claro', hint: 'Fondo limpio', icon: Sun },

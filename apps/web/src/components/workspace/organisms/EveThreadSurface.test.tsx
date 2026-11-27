@@ -66,7 +66,12 @@ const MOCK_MESSAGES: ThreadMessageLike[] = [
         toolCallId: 'tc-web',
         toolName: 'web_search',
         args: { query: 'MacBook Pro 14 M3 specs' },
-        result: { query: 'MacBook Pro 14 M3 specs', provider: 'vercel-parallel-fast', results: [], summary: null },
+        result: {
+          query: 'MacBook Pro 14 M3 specs',
+          provider: 'vercel-parallel-fast',
+          results: [],
+          summary: null,
+        },
       },
       {
         type: 'tool-call',
@@ -80,16 +85,22 @@ const MOCK_MESSAGES: ThreadMessageLike[] = [
   },
 ];
 
+const capturedRuntimeOptions = vi.hoisted(() => ({
+  lastOptions: null as Record<string, unknown> | null,
+}));
+
 vi.mock('@assistant-ui/eve', async () => {
   const react = await import('@assistant-ui/react');
   return {
-    useEveAgentRuntime: () =>
-      react.useExternalStoreRuntime({
+    useEveAgentRuntime: (options?: Record<string, unknown>) => {
+      capturedRuntimeOptions.lastOptions = options ?? null;
+      return react.useExternalStoreRuntime({
         isRunning: false,
         messages: MOCK_MESSAGES,
         convertMessage: (m: ThreadMessageLike) => m,
         onNew: async () => undefined,
-      }),
+      });
+    },
   };
 });
 
@@ -106,10 +117,12 @@ describe('EveThreadSurface', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    capturedRuntimeOptions.lastOptions = null;
   });
 
-  it('renders Eve tool pills, VerdictCard from classify_item tool result, and syncs discovered envelope', async () => {
+  it('renders ToolActivityList, VerdictCard from classify_item, and syncs discovered messages & envelopes', async () => {
     const onEnvelopeDiscovered = vi.fn();
+    const onSyncMessages = vi.fn();
     const onRegisterSend = vi.fn();
 
     render(
@@ -128,6 +141,7 @@ describe('EveThreadSurface', () => {
         onRunSample={vi.fn()}
         onRunBatchSample={vi.fn()}
         onUpdateProfile={vi.fn()}
+        onSyncMessages={onSyncMessages}
         onEnvelopeDiscovered={onEnvelopeDiscovered}
         onRegisterSend={onRegisterSend}
         onErrorToast={vi.fn()}
@@ -142,9 +156,77 @@ describe('EveThreadSurface', () => {
 
     await waitFor(() => {
       expect(onEnvelopeDiscovered).toHaveBeenCalledTimes(1);
+      expect(onSyncMessages).toHaveBeenCalledTimes(1);
     });
     expect(onEnvelopeDiscovered.mock.calls[0]?.[0]?.envelope?.inlineComponents[0]?.type).toBe('verdict');
+    expect(onSyncMessages.mock.calls[0]?.[0]).toHaveLength(2);
+    expect(onSyncMessages.mock.calls[0]?.[1]).toBe('a-1');
     expect(onRegisterSend).toHaveBeenCalledWith(expect.any(Function));
+  });
+
+  it('reconnects durable eveSessionId with resume: true and prevents duplicating persisted chat turns', () => {
+    const onSessionIdDiscovered = vi.fn();
+
+    render(
+      <EveThreadSurface
+        eveSessionId="wrun_session_abc"
+        jurisdictionId="ve-seniat"
+        approvalWorkflowMode="agent_decides"
+        defaultIncoterm="FOB"
+        deepMode={false}
+        persistedMessages={[
+          {
+            id: 'stale-local-user-id',
+            role: 'user',
+            text: 'Turno viejo duplicado por ID distinto',
+            createdAt: '2026-11-26T12:00:00.000Z',
+            jurisdictionId: 've-seniat',
+          },
+          {
+            id: 'msg-batch-42',
+            role: 'assistant',
+            text: 'Lote BL_SOLAR procesado (4 ítems).',
+            createdAt: '2026-11-26T12:05:00.000Z',
+            jurisdictionId: 've-seniat',
+          },
+        ]}
+        skuPrecedents={[]}
+        pendingAttachments={[]}
+        profile={profile}
+        inlineActions={inlineActions}
+        onAddFiles={vi.fn()}
+        onRemoveAttachment={vi.fn()}
+        onConsumeAttachments={() => []}
+        onRunSample={vi.fn()}
+        onRunBatchSample={vi.fn()}
+        onUpdateProfile={vi.fn()}
+        onSessionIdDiscovered={onSessionIdDiscovered}
+        onRegisterSend={vi.fn()}
+        onErrorToast={vi.fn()}
+      />,
+    );
+
+    expect(capturedRuntimeOptions.lastOptions?.initialSession).toEqual({
+      sessionId: 'wrun_session_abc',
+      streamIndex: 0,
+    });
+    expect(capturedRuntimeOptions.lastOptions?.resume).toBe(true);
+
+    // Persisted chat turns are NOT duplicated once live Eve messages arrive,
+    // while external Inngest batch messages remain visible.
+    expect(screen.queryByText('Turno viejo duplicado por ID distinto')).toBeNull();
+    expect(screen.getByText('Lote BL_SOLAR procesado (4 ítems).')).toBeTruthy();
+
+    // onSessionChange notifies parent when Eve assigns a new durable session ID.
+    const onSessionChange = capturedRuntimeOptions.lastOptions?.onSessionChange as
+      | ((session: { sessionId: string; streamIndex: number } | undefined) => void)
+      | undefined;
+    onSessionChange?.({ sessionId: 'wrun_session_abc', streamIndex: 4 });
+    expect(onSessionIdDiscovered).not.toHaveBeenCalled();
+
+    onSessionChange?.({ sessionId: 'wrun_session_new', streamIndex: 0 });
+    expect(onSessionIdDiscovered).toHaveBeenCalledTimes(1);
+    expect(onSessionIdDiscovered).toHaveBeenCalledWith('wrun_session_new');
   });
 
   it('renders persisted external batch messages alongside live Eve messages without duplicating live IDs', () => {
@@ -188,5 +270,49 @@ describe('EveThreadSurface', () => {
 
     expect(screen.getByText('Lote BL_SOLAR procesado (4 ítems).')).toBeTruthy();
     expect(screen.queryByText('Duplicado live')).toBeNull();
+  });
+
+  it('formats unreachable Eve 500/network errors with actionable dev startup guidance while preserving domain errors', () => {
+    const onErrorToast = vi.fn();
+
+    render(
+      <EveThreadSurface
+        jurisdictionId="ve-seniat"
+        approvalWorkflowMode="agent_decides"
+        defaultIncoterm="FOB"
+        deepMode={false}
+        skuPrecedents={[]}
+        pendingAttachments={[]}
+        profile={profile}
+        inlineActions={inlineActions}
+        onAddFiles={vi.fn()}
+        onRemoveAttachment={vi.fn()}
+        onConsumeAttachments={() => []}
+        onRunSample={vi.fn()}
+        onRunBatchSample={vi.fn()}
+        onUpdateProfile={vi.fn()}
+        onRegisterSend={vi.fn()}
+        onErrorToast={onErrorToast}
+      />,
+    );
+
+    const onError = capturedRuntimeOptions.lastOptions?.onError as
+      | ((err: Error) => void)
+      | undefined;
+    expect(onError).toBeTypeOf('function');
+
+    onError?.(new Error('Internal Server Error'));
+    onError?.(new Error('Failed to fetch'));
+    onError?.(new Error('Cuota mensual alcanzada'));
+
+    expect(onErrorToast).toHaveBeenNthCalledWith(
+      1,
+      expect.stringMatching(/pnpm dev|pnpm dev:eve/),
+    );
+    expect(onErrorToast).toHaveBeenNthCalledWith(
+      2,
+      expect.stringMatching(/pnpm dev|pnpm dev:eve/),
+    );
+    expect(onErrorToast).toHaveBeenNthCalledWith(3, 'Cuota mensual alcanzada');
   });
 });

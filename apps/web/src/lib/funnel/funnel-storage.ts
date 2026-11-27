@@ -40,16 +40,20 @@ export interface OnboardingProfileDraft {
 
 export interface FunnelJurisdictionOption {
   id: string;
+  countryCode: string;
   country: string;
   authority: string;
   nomenclature: string;
+  liveInCloud: boolean;
 }
 
 export const FUNNEL_JURISDICTIONS: readonly FunnelJurisdictionOption[] = JURISDICTIONS.map((jur) => ({
   id: jur.id,
+  countryCode: jur.countryCode,
   country: jur.country,
   authority: jur.authority,
   nomenclature: jur.nomenclature,
+  liveInCloud: Boolean(jur.pilot),
 }));
 
 function getStorage(kind: 'local' | 'session'): Storage | null {

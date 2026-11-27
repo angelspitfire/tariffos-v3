@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckCircle2, FileText, XCircle } from 'lucide-react';
+import { CheckCircle2, ExternalLink, FileText, XCircle } from 'lucide-react';
 import type { ManualPaymentRecord } from '@tariffos/shared-types';
 import { MANUAL_PAYMENT_METHOD_OPTIONS } from '@/lib/funnel/billing-port';
 import { FunnelBadge } from '../atoms/FunnelBadge';
@@ -24,10 +24,29 @@ export function PaymentQueueCard({
 }: PaymentQueueCardProps) {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [reason, setReason] = useState('');
+  const [openingReceipt, setOpeningReceipt] = useState(false);
 
   const isPending = item.status === 'pending_verification';
+  const hasStoredReceipt = Boolean(item.receiptStorageKey?.includes('/'));
   const methodLabel =
     MANUAL_PAYMENT_METHOD_OPTIONS.find((m) => m.id === item.method)?.label ?? item.method;
+
+  const handleOpenReceipt = async () => {
+    if (!item.receiptStorageKey) return;
+    setOpeningReceipt(true);
+    try {
+      const res = await fetch(
+        `/api/admin/billing/receipts?key=${encodeURIComponent(item.receiptStorageKey)}`,
+      );
+      if (!res.ok) return;
+      const json = (await res.json()) as { signedUrl?: string };
+      if (json.signedUrl) {
+        window.open(json.signedUrl, '_blank', 'noopener,noreferrer');
+      }
+    } finally {
+      setOpeningReceipt(false);
+    }
+  };
 
   const handleConfirmReject = async () => {
     await onReject(item.paymentId, reason);
@@ -93,10 +112,23 @@ export function PaymentQueueCard({
             ${item.amount.toLocaleString('en-US')} {item.currency}
           </div>
           {item.receiptStorageKey ? (
-            <span className="inline-flex items-center gap-1 text-[11px] text-accent-ink">
-              <FileText className="w-3 h-3" />
-              {item.receiptStorageKey}
-            </span>
+            hasStoredReceipt ? (
+              <button
+                type="button"
+                disabled={openingReceipt}
+                onClick={() => void handleOpenReceipt()}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent-ink hover:underline cursor-pointer disabled:opacity-50"
+              >
+                <FileText className="w-3 h-3" />
+                {openingReceipt ? 'Abriendo...' : 'Ver comprobante'}
+                <ExternalLink className="w-2.5 h-2.5" />
+              </button>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-[11px] text-accent-ink">
+                <FileText className="w-3 h-3" />
+                {item.receiptStorageKey}
+              </span>
+            )
           ) : null}
         </div>
       </div>

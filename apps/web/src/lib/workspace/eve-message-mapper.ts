@@ -1,9 +1,13 @@
 import {
+  A2UICalculatorComponentSchema,
   A2UIEnvelopeSchema,
   AgentReviewTriggerSchema,
+  type A2UICalculatorComponent,
   type A2UIEnvelope,
 } from '@tariffos/shared-types';
 import type { WorkspaceMessage } from './types';
+
+export { getEveToolActivity, getEveToolLabel } from './eve-tool-labels';
 
 interface UnknownToolCallPart {
   type: 'tool-call';
@@ -12,38 +16,8 @@ interface UnknownToolCallPart {
   args?: unknown;
   result?: unknown;
   isError?: boolean;
+  isPreliminary?: boolean;
 }
-
-const TOOL_LABELS: Record<string, { running: string; done: string }> = {
-  classify_item: {
-    running: 'Clasificando mercancía (RGI 1→6)…',
-    done: 'Clasificación completada',
-  },
-  web_search: {
-    running: 'Buscando especificaciones en web (Parallel Fast)…',
-    done: 'Especificaciones web consultadas (Parallel Fast)',
-  },
-  search_tariff: {
-    running: 'Consultando Arancel de Aduanas…',
-    done: 'Arancel consultado',
-  },
-  verify_hs_code: {
-    running: 'Verificando código HS en base oficial…',
-    done: 'Código HS verificado',
-  },
-  calculate_duties: {
-    running: 'Calculando tributos y valor CIF…',
-    done: 'Tributos recalculados',
-  },
-  request_dossier_review: {
-    running: 'Marcando dictamen para revisión…',
-    done: 'Enviado a revisión técnica',
-  },
-  get_bcv_rate: {
-    running: 'Consultando tasa oficial BCV…',
-    done: 'Tasa BCV consultada',
-  },
-};
 
 function toRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' ? (value as Record<string, unknown>) : null;
@@ -53,13 +27,6 @@ function asToolCallPart(part: unknown): UnknownToolCallPart | null {
   const record = toRecord(part);
   if (!record || record.type !== 'tool-call') return null;
   return record as unknown as UnknownToolCallPart;
-}
-
-/** Returns a concise Spanish progress or completion label for an Eve tool call. */
-export function getEveToolLabel(toolName: string, completed: boolean): string {
-  const known = TOOL_LABELS[toolName];
-  if (known) return completed ? known.done : known.running;
-  return completed ? `Herramienta ${toolName} completada` : `Ejecutando ${toolName}…`;
 }
 
 /** Extracts plain visible text from assistant-ui message content parts. */
@@ -74,6 +41,23 @@ export function extractMessagePlainText(content: readonly unknown[]): string {
   return chunks.join('\n').trim();
 }
 
+function mergeCalculatorIntoEnvelope(
+  envelope: A2UIEnvelope | null,
+  calculator: A2UICalculatorComponent | null,
+): A2UIEnvelope | null {
+  if (!calculator) return envelope;
+  if (!envelope) {
+    return A2UIEnvelopeSchema.parse({
+      assistantMessage: `Liquidación CIF calculada para ${calculator.hsCode}`,
+      classificationStatus: 'classified',
+      inlineComponents: [],
+      canvasComponents: [calculator],
+    });
+  }
+  const rest = envelope.canvasComponents.filter((c) => c.type !== 'calculator');
+  return { ...envelope, canvasComponents: [...rest, calculator] };
+}
+
 function patchEnvelopeWithDossierReview(
   envelope: A2UIEnvelope,
   content: readonly unknown[],
@@ -81,7 +65,7 @@ function patchEnvelopeWithDossierReview(
   let reviewResult: Record<string, unknown> | null = null;
   for (const part of content) {
     const tc = asToolCallPart(part);
-    if (tc?.toolName === 'request_dossier_review' && !tc.isError) {
+    if (tc?.toolName === 'request_dossier_review' && !tc.isError && !tc.isPreliminary) {
       const rec = toRecord(tc.result);
       if (rec?.reviewStatus === 'in_review') reviewResult = rec;
     }
@@ -109,23 +93,32 @@ function patchEnvelopeWithDossierReview(
 }
 
 /**
- * Extracts and validates the latest `A2UIEnvelope` produced by `classify_item`
- * inside an Eve assistant message, patching `reviewStatus` when `request_dossier_review` ran.
+ * Extracts and validates the latest `A2UIEnvelope` and `calculatorComponent` produced by
+ * Eve tools (`classify_item`, `request_technical_clarification`, `analyze_invoice_manifest`,
+ * `calculate_duties`), patching `reviewStatus` when `request_dossier_review` ran.
  */
 export function extractEnvelopeFromToolParts(content: readonly unknown[]): A2UIEnvelope | null {
   let latestEnvelope: A2UIEnvelope | null = null;
+  let latestCalculator: A2UICalculatorComponent | null = null;
+
   for (const part of content) {
     const tc = asToolCallPart(part);
-    if (!tc || tc.toolName !== 'classify_item' || tc.isError) continue;
+    if (!tc || tc.isError || tc.isPreliminary || !tc.result) continue;
     const result = toRecord(tc.result);
-    if (!result?.envelope) continue;
-    const parsed = A2UIEnvelopeSchema.safeParse(result.envelope);
-    if (parsed.success) {
-      latestEnvelope = parsed.data;
+    if (!result) continue;
+
+    if (result.envelope) {
+      const parsed = A2UIEnvelopeSchema.safeParse(result.envelope);
+      if (parsed.success) latestEnvelope = parsed.data;
+    }
+    if (result.calculatorComponent) {
+      const parsedCalc = A2UICalculatorComponentSchema.safeParse(result.calculatorComponent);
+      if (parsedCalc.success) latestCalculator = parsedCalc.data;
     }
   }
 
-  return latestEnvelope ? patchEnvelopeWithDossierReview(latestEnvelope, content) : null;
+  const withCalc = mergeCalculatorIntoEnvelope(latestEnvelope, latestCalculator);
+  return withCalc ? patchEnvelopeWithDossierReview(withCalc, content) : null;
 }
 
 /** Converts an assistant-ui/Eve message into a TariffOS `WorkspaceMessage`. */
@@ -138,10 +131,15 @@ export function toWorkspaceMessageFromEve(params: {
 }): WorkspaceMessage {
   const envelope =
     params.role === 'assistant' ? extractEnvelopeFromToolParts(params.content) : null;
+  const plainText = extractMessagePlainText(params.content);
+  const text =
+    plainText ||
+    (envelope?.workflowState === 'needs_input' ? envelope.assistantMessage : '');
+
   return {
     id: params.id,
     role: params.role,
-    text: extractMessagePlainText(params.content),
+    text,
     createdAt: (params.createdAt ?? new Date()).toISOString(),
     jurisdictionId: params.jurisdictionId,
     ...(envelope ? { envelope } : {}),

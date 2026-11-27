@@ -10,13 +10,14 @@ import {
 } from '@/lib/funnel/funnel-storage';
 
 const mockPush = vi.fn();
+const mockRefresh = vi.fn();
 let mockSearchParams = new URLSearchParams();
 const mockSignInWithOAuth = vi.fn();
 const mockSignInWithPassword = vi.fn();
 const mockSignUp = vi.fn();
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ push: mockPush, refresh: mockRefresh }),
   useSearchParams: () => mockSearchParams,
 }));
 
@@ -35,6 +36,7 @@ describe('LoginCard', () => {
     window.localStorage.clear();
     window.sessionStorage.clear();
     mockPush.mockReset();
+    mockRefresh.mockReset();
     mockSignInWithOAuth.mockReset();
     mockSignInWithPassword.mockReset();
     mockSignUp.mockReset();
@@ -166,5 +168,41 @@ describe('LoginCard', () => {
 
     await user.click(screen.getByRole('button', { name: /Probar sin cuenta/i }));
     expect(mockPush).toHaveBeenCalledWith('/app');
+  });
+
+  it('displays selected plan context extracted from next=/onboarding?plan=pilot and non-misleading pending query copy', () => {
+    savePendingQuery('Bomba sumergible 3HP acero inoxidable');
+    mockSearchParams = new URLSearchParams('next=/onboarding?plan=pilot&cycle=monthly');
+
+    render(<LoginCard cloudMode initialMode="signup" />);
+
+    expect(screen.getByText(/Piloto Operativo/i)).toBeInTheDocument();
+    expect(screen.getByText(/\$150/)).toBeInTheDocument();
+    expect(screen.getByText(/Guardamos tu consulta/i)).toBeInTheDocument();
+    expect(screen.queryByText(/se abrirá automáticamente/i)).not.toBeInTheDocument();
+  });
+
+  it('never exposes Supabase Auth or Modo local implementation badges in the UI', () => {
+    const { rerender } = render(<LoginCard cloudMode />);
+    expect(screen.queryByText(/Supabase Auth/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Modo local/i)).not.toBeInTheDocument();
+
+    rerender(<LoginCard cloudMode={false} />);
+    expect(screen.queryByText(/Supabase Auth/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Modo local/i)).not.toBeInTheDocument();
+  });
+
+  it('routes existing cloud users directly to /app with router.refresh after email signin even when local mock profile is empty', async () => {
+    const user = userEvent.setup();
+    mockSignInWithPassword.mockResolvedValue({ data: { session: {} }, error: null });
+
+    render(<LoginCard cloudMode />);
+
+    await user.type(screen.getByLabelText(/Correo electrónico/i), 'angel@tariffos.app');
+    await user.type(screen.getByLabelText(/^Contraseña$/i), 'SuperClave!2026');
+    await user.click(screen.getByRole('button', { name: /Ingresar con correo/i }));
+
+    expect(mockPush).toHaveBeenCalledWith('/app');
+    expect(mockRefresh).toHaveBeenCalledTimes(1);
   });
 });

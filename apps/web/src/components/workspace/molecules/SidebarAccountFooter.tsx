@@ -78,7 +78,7 @@ export function SidebarAccountFooter({
         onClick={() => setMenuOpen((p) => !p)}
         aria-label="Cuenta y ajustes"
         aria-expanded={menuOpen}
-        className="flex w-full cursor-pointer items-center gap-2.5 rounded-card border border-border-subtle bg-surface-panel p-2 text-left transition-colors hover:bg-surface-hover"
+        className="flex w-full cursor-pointer items-center gap-2.5 rounded-card border border-border-subtle bg-surface-panel p-2 text-left transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
       >
         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-brand text-[10px] font-bold text-white">
           {getInitials(profile.fullName)}

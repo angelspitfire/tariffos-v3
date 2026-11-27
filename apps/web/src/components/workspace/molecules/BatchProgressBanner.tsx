@@ -41,22 +41,17 @@ export function BatchProgressBanner({
             <div className="flex items-center gap-2">
               <span className="truncate text-xs font-semibold text-ink-primary">{fileName}</span>
               <span
-                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
                   isLive
                     ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
                     : 'bg-surface-muted text-ink-muted'
                 }`}
               >
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    isLive ? 'bg-emerald-500 animate-pulse' : 'bg-ink-subtle'
-                  }`}
-                />
                 {isLive ? 'En vivo' : 'Sincronizando'}
               </span>
             </div>
             <p className="text-[11px] text-ink-secondary flex items-center gap-1.5">
-              <Loader2 className="h-3 w-3 animate-spin shrink-0 text-accent-ink" aria-hidden="true" />
+              <Loader2 className="h-3 w-3 animate-spin shrink-0 text-accent-ink motion-reduce:animate-none" aria-hidden="true" />
               <span>{label}</span>
             </p>
           </div>
@@ -73,7 +68,7 @@ export function BatchProgressBanner({
             type="button"
             onClick={onDismiss}
             aria-label="Ocultar progreso del lote"
-            className="rounded-md p-1 text-ink-subtle hover:bg-surface-hover hover:text-ink-primary cursor-pointer"
+            className="rounded-md p-1 text-ink-subtle transition-colors hover:bg-surface-hover hover:text-ink-primary cursor-pointer focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
             <X className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
@@ -82,8 +77,8 @@ export function BatchProgressBanner({
 
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-subtle">
         <div
-          className="h-full rounded-full bg-accent-brand transition-all duration-300"
-          style={{ width: `${pct}%` }}
+          className="h-full w-full origin-left rounded-full bg-accent-brand transition-transform duration-300 motion-reduce:transition-none"
+          style={{ transform: `scaleX(${pct / 100})` }}
         />
       </div>
     </div>

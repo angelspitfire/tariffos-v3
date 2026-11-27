@@ -9,7 +9,9 @@ import {
   type ManualPaymentStatus,
 } from '@tariffos/shared-types';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
+import { toManualPaymentRecord } from '@/lib/admin/payment-mapper';
 import { resolveCloudTenantContext } from '@/lib/agent/cloud-session';
+import { notifyPaymentSubmitted } from '@/lib/funnel/payment-notifications';
 
 const CreatePaymentSchema = z.object({
   planId: z.string().trim().min(1),
@@ -139,10 +141,16 @@ export async function POST(request: Request): Promise<Response> {
     },
   });
 
-  return Response.json(
-    { mode: 'cloud', payment: { paymentId: created.id, status: 'pending_verification' } },
-    { status: 201 },
-  );
+  const payment = toManualPaymentRecord({
+    ...created,
+    tenant: {
+      name: '',
+      ownerEmail: auth.context.userEmail ?? null,
+    },
+  });
+
+  void notifyPaymentSubmitted(payment);
+  return Response.json({ mode: 'cloud', payment }, { status: 201 });
 }
 
 export async function PATCH(): Promise<Response> {

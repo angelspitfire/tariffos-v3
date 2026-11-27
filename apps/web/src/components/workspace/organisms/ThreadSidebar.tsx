@@ -32,7 +32,7 @@ export interface ThreadSidebarProps {
 }
 
 const NAV_BTN =
-  'flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl px-3 py-1.5 text-left text-xs font-medium transition-colors';
+  'flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl px-3 py-1.5 text-left text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none';
 
 export function ThreadSidebar({
   open,
@@ -73,13 +73,13 @@ export function ThreadSidebar({
       aria-label="Historial y navegación"
       className="no-print flex h-full w-64 shrink-0 flex-col border-r border-line-frost bg-surface-frost backdrop-blur-xl"
     >
-      <div className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-line-frost px-3.5">
+      <div className="flex h-[52px] shrink-0 items-center justify-between gap-2 border-b border-line-frost px-3.5">
         <BrandMark size="sm" showBadge={false} />
         <button
           type="button"
           onClick={onToggle}
           aria-label={drawer ? 'Cerrar barra lateral' : 'Minimizar barra lateral'}
-          className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary"
+          className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
         >
           {drawer ? <X className="h-4 w-4" aria-hidden="true" /> : <PanelLeftClose className="h-4 w-4" aria-hidden="true" />}
         </button>
@@ -89,7 +89,7 @@ export function ThreadSidebar({
         <button
           type="button"
           onClick={onNewThread}
-          className="mb-1.5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-surface-inverted px-3.5 py-2 text-xs font-semibold text-ink-on-inverted transition-colors hover:bg-surface-inverted-hover active:translate-y-px"
+          className="mb-1.5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-surface-inverted px-3.5 py-2 text-xs font-semibold text-ink-on-inverted transition-colors hover:bg-surface-inverted-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none active:translate-y-px"
         >
           <Plus className="h-3.5 w-3.5" aria-hidden="true" />
           Nuevo chat

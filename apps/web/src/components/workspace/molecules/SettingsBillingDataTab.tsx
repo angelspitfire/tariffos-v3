@@ -49,7 +49,7 @@ export function SettingsBillingTab({ plan, onClose }: SettingsBillingTabProps) {
       </div>
 
       <div className="space-y-2">
-        <div className="text-[11px] font-semibold tracking-wider text-ink-muted uppercase">
+        <div className="text-xs font-semibold text-ink-secondary">
           Planes disponibles
         </div>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -143,7 +143,7 @@ export function SettingsLocalDataTab({
           <button
             type="button"
             onClick={onClearLocalData}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-rose-500/35 bg-rose-500/10 px-4 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-500/20 dark:text-rose-300"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-rose-500/35 bg-rose-500/10 px-4 py-2 text-xs font-semibold whitespace-nowrap text-rose-700 transition-colors hover:bg-rose-500/20 focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none dark:text-rose-300"
           >
             <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
             Limpiar caché local del navegador

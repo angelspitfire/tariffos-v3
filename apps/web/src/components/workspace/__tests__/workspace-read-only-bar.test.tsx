@@ -22,4 +22,19 @@ describe('WorkspaceReadOnlyBar', () => {
       '/activate-plan?plan=pilot',
     );
   });
+
+  it('preserves saved pendingQuery notice and shows status CTA when payment is under verification', () => {
+    render(
+      <WorkspaceReadOnlyBar
+        reason="Pago en verificación (Ref. ZEL-9900)."
+        pendingQuery="Bomba sumergible 3HP"
+        isPendingVerification
+      />,
+    );
+    expect(screen.getByText(/Bomba sumergible 3HP/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Ver estado del pago/i })).toHaveAttribute(
+      'href',
+      '/activate-plan',
+    );
+  });
 });

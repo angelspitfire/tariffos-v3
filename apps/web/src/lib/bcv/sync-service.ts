@@ -1,5 +1,5 @@
 import { getUnscopedSystemPrisma } from '@tariffos/database';
-import { isCloudModeEnabled } from '@/lib/runtime-config';
+import { isCloudModeEnabled } from '../runtime-config';
 import { invalidateBcvRateCache } from './cache-state';
 import { validateRateDelta, type BcvPair, type BcvRateQuote } from './parser';
 

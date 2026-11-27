@@ -2,11 +2,17 @@ import { defineTool } from 'eve/tools';
 import { z } from 'zod';
 
 export default defineTool({
-  description: 'Verify an exact 10-digit HS code against NationalTariff, returning official description, rates, and required OGA permits.',
+  description:
+    'Verify an exact 10-digit HS code against NationalTariff, returning official description, rates, and required OGA permits.',
   inputSchema: z.object({
     countryCode: z.string().default('VE'),
     hsCode: z.string().min(4),
   }),
+  label: {
+    start: ({ hsCode }) => `Verificando código HS ${hsCode}…`,
+    complete: ({ hsCode }, output) =>
+      output.verified ? `Subpartida ${hsCode} verificada` : `Subpartida ${hsCode} no encontrada`,
+  },
   async execute({ countryCode, hsCode }) {
     const { createPrismaPipelinePorts } = await import('../../apps/web/src/lib/agent/prisma-ports');
     const ports = createPrismaPipelinePorts();

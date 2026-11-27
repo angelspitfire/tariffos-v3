@@ -49,7 +49,11 @@ describe('/api/workspace/threads', () => {
       {
         id: 'thr-1',
         title: 'MacBook Pro 14',
-        description: JSON.stringify({ jurisdictionId: 've-seniat', status: 'regular' }),
+        description: JSON.stringify({
+          jurisdictionId: 've-seniat',
+          status: 'regular',
+          eveSessionId: 'wrun_durable_01',
+        }),
         createdAt: now,
         updatedAt: now,
         messages: [
@@ -71,8 +75,11 @@ describe('/api/workspace/threads', () => {
 
     const res = await GET();
     expect(res.status).toBe(200);
-    const json = (await res.json()) as { threads: Array<{ id: string; messages: Array<{ text: string }> }> };
+    const json = (await res.json()) as {
+      threads: Array<{ id: string; eveSessionId?: string; messages: Array<{ text: string }> }>;
+    };
     expect(json.threads).toHaveLength(1);
+    expect(json.threads[0]?.eveSessionId).toBe('wrun_durable_01');
     expect(json.threads[0]?.messages[0]?.text).toBe('MacBook Pro 14');
   });
 
@@ -105,6 +112,7 @@ describe('/api/workspace/threads', () => {
           title: 'Laptop',
           jurisdictionId: 've-seniat',
           status: 'regular',
+          eveSessionId: 'wrun_durable_02',
           messages: [{ id: 'm1', role: 'user', text: 'Laptop', createdAt: '2026-11-26T10:00:00Z', jurisdictionId: 've-seniat' }],
           createdAt: '2026-11-26T10:00:00Z',
           updatedAt: '2026-11-26T10:00:00Z',
@@ -113,6 +121,17 @@ describe('/api/workspace/threads', () => {
     );
     expect(ok.status).toBe(200);
     expect(mocks.txUpsert).toHaveBeenCalledTimes(1);
+    expect(mocks.txUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: expect.objectContaining({
+          description: JSON.stringify({
+            jurisdictionId: 've-seniat',
+            status: 'regular',
+            eveSessionId: 'wrun_durable_02',
+          }),
+        }),
+      }),
+    );
     expect(mocks.txMsgCreateMany).toHaveBeenCalledTimes(1);
   });
 

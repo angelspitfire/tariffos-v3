@@ -135,4 +135,17 @@ describe('ExpressOnboardingCard', () => {
 
     expect(screen.getAllByText(/Recomendado/i).length).toBeGreaterThanOrEqual(2);
   });
+
+  it('pre-fills fullName from initialFullName and restricts cloud self-serve jurisdictions to active countries', () => {
+    render(<ExpressOnboardingCard cloudMode initialFullName="Sofía Márquez" />);
+
+    expect(screen.getByLabelText(/Nombre completo/i)).toHaveValue('Sofía Márquez');
+
+    const select = screen.getByLabelText(/Jurisdicción por defecto/i) as HTMLSelectElement;
+    const veOption = Array.from(select.options).find((o) => o.value === 've-seniat');
+    const coOption = Array.from(select.options).find((o) => o.value === 'co-dian');
+    expect(veOption?.disabled).toBe(false);
+    expect(coOption?.disabled).toBe(true);
+    expect(coOption?.textContent).toMatch(/Próximamente|Enterprise/i);
+  });
 });

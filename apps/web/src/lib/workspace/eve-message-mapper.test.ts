@@ -3,6 +3,7 @@ import type { A2UIEnvelope } from '@tariffos/shared-types';
 import {
   extractEnvelopeFromToolParts,
   extractMessagePlainText,
+  getEveToolActivity,
   getEveToolLabel,
   toWorkspaceMessageFromEve,
 } from './eve-message-mapper';
@@ -43,25 +44,74 @@ const SAMPLE_ENVELOPE: A2UIEnvelope = {
 };
 
 describe('eve-message-mapper', () => {
-  it('returns localized Spanish labels for running and completed Eve tools', () => {
+  it('returns localized Spanish labels and argument details for tools, skills, and preliminary phases', () => {
     expect(getEveToolLabel('classify_item', false)).toContain('Clasificando');
     expect(getEveToolLabel('classify_item', true)).toContain('completada');
     expect(getEveToolLabel('web_search', false)).toContain('Parallel Fast');
     expect(getEveToolLabel('calculate_duties', true)).toContain('Tributos');
     expect(getEveToolLabel('get_bcv_rate', false)).toContain('BCV');
-    expect(getEveToolLabel('get_bcv_rate', true)).toContain('BCV');
+    expect(getEveToolLabel('request_technical_clarification', true)).toContain('Validación');
+    expect(getEveToolLabel('analyze_invoice_manifest', true)).toContain('Manifiesto');
+    expect(getEveToolLabel('ve-rgi-classification', true)).toContain('RGI Venezuela');
     expect(getEveToolLabel('unknown_tool', false)).toContain('unknown_tool');
+
+    expect(
+      getEveToolActivity('verify_hs_code', true, { hsCode: '8471.30.90.90' }),
+    ).toEqual({
+      label: 'Código HS verificado',
+      detail: '8471.30.90.90',
+    });
+
+    expect(
+      getEveToolActivity(
+        'analyze_invoice_manifest',
+        false,
+        { documentReference: 'FAC-100' },
+        'Clasificando 5 líneas…',
+      ),
+    ).toEqual({
+      label: 'Clasificando 5 líneas…',
+      detail: 'FAC-100',
+    });
   });
 
-  it('extracts and validates A2UIEnvelope from classify_item tool results and patches dossier review state', () => {
+  it('extracts A2UIEnvelope from classify_item, patches dossier review, and merges calculate_duties calculatorComponent', () => {
     const envelope = extractEnvelopeFromToolParts([
-      { type: 'text', text: 'Analizando...' },
+      { type: 'text', text: 'Analizando…' },
+      {
+        type: 'tool-call',
+        toolCallId: 'tc-prelim',
+        toolName: 'analyze_invoice_manifest',
+        isPreliminary: true,
+        result: { phase: 'Procesando…', envelope: null },
+      },
       {
         type: 'tool-call',
         toolCallId: 'tc-1',
         toolName: 'classify_item',
         args: { description: 'Laptop 14' },
         result: { line: {}, envelope: SAMPLE_ENVELOPE },
+      },
+      {
+        type: 'tool-call',
+        toolCallId: 'tc-calc',
+        toolName: 'calculate_duties',
+        args: { hsCode: '8471.30.00.90' },
+        result: {
+          calculatorComponent: {
+            type: 'calculator',
+            id: 'calc-1',
+            title: 'Liquidación CIF · 8471.30.00.90',
+            hsCode: '8471.30.00.90',
+            adValoremPercent: 0,
+            vatPercent: 16,
+            customsServiceFeePercent: 1,
+            currencyCode: 'USD',
+            localCurrencyCode: 'VES',
+            suggestedExchangeRate: 45,
+            exemptionAvailable: false,
+          },
+        },
       },
       {
         type: 'tool-call',
@@ -73,7 +123,7 @@ describe('eve-message-mapper', () => {
           reviewStatus: 'in_review',
           reason: 'Falta peso exacto',
           missingFields: ['Peso kg'],
-          invokedBySkill: 've-rgi-audit',
+          invokedBySkill: 'oga-compliance-review',
         },
       },
     ]);
@@ -84,8 +134,71 @@ describe('eve-message-mapper', () => {
     expect(dossier?.agentReviewTrigger).toEqual({
       reason: 'Falta peso exacto',
       missingFields: ['Peso kg'],
-      invokedBySkill: 've-rgi-audit',
+      invokedBySkill: 'oga-compliance-review',
     });
+    expect(envelope!.canvasComponents.some((c) => c.type === 'calculator')).toBe(true);
+  });
+
+  it('extracts standalone calculatorComponent and HITL questionnaire envelope with assistantMessage fallback', () => {
+    const calcOnly = extractEnvelopeFromToolParts([
+      {
+        type: 'tool-call',
+        toolCallId: 'tc-calc-solo',
+        toolName: 'calculate_duties',
+        args: { hsCode: '9102.19.00.00' },
+        result: {
+          calculatorComponent: {
+            type: 'calculator',
+            id: 'calc-solo',
+            title: 'Liquidación CIF · 9102.19.00.00',
+            hsCode: '9102.19.00.00',
+            adValoremPercent: 20,
+            vatPercent: 16,
+            customsServiceFeePercent: 1,
+            currencyCode: 'USD',
+            localCurrencyCode: 'VES',
+            suggestedExchangeRate: 46,
+            exemptionAvailable: false,
+          },
+        },
+      },
+    ]);
+    expect(calcOnly?.canvasComponents[0]?.type).toBe('calculator');
+
+    const hitlMsg = toWorkspaceMessageFromEve({
+      id: 'eve-hitl-1',
+      role: 'assistant',
+      createdAt: new Date('2026-11-26T12:10:00.000Z'),
+      jurisdictionId: 've-seniat',
+      content: [
+        {
+          type: 'tool-call',
+          toolCallId: 'tc-hitl',
+          toolName: 'request_technical_clarification',
+          args: { title: 'Datos del motor' },
+          result: {
+            status: 'needs_input',
+            envelope: {
+              assistantMessage: 'Confirma potencia nominal y fases para clasificar en 85.01:',
+              classificationStatus: 'needs_details',
+              workflowState: 'needs_input',
+              inlineComponents: [
+                {
+                  type: 'questionnaire',
+                  id: 'q-1',
+                  title: 'Datos del motor',
+                  fields: [{ id: 'kw', label: 'Potencia', fieldType: 'number', unit: 'kW' }],
+                },
+              ],
+              canvasComponents: [],
+            },
+          },
+        },
+      ],
+    });
+
+    expect(hitlMsg.text).toContain('Confirma potencia nominal');
+    expect(hitlMsg.envelope?.inlineComponents[0]?.type).toBe('questionnaire');
   });
 
   it('ignores invalid envelopes safely and extracts plain text + WorkspaceMessage', () => {

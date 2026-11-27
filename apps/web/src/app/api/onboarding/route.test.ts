@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   tenantUpdate: vi.fn(),
   tenantCreate: vi.fn(),
   membershipCreate: vi.fn(),
+  countryFindUnique: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -26,6 +27,7 @@ vi.mock('@tariffos/database', async (importOriginal) => {
       membership: { findFirst: mocks.membershipFindFirst, create: mocks.membershipCreate },
       plan: { findUnique: mocks.planFindUnique, upsert: mocks.planUpsert },
       tenant: { update: mocks.tenantUpdate, create: mocks.tenantCreate },
+      country: { findUnique: mocks.countryFindUnique },
     },
   };
 });
@@ -241,5 +243,44 @@ describe('POST /api/onboarding', () => {
       expect.objectContaining({ where: { name: 'tariffos_internal' } }),
     );
     expect(mocks.planUpsert).not.toHaveBeenCalled();
+  });
+
+  it('falls back to VE countryCode in cloud onboarding when requested country is not seeded', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+
+    mocks.getAuthenticatedUser.mockResolvedValue({ id: 'usr-eu', email: 'eu@agencia.com' });
+    mocks.platformAdminFindUnique.mockResolvedValue(null);
+    mocks.userProfileUpsert.mockResolvedValue({ id: 'usr-eu', fullName: 'Ana EU' });
+    mocks.membershipFindFirst.mockResolvedValue(null);
+    mocks.countryFindUnique.mockResolvedValue(null);
+    mocks.planFindUnique.mockResolvedValue({ id: 'plan-pilot-id', name: 'pilot' });
+    mocks.tenantCreate.mockResolvedValue({
+      id: 'ten-eu',
+      name: 'Agencia EU',
+      countryCode: 'VE',
+      billingStatus: 'PAST_DUE',
+      billingLimit: 0,
+    });
+
+    const req = new Request('http://localhost/api/onboarding', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fullName: 'Ana EU',
+        companyName: 'Agencia EU',
+        countryCode: 'OM',
+        selectedPlanId: 'pilot',
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    expect(mocks.tenantCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ countryCode: 'VE' }),
+      }),
+    );
   });
 });

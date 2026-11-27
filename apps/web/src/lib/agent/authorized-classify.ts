@@ -5,7 +5,7 @@ import {
   type InvoiceItemInput,
 } from '@tariffos/agent';
 import type { ClassificationLinePayload, StreamProgressEvent } from '@tariffos/shared-types';
-import { getActiveLlmRuntimeConfig, toRgiLlmRuntimeOverride } from '@/lib/admin/llm-settings';
+import { getActiveLlmRuntimeConfig, toRgiLlmRuntimeOverride } from '../admin/llm-settings';
 import {
   checkTenantQuota,
   formatQuotaErrorResponse,

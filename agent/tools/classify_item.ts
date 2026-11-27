@@ -1,5 +1,9 @@
-import { defineTool } from 'eve/tools';
+import { defineTool, type ToolContext } from 'eve/tools';
 import { z } from 'zod';
+import type { A2UIEnvelope, ClassificationLinePayload } from '@tariffos/shared-types';
+import { resolveToolTenantId } from '../lib/tenant-auth';
+
+export { resolveToolTenantId };
 
 const IncotermSchema = z.enum(['EXW', 'FOB', 'CFR', 'CIF', 'DDP']);
 
@@ -14,59 +18,23 @@ export const ClassifyItemInputSchema = z.object({
   deepMode: z.boolean().default(false),
 });
 
-interface MinimalSessionAuth {
-  readonly current: {
-    readonly principalId: string;
-    readonly authenticator: string;
-  } | null;
-}
+export type ClassifyItemInput = z.infer<typeof ClassifyItemInputSchema>;
 
-/**
- * Resolves `tenantId` exclusively from the authenticated Eve session (`ctx.session.auth`),
- * never from LLM tool arguments.
- */
-export async function resolveToolTenantId(
-  auth: MinimalSessionAuth | undefined,
-): Promise<string> {
-  const principal = auth?.current ?? null;
-  if (!principal) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('Unauthorized: authenticated session required');
-    }
-    return 'eve-local-dev';
-  }
-
-  if (principal.authenticator === 'local-dev') {
-    return 'eve-local-dev';
-  }
-
-  const { prisma } = await import('@tariffos/database');
-  const membership = await prisma.membership.findFirst({
-    where: { userId: principal.principalId },
-    select: { tenantId: true },
-  });
-  if (!membership?.tenantId) {
-    throw new Error('Unauthorized: no tenant membership for authenticated user');
-  }
-  return membership.tenantId;
+export interface ClassifyItemOutput {
+  line: ClassificationLinePayload;
+  envelope: A2UIEnvelope;
 }
 
 export default defineTool({
   description:
     'Run the full TariffOS classification pipeline (Compliance Pre-Gate, Tier 0 SKU cache, RGI 1-6 reasoning, official DB verification, deterministic duties, and A2UIEnvelope) using server-derived tenant credentials.',
   inputSchema: ClassifyItemInputSchema,
-  async execute(input, ctx) {
+  async execute(input: ClassifyItemInput, ctx: ToolContext): Promise<ClassifyItemOutput | null> {
     const [
       { classifyInvoiceBatch, mapPayloadToA2UIEnvelope },
-      { createPrismaPipelinePorts },
-      { getActiveLlmRuntimeConfig, toRgiLlmRuntimeOverride },
-      { runAuthorizedClassificationLine },
       { isCloudModeEnabled },
     ] = await Promise.all([
       import('@tariffos/agent'),
-      import('../../apps/web/src/lib/agent/prisma-ports'),
-      import('../../apps/web/src/lib/admin/llm-settings'),
-      import('../../apps/web/src/lib/agent/authorized-classify'),
       import('../../apps/web/src/lib/runtime-config'),
     ]);
     const tenantId = await resolveToolTenantId(ctx.session.auth);
@@ -79,8 +47,13 @@ export default defineTool({
       cifValue: input.cifValue,
     };
 
+    const hasDatabase = Boolean(process.env.DATABASE_URL?.trim());
     let line = null;
+
     if (isCloudModeEnabled() && tenantId !== 'eve-local-dev') {
+      const { runAuthorizedClassificationLine } = await import(
+        '../../apps/web/src/lib/agent/authorized-classify'
+      );
       const authorized = await runAuthorizedClassificationLine({
         tenantId,
         countryCode: input.countryCode,
@@ -89,7 +62,14 @@ export default defineTool({
         deepMode: input.deepMode,
       });
       line = authorized.line;
-    } else {
+    } else if (hasDatabase) {
+      const [
+        { createPrismaPipelinePorts },
+        { getActiveLlmRuntimeConfig, toRgiLlmRuntimeOverride },
+      ] = await Promise.all([
+        import('../../apps/web/src/lib/agent/prisma-ports'),
+        import('../../apps/web/src/lib/admin/llm-settings'),
+      ]);
       const runtimeLlm = await getActiveLlmRuntimeConfig();
       const ports = createPrismaPipelinePorts(toRgiLlmRuntimeOverride(runtimeLlm));
       const result = await classifyInvoiceBatch([item], ports, {
@@ -98,6 +78,9 @@ export default defineTool({
         deepMode: input.deepMode,
       });
       line = result.lines[0] ?? null;
+    } else {
+      const { classifyItemOffline } = await import('../../apps/web/src/lib/agent/offline-classifier');
+      line = classifyItemOffline(item);
     }
 
     if (!line) return null;
@@ -111,6 +94,36 @@ export default defineTool({
         includeCalculator: input.cifValue > 0,
         reasoningDepth: input.deepMode ? 'deep' : 'standard',
       }),
+    };
+  },
+  label: {
+    start: ({ description }) =>
+      `Clasificando mercancía (RGI 1→6): ${description.slice(0, 40)}`,
+    complete: (_input, output) =>
+      output?.line?.hsCode
+        ? `Clasificación completada (${output.line.hsCode})`
+        : 'Clasificación completada',
+  },
+  toModelOutput(output) {
+    if (!output) {
+      return { type: 'error-text', value: 'No se pudo generar un dictamen para esta mercancía.' };
+    }
+    const verdict = output.envelope.inlineComponents.find((c) => c.type === 'verdict');
+    const dossier = output.envelope.canvasComponents.find((c) => c.type === 'dossier');
+    return {
+      type: 'json',
+      value: {
+        status: output.envelope.classificationStatus,
+        hsCode: verdict?.hsCode ?? output.line.hsCode,
+        description: verdict?.description ?? output.line.officialDescription,
+        confidencePct: output.line.confidencePct,
+        confidenceLabel: verdict?.confidenceLabel ?? output.line.confidenceLevel,
+        adValoremPercent: verdict?.adValoremPercent,
+        vatPercent: verdict?.vatPercent,
+        legalRegimeCode: verdict?.legalRegimeCode,
+        permits: dossier?.permits ?? [],
+        reviewStatus: dossier?.reviewStatus,
+      },
     };
   },
 });

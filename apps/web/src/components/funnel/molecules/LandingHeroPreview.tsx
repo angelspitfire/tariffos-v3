@@ -19,6 +19,7 @@ export interface LandingHeroPreviewProps {
   heroPrompt: string;
   onChangePrompt: (value: string) => void;
   onSubmitPrompt: (e: FormEvent) => void;
+  onRequestGuidedDemo?: () => void;
   isAuthenticated?: boolean;
 }
 
@@ -26,6 +27,7 @@ export function LandingHeroPreview({
   heroPrompt,
   onChangePrompt,
   onSubmitPrompt,
+  onRequestGuidedDemo,
   isAuthenticated = false,
 }: LandingHeroPreviewProps) {
   const prefersReducedMotion = useReducedMotion();
@@ -71,25 +73,36 @@ export function LandingHeroPreview({
           </FunnelButton>
         </form>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-[11px] text-ink-muted mr-1">Prueba con:</span>
-          {HERO_SAMPLE_CASES.map((sample) => {
-            const isSelected = activeCase.key === sample.key;
-            return (
-              <button
-                key={sample.key}
-                type="button"
-                onClick={() => onChangePrompt(sample.prompt)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
-                  isSelected
-                    ? 'bg-ink-primary text-ink-on-inverted'
-                    : 'bg-black/[0.045] dark:bg-white/[0.07] text-ink-secondary hover:text-ink-primary hover:bg-black/[0.08] dark:hover:bg-white/[0.12]'
-                }`}
-              >
-                {sample.shortLabel}
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-mono text-[11px] text-ink-muted mr-1">Prueba con:</span>
+            {HERO_SAMPLE_CASES.map((sample) => {
+              const isSelected = activeCase.key === sample.key;
+              return (
+                <button
+                  key={sample.key}
+                  type="button"
+                  onClick={() => onChangePrompt(sample.prompt)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'bg-ink-primary text-ink-on-inverted'
+                      : 'bg-black/[0.045] dark:bg-white/[0.07] text-ink-secondary hover:text-ink-primary hover:bg-black/[0.08] dark:hover:bg-white/[0.12]'
+                  }`}
+                >
+                  {sample.shortLabel}
+                </button>
+              );
+            })}
+          </div>
+          {!isAuthenticated ? (
+            <a
+              href="#contacto"
+              onClick={onRequestGuidedDemo}
+              className="text-xs font-medium text-accent-ink hover:underline underline-offset-4"
+            >
+              Solicitar demo guiada con esta mercancía
+            </a>
+          ) : null}
         </div>
       </div>
 

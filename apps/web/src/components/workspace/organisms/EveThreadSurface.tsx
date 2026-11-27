@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { AssistantRuntimeProvider, ThreadPrimitive } from '@assistant-ui/react';
 import { useEveAgentRuntime } from '@assistant-ui/eve';
 import type {
@@ -19,8 +19,20 @@ import { EveRuntimeObserver } from '../molecules/EveRuntimeObserver';
 import type { InlineCardActions } from './ThreadInlineCards';
 import { WorkspaceThreadShell } from './WorkspaceThreadShell';
 
+const EVE_UNREACHABLE_RE = /internal server error|failed to fetch|econnrefused|networkerror|502|503|504/i;
+
+function formatEveRuntimeError(err: Error): string {
+  const message = err.message?.trim() ?? '';
+  if (EVE_UNREACHABLE_RE.test(message)) {
+    return 'No se pudo conectar con el agente Eve (puerto 2000). Inicia el entorno con "pnpm dev" o "pnpm dev:eve".';
+  }
+  return message || 'No se pudo completar la consulta con el agente Eve.';
+}
+
 export interface EveThreadSurfaceProps {
+  eveSessionId?: string | null;
   jurisdictionId: string;
+  countryCode?: string;
   approvalWorkflowMode: ApprovalWorkflowMode;
   defaultIncoterm?: IncotermCode;
   deepMode?: boolean;
@@ -38,13 +50,17 @@ export interface EveThreadSurfaceProps {
   onRunSample: (sample: SampleMerchandise) => void;
   onRunBatchSample: (batch: SampleBatchDocument) => void;
   onUpdateProfile: (patch: Partial<UserProfileSettings>) => void;
-  onEnvelopeDiscovered: (message: WorkspaceMessage) => void;
+  onSessionIdDiscovered?: (sessionId: string) => void;
+  onSyncMessages?: (messages: WorkspaceMessage[], latestCanvasMsgId: string | null) => void;
+  onEnvelopeDiscovered?: (message: WorkspaceMessage) => void;
   onRegisterSend: (sendFn: ((text: string) => void) | null) => void;
   onErrorToast: (message: string) => void;
 }
 
 export function EveThreadSurface({
+  eveSessionId = null,
   jurisdictionId,
+  countryCode = 'VE',
   approvalWorkflowMode,
   defaultIncoterm = 'FOB',
   deepMode = false,
@@ -62,16 +78,45 @@ export function EveThreadSurface({
   onRunSample,
   onRunBatchSample,
   onUpdateProfile,
+  onSessionIdDiscovered,
+  onSyncMessages,
   onEnvelopeDiscovered,
   onRegisterSend,
   onErrorToast,
 }: EveThreadSurfaceProps) {
+  const reportedSessionRef = useRef<string | null>(eveSessionId);
+  const contextRef = useRef({
+    jurisdictionId,
+    countryCode,
+    defaultIncoterm,
+    deepMode,
+    approvalWorkflowMode,
+    webEnrichmentEnabled: profile.webEnrichmentEnabled !== false,
+    onConsumeAttachments,
+  });
+  contextRef.current = {
+    jurisdictionId,
+    countryCode,
+    defaultIncoterm,
+    deepMode,
+    approvalWorkflowMode,
+    webEnrichmentEnabled: profile.webEnrichmentEnabled !== false,
+    onConsumeAttachments,
+  };
+
   const runtime = useEveAgentRuntime({
     baseUrl: getEveBaseUrl() || undefined,
+    ...(eveSessionId
+      ? {
+          initialSession: { sessionId: eveSessionId, streamIndex: 0 },
+          resume: true,
+        }
+      : {}),
     isSendDisabled: Boolean(readOnlyReason),
     prepareSend: (input) => {
       if (!('message' in input) || input.message === undefined) return input;
-      const attachments = onConsumeAttachments();
+      const ctx = contextRef.current;
+      const attachments = ctx.onConsumeAttachments();
       const baseText =
         typeof input.message === 'string'
           ? input.message
@@ -84,11 +129,24 @@ export function EveThreadSurface({
       return {
         ...input,
         message: nextMessage,
-        clientContext: { jurisdictionId, defaultIncoterm, deepMode, approvalWorkflowMode },
+        clientContext: {
+          jurisdictionId: ctx.jurisdictionId,
+          countryCode: ctx.countryCode,
+          defaultIncoterm: ctx.defaultIncoterm,
+          deepMode: ctx.deepMode,
+          approvalWorkflowMode: ctx.approvalWorkflowMode,
+          webEnrichmentEnabled: ctx.webEnrichmentEnabled,
+        },
       };
     },
+    onSessionChange: (session) => {
+      if (session?.sessionId && session.sessionId !== reportedSessionRef.current) {
+        reportedSessionRef.current = session.sessionId;
+        onSessionIdDiscovered?.(session.sessionId);
+      }
+    },
     onError: (err) => {
-      onErrorToast(err.message || 'No se pudo completar la consulta con el agente Eve.');
+      onErrorToast(formatEveRuntimeError(err));
     },
   });
 
@@ -97,6 +155,7 @@ export function EveThreadSurface({
       <EveRuntimeObserver
         jurisdictionId={jurisdictionId}
         approvalWorkflowMode={approvalWorkflowMode}
+        onSyncMessages={onSyncMessages}
         onEnvelopeDiscovered={onEnvelopeDiscovered}
         onRegisterSend={onRegisterSend}
       />
@@ -114,7 +173,11 @@ export function EveThreadSurface({
         onRunBatchSample={onRunBatchSample}
         onUpdateProfile={onUpdateProfile}
       >
-        <EveExternalMessages messages={persistedMessages} inlineActions={inlineActions} />
+        <EveExternalMessages
+          messages={persistedMessages}
+          hasEveSession={Boolean(eveSessionId)}
+          inlineActions={inlineActions}
+        />
         <ThreadPrimitive.Messages>
           {({ message }) => (
             <EveMessageItem

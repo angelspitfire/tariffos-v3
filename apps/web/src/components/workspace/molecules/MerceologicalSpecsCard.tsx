@@ -40,14 +40,14 @@ export function MerceologicalSpecsCard({ specs, onReevaluate }: MerceologicalSpe
   return (
     <section className="rounded-card border border-border-subtle bg-surface-panel p-4 shadow-xs">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+        <h3 className="text-xs font-semibold text-ink-secondary">
           Ficha merceológica
         </h3>
         {onReevaluate ? (
           <button
             type="button"
             onClick={handleToggleEdit}
-            className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-border-subtle bg-surface-muted px-2.5 py-1 text-[11px] font-medium text-ink-secondary transition-colors hover:bg-surface-hover hover:text-ink-primary"
+            className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-border-subtle bg-surface-muted px-2.5 py-1 text-[11px] font-medium text-ink-secondary transition-colors hover:bg-surface-hover hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
             <Pencil className="h-3 w-3" aria-hidden="true" />
             <span>{editing ? 'Cancelar' : 'Editar ficha'}</span>

@@ -65,5 +65,9 @@ export default defineTool({
   description:
     'Search the web via Vercel Parallel Fast to verify commercial product specifications, model numbers, datasheets, material composition, power/voltage, or technical attributes required for HS classification.',
   inputSchema: WebSearchInputSchema,
+  label: {
+    start: ({ query }) => `Buscando especificaciones en web: ${query.slice(0, 36)}`,
+    complete: () => 'Especificaciones web consultadas (Parallel Fast)',
+  },
   execute: (input) => executeWebSearch(input),
 });

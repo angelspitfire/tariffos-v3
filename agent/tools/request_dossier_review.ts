@@ -40,5 +40,9 @@ export default defineTool({
   description:
     'Escalate a classification dossier to broker review (reviewStatus: in_review) when technical evidence is incomplete, confidence is below threshold, or compliance/OGA risk exists.',
   inputSchema: RequestDossierReviewInputSchema,
+  label: {
+    start: ({ hsCode }) => `Marcando dictamen ${hsCode} para revisión…`,
+    complete: ({ hsCode }) => `Dictamen ${hsCode} enviado a revisión técnica`,
+  },
   execute: executeRequestDossierReview,
 });

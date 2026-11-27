@@ -2,6 +2,7 @@ import { billingService, isInternalTariffosPlanSlug, prisma } from '@tariffos/da
 import { SAAS_PLANS, type ClientCurrentUsageSnapshot } from '@tariffos/shared-types';
 import { resolveCloudTenantContext } from '@/lib/agent/cloud-session';
 import { extractPlanFeaturesMeta } from '@/lib/admin/http-helpers';
+import { mapDbPaymentStatus, resolveAdminPlanName } from '@/lib/admin/payment-mapper';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 
 export async function GET(): Promise<Response> {
@@ -69,6 +70,17 @@ export async function GET(): Promise<Response> {
       ? Math.min(100, Math.round((monthly.count / limit) * 100))
       : 0;
 
+  const latestPaymentRow =
+    !isUnlimited && tenant.billingStatus === 'PAST_DUE'
+      ? await Promise.resolve(
+          prisma.payment?.findFirst({
+            where: { tenantId: tenant.id },
+            orderBy: { createdAt: 'desc' },
+            select: { status: true, referenceCode: true, planId: true, rejectionReason: true },
+          }),
+        ).catch(() => null)
+      : null;
+
   const fallbackPlanName =
     SAAS_PLANS.find((p) => p.planId === tenant.planId || p.planId === tenant.plan?.name)?.name ??
     tenant.plan?.name ??
@@ -91,6 +103,18 @@ export async function GET(): Promise<Response> {
     percentUsed,
     inputTokens: monthly.inputTokens,
     outputTokens: monthly.outputTokens,
+    ...(latestPaymentRow
+      ? {
+          latestPayment: {
+            status: mapDbPaymentStatus(latestPaymentRow.status),
+            referenceCode: latestPaymentRow.referenceCode ?? 'REF-00',
+            planName: resolveAdminPlanName(latestPaymentRow.planId),
+            ...(latestPaymentRow.rejectionReason
+              ? { rejectionReason: latestPaymentRow.rejectionReason }
+              : {}),
+          },
+        }
+      : {}),
   };
 
   return Response.json({ mode: 'cloud', usage }, { status: 200 });

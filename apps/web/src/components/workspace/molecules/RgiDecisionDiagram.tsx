@@ -45,7 +45,7 @@ export function RgiDecisionDiagram({
   return (
     <section className="rounded-xl border border-border-subtle bg-surface-panel p-4 shadow-xs">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-ink-muted uppercase">
+        <h3 className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-secondary">
           <GitBranch className="h-3.5 w-3.5 text-accent-ink" aria-hidden="true" />
           Diagrama de decisión RGI
         </h3>
@@ -53,9 +53,9 @@ export function RgiDecisionDiagram({
           <button
             type="button"
             onClick={onOpenRgi}
-            className="no-print cursor-pointer rounded-md px-2 py-1 text-[11px] font-medium text-accent-ink transition hover:bg-accent-soft"
+            className="no-print cursor-pointer rounded-md px-2 py-1 text-[11px] font-medium whitespace-nowrap text-accent-ink transition-colors hover:bg-accent-soft focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
-            Ver comparador completo →
+            Ver comparador completo
           </button>
         ) : null}
       </div>
@@ -183,7 +183,7 @@ export function RgiDecisionDiagram({
                 fontSize={10}
                 className="fill-amber-800 dark:fill-amber-300"
               >
-                {flagsCount} alertas · {unresolvedCount} pend.
+                {flagsCount} alertas, {unresolvedCount} pend.
               </text>
             </g>
           ) : null}

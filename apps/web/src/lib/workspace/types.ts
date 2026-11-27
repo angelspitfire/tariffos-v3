@@ -35,6 +35,7 @@ export interface WorkspaceThread {
   title: string;
   jurisdictionId: string;
   status: 'regular' | 'archived';
+  eveSessionId?: string;
   messages: WorkspaceMessage[];
   createdAt: string;
   updatedAt: string;

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowRight, Building2, CheckCircle2, User } from 'lucide-react';
 import {
@@ -29,6 +30,7 @@ export interface ExpressOnboardingCardProps {
   plans?: readonly SubscriptionPlanConfig[];
   preselectedPlanId?: string;
   preselectedCycle?: SubscriptionBillingCycle;
+  initialFullName?: string;
 }
 
 export function ExpressOnboardingCard({
@@ -36,6 +38,7 @@ export function ExpressOnboardingCard({
   plans = SAAS_PLANS,
   preselectedPlanId,
   preselectedCycle,
+  initialFullName,
 }: ExpressOnboardingCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,7 +50,7 @@ export function ExpressOnboardingCard({
   });
   const mockSession = readMockSession();
 
-  const [fullName, setFullName] = useState(mockSession?.fullName ?? '');
+  const [fullName, setFullName] = useState(initialFullName ?? mockSession?.fullName ?? '');
   const [role, setRole] = useState('Agente de Aduanas');
   const [companyName, setCompanyName] = useState('');
   const [brokerLicense, setBrokerLicense] = useState('');
@@ -176,17 +179,32 @@ export function ExpressOnboardingCard({
           onChange={(e) => setCompanyName(e.target.value)}
           required
         />
-        <FunnelSelect
-          label="Jurisdicción por defecto"
-          value={jurisdictionId}
-          onChange={(e) => setJurisdictionId(e.target.value)}
-        >
-          {FUNNEL_JURISDICTIONS.map((jur) => (
-            <option key={jur.id} value={jur.id}>
-              {jur.country} · {jur.authority} ({jur.nomenclature})
-            </option>
-          ))}
-        </FunnelSelect>
+        <div className="space-y-1">
+          <FunnelSelect
+            label="Jurisdicción por defecto"
+            value={jurisdictionId}
+            onChange={(e) => setJurisdictionId(e.target.value)}
+          >
+            {FUNNEL_JURISDICTIONS.map((jur) => {
+              const disabled = isCloud && !jur.liveInCloud;
+              return (
+                <option key={jur.id} value={jur.id} disabled={disabled}>
+                  {jur.country} · {jur.authority} ({jur.nomenclature})
+                  {disabled ? ' — Próximamente (Enterprise)' : ''}
+                </option>
+              );
+            })}
+          </FunnelSelect>
+          {isCloud ? (
+            <p className="text-[11px] text-ink-muted">
+              ¿Necesitas operar en CO, MX, US o UE desde hoy?{' '}
+              <Link href="/#contacto" className="font-semibold text-accent-ink hover:underline">
+                Solicita despliegue Enterprise
+              </Link>
+              .
+            </p>
+          ) : null}
+        </div>
 
         <OnboardingAdvancedAccordion
           defaultIncoterm={incoterm}

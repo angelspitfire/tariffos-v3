@@ -31,8 +31,8 @@ export function RgiPathAndComparatorView({
     <section className="space-y-4">
       {rgiSteps.length > 0 ? (
         <div className="rounded-xl border border-border-subtle bg-surface-panel p-4 space-y-3">
-          <h3 className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-muted">
-            <GitBranch className="h-3.5 w-3.5 text-accent-ink" />
+          <h3 className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-secondary">
+            <GitBranch className="h-3.5 w-3.5 text-accent-ink" aria-hidden="true" />
             Recorrido RGI (1 → 6)
           </h3>
           <ol className="space-y-2.5">
@@ -59,7 +59,7 @@ export function RgiPathAndComparatorView({
 
       {candidates.length > 0 ? (
         <div className="rounded-xl border border-border-subtle bg-surface-panel p-4 space-y-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+          <h3 className="text-xs font-semibold text-ink-secondary">
             Comparador de Partidas Candidatas ({candidates.length})
           </h3>
           <div className="grid grid-cols-1 gap-3">
@@ -77,12 +77,12 @@ export function RgiPathAndComparatorView({
                     <CopyHsButton hsCode={cand.hsCode} size="sm" />
                     {cand.recommended ? (
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
-                        <CheckCircle2 className="h-3 w-3" /> Recomendada
+                        <CheckCircle2 className="h-3 w-3" aria-hidden="true" /> Recomendada
                       </span>
                     ) : null}
                   </div>
-                  <span className="font-mono text-[11px] font-semibold text-ink-primary">
-                    Ad Valorem {cand.adValoremPercent}% · {cand.legalRegime}
+                  <span className="font-mono text-[11px] font-semibold text-ink-primary tabular-nums">
+                    Ad Valorem {cand.adValoremPercent}%, {cand.legalRegime}
                   </span>
                 </div>
                 <div className="font-medium text-ink-primary">{cand.title}</div>
@@ -99,7 +99,7 @@ export function RgiPathAndComparatorView({
                   <button
                     type="button"
                     onClick={() => onAdoptCandidate(cand)}
-                    className="rounded-lg border border-border-strong bg-surface-panel px-2.5 py-1 text-[11px] font-semibold text-ink-primary hover:bg-surface-hover cursor-pointer"
+                    className="rounded-lg border border-border-strong bg-surface-panel px-2.5 py-1 text-[11px] font-semibold text-ink-primary transition-colors hover:bg-surface-hover cursor-pointer focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
                   >
                     Adoptar {cand.hsCode}
                   </button>
@@ -112,8 +112,8 @@ export function RgiPathAndComparatorView({
 
       {rejected.length > 0 ? (
         <div className="rounded-xl border border-border-subtle bg-surface-panel p-4 space-y-2.5">
-          <h3 className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-muted">
-            <XCircle className="h-3.5 w-3.5 text-rose-500" />
+          <h3 className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-secondary">
+            <XCircle className="h-3.5 w-3.5 text-rose-500" aria-hidden="true" />
             Alternativas Descartadas
           </h3>
           <ul className="space-y-2 text-xs">

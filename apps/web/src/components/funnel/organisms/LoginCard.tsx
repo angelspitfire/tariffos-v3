@@ -2,16 +2,16 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Globe, Sparkles } from 'lucide-react';
+import { ArrowRight, Globe, Sparkles } from 'lucide-react';
+import { SAAS_PLANS } from '@tariffos/shared-types';
 import { isCloudModeEnabled, isGoogleOAuthEnabled } from '@/lib/runtime-config';
-import { readPendingQuery, saveSelectedPlan } from '@/lib/funnel/funnel-storage';
+import { readPendingQuery, readSelectedPlan, saveSelectedPlan } from '@/lib/funnel/funnel-storage';
 import {
   executeEmailAuth, executeGoogleAuth, executePasswordReset,
   parseBillingCycle, resolvePostLoginDestination, resolveSafeNext,
   type AuthTab,
 } from '@/lib/funnel/login-actions';
 import { validateSignupCredentials } from '@/lib/funnel/password-policy';
-import { FunnelBadge } from '../atoms/FunnelBadge';
 import { FunnelButton } from '../atoms/FunnelButton';
 import { FunnelCard } from '../atoms/FunnelCard';
 import { LoginCardFooter } from '../molecules/LoginCardFooter';
@@ -50,6 +50,14 @@ export function LoginCard({ cloudMode, googleOAuthEnabled, initialMode = 'signin
   const urlCycle = parseBillingCycle(searchParams.get('cycle'));
   const callbackError = searchParams.get('error');
 
+  const nextQueryIndex = urlNext?.indexOf('?') ?? -1;
+  const nextParams = nextQueryIndex >= 0 ? new URLSearchParams(urlNext?.slice(nextQueryIndex + 1)) : null;
+  const effectivePlanId = urlPlan ?? nextParams?.get('plan') ?? readSelectedPlan()?.planId ?? null;
+  const effectivePlan =
+    (tab === 'signup' || urlPlan || urlNext?.startsWith('/onboarding')) && effectivePlanId
+      ? SAAS_PLANS.find((p) => p.planId === effectivePlanId && !p.customPricing)
+      : undefined;
+
   useEffect(() => {
     setPendingQuery(readPendingQuery());
     if (urlPlan) saveSelectedPlan(urlPlan, urlCycle);
@@ -59,7 +67,7 @@ export function LoginCard({ cloudMode, googleOAuthEnabled, initialMode = 'signin
   }, [urlPlan, urlCycle, callbackError]);
 
   const destination = resolvePostLoginDestination({
-    urlNext, urlPlan, urlCycle, isNewUser: tab === 'signup',
+    urlNext, urlPlan, urlCycle, isNewUser: tab === 'signup', isCloud,
   });
 
   const handleGoogleSignIn = async () => {
@@ -100,6 +108,7 @@ export function LoginCard({ cloudMode, googleOAuthEnabled, initialMode = 'signin
         );
       } else {
         router.push(destination);
+        if (isCloud) router.refresh();
       }
     } finally {
       setIsLoading(false);
@@ -123,9 +132,6 @@ export function LoginCard({ cloudMode, googleOAuthEnabled, initialMode = 'signin
     <div className="space-y-4">
       <FunnelCard padding="p-6" className="space-y-5 shadow-xs">
         <div className="space-y-1.5">
-          <FunnelBadge variant="accent">
-            {isCloud ? 'Acceso seguro · Supabase Auth' : 'Acceso rápido · Modo local'}
-          </FunnelBadge>
           <h1 className="text-xl font-bold tracking-tight text-ink-primary">
             {tab === 'signin' ? 'Inicia sesión en TariffOS' : 'Crea tu cuenta en TariffOS'}
           </h1>
@@ -134,11 +140,26 @@ export function LoginCard({ cloudMode, googleOAuthEnabled, initialMode = 'signin
           </p>
         </div>
 
+        {effectivePlan ? (
+          <div className="px-3 py-2 rounded-xl border border-accent-border bg-accent-soft/45 text-xs text-ink-primary flex items-center justify-between gap-2">
+            <span className="inline-flex items-center gap-1.5 font-medium">
+              <ArrowRight className="w-3.5 h-3.5 text-accent-ink shrink-0" aria-hidden="true" />
+              <span>
+                Activando: <strong>{effectivePlan.name}</strong>
+              </span>
+            </span>
+            <span className="font-mono font-semibold text-accent-ink tabular-nums">
+              ${effectivePlan.monthlyPriceUsd}
+              {effectivePlan.oneTimeOnly ? ' único' : '/mes'}
+            </span>
+          </div>
+        ) : null}
+
         {pendingQuery ? (
           <div className="p-3 rounded-xl border border-accent-border bg-accent-soft/50 text-xs text-ink-secondary flex items-start gap-2">
             <Sparkles className="w-4 h-4 text-accent-ink shrink-0 mt-0.5" />
             <span>
-              Tu consulta pendiente se abrirá automáticamente: <strong className="text-ink-primary">{pendingQuery}</strong>
+              Guardamos tu consulta (<strong className="text-ink-primary">«{pendingQuery}»</strong>) para clasificarla en cuanto actives tu cuenta.
             </span>
           </div>
         ) : null}

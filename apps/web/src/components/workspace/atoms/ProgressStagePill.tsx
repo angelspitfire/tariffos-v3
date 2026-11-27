@@ -20,11 +20,11 @@ export function ProgressStagePill({ event }: ProgressStagePillProps) {
       <div className="flex items-center justify-between gap-3">
         <span className="inline-flex items-center gap-2 font-medium text-ink-primary">
           {isComplete ? (
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+            <CheckCircle2 className="h-3.5 w-3.5 text-[var(--color-success)]" aria-hidden="true" />
           ) : isError ? (
-            <AlertCircle className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" aria-hidden="true" />
+            <AlertCircle className="h-3.5 w-3.5 text-[var(--color-error)]" aria-hidden="true" />
           ) : (
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-accent-ink" aria-hidden="true" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-accent-ink motion-reduce:animate-none" aria-hidden="true" />
           )}
           {event.label}
         </span>
@@ -32,10 +32,10 @@ export function ProgressStagePill({ event }: ProgressStagePillProps) {
       </div>
       <div className="h-1 w-full overflow-hidden rounded-full bg-surface-subtle">
         <div
-          className={`h-full rounded-full transition-all duration-300 ${
-            isError ? 'bg-rose-500' : isComplete ? 'bg-emerald-500' : 'bg-accent-brand'
+          className={`h-full w-full origin-left rounded-full transition-transform duration-300 motion-reduce:transition-none ${
+            isError ? 'bg-[var(--color-error)]' : isComplete ? 'bg-[var(--color-success)]' : 'bg-accent-brand'
           }`}
-          style={{ width: `${pct}%` }}
+          style={{ transform: `scaleX(${pct / 100})` }}
         />
       </div>
     </output>

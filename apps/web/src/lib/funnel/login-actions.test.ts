@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { executeEmailAuth, executePasswordReset } from './login-actions';
+import {
+  executeEmailAuth,
+  executePasswordReset,
+  resolvePostLoginDestination,
+} from './login-actions';
 
 const mockSignUp = vi.fn();
 const mockSignInWithPassword = vi.fn();
@@ -93,5 +97,31 @@ describe('login-actions cloud redirects', () => {
       redirectTo: 'https://tariffos.app/auth/callback?next=%2Flogin',
     });
     expect(result.error).toBeNull();
+  });
+
+  it('returns an actionable Spanish fallback referencing soporte@tariffos.app when password reset fails', async () => {
+    mockResetPasswordForEmail.mockResolvedValue({
+      data: null,
+      error: { message: 'Error sending recovery email' },
+    });
+
+    const result = await executePasswordReset({
+      isCloud: true,
+      email: 'agente@agencia.ve',
+    });
+
+    expect(result.info).toBeNull();
+    expect(result.error).toMatch(/soporte@tariffos\.app/i);
+  });
+
+  it('routes returning cloud users on signin directly to /app even without localStorage mock profile', () => {
+    const dest = resolvePostLoginDestination({
+      urlNext: null,
+      urlPlan: null,
+      urlCycle: 'monthly',
+      isNewUser: false,
+      isCloud: true,
+    });
+    expect(dest).toBe('/app');
   });
 });

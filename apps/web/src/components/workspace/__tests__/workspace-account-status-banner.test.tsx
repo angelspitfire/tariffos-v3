@@ -25,13 +25,69 @@ describe('WorkspaceAccountStatusBanner', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders deactivated banner when billingStatus is CANCELED', () => {
+  it('renders deactivated banner with soporte@tariffos.app when billingStatus is CANCELED', () => {
     render(
       <WorkspaceAccountStatusBanner
         usage={{ ...BASE_USAGE, billingStatus: 'CANCELED' }}
       />,
     );
     expect(screen.getByText(/Cuenta dada de baja/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Contactar soporte/i })).toHaveAttribute(
+      'href',
+      'mailto:soporte@tariffos.app',
+    );
+  });
+
+  it('renders verification-in-progress banner when PAST_DUE has pending_verification payment', () => {
+    render(
+      <WorkspaceAccountStatusBanner
+        usage={{
+          ...BASE_USAGE,
+          planId: 'pilot',
+          planName: 'Piloto Operativo',
+          billingStatus: 'PAST_DUE',
+          limit: 0,
+          used: 0,
+          latestPayment: {
+            status: 'pending_verification',
+            referenceCode: 'ZEL-9012',
+            planName: 'Piloto Operativo',
+          },
+        }}
+      />,
+    );
+    expect(screen.getByText(/Pago recibido en verificación/i)).toBeInTheDocument();
+    expect(screen.getByText(/ZEL-9012/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Ver estado/i })).toHaveAttribute(
+      'href',
+      '/activate-plan',
+    );
+  });
+
+  it('renders rejected payment banner with reason and retry link', () => {
+    render(
+      <WorkspaceAccountStatusBanner
+        usage={{
+          ...BASE_USAGE,
+          planId: 'pilot',
+          planName: 'Piloto Operativo',
+          billingStatus: 'PAST_DUE',
+          limit: 0,
+          used: 0,
+          latestPayment: {
+            status: 'rejected',
+            referenceCode: 'ZEL-0001',
+            planName: 'Piloto Operativo',
+            rejectionReason: 'Comprobante ilegible',
+          },
+        }}
+      />,
+    );
+    expect(screen.getByText(/Comprobante ilegible/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Corregir comprobante/i })).toHaveAttribute(
+      'href',
+      '/activate-plan',
+    );
   });
 
   it('renders initial activation banner when billingStatus is PAST_DUE and limit is 0', () => {

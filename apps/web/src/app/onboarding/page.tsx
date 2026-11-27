@@ -5,6 +5,8 @@ import { BrandMark } from '@/components/funnel/atoms/BrandMark';
 import { ExpressOnboardingCard } from '@/components/funnel/organisms/ExpressOnboardingCard';
 import { loadPublicPlans } from '@/lib/funnel/public-plans';
 import { resolveCloudFunnelGateRedirect } from '@/lib/funnel/server-account-gate';
+import { isCloudModeEnabled } from '@/lib/runtime-config';
+import { getAuthenticatedUser } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +27,9 @@ async function OnboardingContent({ searchParams }: OnboardingPageProps) {
     redirect(redirectTarget);
   }
   const plans = await loadPublicPlans();
+  const user = isCloudModeEnabled() ? await getAuthenticatedUser().catch(() => null) : null;
+  const metaName = user?.user_metadata?.full_name;
+  const initialFullName = typeof metaName === 'string' && metaName.trim() ? metaName.trim() : undefined;
   const cycle: SubscriptionBillingCycle | undefined =
     params.cycle === 'annual' || params.cycle === 'monthly' ? params.cycle : undefined;
 
@@ -33,6 +38,7 @@ async function OnboardingContent({ searchParams }: OnboardingPageProps) {
       plans={plans}
       preselectedPlanId={params.plan}
       preselectedCycle={cycle}
+      initialFullName={initialFullName}
     />
   );
 }

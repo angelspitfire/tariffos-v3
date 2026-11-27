@@ -1,5 +1,6 @@
 import type { SubscriptionBillingCycle } from '@tariffos/shared-types';
 import {
+  FUNNEL_JURISDICTIONS,
   readSelectedPlan,
   saveMockProfile,
   saveSelectedPlan,
@@ -54,6 +55,11 @@ export async function persistOnboardingProfile(
 
   if (!isCloud) return { ok: true, error: null, skipPaymentActivation: false };
 
+  const matchedJurisdiction = FUNNEL_JURISDICTIONS.find(
+    (jur) => jur.id === profile.defaultJurisdictionId,
+  );
+  const countryCode = matchedJurisdiction?.countryCode ?? 'VE';
+
   const res = await fetch('/api/onboarding', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -62,7 +68,7 @@ export async function persistOnboardingProfile(
       companyName: profile.companyName,
       role: profile.role,
       brokerLicense: profile.brokerLicense,
-      countryCode: profile.defaultJurisdictionId.slice(0, 2).toUpperCase(),
+      countryCode,
       defaultJurisdictionId: profile.defaultJurisdictionId,
       defaultIncoterm: profile.defaultIncoterm,
       preferredCurrency: profile.preferredCurrency,

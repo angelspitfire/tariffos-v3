@@ -2,11 +2,17 @@ import { defineTool } from 'eve/tools';
 import { z } from 'zod';
 
 export default defineTool({
-  description: 'Search candidate tariff codes in the official NationalTariff database for a country and product description.',
+  description:
+    'Search candidate tariff codes in the official NationalTariff database for a country and product description.',
   inputSchema: z.object({
     countryCode: z.string().default('VE'),
     query: z.string().min(2),
   }),
+  label: {
+    start: ({ query }) => `Consultando arancel oficial: ${query.slice(0, 36)}`,
+    complete: (_input, output) =>
+      `Arancel consultado (${output.candidates.length} candidatas)`,
+  },
   async execute({ countryCode, query }) {
     const { createPrismaPipelinePorts } = await import('../../apps/web/src/lib/agent/prisma-ports');
     const ports = createPrismaPipelinePorts();

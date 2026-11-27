@@ -31,7 +31,7 @@ describe('LandingHero', () => {
     expect(mockPush).toHaveBeenCalledWith('/app');
   });
 
-  it('redirects to /login?next=/app when cloud auth is required', async () => {
+  it('redirects to /onboarding?plan=pilot&cycle=monthly when cloud auth is required and offers guided demo shortcut', async () => {
     const user = userEvent.setup();
     render(<LandingHero requiresAuth />);
 
@@ -40,7 +40,10 @@ describe('LandingHero', () => {
     await user.click(screen.getByRole('button', { name: 'Activar Piloto' }));
 
     expect(readPendingQuery()).toBe('Ecógrafo Doppler portátil');
-    expect(mockPush).toHaveBeenCalledWith('/login?next=%2Fapp');
+    expect(mockPush).toHaveBeenCalledWith('/onboarding?plan=pilot&cycle=monthly');
+    expect(
+      screen.getByRole('link', { name: /Solicitar demo guiada con esta mercancía/i }),
+    ).toHaveAttribute('href', '#contacto');
   });
 
   it('renders live A2UI 10-digit VE NCM preview verdict', () => {

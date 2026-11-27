@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   getAuthenticatedUser: vi.fn(),
+  resolveCloudTenantContext: vi.fn(),
   membershipFindFirst: vi.fn(),
   paymentFindMany: vi.fn(),
   paymentCreate: vi.fn(),
@@ -11,6 +12,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/lib/supabase/server', () => ({
   getAuthenticatedUser: mocks.getAuthenticatedUser,
+}));
+
+vi.mock('@/lib/agent/cloud-session', () => ({
+  resolveCloudTenantContext: mocks.resolveCloudTenantContext,
 }));
 
 vi.mock('@tariffos/database', () => ({
@@ -80,5 +85,82 @@ describe('/api/billing/payments', () => {
     const res = await PATCH();
     expect(res.status).toBe(403);
     expect(mocks.paymentUpdate).not.toHaveBeenCalled();
+  });
+
+  it('returns complete ManualPaymentRecord after cloud POST so client confirmation and list never crash', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+
+    mocks.resolveCloudTenantContext.mockResolvedValue({
+      ok: true,
+      context: {
+        userId: 'usr-1',
+        userEmail: 'pagos@caribe.ve',
+        tenantId: 'ten-1',
+        role: 'OWNER',
+      },
+    });
+    const createdAt = new Date('2026-11-26T20:45:00.000Z');
+    mocks.paymentCreate.mockResolvedValue({
+      id: 'pay-cloud-1',
+      tenantId: 'ten-1',
+      status: 'PENDING',
+      amount: 150,
+      currency: 'USD',
+      planId: 'pilot',
+      billingCycle: 'monthly',
+      method: 'zelle',
+      referenceCode: 'ZEL-778899',
+      receiptStorageKey: 'ten-1/1732653900-comprobante.png',
+      notes: 'Pago piloto',
+      createdAt,
+      tenant: { name: 'Aduanas del Caribe C.A.', ownerEmail: 'pagos@caribe.ve' },
+    });
+
+    const res = await POST(
+      new Request('http://localhost/api/billing/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planId: 'pilot',
+          billingCycle: 'monthly',
+          amount: 150,
+          currency: 'USD',
+          method: 'zelle',
+          referenceCode: 'ZEL-778899',
+          receiptStorageKey: 'ten-1/1732653900-comprobante.png',
+          notes: 'Pago piloto',
+        }),
+      }),
+    );
+
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as {
+      mode: string;
+      payment: {
+        paymentId: string;
+        planId: string;
+        planName: string;
+        amount: number;
+        currency: string;
+        referenceCode: string;
+        paidAt: string;
+        status: string;
+        receiptStorageKey?: string;
+      };
+    };
+    expect(body.mode).toBe('cloud');
+    expect(body.payment).toMatchObject({
+      paymentId: 'pay-cloud-1',
+      planId: 'pilot',
+      planName: 'Piloto Operativo',
+      amount: 150,
+      currency: 'USD',
+      referenceCode: 'ZEL-778899',
+      paidAt: createdAt.toISOString(),
+      status: 'pending_verification',
+      receiptStorageKey: 'ten-1/1732653900-comprobante.png',
+    });
   });
 });

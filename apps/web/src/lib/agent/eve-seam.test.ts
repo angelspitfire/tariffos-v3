@@ -22,7 +22,10 @@ import requestDossierReviewTool, {
   executeRequestDossierReview,
   RequestDossierReviewInputSchema,
 } from '../../../../../agent/tools/request_dossier_review';
-import eveAgent from '../../../../../agent/agent';
+import eveAgent, {
+  resolveEveReasoningEffort,
+  shouldUseLocalEnvModel,
+} from '../../../../../agent/agent';
 import {
   ClassifyItemInputSchema,
   resolveToolTenantId,
@@ -239,6 +242,38 @@ describe('Eve hardened root agent and duty tool', () => {
   it('disables built-in defaultTools and excludes tenantId from classify_item schema', () => {
     expect((eveAgent as unknown as { defaultTools?: boolean }).defaultTools).toBe(false);
     expect('tenantId' in ClassifyItemInputSchema.shape).toBe(false);
+  });
+
+  it('defaults Eve reasoning effort to low for fast turns and honors valid EVE_REASONING overrides', () => {
+    expect(resolveEveReasoningEffort(undefined)).toBe('low');
+    expect(resolveEveReasoningEffort('')).toBe('low');
+    expect(resolveEveReasoningEffort('invalid-level')).toBe('low');
+    expect(resolveEveReasoningEffort('none')).toBe('none');
+    expect(resolveEveReasoningEffort('medium')).toBe('medium');
+    expect(resolveEveReasoningEffort('HIGH')).toBe('high');
+  });
+
+  it('prefers local .env EVE_MODEL over DB override in local development only', () => {
+    expect(
+      shouldUseLocalEnvModel({
+        NODE_ENV: 'development',
+        EVE_MODEL: 'nvidia:nvidia/nemotron-3.5-super-vl-120b-a12b',
+      }),
+    ).toBe(true);
+    expect(
+      shouldUseLocalEnvModel({
+        NODE_ENV: 'development',
+        VERCEL: '1',
+        EVE_MODEL: 'nvidia:nvidia/nemotron-3.5-super-vl-120b-a12b',
+      }),
+    ).toBe(false);
+    expect(
+      shouldUseLocalEnvModel({
+        NODE_ENV: 'production',
+        EVE_MODEL: 'nvidia:nvidia/nemotron-3.5-super-vl-120b-a12b',
+      }),
+    ).toBe(false);
+    expect(shouldUseLocalEnvModel({ NODE_ENV: 'development', EVE_MODEL: '   ' })).toBe(false);
   });
 
   it('resolves tenantId server-side from session auth and calculates deterministic duties in calculate_duties tool', async () => {

@@ -49,12 +49,20 @@ export function LandingLeadCaptureSection() {
 
   useEffect(() => {
     const onSelectIntent = (event: Event) => {
-      const detail = (event as CustomEvent<LeadInquiryIntent>).detail;
-      if (detail !== 'demo' && detail !== 'enterprise') return;
+      const raw = (
+        event as CustomEvent<LeadInquiryIntent | { intent: LeadInquiryIntent; notes?: string }>
+      ).detail;
+      const intent = typeof raw === 'string' ? raw : raw?.intent;
+      if (intent !== 'demo' && intent !== 'enterprise') return;
+      const prefilledNotes = typeof raw === 'object' ? raw.notes : undefined;
       setSubmittedEmail(null);
       setFieldErrors({});
       setServerError(null);
-      setValues((prev) => ({ ...prev, intents: [detail] }));
+      setValues((prev) => ({
+        ...prev,
+        intents: [intent],
+        ...(prefilledNotes ? { notes: prefilledNotes } : {}),
+      }));
     };
     window.addEventListener(SELECT_LEAD_INTENT_EVENT, onSelectIntent);
     return () => window.removeEventListener(SELECT_LEAD_INTENT_EVENT, onSelectIntent);
@@ -243,8 +251,8 @@ export function LandingLeadCaptureSection() {
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border-hairline">
                 <span className="text-xs text-ink-muted">
                   O escríbenos a{' '}
-                  <a href="mailto:soporte@tariffos.com" className="font-semibold text-ink-primary hover:text-accent-ink underline-offset-4 hover:underline">
-                    soporte@tariffos.com
+                  <a href="mailto:soporte@tariffos.app" className="font-semibold text-ink-primary hover:text-accent-ink underline-offset-4 hover:underline">
+                    soporte@tariffos.app
                   </a>
                 </span>
                 <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-full bg-accent-brand px-6 min-h-[44px] text-xs font-semibold text-white hover:bg-accent-brand-hover disabled:opacity-55 disabled:cursor-not-allowed cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-accent-brand focus-visible:outline-offset-2 active:translate-y-px whitespace-nowrap">

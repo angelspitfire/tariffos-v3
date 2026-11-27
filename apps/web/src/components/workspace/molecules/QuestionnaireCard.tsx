@@ -29,7 +29,7 @@ export function QuestionnaireCard({ component, onSubmit }: QuestionnaireCardProp
           onSubmit(answers);
         }
       }}
-      className="rounded-xl border border-border-subtle bg-surface-panel p-3.5 shadow-xs"
+      className="rounded-card border border-border-subtle bg-surface-panel p-4 shadow-card"
     >
       <div className="flex items-center justify-between gap-2">
         <h4 className="text-xs font-semibold text-ink-primary">{component.title}</h4>
@@ -61,7 +61,7 @@ export function QuestionnaireCard({ component, onSubmit }: QuestionnaireCardProp
                         type="button"
                         onClick={() => setFieldValue(field.id, opt)}
                         aria-pressed={active}
-                        className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+                        className={`cursor-pointer rounded-full border px-2.5 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none ${
                           active
                             ? 'border-accent-brand bg-accent-brand text-white'
                             : 'border-border-subtle bg-surface-muted text-ink-primary hover:border-accent-border hover:bg-accent-soft'
@@ -77,9 +77,9 @@ export function QuestionnaireCard({ component, onSubmit }: QuestionnaireCardProp
                   id={`${component.id}-${field.id}`}
                   value={value}
                   onChange={(e) => setFieldValue(field.id, e.target.value)}
-                  className="w-full rounded-lg border border-border-subtle bg-surface-input px-2.5 py-1.5 text-xs text-ink-primary outline-none focus:border-accent-brand"
+                  className="w-full rounded-lg border border-border-subtle bg-surface-input px-2.5 py-1.5 text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
                 >
-                  <option value="">Seleccionar...</option>
+                  <option value="">Seleccionar…</option>
                   {options.map((opt) => (
                     <option key={opt} value={opt}>
                       {opt}
@@ -89,11 +89,13 @@ export function QuestionnaireCard({ component, onSubmit }: QuestionnaireCardProp
               ) : (
                 <input
                   id={`${component.id}-${field.id}`}
+                  name={field.id}
+                  autoComplete="off"
                   type={field.fieldType === 'number' ? 'number' : 'text'}
                   value={value}
-                  placeholder={field.placeholder ?? 'Escribir respuesta...'}
+                  placeholder={field.placeholder ?? 'Escribir respuesta…'}
                   onChange={(e) => setFieldValue(field.id, e.target.value)}
-                  className="w-full rounded-lg border border-border-subtle bg-surface-input px-2.5 py-1.5 text-xs text-ink-primary outline-none focus:border-accent-brand"
+                  className="w-full rounded-lg border border-border-subtle bg-surface-input px-2.5 py-1.5 text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
                 />
               )}
             </div>
@@ -105,7 +107,7 @@ export function QuestionnaireCard({ component, onSubmit }: QuestionnaireCardProp
         <button
           type="submit"
           disabled={completed === 0}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-accent-brand px-3 py-1.5 text-xs font-medium text-white transition hover:bg-accent-brand-hover disabled:opacity-50"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-accent-brand px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-brand-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Send className="h-3.5 w-3.5" aria-hidden="true" />
           Enviar respuestas

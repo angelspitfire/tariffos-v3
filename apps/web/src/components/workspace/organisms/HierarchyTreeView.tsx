@@ -29,7 +29,7 @@ export function HierarchyTreeView({ hierarchy, onSelectNode }: HierarchyTreeView
   return (
     <section className="rounded-xl border border-border-subtle bg-surface-panel p-4 shadow-xs">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+        <h3 className="text-xs font-semibold text-ink-secondary">
           {hierarchy.title}
         </h3>
         <CopyHsButton hsCode={hierarchy.selectedCode} size="sm" />
@@ -41,7 +41,7 @@ export function HierarchyTreeView({ hierarchy, onSelectNode }: HierarchyTreeView
           return (
             <li key={`${node.level}-${node.code}`} className={LEVEL_INDENT[node.level]}>
               <div
-                className={`flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2 text-xs transition ${
+                className={`flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2 text-xs transition-colors ${
                   active
                     ? 'border-accent-border bg-accent-soft'
                     : 'border-border-subtle bg-surface-muted hover:border-border-strong'
@@ -50,7 +50,7 @@ export function HierarchyTreeView({ hierarchy, onSelectNode }: HierarchyTreeView
                 <button
                   type="button"
                   onClick={() => onSelectNode?.(node)}
-                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                  className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded text-left focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
                 >
                   <ChevronRight
                     className={`h-3.5 w-3.5 shrink-0 ${active ? 'text-accent-ink' : 'text-ink-subtle'}`}

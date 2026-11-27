@@ -1,5 +1,6 @@
 import { defineTool } from 'eve/tools';
 import { z } from 'zod';
+import { A2UICalculatorComponentSchema } from '@tariffos/shared-types';
 
 const IncotermSchema = z.enum(['EXW', 'FOB', 'CFR', 'CIF', 'DDP']);
 
@@ -24,6 +25,10 @@ export default defineTool({
     applyAntidumping: z.boolean().default(false),
     antidumpingPercent: z.number().nonnegative().default(0),
   }),
+  label: {
+    start: ({ hsCode }) => `Calculando tributos CIF (${hsCode})…`,
+    complete: ({ hsCode }) => `Liquidación CIF lista (${hsCode})`,
+  },
   async execute(input) {
     let exchangeRate = input.exchangeRate;
     if (exchangeRate === undefined) {
@@ -36,6 +41,41 @@ export default defineTool({
       }
     }
     const { calculateFullDuties } = await import('@tariffos/agent');
-    return calculateFullDuties({ ...input, exchangeRate });
+    const breakdown = calculateFullDuties({ ...input, exchangeRate });
+
+    const calculatorComponent = A2UICalculatorComponentSchema.parse({
+      type: 'calculator',
+      id: `calc-${Date.now()}`,
+      title: `Liquidación CIF · ${input.hsCode}`,
+      hsCode: input.hsCode,
+      adValoremPercent: breakdown.effectiveAdValoremPercent,
+      vatPercent: breakdown.effectiveVatPercent,
+      customsServiceFeePercent: breakdown.effectiveCustomsFeePercent,
+      currencyCode: 'USD',
+      localCurrencyCode: input.jurisdictionId.startsWith('ve') ? 'VES' : 'USD',
+      suggestedExchangeRate: exchangeRate,
+      exemptionAvailable: breakdown.agreement.hasAgreement || input.applyExemption,
+      originCountry: input.originCode,
+      incoterm: input.incoterm,
+      tradeAgreement: breakdown.agreement.agreementName ?? undefined,
+      preferentialDiscountPercent: breakdown.effectiveDiscountPercent || undefined,
+      antidumpingPercent: breakdown.effectiveAntidumpingPercent || undefined,
+    });
+
+    return {
+      ...breakdown,
+      breakdown,
+      exchangeRate,
+      calculatorComponent,
+    };
+  },
+  toModelOutput(output) {
+    return {
+      type: 'json',
+      value: {
+        exchangeRate: output.exchangeRate,
+        breakdown: output.breakdown,
+      },
+    };
   },
 });

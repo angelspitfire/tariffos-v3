@@ -33,9 +33,8 @@ export function ConfidenceBadge({ label, pct, className = '' }: ConfidenceBadgeP
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium tabular-nums ${resolveTone(label, pct)} ${className}`}
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium tabular-nums ${resolveTone(label, pct)} ${className}`}
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" aria-hidden="true" />
       {display}
     </span>
   );

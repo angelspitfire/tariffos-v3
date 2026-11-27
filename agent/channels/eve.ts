@@ -4,4 +4,5 @@ import { createSupabaseChannelAuth } from '../lib/supabase-auth';
 
 export default eveChannel({
   auth: [createSupabaseChannelAuth(), vercelOidc(), localDev()],
+  ...(process.env.NODE_ENV !== 'production' ? { cors: true as const } : {}),
 });

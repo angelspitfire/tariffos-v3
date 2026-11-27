@@ -1,7 +1,7 @@
 import { canRunLiveLlmForProvider, getLlmProvider } from '@tariffos/agent';
 import type { AdminLlmProvider } from '@tariffos/shared-types';
 import { z } from 'zod';
-import { isCloudModeEnabled } from '@/lib/runtime-config';
+import { isCloudModeEnabled } from '../runtime-config';
 import { LLM_TEST_TIMEOUT_MS, PROVIDER_ENV_HINTS } from './llm-catalog';
 
 const ProbeSchema = z.object({ ok: z.boolean(), pong: z.string().optional() });

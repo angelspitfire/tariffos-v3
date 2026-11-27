@@ -1,7 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import type { A2UICanvasComponent, CanvasTabType } from '@tariffos/shared-types';
 import { resolveConsolidatedTabs } from '@/lib/workspace/canvas-tabs';
 import { cn } from '@/lib/utils';
@@ -26,6 +26,7 @@ export function ConsolidatedTabStrip({
     activeTab,
     unreadAlertsCount,
   });
+  const reduceMotion = useReducedMotion();
 
   return (
     <div className="no-print flex items-center justify-between gap-2 border-b border-border-subtle bg-surface-panel px-3 min-w-0">
@@ -40,7 +41,7 @@ export function ConsolidatedTabStrip({
               aria-selected={isActive}
               onClick={() => onSelectTab(tab.targetTab)}
               className={cn(
-                'relative flex shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap px-2.5 py-2.5 text-xs font-medium transition-colors',
+                'relative flex shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap px-2.5 py-2.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none',
                 isActive ? 'text-accent-ink' : 'text-ink-muted hover:text-ink-primary',
               )}
             >
@@ -53,7 +54,7 @@ export function ConsolidatedTabStrip({
               {isActive ? (
                 <motion.span
                   layoutId="canvas-active-tab-underline"
-                  transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                  transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 450, damping: 32 }}
                   className="absolute right-2 bottom-0 left-2 h-0.5 rounded-full bg-accent-brand"
                 />
               ) : null}
@@ -67,7 +68,7 @@ export function ConsolidatedTabStrip({
           <button
             type="button"
             onClick={() => onSelectTab('rgi_comparator')}
-            className="cursor-pointer rounded-md px-2 py-1 text-[11px] font-medium text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary"
+            className="cursor-pointer rounded-md px-2 py-1 text-[11px] font-medium text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
             + Comparar
           </button>
@@ -76,7 +77,7 @@ export function ConsolidatedTabStrip({
           <button
             type="button"
             onClick={() => onSelectTab('regulatory_diff')}
-            className="inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary"
+            className="inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
             <span>+ Normativa</span>
             {unreadAlertsCount > 0 ? (
@@ -92,7 +93,7 @@ export function ConsolidatedTabStrip({
             onClick={onCloseCanvas}
             aria-label="Cerrar panel de dictamen"
             title="Cerrar panel"
-            className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary"
+            className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
             <X className="h-3.5 w-3.5" aria-hidden="true" />
           </button>

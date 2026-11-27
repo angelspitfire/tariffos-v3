@@ -40,7 +40,7 @@ export function SidebarRail({
 }: SidebarRailProps) {
   return (
     <div className="flex h-full w-14 flex-col items-center border-r border-line-frost bg-surface-frost backdrop-blur-xl">
-      <div className="flex h-12 w-full shrink-0 items-center justify-center border-b border-line-frost">
+      <div className="flex h-[52px] w-full shrink-0 items-center justify-center border-b border-line-frost">
         <RailTooltip label="Expandir barra lateral">
           <button type="button" onClick={onExpand} aria-label="Expandir barra lateral" className={`${RAIL_ICON_BTN} rounded-full`}>
             <PanelLeftOpen className="h-4 w-4" aria-hidden="true" />
@@ -54,7 +54,7 @@ export function SidebarRail({
             type="button"
             onClick={onNewThread}
             aria-label="Nuevo chat"
-            className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-surface-inverted text-ink-on-inverted transition-colors hover:bg-surface-inverted-hover"
+            className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-surface-inverted text-ink-on-inverted transition-colors hover:bg-surface-inverted-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -91,11 +91,11 @@ export function SidebarRail({
       </div>
 
       <div className="flex w-full shrink-0 flex-col items-center gap-2 border-t border-line-frost p-2.5">
-        <RailTooltip label={`${plan.planName} · ${plan.quotaUsed}/${plan.isUnlimited ? '∞' : plan.quotaLimit}`}>
+        <RailTooltip label={`${plan.planName} (${plan.quotaUsed}/${plan.isUnlimited ? '∞' : plan.quotaLimit})`}>
           <Link
             href={plan.isUnlimited ? '/admin' : '/activate-plan'}
             aria-label={`${plan.planName} (${plan.quotaUsed}/${plan.isUnlimited ? '∞' : plan.quotaLimit})`}
-            className={`inline-flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${planTone(plan)}`}
+            className={`inline-flex h-8 w-8 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none ${planTone(plan)}`}
           >
             <CreditCard className="h-4 w-4" aria-hidden="true" />
           </Link>
@@ -105,7 +105,7 @@ export function SidebarRail({
             type="button"
             onClick={onExpand}
             aria-label="Cuenta y ajustes"
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-accent-brand text-[11px] font-bold text-white transition-transform hover:scale-105 motion-reduce:transition-none motion-reduce:hover:scale-100"
+            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-accent-brand text-[11px] font-bold text-white transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none motion-reduce:transition-none motion-reduce:hover:scale-100"
           >
             {initials}
           </button>

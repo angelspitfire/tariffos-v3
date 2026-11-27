@@ -32,7 +32,7 @@ export function SettingsPreferencesTab({
           >
             {jurisdictions.map((jur) => (
               <option key={jur.id} value={jur.id}>
-                {jur.country} — {jur.authority} ({jur.nomenclature})
+                {jur.country} ({jur.authority}, {jur.nomenclature})
               </option>
             ))}
           </select>
@@ -59,8 +59,8 @@ export function SettingsPreferencesTab({
             onChange={(e) => onChange({ preferredCurrency: e.target.value as 'USD' | 'EUR' })}
             className="w-full rounded-field border border-border-subtle bg-surface-input px-3 py-2 text-xs text-ink-primary"
           >
-            <option value="USD">USD — Dólar estadounidense</option>
-            <option value="EUR">EUR — Euro</option>
+            <option value="USD">USD (Dólar estadounidense)</option>
+            <option value="EUR">EUR (Euro)</option>
           </select>
         </label>
       </div>
