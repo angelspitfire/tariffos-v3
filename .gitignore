@@ -60,6 +60,9 @@ next-env.d.ts
 # tracked. Vendored skills stay ignored (skills-lock.json pins them).
 .agents/*
 !.agents/agent/
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/retro/
 .augment
 .claude
 .cline
