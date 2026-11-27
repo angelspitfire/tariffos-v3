@@ -26,7 +26,7 @@ export function isCloudModeEnabled(): boolean {
 
 export function isGoogleOAuthEnabled(isCloud = isCloudModeEnabled()): boolean {
   if (!isCloud) return true;
-  return process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED === 'true';
+  return process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED !== 'false';
 }
 
 /**
