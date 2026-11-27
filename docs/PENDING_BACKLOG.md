@@ -51,9 +51,15 @@
 
 ---
 
-## P1 — Brechas Funcionales en Código, Storage y Datos
+## P1 — Brechas Funcionales, Calidad Automatizada y CI/CD Preview
 
-*(Sin ítems P1 abiertos — `P1-1`, `P1-2` y `P1-3` completados el 2026-11-27.)*
+- [ ] **P1-4 · Endurecer Harness Estático y montar Suite UI Determinista con Playwright (`docs/QUALITY_HARNESS_AND_PLAYWRIGHT_PLAN.md`)**
+  - **Archivos implicados:** `.oxlintrc.jsonc`, `scripts/lib/repo-guardrails.mjs`, `scripts/check-deploy.mjs`, `apps/web/playwright.config.ts` y `apps/web/e2e/*.spec.ts`.
+  - **Criterio de cierre:** `rules-of-hooks` y `jsx-a11y` en `"error"`, prohibición de `role="dialog"` fuera de `WorkspaceDialogShell`, validador de tokens CSS duplicados, test cartesiano de invariantes en `server-account-gate.test.ts`, `NEXT_DIST_DIR=.next-check` en `check-deploy.mjs` y 6 specs de Playwright (`1440×900` + `390×844`) corriendo con `0 console.error` y `0 pageerror`.
+
+- [ ] **P1-5 · Activar Pipeline CI/CD con Verificación en Ambiente Preview antes de Producción (`docs/PREVIEW_CICD_AND_RELEASE_GATE_PLAN.md`)**
+  - **Archivos implicados:** `.github/workflows/ci.yml`, `.github/workflows/preview-e2e.yml`, `.github/workflows/prod-smoke.yml`, `scripts/smoke-e2e.mjs` y `scripts/e2e-accounts.ts`.
+  - **Criterio de cierre:** Todo PR despliega `web` + `eve` en Vercel Preview, corre `smoke:e2e --strict` + matriz Auth SSR + 1 smoke vivo de Eve con cuentas efímeras `@tariffos.internal` (y teardown garantizado), bloquea merge a `main` si falla y ejecuta smoke read-only post-deploy sobre `https://tariffos.app`.
 
 ---
 
@@ -97,6 +103,7 @@
 
 ## Completado Recientemente (Referencia — No Repetir)
 
+- [x] **Overhaul UI/UX del Workspace (Planes 1–3) + Estabilización Runtime E2E en Vivo (Plan 4, 2026-11-27 · `88425cb`, `ae71e48`, `237f3e2`, `2078a8c`):** tipografía `Plus Jakarta Sans` + `JetBrains Mono`, modales unificados en `WorkspaceDialogShell`, pestañas móviles siempre visibles, toast portaled con `Deshacer` 5s sobre Radix, `VerdictCard` sobria, `DossierView` editorial continuo, calculadora CIF bajo demanda con `DecimalField`, triaje masivo por teclado, corrección del bucle `307` de `super_admin` en `server-account-gate.ts` y preservación multi-herramienta en `eve-message-mapper.ts` (verificado en navegador real con `0 console.error`, `0 pageerror` y `0 HTTP >= 400`).
 - [x] **Sincronización cloud de firma manuscrita (`P1-1`, 2026-11-27):** bucket privado `broker-signatures`, helper `apps/web/src/lib/workspace/signature-storage.ts` y cableado en `GET`/`PUT /api/workspace/profile` usando `UserProfile.signatureStorageKey` (tests TDD en verde).
 - [x] **Subida firmada para facturas pesadas en lotes (`P1-2`, 2026-11-27):** bucket privado `batch-invoices`, helper `batch-storage.ts`, endpoint `POST /api/batch/upload-url`, refactor de `batch-request-parser.ts` y soporte de flujo en 3 pasos (`> 3.5 MB`, hasta `25 MB`) en `submitBatchFile` con verificación de propiedad por `tenantId` (HTTP 403 ante cross-tenant).
 - [x] **`Country.datasetVersion` VE al Consolidado 2026 (`P1-3`, 2026-11-27):** actualizado en vivo (`consolidado-arancel-2026` + Decretos 4.944, 5.103, 5.122, 5.147 y 5.198) y sincronizado automáticamente en `packages/database/src/scripts/seed_from_arancel_rows.ts`.
