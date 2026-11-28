@@ -160,6 +160,13 @@ model ClassificationSession {
   title                     String
   description               String?
   status                    WorkspaceSessionStatus @default(ACTIVE)
+  processKind               String                 @default("single_ruling") @map("process_kind")
+  operationalStatus         String                 @default("processing") @map("operational_status")
+  clientRef                 String?                @map("client_ref")
+  primaryHsCode             String?                @map("primary_hs_code")
+  itemProgressJson          Json?                  @map("item_progress")
+  createdByUserId           String?                @map("created_by_user_id")
+  assignedToUserId          String?                @map("assigned_to_user_id")
   totalClassificationTokens Int?                   @default(0)
   totalOcrTokens            Int?                   @default(0)
   createdAt                 DateTime               @default(now())
@@ -174,6 +181,9 @@ model ClassificationSession {
 
   @@index([filingId])
   @@index([tenantId])
+  @@index([tenantId, operationalStatus, updatedAt(sort: Desc)])
+  @@index([tenantId, assignedToUserId, operationalStatus])
+  @@index([tenantId, processKind, updatedAt(sort: Desc)])
   @@schema("public")
 }
 

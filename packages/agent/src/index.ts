@@ -93,6 +93,11 @@ export {
 } from './lib/decision/provider.js';
 export { typesafeProvider } from './lib/decision/typesafe-adapter.js';
 export {
+  classifyThreadIntent,
+  deriveDeterministicThreadTriage,
+  type ThreadTriageInput,
+} from './lib/decision/thread-triage.js';
+export {
   AUTO_APPROVE_CONFIDENCE_THRESHOLD,
   REVIEW_CONFIDENCE_THRESHOLD,
   SUPPORTED_LIVE_COUNTRIES,
