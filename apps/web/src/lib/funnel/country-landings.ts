@@ -122,9 +122,9 @@ export function getCountryLandingBySlug(slug: string): LandingEditionConfig | nu
   return COUNTRY_LANDINGS_BY_SLUG[slug.trim().toLowerCase()] ?? null;
 }
 
-export function resolveRootLandingConfig(): LandingEditionConfig {
-  const pinnedSlug = getDefaultLandingCountry();
-  if (pinnedSlug !== 'global') {
+export function resolveRootLandingConfig(pinnedSlugOverride?: string): LandingEditionConfig {
+  const pinnedSlug = (pinnedSlugOverride ?? getDefaultLandingCountry()).trim().toLowerCase();
+  if (pinnedSlug && pinnedSlug !== 'global') {
     return getCountryLandingBySlug(pinnedSlug) ?? GLOBAL_LANDING_CONFIG;
   }
   return GLOBAL_LANDING_CONFIG;

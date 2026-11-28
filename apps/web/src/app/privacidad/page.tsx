@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, FileCheck2, Lock, Server, ShieldCheck } from 'lucide-react';
 import { PublicMarketingShell } from '@/components/funnel/organisms/PublicMarketingShell';
+import { isCountrySwitcherFlagEnabled } from '@/lib/flags';
 
 export const metadata: Metadata = {
   title: 'Seguridad y Privacidad de Datos — TariffOS',
@@ -32,9 +33,10 @@ const PILLARS = [
   },
 ] as const;
 
-export default function PrivacySecurityPage() {
+export default async function PrivacySecurityPage() {
+  const showCountrySwitcher = await isCountrySwitcherFlagEnabled();
   return (
-    <PublicMarketingShell>
+    <PublicMarketingShell showCountrySwitcher={showCountrySwitcher}>
       <section className="py-14 sm:py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-8 space-y-10">
           <div className="space-y-4">

@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { BrandMark } from '@/components/funnel/atoms/BrandMark';
 import { LoginCard } from '@/components/funnel/organisms/LoginCard';
+import { isGoogleOAuthFlagEnabled } from '@/lib/flags';
 
 interface LoginPageProps {
   searchParams: Promise<{
@@ -10,9 +11,18 @@ interface LoginPageProps {
 }
 
 async function LoginContent({ searchParams }: LoginPageProps) {
-  const params = await searchParams;
+  const [params, googleOAuthEnabled] = await Promise.all([
+    searchParams,
+    isGoogleOAuthFlagEnabled(),
+  ]);
   const initialMode = params.mode === 'signup' ? 'signup' : 'signin';
-  return <LoginCard initialMode={initialMode} nextPath={params.next} />;
+  return (
+    <LoginCard
+      initialMode={initialMode}
+      nextPath={params.next}
+      googleOAuthEnabled={googleOAuthEnabled}
+    />
+  );
 }
 
 export default function LoginPage(props: LoginPageProps) {

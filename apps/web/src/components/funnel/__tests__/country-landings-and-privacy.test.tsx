@@ -103,8 +103,8 @@ describe('Global (/) + Venezuela (/ve) Landings & Privacy Page', () => {
     expect(screen.queryByRole('link', { name: /Ver edición Venezuela/i })).not.toBeInTheDocument();
   });
 
-  it('renders dedicated /privacidad page documenting tenant RLS isolation, signed URLs, and Zero Training policy', () => {
-    render(<PrivacySecurityPage />);
+  it('renders dedicated /privacidad page documenting tenant RLS isolation, signed URLs, and Zero Training policy', async () => {
+    render(await PrivacySecurityPage());
 
     expect(
       screen.getByRole('heading', { level: 1, name: /Seguridad y Privacidad de Datos/i }),

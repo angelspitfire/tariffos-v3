@@ -11,10 +11,11 @@ import {
   resolveCloudTenantContext,
 } from '@/lib/agent/cloud-session';
 import { classifyItemOffline } from '@/lib/agent/offline-classifier';
+import { getBatchExecutionModeFlag } from '@/lib/flags';
 import { buildBatchSummary } from '@/lib/inngest/batch-helpers';
 import { parseJsonBatch, parseMultipartBatch } from '@/lib/inngest/batch-request-parser';
 import { inngest } from '@/lib/inngest/client';
-import { executeCloudBatchInline, resolveBatchExecutionMode } from '@/lib/inngest/run-cloud-batch';
+import { executeCloudBatchInline } from '@/lib/inngest/run-cloud-batch';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
 
 function buildOfflineBatchResult(
@@ -112,7 +113,12 @@ export async function POST(request: Request): Promise<Response> {
       },
     });
 
-    if (resolveBatchExecutionMode() === 'inline') {
+    const batchExecutionMode = await getBatchExecutionModeFlag({
+      tenant: { id: cloudTenantId },
+      user: { id: cloudUserId },
+      country: { code: payload.countryCode },
+    });
+    if (batchExecutionMode === 'inline') {
       const result = await executeCloudBatchInline({
         filingId,
         tenantId: cloudTenantId,

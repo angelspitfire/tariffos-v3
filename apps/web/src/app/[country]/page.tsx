@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { LandingPageTemplate } from '@/components/funnel/templates/LandingPageTemplate';
+import { isCountrySwitcherFlagEnabled } from '@/lib/flags';
 import {
   buildLandingAlternates,
   COUNTRY_LANDINGS_BY_SLUG,
@@ -42,6 +43,15 @@ export default async function CountryLandingPage({
     notFound();
   }
 
-  const plans = await loadPublicPlans();
-  return <LandingPageTemplate plans={plans} config={config} />;
+  const [plans, showCountrySwitcher] = await Promise.all([
+    loadPublicPlans(),
+    isCountrySwitcherFlagEnabled(),
+  ]);
+  return (
+    <LandingPageTemplate
+      plans={plans}
+      config={config}
+      showCountrySwitcher={showCountrySwitcher}
+    />
+  );
 }
