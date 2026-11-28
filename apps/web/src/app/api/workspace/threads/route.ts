@@ -1,90 +1,78 @@
-import { prisma } from '@tariffos/database';
-import { z } from 'zod';
+import { classifyThreadIntent, defaultProvider } from '@tariffos/agent';
+import { prisma, type Prisma } from '@tariffos/database';
+import {
+  ProcessKindSchema,
+  type ProcessKind,
+  type ThreadTriageDecision,
+} from '@tariffos/shared-types';
 import { resolveCloudTenantContext } from '@/lib/agent/cloud-session';
-import type { WorkspaceMessage, WorkspaceThread } from '@/lib/workspace/types';
+import {
+  buildSummaryQuerySpec,
+  mapSessionRowToWorkspaceThread,
+  parseSessionMeta,
+  ThreadPayloadSchema,
+} from '@/lib/workspace/thread-api-helpers';
+import {
+  buildTriageInputFromRawMessages,
+  resolveEffectiveOperationalStatus,
+} from '@/lib/workspace/thread-api-triage';
 
-const ThreadPayloadSchema = z.object({
-  id: z.string().min(1),
-  title: z.string().min(1),
-  jurisdictionId: z.string().min(1).default('ve-seniat'),
-  status: z.enum(['regular', 'archived']).default('regular'),
-  eveSessionId: z.string().trim().min(1).optional(),
-  messages: z.array(z.record(z.string(), z.unknown())),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-});
+const DEFAULT_FULL_TAKE = 50;
 
-function parseSessionMeta(description: string | null): {
-  jurisdictionId: string;
-  status: 'regular' | 'archived';
-  eveSessionId?: string;
-} {
-  if (!description) return { jurisdictionId: 've-seniat', status: 'regular' };
-  try {
-    const parsed = JSON.parse(description) as {
-      jurisdictionId?: string;
-      status?: string;
-      eveSessionId?: string;
-    };
-    return {
-      jurisdictionId: parsed.jurisdictionId || 've-seniat',
-      status: parsed.status === 'archived' ? 'archived' : 'regular',
-      ...(typeof parsed.eveSessionId === 'string' && parsed.eveSessionId.trim()
-        ? { eveSessionId: parsed.eveSessionId.trim() }
-        : {}),
-    };
-  } catch {
-    return { jurisdictionId: 've-seniat', status: 'regular' };
-  }
-}
-
-function parseChatMessage(row: {
-  id: string;
-  role: string;
-  content: string;
-  createdAt: Date;
-}, fallbackJurisdiction: string): WorkspaceMessage {
-  try {
-    const parsed = JSON.parse(row.content) as WorkspaceMessage;
-    if (parsed && parsed.id && parsed.role) return parsed;
-  } catch {
-    // Plain-text legacy message row
-  }
-  return {
-    id: row.id,
-    role: row.role === 'assistant' ? 'assistant' : 'user',
-    text: row.content,
-    createdAt: row.createdAt.toISOString(),
-    jurisdictionId: fallbackJurisdiction,
-  };
-}
-
-export async function GET(): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
   const auth = await resolveCloudTenantContext();
   if (!auth.ok) return Response.json({ error: auth.error }, { status: auth.status });
+
+  const params = new URL(request.url).searchParams;
+  if (params.get('view') === 'summary') {
+    const { where, limit, cursor } = buildSummaryQuerySpec(
+      params,
+      auth.context.tenantId,
+      auth.context.userId,
+    );
+    const [rows, grouped] = await Promise.all([
+      prisma.classificationSession.findMany({
+        where,
+        orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+        take: limit + 1,
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      }),
+      prisma.classificationSession.groupBy({
+        by: ['operationalStatus'],
+        where: { tenantId: auth.context.tenantId, processKind: { not: 'quick_lookup' } },
+        _count: { _all: true },
+      }),
+    ]);
+
+    const hasMore = rows.length > limit;
+    const pageRows = hasMore ? rows.slice(0, limit) : rows;
+    const nextCursor = hasMore ? (pageRows[pageRows.length - 1]?.id ?? null) : null;
+    const counts: Record<string, number> = {
+      needs_input: 0,
+      processing: 0,
+      in_review: 0,
+      approved: 0,
+      archived: 0,
+    };
+    for (const g of grouped) counts[g.operationalStatus] = g._count._all;
+
+    return Response.json({
+      threads: pageRows.map((row) => mapSessionRowToWorkspaceThread(row, false)),
+      nextCursor,
+      counts,
+    });
+  }
 
   const sessions = await prisma.classificationSession.findMany({
     where: { tenantId: auth.context.tenantId },
     include: { messages: { orderBy: { createdAt: 'asc' } } },
     orderBy: { updatedAt: 'desc' },
-    take: 25,
+    take: DEFAULT_FULL_TAKE,
   });
 
-  const threads: WorkspaceThread[] = sessions.map((s) => {
-    const meta = parseSessionMeta(s.description);
-    return {
-      id: s.id,
-      title: s.title,
-      jurisdictionId: meta.jurisdictionId,
-      status: meta.status,
-      ...(meta.eveSessionId ? { eveSessionId: meta.eveSessionId } : {}),
-      messages: s.messages.map((m) => parseChatMessage(m, meta.jurisdictionId)),
-      createdAt: s.createdAt.toISOString(),
-      updatedAt: s.updatedAt.toISOString(),
-    };
+  return Response.json({
+    threads: sessions.map((s) => mapSessionRowToWorkspaceThread(s, true)),
   });
-
-  return Response.json({ threads });
 }
 
 export async function PUT(request: Request): Promise<Response> {
@@ -107,17 +95,42 @@ export async function PUT(request: Request): Promise<Response> {
   const tenantId = auth.context.tenantId;
   const existing = await prisma.classificationSession.findUnique({
     where: { id: thread.id },
-    select: { tenantId: true },
+    select: { tenantId: true, processKind: true, clientRef: true, description: true },
   });
   if (existing && existing.tenantId !== tenantId) {
     return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  const existingKind = ProcessKindSchema.safeParse(existing?.processKind);
+  const previousKind: ProcessKind | undefined = existingKind.success ? existingKind.data : undefined;
+  const { triageInput, primaryHsCode: derivedHs, itemProgress: derivedProgress } =
+    buildTriageInputFromRawMessages(thread.messages, previousKind);
+
+  let triage: ThreadTriageDecision | null = null;
+  if (!thread.processKind) {
+    triage = await classifyThreadIntent(triageInput, defaultProvider());
+  }
+
+  const effectiveKind = thread.processKind ?? triage?.processKind ?? previousKind ?? 'single_ruling';
+  const effectiveStatus = resolveEffectiveOperationalStatus(
+    thread.operationalStatus,
+    triage,
+    thread.status === 'archived',
+  );
+  const existingMeta = parseSessionMeta(existing?.description ?? null);
   const sessionMeta = JSON.stringify({
     jurisdictionId: thread.jurisdictionId,
     status: thread.status,
-    ...(thread.eveSessionId ? { eveSessionId: thread.eveSessionId } : {}),
+    ...(thread.eveSessionId ?? existingMeta.eveSessionId
+      ? { eveSessionId: thread.eveSessionId ?? existingMeta.eveSessionId }
+      : {}),
   });
+  const effectiveClientRef =
+    thread.clientRef !== undefined ? thread.clientRef : (existing?.clientRef ?? null);
+  const effectiveHsCode = thread.primaryHsCode !== undefined ? thread.primaryHsCode : derivedHs;
+  const effectiveProgress = (
+    thread.itemProgress !== undefined ? thread.itemProgress : derivedProgress
+  ) as Prisma.InputJsonValue | undefined;
 
   await prisma.$transaction(async (tx) => {
     await tx.classificationSession.upsert({
@@ -126,6 +139,12 @@ export async function PUT(request: Request): Promise<Response> {
         title: thread.title,
         description: sessionMeta,
         status: thread.status === 'archived' ? 'ARCHIVED' : 'ACTIVE',
+        processKind: effectiveKind,
+        operationalStatus: effectiveStatus,
+        ...(effectiveClientRef !== undefined ? { clientRef: effectiveClientRef } : {}),
+        ...(effectiveHsCode !== undefined ? { primaryHsCode: effectiveHsCode } : {}),
+        ...(effectiveProgress !== undefined ? { itemProgressJson: effectiveProgress } : {}),
+        ...(thread.assignedToUserId !== undefined ? { assignedToUserId: thread.assignedToUserId } : {}),
       },
       create: {
         id: thread.id,
@@ -133,6 +152,13 @@ export async function PUT(request: Request): Promise<Response> {
         title: thread.title,
         description: sessionMeta,
         status: thread.status === 'archived' ? 'ARCHIVED' : 'ACTIVE',
+        processKind: effectiveKind,
+        operationalStatus: effectiveStatus,
+        clientRef: effectiveClientRef,
+        primaryHsCode: effectiveHsCode,
+        ...(effectiveProgress !== undefined ? { itemProgressJson: effectiveProgress } : {}),
+        createdByUserId: auth.context.userId,
+        assignedToUserId: thread.assignedToUserId ?? null,
       },
     });
 
@@ -150,7 +176,7 @@ export async function PUT(request: Request): Promise<Response> {
     }
   });
 
-  return Response.json({ ok: true, id: thread.id });
+  return Response.json({ ok: true, id: thread.id, ...(triage ? { triage } : {}) });
 }
 
 export async function DELETE(request: Request): Promise<Response> {

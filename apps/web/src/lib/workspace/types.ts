@@ -5,6 +5,9 @@ import type {
   A2UIVerdictComponent,
   DossierReviewStatus,
   IncotermCode,
+  OperationalStatus,
+  ProcessItemProgress,
+  ProcessKind,
   StreamProgressEvent,
   UserProfileSettings,
 } from '@tariffos/shared-types';
@@ -37,6 +40,14 @@ export interface WorkspaceThread {
   jurisdictionId: string;
   status: 'regular' | 'archived';
   eveSessionId?: string;
+  processKind?: ProcessKind;
+  operationalStatus?: OperationalStatus;
+  clientRef?: string | null;
+  primaryHsCode?: string | null;
+  itemProgress?: ProcessItemProgress | null;
+  createdByUserId?: string | null;
+  assignedToUserId?: string | null;
+  messagesLoaded?: boolean;
   messages: WorkspaceMessage[];
   createdAt: string;
   updatedAt: string;

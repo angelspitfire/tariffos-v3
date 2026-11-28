@@ -51,7 +51,7 @@ export function useWorkspaceUrlSync({
 
     if (threadParam) onHydrateThread(threadParam);
     if (tabParam && VALID_TABS.has(tabParam)) onHydrateTab(tabParam as CanvasTabType);
-    if (viewParam === 'analytics') onHydrateAnalytics(true);
+    if (viewParam === 'processes' || viewParam === 'analytics') onHydrateAnalytics(true);
   }, [onHydrateAnalytics, onHydrateTab, onHydrateThread]);
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export function useWorkspaceUrlSync({
 
     const next = new URLSearchParams();
     if (analyticsOpen) {
-      next.set('view', 'analytics');
+      next.set('view', 'processes');
     } else {
       if (activeThreadId) next.set('thread', activeThreadId);
       if (hasCanvas && activeTab) next.set('tab', activeTab);

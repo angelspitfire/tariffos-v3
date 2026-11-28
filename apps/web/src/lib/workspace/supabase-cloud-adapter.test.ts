@@ -7,10 +7,12 @@ describe('SupabaseCloudAdapter', () => {
     vi.unstubAllGlobals();
   });
 
-  it('fetches and persists threads, precedents, and profile via workspace API routes', async () => {
+  it('fetches summary threads, thread detail, patches metadata, precedents, and profile via workspace API routes', async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify({ threads: [{ id: 't1', title: 'Laptop' }] }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ threads: [{ id: 't1', title: 'Laptop', messagesLoaded: false, messages: [] }] }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ thread: { id: 't1', title: 'Laptop', messagesLoaded: true, messages: [] } }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true }), { status: 200 }))
       .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true }), { status: 200 }))
       .mockResolvedValueOnce(new Response(JSON.stringify({ precedents: [{ id: 'p1', sku: 'SKU-1' }] }), { status: 200 }))
       .mockResolvedValueOnce(new Response(JSON.stringify({ profile: DEFAULT_USER_PROFILE }), { status: 200 }));
@@ -20,7 +22,18 @@ describe('SupabaseCloudAdapter', () => {
 
     const threads = await adapter.loadThreads();
     expect(threads[0]?.id).toBe('t1');
-    expect(fetchMock).toHaveBeenNthCalledWith(1, '/api/workspace/threads', undefined);
+    expect(fetchMock).toHaveBeenNthCalledWith(1, '/api/workspace/threads?view=summary&limit=50', undefined);
+
+    const detail = await adapter.loadThreadDetail('t1');
+    expect(detail?.messagesLoaded).toBe(true);
+    expect(fetchMock).toHaveBeenNthCalledWith(2, '/api/workspace/threads/t1', undefined);
+
+    await adapter.patchThreadMeta('t1', { clientRef: 'Polar · BL-1' });
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      '/api/workspace/threads/t1',
+      expect.objectContaining({ method: 'PATCH' }),
+    );
 
     await adapter.saveSkuPrecedent({
       id: 'p1',
@@ -39,7 +52,7 @@ describe('SupabaseCloudAdapter', () => {
       updatedAt: '2026-11-26T00:00:00Z',
     });
     expect(fetchMock).toHaveBeenNthCalledWith(
-      2,
+      4,
       '/api/workspace/precedents',
       expect.objectContaining({ method: 'PUT' }),
     );

@@ -1,5 +1,10 @@
 import type { SkuPrecedent, UserProfileSettings } from '@tariffos/shared-types';
-import type { IPersistence } from './persistence';
+import type {
+  IPersistence,
+  ThreadMetadataPatch,
+  ThreadSearchParams,
+  ThreadSearchResult,
+} from './persistence';
 import type { WorkspaceThread } from './types';
 
 async function fetchJsonOrThrow<T>(url: string, init?: RequestInit): Promise<T> {
@@ -19,8 +24,44 @@ async function fetchJsonOrThrow<T>(url: string, init?: RequestInit): Promise<T> 
  */
 export class SupabaseCloudAdapter implements IPersistence {
   async loadThreads(): Promise<WorkspaceThread[]> {
-    const data = await fetchJsonOrThrow<{ threads?: WorkspaceThread[] }>('/api/workspace/threads');
+    const data = await fetchJsonOrThrow<{ threads?: WorkspaceThread[] }>(
+      '/api/workspace/threads?view=summary&limit=50',
+    );
     return Array.isArray(data?.threads) ? data.threads : [];
+  }
+
+  async loadThreadDetail(threadId: string): Promise<WorkspaceThread | null> {
+    const data = await fetchJsonOrThrow<{ thread?: WorkspaceThread | null }>(
+      `/api/workspace/threads/${encodeURIComponent(threadId)}`,
+    );
+    return data?.thread ?? null;
+  }
+
+  async patchThreadMeta(threadId: string, patch: ThreadMetadataPatch): Promise<void> {
+    await fetchJsonOrThrow(`/api/workspace/threads/${encodeURIComponent(threadId)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+  }
+
+  async searchThreads(params: ThreadSearchParams): Promise<ThreadSearchResult> {
+    const qs = new URLSearchParams({ view: 'summary', limit: String(params.limit ?? 30) });
+    if (params.query?.trim()) qs.set('q', params.query.trim());
+    if (params.status) qs.set('status', params.status);
+    if (params.kind) qs.set('kind', params.kind);
+    if (params.scope) qs.set('scope', params.scope);
+    if (params.cursor) qs.set('cursor', params.cursor);
+    const data = await fetchJsonOrThrow<{
+      threads?: WorkspaceThread[];
+      nextCursor?: string | null;
+      counts?: Record<string, number>;
+    }>(`/api/workspace/threads?${qs.toString()}`);
+    return {
+      threads: Array.isArray(data?.threads) ? data.threads : [],
+      nextCursor: data?.nextCursor ?? null,
+      counts: data?.counts,
+    };
   }
 
   async saveThread(thread: WorkspaceThread): Promise<void> {
@@ -38,9 +79,7 @@ export class SupabaseCloudAdapter implements IPersistence {
   }
 
   async loadSkuPrecedents(): Promise<SkuPrecedent[]> {
-    const data = await fetchJsonOrThrow<{ precedents?: SkuPrecedent[] }>(
-      '/api/workspace/precedents',
-    );
+    const data = await fetchJsonOrThrow<{ precedents?: SkuPrecedent[] }>('/api/workspace/precedents');
     return Array.isArray(data?.precedents) ? data.precedents : [];
   }
 

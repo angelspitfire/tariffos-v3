@@ -179,4 +179,41 @@ describe('IndexedDBAdapter and DualWritePersistence', () => {
     expect(cached.skuPrecedents).toEqual([SAMPLE_SKU]);
     expect(cached.profile).toEqual(SAMPLE_PROFILE);
   });
+
+  it('preserves locally cached messages when remote loadThreads returns summary headers (messagesLoaded: false) with equal or older updatedAt', async () => {
+    const local = new IndexedDBAdapter({ forceMemoryFallback: true });
+    const fullLocalThread: WorkspaceThread = {
+      ...SAMPLE_THREAD,
+      messagesLoaded: true,
+      messages: [
+        {
+          id: 'm1',
+          role: 'user',
+          text: 'Ecógrafo portátil Doppler',
+          createdAt: '2026-11-25T10:00:00.000Z',
+          jurisdictionId: 've-seniat',
+        },
+      ],
+    };
+    await local.saveThread(fullLocalThread);
+
+    const remoteSummary: WorkspaceThread = {
+      ...SAMPLE_THREAD,
+      clientRef: 'Clinica Avila · OC-12',
+      messagesLoaded: false,
+      messages: [],
+    };
+    const cloud = makeCloudStub({
+      loadThreads: vi.fn<IPersistence['loadThreads']>().mockResolvedValue([remoteSummary]),
+    });
+
+    const dual = new DualWritePersistence(local, cloud);
+    const merged = await dual.loadThreads();
+
+    expect(merged).toHaveLength(1);
+    expect(merged[0]?.clientRef).toBe('Clinica Avila · OC-12');
+    expect(merged[0]?.messagesLoaded).toBe(true);
+    expect(merged[0]?.messages).toHaveLength(1);
+    expect(merged[0]?.messages[0]?.text).toBe('Ecógrafo portátil Doppler');
+  });
 });

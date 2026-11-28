@@ -41,7 +41,7 @@ function ResizerHarness() {
 }
 
 describe('useWorkspaceUrlSync & accessible split resizer (Plan 3.3 + 3.4)', () => {
-  it('hydrates initial state from ?thread=&tab=&view=analytics and syncs URL via history.replaceState', () => {
+  it('hydrates initial state from ?thread=&tab=&view=processes (and legacy view=analytics) and syncs URL via history.replaceState', () => {
     window.history.replaceState(null, '', '/app?thread=thr-99&tab=calculator&view=analytics');
 
     const onHydrateThread = vi.fn();
@@ -90,7 +90,7 @@ describe('useWorkspaceUrlSync & accessible split resizer (Plan 3.3 + 3.4)', () =
       />,
     );
 
-    expect(window.location.search).toBe('?view=analytics');
+    expect(window.location.search).toBe('?view=processes');
   });
 
   it('adjusts chatWidthPct by ±4% via ArrowLeft/ArrowRight on role="separator"', () => {

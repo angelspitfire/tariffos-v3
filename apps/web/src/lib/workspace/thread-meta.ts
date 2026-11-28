@@ -1,3 +1,4 @@
+import { deriveThreadProcessSnapshot, formatRelativeThreadTime } from './thread-process-meta';
 import type { WorkspaceThread } from './types';
 
 export interface ThreadMeta {
@@ -6,26 +7,12 @@ export interface ThreadMeta {
   timeLabel: string;
 }
 
-export function getThreadMeta(thread: WorkspaceThread): ThreadMeta {
-  let headline: string | null = null;
-  for (let i = thread.messages.length - 1; i >= 0; i--) {
-    const env = thread.messages[i]?.envelope;
-    const verdict = env?.inlineComponents.find((c) => c.type === 'verdict');
-    if (verdict && verdict.type === 'verdict') {
-      headline = verdict.hsCode;
-      break;
-    }
-    const batch = env?.canvasComponents.find((c) => c.type === 'batch_manifest');
-    if (batch && batch.type === 'batch_manifest') {
-      headline = `Lote · ${batch.items.length} ítems`;
-      break;
-    }
-  }
-  const timeLabel = new Date(thread.updatedAt).toLocaleTimeString('es-VE', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-  return { headline, timeLabel };
+export function getThreadMeta(thread: WorkspaceThread, nowMs = Date.now()): ThreadMeta {
+  const snapshot = deriveThreadProcessSnapshot(thread);
+  return {
+    headline: snapshot.primaryHsCode,
+    timeLabel: formatRelativeThreadTime(thread.updatedAt, nowMs),
+  };
 }
 
 export function getInitials(fullName: string): string {

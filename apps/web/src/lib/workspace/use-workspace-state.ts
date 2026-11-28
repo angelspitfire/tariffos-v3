@@ -19,6 +19,7 @@ import { DEFAULT_USER_PROFILE, type WorkspaceMessage, type WorkspaceThread, type
 import { useUndoableDelete, type UndoToastAction } from './use-undoable-delete';
 import { useWorkspaceClassification } from './use-workspace-classification';
 import { useWorkspaceHydration } from './use-workspace-hydration';
+import { useWorkspaceProcessActions } from './use-workspace-process-actions';
 
 const DEFAULT_TOAST_MS = 2800;
 
@@ -54,6 +55,8 @@ export function useWorkspaceState() {
 
   useWorkspaceHydration({ persistence, threadsRef, activeThreadIdRef, setThreads, setThreadsLoading, setActiveThreadId, setSkuPrecedents, setProfile });
 
+  const processActions = useWorkspaceProcessActions({ persistence, threadsRef, activeThreadIdRef, setThreads, setActiveThreadId, setSelectedCanvasMsgId, pushToast });
+
   const persistThread = useCallback((nextThread: WorkspaceThread) => {
     const prev = threadsRef.current;
     const updated = (prev.some((t) => t.id === nextThread.id) ? prev.map((t) => (t.id === nextThread.id ? nextThread : t)) : [nextThread, ...prev])
@@ -84,7 +87,7 @@ export function useWorkspaceState() {
   const approveActiveDossier = useCallback(() => {
     if (!activeThread) return;
     persistThread(updateDossierInThread(activeThread, selectedCanvasMsgId, (d) => ({ ...d, reviewStatus: 'approved', approvalMeta: { status: 'approved', updatedAt: new Date().toISOString(), approvedBy: profile.fullName, brokerLicense: profile.brokerLicense } })));
-    pushToast('Dictamen aprobado y sellado.', 'success');
+    pushToast('Dictamen aprobado y sellado — disponible en Procesos.', 'success');
   }, [activeThread, persistThread, profile.brokerLicense, profile.fullName, pushToast, selectedCanvasMsgId]);
 
   const requestDossierReview = useCallback((note: string) => {
@@ -184,7 +187,7 @@ export function useWorkspaceState() {
 
   return {
     threads, threadsLoading, activeThread, activeThreadId, selectedCanvasMsgId, canvasComponents, activeTab,
-    jurisdiction, skuPrecedents, profile, toast, ...runner,
+    jurisdiction, skuPrecedents, profile, toast, ...runner, ...processActions,
     setActiveTab, setActiveThreadId, setSelectedCanvasMsgId,
     setJurisdictionId: (id: string) => updateProfile({ defaultJurisdictionId: id }),
     setApprovalWorkflowMode: (mode: ApprovalWorkflowMode) => updateProfile({ approvalWorkflowMode: mode }),
