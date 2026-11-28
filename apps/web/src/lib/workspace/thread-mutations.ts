@@ -1,11 +1,26 @@
-import type { A2UICanvasComponent, A2UIDossierComponent, SkuPrecedent, UserProfileSettings } from '@tariffos/shared-types';
+import type {
+  A2UICanvasComponent,
+  A2UIDossierComponent,
+  ProcessActivityEvent,
+  SkuPrecedent,
+  UserProfileSettings,
+} from '@tariffos/shared-types';
 import { normalizeSkuKey } from './persistence';
+import { getInitials } from './thread-meta';
 import { deriveThreadProcessSnapshot } from './thread-process-meta';
 import type { WorkspaceMessage, WorkspaceThread } from './types';
 
 function withDerivedProcessFields(thread: WorkspaceThread): WorkspaceThread {
   const snap = deriveThreadProcessSnapshot(thread);
   return { ...thread, processKind: snap.processKind, operationalStatus: snap.operationalStatus, primaryHsCode: snap.primaryHsCode, itemProgress: snap.itemProgress };
+}
+
+export function appendProcessEventToThread(
+  thread: WorkspaceThread,
+  event: Omit<ProcessActivityEvent, 'id' | 'createdAt'>,
+): WorkspaceThread {
+  const entry: ProcessActivityEvent = { ...event, id: `evt-${Date.now()}`, createdAt: new Date().toISOString() };
+  return { ...thread, processEvents: [...(thread.processEvents ?? []), entry].slice(-20) };
 }
 
 export function getLatestCanvasComponents(thread: WorkspaceThread | null, selectedMessageId: string | null): A2UICanvasComponent[] {
@@ -114,17 +129,31 @@ export function attachEveSessionToThread(existing: WorkspaceThread | null, threa
   return existing.eveSessionId === eveSessionId ? existing : { ...existing, eveSessionId, updatedAt: now };
 }
 
-/** Merges synced streaming Eve turns into a thread while preserving durable sessionId and batch messages. */
-export function mergeSyncedMessagesIntoThread(existing: WorkspaceThread | null, threadId: string, synced: readonly WorkspaceMessage[], jurisdictionId: string): WorkspaceThread {
+/** Merges synced streaming Eve turns into a thread while preserving durable sessionId, batch messages, and author attribution. */
+export function mergeSyncedMessagesIntoThread(
+  existing: WorkspaceThread | null,
+  threadId: string,
+  synced: readonly WorkspaceMessage[],
+  jurisdictionId: string,
+  author?: { userId?: string; fullName?: string },
+): WorkspaceThread {
   const syncedIds = new Set(synced.map((m) => m.id));
+  const existingMsgById = new Map((existing?.messages ?? []).map((m) => [m.id, m]));
+  const attributedSynced = synced.map((m) => {
+    const prev = existingMsgById.get(m.id);
+    if (prev?.authorName || m.authorName || m.role !== 'user' || !author?.fullName) {
+      return prev?.authorName ? { ...m, authorUserId: prev.authorUserId, authorName: prev.authorName, authorInitials: prev.authorInitials } : m;
+    }
+    return { ...m, ...(author.userId ? { authorUserId: author.userId } : {}), authorName: author.fullName, authorInitials: getInitials(author.fullName) };
+  });
   const preservedBatch = (existing?.messages ?? []).filter((m) => (m.id.startsWith('msg-batch-') || m.id.startsWith('batch-')) && !syncedIds.has(m.id));
-  const messages = [...synced, ...preservedBatch].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  const firstUser = synced.find((m) => m.role === 'user' && m.text.trim());
-  const firstVerdict = synced.map((m) => m.envelope?.inlineComponents.find((c) => c.type === 'verdict')).find(Boolean);
+  const messages = [...attributedSynced, ...preservedBatch].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const firstUser = messages.find((m) => m.role === 'user' && m.text.trim());
+  const firstVerdict = messages.map((m) => m.envelope?.inlineComponents.find((c) => c.type === 'verdict')).find(Boolean);
   const title = firstVerdict?.description?.slice(0, 56) || firstUser?.text.trim().slice(0, 56) || existing?.title || 'Nueva consulta';
-  const now = synced[synced.length - 1]?.createdAt ?? new Date().toISOString();
+  const now = messages[messages.length - 1]?.createdAt ?? new Date().toISOString();
   return withDerivedProcessFields({
-    ...(existing ?? { id: threadId, title, jurisdictionId, status: 'regular' as const, createdAt: synced[0]?.createdAt ?? now }),
+    ...(existing ?? { id: threadId, title, jurisdictionId, status: 'regular' as const, createdAt: messages[0]?.createdAt ?? now }),
     id: threadId, title, jurisdictionId: existing?.jurisdictionId ?? jurisdictionId, status: existing?.status ?? 'regular', messagesLoaded: true, messages, updatedAt: now,
   });
 }

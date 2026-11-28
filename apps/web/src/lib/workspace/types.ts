@@ -6,6 +6,7 @@ import type {
   DossierReviewStatus,
   IncotermCode,
   OperationalStatus,
+  ProcessActivityEvent,
   ProcessItemProgress,
   ProcessKind,
   StreamProgressEvent,
@@ -28,6 +29,9 @@ export interface WorkspaceMessage {
   text: string;
   createdAt: string;
   jurisdictionId: string;
+  authorUserId?: string;
+  authorName?: string;
+  authorInitials?: string;
   attachments?: WorkspaceAttachment[];
   envelope?: A2UIEnvelope;
   progress?: StreamProgressEvent;
@@ -47,6 +51,7 @@ export interface WorkspaceThread {
   itemProgress?: ProcessItemProgress | null;
   createdByUserId?: string | null;
   assignedToUserId?: string | null;
+  processEvents?: ProcessActivityEvent[];
   messagesLoaded?: boolean;
   messages: WorkspaceMessage[];
   createdAt: string;

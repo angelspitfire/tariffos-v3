@@ -250,9 +250,12 @@ describe('useWorkspaceState startup thread selection', () => {
     expect(screen.getByTestId('client-ref').textContent).toBe('Polar · BL-10');
     expect(screen.getByTestId('op-status').textContent).toBe('archived');
     expect(mocks.patchThreadMeta).toHaveBeenCalledWith(SAMPLE_THREAD.id, { clientRef: 'Polar · BL-10' });
-    expect(mocks.patchThreadMeta).toHaveBeenCalledWith(SAMPLE_THREAD.id, {
-      status: 'archived',
-      operationalStatus: 'archived',
-    });
+    expect(mocks.patchThreadMeta).toHaveBeenCalledWith(
+      SAMPLE_THREAD.id,
+      expect.objectContaining({
+        status: 'archived',
+        operationalStatus: 'archived',
+      }),
+    );
   });
 });

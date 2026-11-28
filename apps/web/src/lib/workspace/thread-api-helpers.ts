@@ -1,12 +1,17 @@
 import type { Prisma } from '@tariffos/database';
 import {
+  ApprovalWorkflowModeSchema,
   OperationalStatusSchema,
+  ProcessActivityEventSchema,
   ProcessItemProgressSchema,
   ProcessKindSchema,
   ProcessScopeFilterSchema,
+  type ProcessActivityEvent,
 } from '@tariffos/shared-types';
 import { z } from 'zod';
 import type { WorkspaceMessage, WorkspaceThread } from '@/lib/workspace/types';
+
+export const MAX_PROCESS_EVENTS = 20;
 
 export const ThreadPayloadSchema = z.object({
   id: z.string().min(1),
@@ -32,12 +37,17 @@ export const ThreadPatchSchema = z.object({
   operationalStatus: OperationalStatusSchema.optional(),
   clientRef: z.string().trim().max(120).nullable().optional(),
   assignedToUserId: z.string().trim().min(1).nullable().optional(),
+  workflowMode: ApprovalWorkflowModeSchema.optional(),
+  note: z.string().trim().max(300).optional(),
+  actorName: z.string().trim().max(120).optional(),
+  targetName: z.string().trim().max(120).optional(),
 });
 
 export function parseSessionMeta(description: string | null): {
   jurisdictionId: string;
   status: 'regular' | 'archived';
   eveSessionId?: string;
+  events?: ProcessActivityEvent[];
 } {
   if (!description) return { jurisdictionId: 've-seniat', status: 'regular' };
   try {
@@ -45,13 +55,21 @@ export function parseSessionMeta(description: string | null): {
       jurisdictionId?: string;
       status?: string;
       eveSessionId?: string;
+      events?: unknown;
     };
+    const eventsParsed = Array.isArray(parsed.events)
+      ? parsed.events
+          .map((item) => ProcessActivityEventSchema.safeParse(item))
+          .filter((r) => r.success)
+          .map((r) => r.data)
+      : undefined;
     return {
       jurisdictionId: parsed.jurisdictionId || 've-seniat',
       status: parsed.status === 'archived' ? 'archived' : 'regular',
       ...(typeof parsed.eveSessionId === 'string' && parsed.eveSessionId.trim()
         ? { eveSessionId: parsed.eveSessionId.trim() }
         : {}),
+      ...(eventsParsed && eventsParsed.length > 0 ? { events: eventsParsed } : {}),
     };
   } catch {
     return { jurisdictionId: 've-seniat', status: 'regular' };
@@ -115,6 +133,7 @@ export function mapSessionRowToWorkspaceThread(
     itemProgress: parsedProgress.success ? parsedProgress.data : null,
     createdByUserId: row.createdByUserId ?? null,
     assignedToUserId: row.assignedToUserId ?? null,
+    ...(meta.events ? { processEvents: meta.events } : {}),
     messagesLoaded,
     messages:
       messagesLoaded && Array.isArray(row.messages)

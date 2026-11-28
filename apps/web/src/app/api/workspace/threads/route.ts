@@ -124,6 +124,7 @@ export async function PUT(request: Request): Promise<Response> {
     ...(thread.eveSessionId ?? existingMeta.eveSessionId
       ? { eveSessionId: thread.eveSessionId ?? existingMeta.eveSessionId }
       : {}),
+    ...(existingMeta.events?.length ? { events: existingMeta.events } : {}),
   });
   const effectiveClientRef =
     thread.clientRef !== undefined ? thread.clientRef : (existing?.clientRef ?? null);

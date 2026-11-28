@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useRef, useState } from 'react';
-import type { ApprovalWorkflowMode, CanvasTabType, SkuPrecedent, UserProfileSettings } from '@tariffos/shared-types';
+import type { AgencyRole, ApprovalWorkflowMode, CanvasTabType, SkuPrecedent, UserProfileSettings } from '@tariffos/shared-types';
 import type { WorkspaceToastState } from '@/components/workspace/atoms/WorkspaceToastBanner';
 import { resolveDefaultCanvasTab } from './canvas-tabs';
 import { getJurisdictionById } from './jurisdictions';
@@ -13,7 +13,6 @@ import {
   getLatestCanvasComponents,
   mergeSyncedMessagesIntoThread,
   updateBatchItemInThread,
-  updateDossierInThread,
 } from './thread-mutations';
 import { DEFAULT_USER_PROFILE, type WorkspaceMessage, type WorkspaceThread, type WorkspaceToast } from './types';
 import { useUndoableDelete, type UndoToastAction } from './use-undoable-delete';
@@ -23,7 +22,11 @@ import { useWorkspaceProcessActions } from './use-workspace-process-actions';
 
 const DEFAULT_TOAST_MS = 2800;
 
-export function useWorkspaceState() {
+export interface UseWorkspaceStateOptions {
+  currentUser?: { userId?: string; fullName?: string; role?: AgencyRole } | null;
+}
+
+export function useWorkspaceState(options?: UseWorkspaceStateOptions) {
   const persistence = useMemo(() => createWorkspacePersistence(), []);
   const [threads, setThreads] = useState<WorkspaceThread[]>([]);
   const [threadsLoading, setThreadsLoading] = useState(true);
@@ -55,8 +58,6 @@ export function useWorkspaceState() {
 
   useWorkspaceHydration({ persistence, threadsRef, activeThreadIdRef, setThreads, setThreadsLoading, setActiveThreadId, setSkuPrecedents, setProfile });
 
-  const processActions = useWorkspaceProcessActions({ persistence, threadsRef, activeThreadIdRef, setThreads, setActiveThreadId, setSelectedCanvasMsgId, pushToast });
-
   const persistThread = useCallback((nextThread: WorkspaceThread) => {
     const prev = threadsRef.current;
     const updated = (prev.some((t) => t.id === nextThread.id) ? prev.map((t) => (t.id === nextThread.id ? nextThread : t)) : [nextThread, ...prev])
@@ -65,6 +66,11 @@ export function useWorkspaceState() {
     setThreads(updated);
     void persistence.saveThread(nextThread);
   }, [persistence]);
+
+  const processActions = useWorkspaceProcessActions({
+    persistence, threadsRef, activeThreadIdRef, selectedCanvasMsgId, profile, currentUser: options?.currentUser,
+    setThreads, setActiveThreadId, setSelectedCanvasMsgId, persistThread, pushToast,
+  });
 
   const ensureActiveThreadId = useCallback((): string => {
     if (activeThreadIdRef.current) return activeThreadIdRef.current;
@@ -83,18 +89,6 @@ export function useWorkspaceState() {
   const updateProfile = useCallback((patch: Partial<UserProfileSettings>) => {
     setProfile((prev) => { const next = { ...prev, ...patch, updatedAt: new Date().toISOString() }; void persistence.saveUserProfile(next); return next; });
   }, [persistence]);
-
-  const approveActiveDossier = useCallback(() => {
-    if (!activeThread) return;
-    persistThread(updateDossierInThread(activeThread, selectedCanvasMsgId, (d) => ({ ...d, reviewStatus: 'approved', approvalMeta: { status: 'approved', updatedAt: new Date().toISOString(), approvedBy: profile.fullName, brokerLicense: profile.brokerLicense } })));
-    pushToast('Dictamen aprobado y sellado — disponible en Procesos.', 'success');
-  }, [activeThread, persistThread, profile.brokerLicense, profile.fullName, pushToast, selectedCanvasMsgId]);
-
-  const requestDossierReview = useCallback((note: string) => {
-    if (!activeThread) return;
-    persistThread(updateDossierInThread(activeThread, selectedCanvasMsgId, (d) => ({ ...d, reviewStatus: 'in_review', approvalMeta: { status: 'in_review', updatedAt: new Date().toISOString(), complianceNotes: note } })));
-    pushToast('Dictamen marcado en revisión técnica.', 'info');
-  }, [activeThread, persistThread, pushToast, selectedCanvasMsgId]);
 
   const confirmBatchItem = useCallback((lineNumber: number, update: { hsCode: string; adValoremPercent: number; legalRegime: string; answers: Record<string, string> }) => {
     if (!activeThread) return;
@@ -118,11 +112,7 @@ export function useWorkspaceState() {
     const removed = skuRef.current.find((p) => p.id === id);
     if (!removed) return;
     setSkuPrecedents((prev) => prev.filter((p) => p.id !== id));
-    scheduleDelete({
-      key: `sku:${id}`, toastTitle: `SKU ${removed.sku} eliminado.`,
-      onRestore: () => setSkuPrecedents((prev) => (prev.some((p) => p.id === id) ? prev : [removed, ...prev])),
-      onCommit: () => { void persistence.deleteSkuPrecedent(id); },
-    });
+    scheduleDelete({ key: `sku:${id}`, toastTitle: `SKU ${removed.sku} eliminado.`, onRestore: () => setSkuPrecedents((prev) => (prev.some((p) => p.id === id) ? prev : [removed, ...prev])), onCommit: () => { void persistence.deleteSkuPrecedent(id); } });
   }, [persistence, scheduleDelete]);
 
   const deleteThread = useCallback((threadId: string) => {
@@ -137,8 +127,7 @@ export function useWorkspaceState() {
       key: `thread:${threadId}`, toastTitle: `Conversación «${removed.title}» eliminada.`,
       onRestore: () => {
         const restored = [removed, ...threadsRef.current.filter((t) => t.id !== threadId)].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-        threadsRef.current = restored;
-        setThreads(restored);
+        threadsRef.current = restored; setThreads(restored);
         if (wasActive) { activeThreadIdRef.current = threadId; setActiveThreadId(threadId); }
       },
       onCommit: () => { void persistence.deleteThread(threadId); },
@@ -164,26 +153,21 @@ export function useWorkspaceState() {
     const targetId = ensureActiveThreadId();
     const existing = threadsRef.current.find((t) => t.id === targetId) ?? null;
     persistThread(buildThreadWithExternalMessage(existing, targetId, msg));
-    if (msg.envelope?.canvasComponents.length) {
-      setSelectedCanvasMsgId(msg.id);
-      setActiveTab(resolveDefaultCanvasTab(msg.envelope.canvasComponents));
-    }
+    if (msg.envelope?.canvasComponents.length) { setSelectedCanvasMsgId(msg.id); setActiveTab(resolveDefaultCanvasTab(msg.envelope.canvasComponents)); }
     return targetId;
   }, [ensureActiveThreadId, persistThread]);
 
+  const actorName = options?.currentUser?.fullName || profile.fullName;
   const syncChatMessages = useCallback((synced: readonly WorkspaceMessage[], latestCanvasMsgId: string | null): string => {
     const targetId = ensureActiveThreadId();
     const existing = threadsRef.current.find((t) => t.id === targetId) ?? null;
-    persistThread(mergeSyncedMessagesIntoThread(existing, targetId, synced, jurisdiction.id));
+    persistThread(mergeSyncedMessagesIntoThread(existing, targetId, synced, jurisdiction.id, { userId: options?.currentUser?.userId, fullName: actorName }));
     if (latestCanvasMsgId && profile.autoOpenCanvas) {
       const targetMsg = synced.find((m) => m.id === latestCanvasMsgId);
-      if (targetMsg?.envelope?.canvasComponents.length) {
-        setSelectedCanvasMsgId(latestCanvasMsgId);
-        setActiveTab(resolveDefaultCanvasTab(targetMsg.envelope.canvasComponents));
-      }
+      if (targetMsg?.envelope?.canvasComponents.length) { setSelectedCanvasMsgId(latestCanvasMsgId); setActiveTab(resolveDefaultCanvasTab(targetMsg.envelope.canvasComponents)); }
     }
     return targetId;
-  }, [ensureActiveThreadId, jurisdiction.id, persistThread, profile.autoOpenCanvas]);
+  }, [actorName, ensureActiveThreadId, jurisdiction.id, options?.currentUser?.userId, persistThread, profile.autoOpenCanvas]);
 
   return {
     threads, threadsLoading, activeThread, activeThreadId, selectedCanvasMsgId, canvasComponents, activeTab,
@@ -191,9 +175,8 @@ export function useWorkspaceState() {
     setActiveTab, setActiveThreadId, setSelectedCanvasMsgId,
     setJurisdictionId: (id: string) => updateProfile({ defaultJurisdictionId: id }),
     setApprovalWorkflowMode: (mode: ApprovalWorkflowMode) => updateProfile({ approvalWorkflowMode: mode }),
-    updateProfile,
-    startNewThread: () => { activeThreadIdRef.current = null; setActiveThreadId(null); setSelectedCanvasMsgId(null); },
+    updateProfile, startNewThread: () => { activeThreadIdRef.current = null; setActiveThreadId(null); setSelectedCanvasMsgId(null); },
     deleteThread, clearLocalData, bindEveSessionId, ingestExternalMessage, syncChatMessages,
-    approveActiveDossier, requestDossierReview, confirmBatchItem, saveSku, saveSkuFromMessage, deleteSku, pushToast,
+    confirmBatchItem, saveSku, saveSkuFromMessage, deleteSku, pushToast,
   };
 }

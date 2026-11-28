@@ -1,4 +1,5 @@
 import type {
+  ApprovalWorkflowMode,
   OperationalStatus,
   ProcessKind,
   ProcessScopeFilter,
@@ -19,6 +20,11 @@ export interface ThreadMetadataPatch {
   processKind?: ProcessKind;
   operationalStatus?: OperationalStatus;
   clientRef?: string | null;
+  assignedToUserId?: string | null;
+  workflowMode?: ApprovalWorkflowMode;
+  note?: string;
+  actorName?: string;
+  targetName?: string;
 }
 
 export interface ThreadSearchParams {

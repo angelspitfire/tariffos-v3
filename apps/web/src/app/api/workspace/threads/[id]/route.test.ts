@@ -149,4 +149,63 @@ describe('/api/workspace/threads/[id]', () => {
       }),
     );
   });
+
+  it('blocks ANALYST from sealing when workflowMode is always_review and appends ProcessActivityEvent for authorized REVIEWER/OWNER', async () => {
+    mocks.resolveCloudTenantContext.mockResolvedValueOnce({
+      ok: true,
+      context: { userId: 'u-ana', userEmail: 'ana@agencia.ve', tenantId: 't-1', role: 'ANALYST' },
+    });
+    const blocked = await PATCH(
+      new Request('http://localhost/api/workspace/threads/thr-1', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ operationalStatus: 'approved', workflowMode: 'always_review' }),
+      }),
+      { params: Promise.resolve({ id: 'thr-1' }) },
+    );
+    expect(blocked.status).toBe(403);
+
+    const now = new Date('2026-11-28T12:00:00Z');
+    mocks.resolveCloudTenantContext.mockResolvedValueOnce({
+      ok: true,
+      context: { userId: 'u-rev', userEmail: 'carlos@agencia.ve', tenantId: 't-1', role: 'REVIEWER' },
+    });
+    mocks.findUnique.mockResolvedValueOnce({
+      id: 'thr-1',
+      tenantId: 't-1',
+      description: JSON.stringify({ jurisdictionId: 've-seniat', status: 'regular', events: [] }),
+    });
+    mocks.update.mockImplementationOnce(async (args: { data: { description?: string } }) => ({
+      id: 'thr-1',
+      tenantId: 't-1',
+      title: 'Válvula industrial',
+      description: args.data.description ?? '{}',
+      processKind: 'single_ruling',
+      operationalStatus: 'approved',
+      createdAt: now,
+      updatedAt: now,
+    }));
+
+    const approved = await PATCH(
+      new Request('http://localhost/api/workspace/threads/thr-1', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          operationalStatus: 'approved',
+          workflowMode: 'always_review',
+          actorName: 'Carlos Méndez',
+        }),
+      }),
+      { params: Promise.resolve({ id: 'thr-1' }) },
+    );
+    expect(approved.status).toBe(200);
+    const json = (await approved.json()) as {
+      thread: { processEvents?: Array<{ action: string; actorName: string }> };
+    };
+    expect(json.thread.processEvents).toHaveLength(1);
+    expect(json.thread.processEvents?.[0]).toMatchObject({
+      action: 'approved',
+      actorName: 'Carlos Méndez',
+    });
+  });
 });
