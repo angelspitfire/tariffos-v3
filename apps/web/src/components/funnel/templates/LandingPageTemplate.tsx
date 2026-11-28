@@ -3,6 +3,7 @@ import {
   GLOBAL_LANDING_CONFIG,
   type LandingEditionConfig,
 } from '@/lib/funnel/country-landings';
+import { isCountrySwitcherEnabled } from '@/lib/runtime-config';
 import { CometSectionDivider } from '../atoms/CometSectionDivider';
 import { ScrollReveal } from '../atoms/ScrollReveal';
 import { GeoCountrySuggestionBanner } from '../molecules/GeoCountrySuggestionBanner';
@@ -18,16 +19,24 @@ export interface LandingPageTemplateProps {
   plans?: readonly SubscriptionPlanConfig[];
   config?: LandingEditionConfig;
   detectedCountryCode?: string | null;
+  showCountrySwitcher?: boolean;
 }
 
 export function LandingPageTemplate({
   plans = SAAS_PLANS,
   config = GLOBAL_LANDING_CONFIG,
   detectedCountryCode,
+  showCountrySwitcher,
 }: LandingPageTemplateProps) {
+  const showSwitcher = showCountrySwitcher ?? isCountrySwitcherEnabled();
+
   return (
-    <PublicMarketingShell hideFooter activeEditionSlug={config.slug}>
-      {config.slug === 'global' ? (
+    <PublicMarketingShell
+      hideFooter
+      activeEditionSlug={config.slug}
+      showCountrySwitcher={showSwitcher}
+    >
+      {showSwitcher && config.slug === 'global' ? (
         <GeoCountrySuggestionBanner detectedCountryCode={detectedCountryCode} />
       ) : null}
       <LandingHero config={config} />
@@ -50,7 +59,7 @@ export function LandingPageTemplate({
           landingPath={config.canonicalPath}
         />
       </ScrollReveal>
-      <LandingFaqFooter config={config} />
+      <LandingFaqFooter config={config} showCountrySwitcher={showSwitcher} />
     </PublicMarketingShell>
   );
 }

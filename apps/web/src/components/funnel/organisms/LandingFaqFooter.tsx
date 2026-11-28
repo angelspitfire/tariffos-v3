@@ -4,14 +4,18 @@ import {
   GLOBAL_LANDING_CONFIG,
   type LandingEditionConfig,
 } from '@/lib/funnel/country-landings';
+import { isCountrySwitcherEnabled } from '@/lib/runtime-config';
 import { CountryEditionSwitcher } from '../molecules/CountryEditionSwitcher';
 
 export function LandingFaqFooter({
   config = GLOBAL_LANDING_CONFIG,
+  showCountrySwitcher,
 }: {
   config?: LandingEditionConfig;
+  showCountrySwitcher?: boolean;
 }) {
   const faqItems = config.faqItems;
+  const showSwitcher = showCountrySwitcher ?? isCountrySwitcherEnabled();
 
   return (
     <>
@@ -83,7 +87,7 @@ export function LandingFaqFooter({
                 <p className="text-xs text-ink-secondary">
                   Inteligencia Arancelaria y Comercio Exterior
                 </p>
-                <CountryEditionSwitcher activeSlug={config.slug} />
+                {showSwitcher ? <CountryEditionSwitcher activeSlug={config.slug} /> : null}
               </div>
             </div>
 

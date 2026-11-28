@@ -1,3 +1,5 @@
+import { getDefaultLandingCountry } from '@/lib/runtime-config';
+
 export interface LandingFaqItem {
   readonly q: string;
   readonly a: string;
@@ -118,6 +120,14 @@ export const COUNTRY_LANDINGS_BY_SLUG: Readonly<Record<string, LandingEditionCon
 
 export function getCountryLandingBySlug(slug: string): LandingEditionConfig | null {
   return COUNTRY_LANDINGS_BY_SLUG[slug.trim().toLowerCase()] ?? null;
+}
+
+export function resolveRootLandingConfig(): LandingEditionConfig {
+  const pinnedSlug = getDefaultLandingCountry();
+  if (pinnedSlug !== 'global') {
+    return getCountryLandingBySlug(pinnedSlug) ?? GLOBAL_LANDING_CONFIG;
+  }
+  return GLOBAL_LANDING_CONFIG;
 }
 
 export function buildLandingAlternates(canonicalPath: string) {

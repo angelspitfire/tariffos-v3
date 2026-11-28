@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Moon, Sun } from 'lucide-react';
 import { readMockSession } from '@/lib/funnel/funnel-storage';
+import { isCountrySwitcherEnabled } from '@/lib/runtime-config';
 import { BrandMark } from '../atoms/BrandMark';
 import { CountryEditionSwitcher } from '../molecules/CountryEditionSwitcher';
 
@@ -12,13 +13,16 @@ export interface PublicMarketingShellProps {
   children: ReactNode;
   hideFooter?: boolean;
   activeEditionSlug?: 'global' | 've';
+  showCountrySwitcher?: boolean;
 }
 
 export function PublicMarketingShell({
   children,
   hideFooter = false,
   activeEditionSlug = 'global',
+  showCountrySwitcher,
 }: PublicMarketingShellProps) {
+  const showSwitcher = showCountrySwitcher ?? isCountrySwitcherEnabled();
   const [isDark, setIsDark] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [hasSession, setHasSession] = useState(false);
@@ -82,9 +86,11 @@ export function PublicMarketingShell({
           </nav>
 
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-            <div className="hidden md:block">
-              <CountryEditionSwitcher activeSlug={activeEditionSlug} compact />
-            </div>
+            {showSwitcher ? (
+              <div className="hidden md:block">
+                <CountryEditionSwitcher activeSlug={activeEditionSlug} compact />
+              </div>
+            ) : null}
             <button
               type="button"
               onClick={toggleTheme}

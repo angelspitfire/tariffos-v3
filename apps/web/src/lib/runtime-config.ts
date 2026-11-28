@@ -41,6 +41,25 @@ export function getEveBaseUrl(): string {
   return process.env.NEXT_PUBLIC_EVE_URL?.trim() || '';
 }
 
+/**
+ * Optional country slug pinned to the root landing `/` (e.g. `"ve"` during pilot rollout).
+ * Empty or `"global"` keeps the international root landing.
+ */
+export function getDefaultLandingCountry(): string {
+  return process.env.NEXT_PUBLIC_DEFAULT_LANDING_COUNTRY?.trim().toLowerCase() || 'global';
+}
+
+/**
+ * Controls visibility of the country edition switcher and GeoIP suggestion banner.
+ * Automatically hidden when `/` is pinned to a single country unless explicitly set to `"true"`.
+ */
+export function isCountrySwitcherEnabled(): boolean {
+  const explicit = process.env.NEXT_PUBLIC_SHOW_COUNTRY_SWITCHER?.trim().toLowerCase();
+  if (explicit === 'true') return true;
+  if (explicit === 'false') return false;
+  return getDefaultLandingCountry() === 'global';
+}
+
 export function getDualRuntimeConfig(): DualRuntimeConfig {
   const supabaseConfigured = isSupabaseConfigured();
   const cloudMode = isCloudModeEnabled();

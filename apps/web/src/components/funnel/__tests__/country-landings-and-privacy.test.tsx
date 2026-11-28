@@ -1,10 +1,13 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   GLOBAL_LANDING_CONFIG,
+  VE_LANDING_CONFIG,
   getCountryLandingBySlug,
+  resolveRootLandingConfig,
 } from '@/lib/funnel/country-landings';
+import { isCountrySwitcherEnabled } from '@/lib/runtime-config';
 import { GeoCountrySuggestionBanner } from '../molecules/GeoCountrySuggestionBanner';
 import { LandingPageTemplate } from '../templates/LandingPageTemplate';
 import PrivacySecurityPage from '@/app/privacidad/page';
@@ -31,6 +34,38 @@ beforeAll(() => {
 });
 
 describe('Global (/) + Venezuela (/ve) Landings & Privacy Page', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('switches root landing to VE and hides country switcher automatically when NEXT_PUBLIC_DEFAULT_LANDING_COUNTRY=ve', () => {
+    expect(resolveRootLandingConfig().slug).toBe('global');
+    expect(isCountrySwitcherEnabled()).toBe(true);
+
+    vi.stubEnv('NEXT_PUBLIC_DEFAULT_LANDING_COUNTRY', 've');
+    expect(resolveRootLandingConfig().slug).toBe('ve');
+    expect(isCountrySwitcherEnabled()).toBe(false);
+
+    vi.stubEnv('NEXT_PUBLIC_SHOW_COUNTRY_SWITCHER', 'true');
+    expect(isCountrySwitcherEnabled()).toBe(true);
+
+    vi.stubEnv('NEXT_PUBLIC_SHOW_COUNTRY_SWITCHER', 'false');
+    expect(isCountrySwitcherEnabled()).toBe(false);
+  });
+
+  it('hides the edition switcher in header and footer when showCountrySwitcher is false', () => {
+    render(
+      <LandingPageTemplate
+        config={VE_LANDING_CONFIG}
+        showCountrySwitcher={false}
+        detectedCountryCode="VE"
+      />,
+    );
+
+    expect(screen.queryByRole('navigation', { name: /Edición por jurisdicción/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: /Edición local sugerida/i })).not.toBeInTheDocument();
+    expect(screen.getAllByText(/Decreto 4\.944/i).length).toBeGreaterThanOrEqual(1);
+  });
   it('keeps Global landing international (OMA + RGI 1-6) without local SIDUNEA/Pago Móvil lock-in', () => {
     render(<LandingPageTemplate config={GLOBAL_LANDING_CONFIG} />);
 
