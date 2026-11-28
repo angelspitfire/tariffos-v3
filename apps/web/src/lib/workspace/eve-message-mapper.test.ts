@@ -312,4 +312,101 @@ describe('eve-message-mapper', () => {
     expect(merged!.inlineComponents.some((c) => c.type === 'document_summary')).toBe(true);
     expect(merged!.inlineComponents.some((c) => c.type === 'verdict')).toBe(true);
   });
+
+  it('golden multi-tool transcript preserves analyze_invoice_manifest + classify_item + calculate_duties + request_dossier_review', () => {
+    const manifestEnvelope: A2UIEnvelope = {
+      assistantMessage: 'Factura FAC-889 procesada (2 ítems).',
+      classificationStatus: 'classified',
+      inlineComponents: [
+        {
+          type: 'document_summary',
+          id: 'doc-889',
+          docTypesDetected: ['Factura Comercial'],
+          documentReference: 'FAC-889',
+          itemsCount: 2,
+          isBatch: true,
+        },
+      ],
+      canvasComponents: [
+        {
+          type: 'batch_manifest',
+          id: 'batch-889',
+          title: 'Manifiesto FAC-889',
+          currencyCode: 'USD',
+          items: [
+            {
+              lineNumber: 1,
+              sourceDoc: 'FAC-889',
+              description: 'Laptop corporativa 14"',
+              quantityText: '10 uds',
+              hsCode: '8471.30.00.90',
+              adValoremPercent: 0,
+              vatPercent: 16,
+              legalRegime: 'Libre',
+              fobValue: 8500,
+              currencyCode: 'USD',
+              status: 'classified',
+            },
+          ],
+        },
+      ],
+    };
+
+    const envelope = extractEnvelopeFromToolParts([
+      {
+        type: 'tool-call',
+        toolCallId: 'tc-m1',
+        toolName: 'analyze_invoice_manifest',
+        result: { envelope: manifestEnvelope },
+      },
+      {
+        type: 'tool-call',
+        toolCallId: 'tc-c1',
+        toolName: 'classify_item',
+        result: { line: {}, envelope: SAMPLE_ENVELOPE },
+      },
+      {
+        type: 'tool-call',
+        toolCallId: 'tc-d1',
+        toolName: 'calculate_duties',
+        result: {
+          calculatorComponent: {
+            type: 'calculator',
+            id: 'calc-889',
+            title: 'Liquidación CIF · 8471.30.00.90',
+            hsCode: '8471.30.00.90',
+            adValoremPercent: 0,
+            vatPercent: 16,
+            customsServiceFeePercent: 1,
+            currencyCode: 'USD',
+            localCurrencyCode: 'VES',
+            suggestedExchangeRate: 48,
+            exemptionAvailable: false,
+          },
+        },
+      },
+      {
+        type: 'tool-call',
+        toolCallId: 'tc-r1',
+        toolName: 'request_dossier_review',
+        result: {
+          hsCode: '8471.30.00.90',
+          reviewStatus: 'in_review',
+          reason: 'Confirmar serie y uso comercial',
+          missingFields: ['Número de serie'],
+          invokedBySkill: 'oga-compliance-review',
+        },
+      },
+    ]);
+
+    expect(envelope).not.toBeNull();
+    expect(envelope!.inlineComponents.map((c) => c.type)).toEqual(
+      expect.arrayContaining(['document_summary', 'verdict']),
+    );
+    expect(envelope!.canvasComponents.map((c) => c.type)).toEqual(
+      expect.arrayContaining(['batch_manifest', 'dossier', 'calculator']),
+    );
+    const dossier = envelope!.canvasComponents.find((c) => c.type === 'dossier');
+    expect(dossier?.type === 'dossier' && dossier.reviewStatus).toBe('in_review');
+  });
 });

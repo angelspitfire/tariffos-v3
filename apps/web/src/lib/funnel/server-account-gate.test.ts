@@ -364,4 +364,68 @@ describe('server-account-gate (payment & onboarding bypass)', () => {
       }),
     ).toBe('/app');
   });
+
+  it('satisfies no-self-redirect and <=1-hop convergence invariants across the full Cartesian state matrix', () => {
+    const routes = ['onboarding', 'activate-plan', 'app'] as const;
+    const actors = [
+      { isPlatformAdmin: false, isSuperAdmin: false },
+      { isPlatformAdmin: true, isSuperAdmin: false },
+      { isPlatformAdmin: true, isSuperAdmin: true },
+    ] as const;
+    const memberships = [
+      null,
+      { tenantId: 't-raw', isOnboarded: false, billingStatus: 'TRIALING' as const },
+      { tenantId: 't-trial', isOnboarded: true, billingStatus: 'TRIALING' as const },
+      { tenantId: 't-active', isOnboarded: true, billingStatus: 'ACTIVE' as const },
+      { tenantId: 't-pd', isOnboarded: true, billingStatus: 'PAST_DUE' as const },
+      { tenantId: 't-canc', isOnboarded: true, billingStatus: 'CANCELED' as const },
+    ] as const;
+
+    let checked = 0;
+    for (const isAuthenticated of [false, true]) {
+      for (const actor of actors) {
+        for (const membership of memberships) {
+          for (const hasFunnelPlanParam of [false, true]) {
+            for (const allowPreview of [false, true]) {
+              for (const route of routes) {
+                const target = decideFunnelGateRedirect({
+                  route,
+                  isAuthenticated,
+                  isPlatformAdmin: actor.isPlatformAdmin,
+                  isSuperAdmin: actor.isSuperAdmin,
+                  allowPreview,
+                  membership,
+                  hasFunnelPlanParam,
+                  plan: hasFunnelPlanParam ? 'pro' : null,
+                  cycle: hasFunnelPlanParam ? 'monthly' : null,
+                });
+                checked += 1;
+                if (target === null) continue;
+
+                const targetPathname = target.split('?')[0] ?? target;
+                expect(targetPathname).not.toBe(`/${route}`);
+
+                const nextRoute = routes.find((r) => `/${r}` === targetPathname);
+                if (nextRoute) {
+                  const hop2 = decideFunnelGateRedirect({
+                    route: nextRoute,
+                    isAuthenticated,
+                    isPlatformAdmin: actor.isPlatformAdmin,
+                    isSuperAdmin: actor.isSuperAdmin,
+                    allowPreview,
+                    membership,
+                    hasFunnelPlanParam: target.includes('plan='),
+                    plan: target.includes('plan=') ? 'pro' : null,
+                    cycle: target.includes('plan=') ? 'monthly' : null,
+                  });
+                  expect(hop2).toBeNull();
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    expect(checked).toBe(432);
+  });
 });

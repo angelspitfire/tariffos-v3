@@ -2,7 +2,7 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { isDbRelatedPath } from './lib/db-guardrails.mjs';
-import { checkRepoHygiene } from './lib/repo-guardrails.mjs';
+import { checkRepoHygiene, runArchitecturalUiGuardrails } from './lib/repo-guardrails.mjs';
 import { verifyWorkspacePackageOutputs } from './lib/workspace-build-guardrail.mjs';
 
 const QUICK = process.argv.includes('--quick');
@@ -133,6 +133,18 @@ if (hygieneIssues.length > 0) {
   failed = true;
 } else {
   console.log(`   OK: ${hygieneTargets.length} tracked/changed files verified (0 JS source files, 0 tracked artifacts)`);
+}
+
+// 3d. Architectural UI guardrails (single dialog shell + non-duplicate CSS tokens)
+console.log('\n==> 3d/5 Architectural UI guardrails (WorkspaceDialogShell + tokens.css)');
+const uiIssues = runArchitecturalUiGuardrails(process.cwd());
+if (uiIssues.length > 0) {
+  for (const issue of uiIssues.slice(0, 20)) {
+    console.error(`   FAIL [${issue.code}]: ${issue.message}`);
+  }
+  failed = true;
+} else {
+  console.log('   OK: WorkspaceDialogShell uniqueness & tokens.css custom properties verified');
 }
 
 // 4. Unit tests (skipped in --quick mode)

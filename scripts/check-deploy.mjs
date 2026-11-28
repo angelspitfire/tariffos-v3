@@ -6,7 +6,7 @@
  * artifacts before pushing.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, rmSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { verifyWorkspacePackageOutputs } from './lib/workspace-build-guardrail.mjs';
 
@@ -68,6 +68,23 @@ try {
   }
 }
 
-runStep('4/4 Build Web Next.js service (pnpm --filter web build)', 'pnpm', ['--filter', 'web', 'build']);
+const webTsconfigPath = join(ROOT, 'apps', 'web', 'tsconfig.json');
+const originalWebTsconfig = readFileSync(webTsconfigPath, 'utf8');
+try {
+  runStep(
+    '4/4 Build Web Next.js service (NEXT_DIST_DIR=.next-check pnpm --filter web build)',
+    'pnpm',
+    ['--filter', 'web', 'build'],
+    { NEXT_DIST_DIR: '.next-check' },
+  );
+} finally {
+  const nextCheckDir = join(ROOT, 'apps', 'web', '.next-check');
+  if (existsSync(nextCheckDir)) {
+    rmSync(nextCheckDir, { recursive: true, force: true });
+  }
+  if (readFileSync(webTsconfigPath, 'utf8') !== originalWebTsconfig) {
+    writeFileSync(webTsconfigPath, originalWebTsconfig, 'utf8');
+  }
+}
 
 console.log('\nDeploy check: PASS (clean packages + eve + web)');

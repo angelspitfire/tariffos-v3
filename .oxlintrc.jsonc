@@ -33,6 +33,13 @@
       { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
     ],
 
+    // Phase 1 harness hardening: catch conditional hooks and a11y gaps as hard errors.
+    "react-hooks/rules-of-hooks": "error",
+    "jsx-a11y/alt-text": "error",
+    "jsx-a11y/aria-props": "error",
+    "jsx-a11y/aria-role": "error",
+    "jsx-a11y/role-has-required-aria-props": "error",
+
     // Deliberately off — carried over from apps/filings/eslint.config.mjs.
     "react/display-name": "off",
     "react/no-direct-mutation-state": "off",
@@ -59,6 +66,12 @@
   "ignorePatterns": [
     ".next/**",
     "**/.next/**",
+    ".next-check/**",
+    "**/.next-check/**",
+    ".next-e2e/**",
+    "**/.next-e2e/**",
+    "**/playwright-report/**",
+    "**/test-results/**",
     "**/.eve/**",
     "out/**",
     "build/**",

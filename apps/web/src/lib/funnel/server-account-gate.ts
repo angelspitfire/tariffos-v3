@@ -88,7 +88,7 @@ export function decideFunnelGateRedirect(params: DecideFunnelGateParams): string
 
   if (
     hasFunnelPlanParam &&
-    membership &&
+    membership?.isOnboarded &&
     (membership.billingStatus === 'ACTIVE' || membership.billingStatus === 'TRIALING')
   ) {
     return '/app';
