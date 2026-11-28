@@ -2,7 +2,14 @@
 
 import { useState } from 'react';
 import { BookmarkPlus, FileDown, ShieldAlert } from 'lucide-react';
-import type { A2UIDossierComponent, ApprovalWorkflowMode, UserProfileSettings } from '@tariffos/shared-types';
+import type {
+  A2UIDossierComponent,
+  AgencyMemberSummary,
+  AgencyRole,
+  ApprovalWorkflowMode,
+  ProcessActivityEvent,
+  UserProfileSettings,
+} from '@tariffos/shared-types';
 import { resolveInitialDossierReview } from '@/lib/workspace/dossier-approval-policy';
 import { ConfidenceBadge } from '../atoms/ConfidenceBadge';
 import { CopyHsButton } from '../atoms/CopyHsButton';
@@ -10,6 +17,7 @@ import { DossierApprovalBar } from '../molecules/DossierApprovalBar';
 import { DossierComplianceSection } from '../molecules/DossierComplianceSection';
 import { MerceologicalSpecsCard, type TechnicalSpecItem } from '../molecules/MerceologicalSpecsCard';
 import { OfficialScheduleAuditBar } from '../molecules/OfficialScheduleAuditBar';
+import { ProcessActivityStrip } from '../molecules/ProcessActivityStrip';
 import { RgiDecisionDiagram } from '../molecules/RgiDecisionDiagram';
 import { SignatureQuickModal } from './SignatureQuickModal';
 
@@ -17,8 +25,12 @@ export interface DossierViewProps {
   dossier: A2UIDossierComponent;
   profile: UserProfileSettings;
   workflowMode: ApprovalWorkflowMode;
+  agencyRole?: AgencyRole;
+  teamMembers?: readonly AgencyMemberSummary[];
+  assignedToUserId?: string | null;
+  processEvents?: readonly ProcessActivityEvent[];
   onApprove: () => void;
-  onRequestReview: (note: string) => void;
+  onRequestReview: (note: string, assignedToUserId?: string | null, targetName?: string) => void;
   onChangeWorkflowMode?: (mode: ApprovalWorkflowMode) => void;
   onReevaluateSpecs?: (updatedSpecs: TechnicalSpecItem[]) => void;
   onSaveSku?: () => void;
@@ -30,17 +42,8 @@ export interface DossierViewProps {
 const FOCUS_RING = 'focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none';
 
 export function DossierView({
-  dossier,
-  profile,
-  workflowMode,
-  onApprove,
-  onRequestReview,
-  onChangeWorkflowMode,
-  onReevaluateSpecs,
-  onSaveSku,
-  onSaveSignature,
-  onExportPdf,
-  onOpenRgi,
+  dossier, profile, workflowMode, agencyRole, teamMembers, assignedToUserId, processEvents,
+  onApprove, onRequestReview, onChangeWorkflowMode, onReevaluateSpecs, onSaveSku, onSaveSignature, onExportPdf, onOpenRgi,
 }: DossierViewProps) {
   const [signatureOpen, setSignatureOpen] = useState(false);
   const isApproved = resolveInitialDossierReview(dossier, workflowMode).reviewStatus === 'approved';
@@ -114,6 +117,9 @@ export function DossierView({
         <DossierApprovalBar
           dossier={dossier}
           workflowMode={workflowMode}
+          agencyRole={agencyRole}
+          teamMembers={teamMembers}
+          assignedToUserId={assignedToUserId}
           onApprove={onApprove}
           onRequestReview={onRequestReview}
           onChangeWorkflowMode={onChangeWorkflowMode}
@@ -141,13 +147,7 @@ export function DossierView({
 
         {hasCompliance ? (
           <div className="px-5 py-4">
-            <DossierComplianceSection
-              flags={dossier.flags}
-              rejectedAlternatives={dossier.rejectedAlternatives}
-              unresolved={dossier.unresolved}
-              verifiedAgainstOfficial={dossier.verifiedAgainstOfficial}
-              jurisdictionName={dossier.jurisdictionName}
-            />
+            <DossierComplianceSection flags={dossier.flags} rejectedAlternatives={dossier.rejectedAlternatives} unresolved={dossier.unresolved} verifiedAgainstOfficial={dossier.verifiedAgainstOfficial} jurisdictionName={dossier.jurisdictionName} />
           </div>
         ) : null}
 
@@ -172,24 +172,18 @@ export function DossierView({
           <section className="px-5 py-4">
             <h3 className="text-xs font-semibold text-ink-secondary">Notas legales y sustento normativo</h3>
             <ul className="mt-2 max-w-[72ch] list-disc space-y-1.5 pl-4 text-xs leading-relaxed text-ink-secondary">
-              {dossier.legalNotes.map((note) => (
-                <li key={note}>{note}</li>
-              ))}
+              {dossier.legalNotes.map((note) => <li key={note}>{note}</li>)}
             </ul>
           </section>
         ) : null}
+
+        <ProcessActivityStrip events={processEvents} />
       </article>
 
       <SignatureQuickModal
-        open={signatureOpen}
-        defaultName={profile.fullName}
-        defaultLicense={profile.brokerLicense}
+        open={signatureOpen} defaultName={profile.fullName} defaultLicense={profile.brokerLicense}
         onClose={() => setSignatureOpen(false)}
-        onSaveAndExport={(payload) => {
-          onSaveSignature?.(payload);
-          setSignatureOpen(false);
-          onExportPdf?.();
-        }}
+        onSaveAndExport={(payload) => { onSaveSignature?.(payload); setSignatureOpen(false); onExportPdf?.(); }}
       />
     </div>
   );

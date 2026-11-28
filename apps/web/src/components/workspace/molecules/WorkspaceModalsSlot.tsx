@@ -1,8 +1,9 @@
 'use client';
 
-import type { SkuPrecedent, UserProfileSettings } from '@tariffos/shared-types';
+import type { AgencyRole, SkuPrecedent, UserProfileSettings } from '@tariffos/shared-types';
 import type { JurisdictionConfig } from '@tariffos/shared-types';
 import type { WorkspacePlanStatus } from '@/lib/workspace/plan-status';
+import type { AgencyTeamState } from '@/lib/workspace/use-agency-team';
 import type {
   WorkspaceAttachment,
   WorkspaceMessage,
@@ -25,6 +26,8 @@ export interface WorkspaceModalsSlotProps {
   profile: UserProfileSettings;
   plan: WorkspacePlanStatus;
   threads: readonly WorkspaceThread[];
+  agencyRole?: AgencyRole;
+  team?: AgencyTeamState;
   onCloseSku: () => void;
   onSaveSku: (precedent: SkuPrecedent) => void;
   onDeleteSku: (id: string) => void;
@@ -49,6 +52,8 @@ export function WorkspaceModalsSlot({
   profile,
   plan,
   threads,
+  agencyRole,
+  team,
   onCloseSku,
   onSaveSku,
   onDeleteSku,
@@ -93,6 +98,8 @@ export function WorkspaceModalsSlot({
         plan={plan}
         threadsCount={threads.length}
         skuCount={skuPrecedents.length}
+        agencyRole={agencyRole}
+        team={team}
         onClose={onCloseSettings}
         onSave={(patch) => {
           onSaveSettings(patch);

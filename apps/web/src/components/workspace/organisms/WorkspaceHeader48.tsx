@@ -5,6 +5,8 @@ import { Check, ChevronDown, FolderOpen, Globe, LayoutGrid, Moon, PanelLeft, Plu
 import type { JurisdictionConfig } from '@tariffos/shared-types';
 import { JURISDICTIONS } from '@/lib/workspace/jurisdictions';
 import { useCloudUsageSnapshot } from '@/lib/workspace/use-cloud-usage';
+import type { ProcessPresencePeer } from '@/lib/workspace/use-process-presence';
+import { ProcessPresenceBadge } from '../atoms/ProcessPresenceBadge';
 import { WorkspaceAccountStatusBanner } from '../molecules/WorkspaceAccountStatusBanner';
 import { ClientRefInlineChip } from '../molecules/ClientRefInlineChip';
 
@@ -15,6 +17,7 @@ export interface WorkspaceHeader48Props {
   canvasVisible: boolean;
   filesCount?: number;
   clientRef?: string | null;
+  presencePeers?: readonly ProcessPresencePeer[];
   onChangeClientRef?: (nextValue: string | null) => void;
   onOpenMobileSidebar: () => void;
   onChangeJurisdiction: (jurisdictionId: string) => void;
@@ -35,6 +38,7 @@ export function WorkspaceHeader48({
   canvasVisible,
   filesCount = 0,
   clientRef,
+  presencePeers = [],
   onChangeClientRef,
   onOpenMobileSidebar,
   onChangeJurisdiction,
@@ -129,6 +133,7 @@ export function WorkspaceHeader48({
           {onChangeClientRef ? (
             <ClientRefInlineChip value={clientRef} onSave={onChangeClientRef} />
           ) : null}
+          <ProcessPresenceBadge peers={presencePeers} />
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5">

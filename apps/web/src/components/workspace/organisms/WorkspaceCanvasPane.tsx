@@ -4,9 +4,12 @@ import { useState } from 'react';
 import { Scale } from 'lucide-react';
 import type {
   A2UICanvasComponent,
+  AgencyMemberSummary,
+  AgencyRole,
   ApprovalWorkflowMode,
   CanvasTabType,
   JurisdictionConfig,
+  ProcessActivityEvent,
   UserProfileSettings,
 } from '@tariffos/shared-types';
 import type { ThreadArtifactSummary } from '@/lib/workspace/artifact-versions';
@@ -32,9 +35,13 @@ export interface WorkspaceCanvasPaneProps {
   activeTab: CanvasTabType;
   jurisdiction: JurisdictionConfig;
   profile: UserProfileSettings;
+  agencyRole?: AgencyRole;
+  teamMembers?: readonly AgencyMemberSummary[];
+  assignedToUserId?: string | null;
+  processEvents?: readonly ProcessActivityEvent[];
   onSelectTab: (tab: CanvasTabType) => void;
   onApproveDossier: () => void;
-  onRequestDossierReview: (note: string) => void;
+  onRequestDossierReview: (note: string, assignedToUserId?: string | null, targetName?: string) => void;
   onSaveSku: () => void;
   onSaveSignature: (payload: { fullName: string; brokerLicense: string; signatureDataUrl: string }) => void;
   onExportPdf: () => void;
@@ -55,6 +62,10 @@ export function WorkspaceCanvasPane({
   activeTab,
   jurisdiction,
   profile,
+  agencyRole,
+  teamMembers,
+  assignedToUserId,
+  processEvents,
   onSelectTab,
   onApproveDossier,
   onRequestDossierReview,
@@ -145,6 +156,10 @@ export function WorkspaceCanvasPane({
             dossier={dossier}
             profile={profile}
             workflowMode={workflowMode}
+            agencyRole={agencyRole}
+            teamMembers={teamMembers}
+            assignedToUserId={assignedToUserId}
+            processEvents={processEvents}
             onApprove={onApproveDossier}
             onRequestReview={onRequestDossierReview}
             onChangeWorkflowMode={onChangeWorkflowMode}

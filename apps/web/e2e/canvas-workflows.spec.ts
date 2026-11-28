@@ -34,7 +34,7 @@ test.describe('Canvas Workflows (Classification, CIF, Review & PDF)', () => {
     await page.getByRole('button', { name: /Dejar en revisión/i }).click();
     await page.getByPlaceholder(/Nota de cumplimiento/i).fill('Validar ficha técnica fabricante');
     await page.getByRole('button', { name: /Confirmar revisión/i }).click();
-    await expect(page.getByText(/Validar ficha técnica fabricante/i)).toBeVisible();
+    await expect(page.getByText(/Validar ficha técnica fabricante/i).first()).toBeVisible();
 
     await page.getByRole('button', { name: /Descargar PDF/i }).click();
     await expect(page.getByRole('dialog', { name: /Firma rápida/i })).toBeVisible();

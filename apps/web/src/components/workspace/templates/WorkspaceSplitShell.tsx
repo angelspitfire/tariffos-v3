@@ -10,9 +10,11 @@ import { exportWorkspaceDossierPdf } from '@/lib/workspace/dossier-pdf';
 import { buildWorkspaceInlineActions } from '@/lib/workspace/inline-actions';
 import { JURISDICTIONS } from '@/lib/workspace/jurisdictions';
 import { computePlanStatus, mergeCloudUsageIntoPlanStatus, resolveWorkspaceReadOnlyReason } from '@/lib/workspace/plan-status';
+import { useAgencyTeam } from '@/lib/workspace/use-agency-team';
 import { useBatchJob } from '@/lib/workspace/use-batch-job';
 import { useCloudUsageState } from '@/lib/workspace/use-cloud-usage';
 import { usePendingQueryAutorun } from '@/lib/workspace/use-pending-query-autorun';
+import { useProcessPresence } from '@/lib/workspace/use-process-presence';
 import { useWorkspaceShortcuts } from '@/lib/workspace/use-workspace-shortcuts';
 import { useWorkspaceShellLayout } from '@/lib/workspace/use-split-layout';
 import { useWorkspaceState } from '@/lib/workspace/use-workspace-state';
@@ -28,7 +30,8 @@ import { WorkspaceSidebarSlot } from '../molecules/WorkspaceSidebarSlot';
 import { WorkspaceThreadSlot } from '../molecules/WorkspaceThreadSlot';
 
 export function WorkspaceSplitShell() {
-  const ws = useWorkspaceState();
+  const team = useAgencyTeam();
+  const ws = useWorkspaceState({ currentUser: team.currentUser });
   const [planId, setPlanId] = useState('pilot');
   const [surfaceKey, setSurfaceKey] = useState('eve-new-0');
   const ownedThreadIdRef = useRef<string | null>(null);
@@ -41,6 +44,7 @@ export function WorkspaceSplitShell() {
   const visibleThreads = showDemoFallback ? [demoThread] : ws.threads;
   const visibleActiveThread = showDemoFallback ? demoThread : ws.activeThread;
   const visibleCanvasComponents = showDemoFallback ? (demoThread.messages[1]?.envelope?.canvasComponents ?? []) : ws.canvasComponents;
+  const presencePeers = useProcessPresence({ threadId: visibleActiveThread?.id ?? null, currentUser: team.currentUser });
 
   // Remount EveThreadSurface on thread switch, never mid-stream on new bind.
   useEffect(() => {
@@ -132,7 +136,7 @@ export function WorkspaceSplitShell() {
             onToggleTheme={layout.handleToggleTheme} onToggleCanvas={() => undefined} onOpenFilesPanel={() => layout.setFilesPanelOpen(true)} onNewThread={onNewThread}
           />
           <main id="workspace-main" className="min-h-0 min-w-0 flex-1">
-            <ProcessHubView threads={ws.threads} onOpenProcess={onSelectThread} onArchiveProcess={ws.archiveThread} onNewThread={onNewThread} onClose={() => layout.setAnalyticsOpen(false)} />
+            <ProcessHubView threads={ws.threads} agencyRole={team.role} currentUserId={team.currentUser?.userId} teamMembers={team.members} onOpenProcess={onSelectThread} onArchiveProcess={ws.archiveThread} onNewThread={onNewThread} onClose={() => layout.setAnalyticsOpen(false)} />
           </main>
         </div>
       ) : (
@@ -145,7 +149,7 @@ export function WorkspaceSplitShell() {
               <WorkspaceHeader48
                 jurisdiction={ws.jurisdiction} isDark={layout.isDark} canvasAvailable={hasCanvas} canvasVisible={layout.showCanvas} filesCount={filesCount}
                 clientRef={visibleActiveThread?.clientRef ?? null} onChangeClientRef={visibleActiveThread && !showDemoFallback ? (val) => ws.updateThreadClientRef(visibleActiveThread.id, val) : undefined}
-                onOpenMobileSidebar={() => layout.setMobileDrawerOpen(true)} onChangeJurisdiction={ws.setJurisdictionId}
+                presencePeers={presencePeers} onOpenMobileSidebar={() => layout.setMobileDrawerOpen(true)} onChangeJurisdiction={ws.setJurisdictionId}
                 onToggleTheme={layout.handleToggleTheme} onToggleCanvas={() => layout.setCanvasDismissed((p) => !p)}
                 onOpenFilesPanel={() => layout.setFilesPanelOpen(true)} onNewThread={onNewThread}
               />
@@ -168,8 +172,8 @@ export function WorkspaceSplitShell() {
               <WorkspaceCanvasSlot
                 components={visibleCanvasComponents} messages={visibleActiveThread?.messages} activeTab={ws.activeTab} jurisdiction={ws.jurisdiction} profile={ws.profile}
                 artifacts={threadArtifacts} activeArtifactId={ws.selectedCanvasMsgId} canvasFullscreen={layout.canvasFullscreen} mobileVisible={layout.mobilePane === 'canvas'}
-                chatWidthPct={layout.chatWidthPct} onStartResize={layout.handleStartResize} onResizeKeyDown={layout.handleResizeKeyDown} onSelectTab={ws.setActiveTab} onApproveDossier={ws.approveActiveDossier}
-                onRequestDossierReview={ws.requestDossierReview} onChangeWorkflowMode={ws.setApprovalWorkflowMode}
+                chatWidthPct={layout.chatWidthPct} onStartResize={layout.handleStartResize} onResizeKeyDown={layout.handleResizeKeyDown} onSelectTab={ws.setActiveTab} onApproveDossier={() => ws.approveActiveDossier(team.role)}
+                onRequestDossierReview={ws.requestDossierReview} onChangeWorkflowMode={ws.setApprovalWorkflowMode} agencyRole={team.role} teamMembers={team.members} assignedToUserId={visibleActiveThread?.assignedToUserId ?? null} processEvents={visibleActiveThread?.processEvents}
                 onReevaluateSpecs={(specs) => void sendToAgent(`Reevaluar dictamen con ficha actualizada: ${specs.map((s) => `${s.key}: ${s.value}`).join('; ')}`)}
                 onSaveSku={() => ws.saveSkuFromMessage()}
                 onSaveSignature={(p) => ws.updateProfile({ fullName: p.fullName, brokerLicense: p.brokerLicense, brokerSignatureDataUrl: p.signatureDataUrl })}
@@ -185,7 +189,7 @@ export function WorkspaceSplitShell() {
         </main>
       )}
 
-      <WorkspaceModalsSlot skuModalOpen={layout.skuModalOpen} filesPanelOpen={layout.filesPanelOpen} settingsModalOpen={layout.settingsModalOpen} skuPrecedents={ws.skuPrecedents} jurisdictionId={ws.jurisdiction.id} jurisdictions={JURISDICTIONS} messages={visibleActiveThread?.messages ?? []} pendingAttachments={ws.pendingAttachments} profile={ws.profile} plan={plan} threads={ws.threads} onCloseSku={() => layout.setSkuModalOpen(false)} onSaveSku={ws.saveSku} onDeleteSku={ws.deleteSku} onCloseFiles={() => layout.setFilesPanelOpen(false)} onCloseSettings={() => layout.setSettingsModalOpen(false)} onSaveSettings={ws.updateProfile} onClassify={(prompt) => void sendToAgent(prompt)} onClearLocalData={() => void ws.clearLocalData()} onToast={ws.pushToast} />
+      <WorkspaceModalsSlot skuModalOpen={layout.skuModalOpen} filesPanelOpen={layout.filesPanelOpen} settingsModalOpen={layout.settingsModalOpen} skuPrecedents={ws.skuPrecedents} jurisdictionId={ws.jurisdiction.id} jurisdictions={JURISDICTIONS} messages={visibleActiveThread?.messages ?? []} pendingAttachments={ws.pendingAttachments} profile={ws.profile} plan={plan} threads={ws.threads} agencyRole={team.role} team={team} onCloseSku={() => layout.setSkuModalOpen(false)} onSaveSku={ws.saveSku} onDeleteSku={ws.deleteSku} onCloseFiles={() => layout.setFilesPanelOpen(false)} onCloseSettings={() => layout.setSettingsModalOpen(false)} onSaveSettings={ws.updateProfile} onClassify={(prompt) => void sendToAgent(prompt)} onClearLocalData={() => void ws.clearLocalData()} onToast={ws.pushToast} />
 
       <WorkspaceToastBanner toast={ws.toast} />
     </div>

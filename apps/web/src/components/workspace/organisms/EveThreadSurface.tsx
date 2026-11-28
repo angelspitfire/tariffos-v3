@@ -85,6 +85,13 @@ export function EveThreadSurface({
   onErrorToast,
 }: EveThreadSurfaceProps) {
   const reportedSessionRef = useRef<string | null>(eveSessionId);
+  const messageAuthorById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const m of persistedMessages) {
+      if (m.authorName) map.set(m.id, m.authorName);
+    }
+    return map;
+  }, [persistedMessages]);
   const initialSession = useMemo(
     () => (eveSessionId ? { sessionId: eveSessionId, streamIndex: 0 } : undefined),
     [eveSessionId],
@@ -177,6 +184,7 @@ export function EveThreadSurface({
               jurisdictionId={jurisdictionId}
               approvalWorkflowMode={approvalWorkflowMode}
               inlineActions={inlineActions}
+              authorName={message.role === 'user' ? messageAuthorById.get(message.id) : undefined}
             />
           )}
         </ThreadPrimitive.Messages>

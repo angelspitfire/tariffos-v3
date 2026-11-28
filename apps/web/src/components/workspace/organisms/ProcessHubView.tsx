@@ -1,15 +1,19 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { Columns3, Layers, List, Plus, Search, X } from 'lucide-react';
-import type { OperationalStatus, ProcessKind } from '@tariffos/shared-types';
+import { useEffect, useMemo, useState } from 'react';
+import { Columns3, Layers, List, Plus, X } from 'lucide-react';
+import type { AgencyMemberSummary, AgencyRole, OperationalStatus, ProcessKind, ProcessScopeFilter } from '@tariffos/shared-types';
 import { deriveThreadProcessSnapshot, filterThreadsForProcessHub } from '@/lib/workspace/thread-process-meta';
 import type { WorkspaceThread } from '@/lib/workspace/types';
+import { ProcessHubToolbar } from '../molecules/ProcessHubToolbar';
 import { ProcessKpiStrip } from '../molecules/ProcessKpiStrip';
 import { ProcessRowCard } from '../molecules/ProcessRowCard';
 
 export interface ProcessHubViewProps {
   threads: readonly WorkspaceThread[];
+  agencyRole?: AgencyRole;
+  currentUserId?: string;
+  teamMembers?: readonly AgencyMemberSummary[];
   onOpenProcess: (threadId: string) => void;
   onArchiveProcess: (threadId: string) => void;
   onNewThread: () => void;
@@ -23,13 +27,23 @@ const BOARD_COLUMNS: ReadonlyArray<{ status: 'needs_input' | 'processing' | 'in_
   { status: 'approved', title: 'Sellados' },
 ];
 
-export function ProcessHubView({ threads, onOpenProcess, onArchiveProcess, onNewThread, onClose }: ProcessHubViewProps) {
+export function ProcessHubView({
+  threads, agencyRole = 'OWNER', currentUserId, teamMembers = [], onOpenProcess, onArchiveProcess, onNewThread, onClose,
+}: ProcessHubViewProps) {
   const [viewMode, setViewMode] = useState<'table' | 'board'>('table');
-  const [statusFilter, setStatusFilter] = useState<OperationalStatus | 'all'>('all');
+  const [scopeFilter, setScopeFilter] = useState<ProcessScopeFilter>(agencyRole === 'ANALYST' ? 'mine' : 'agency');
+  const [statusFilter, setStatusFilter] = useState<OperationalStatus | 'all'>(agencyRole === 'REVIEWER' ? 'in_review' : 'all');
   const [kindFilter, setKindFilter] = useState<ProcessKind | 'all'>('all');
   const [clientFilter, setClientFilter] = useState<string>('all');
   const [query, setQuery] = useState('');
   const [includeArchived, setIncludeArchived] = useState(false);
+
+  useEffect(() => {
+    setScopeFilter(agencyRole === 'ANALYST' ? 'mine' : 'agency');
+    setStatusFilter(agencyRole === 'REVIEWER' ? 'in_review' : 'all');
+  }, [agencyRole]);
+
+  const memberNameById = useMemo(() => new Map(teamMembers.map((m) => [m.userId, m.fullName])), [teamMembers]);
 
   const counts = useMemo(() => {
     const out = { needs_input: 0, processing: 0, in_review: 0, approved: 0 };
@@ -47,8 +61,8 @@ export function ProcessHubView({ threads, onOpenProcess, onArchiveProcess, onNew
   );
 
   const filtered = useMemo(
-    () => filterThreadsForProcessHub(threads, { status: statusFilter, kind: kindFilter, clientRef: clientFilter, query, includeArchived }),
-    [clientFilter, includeArchived, kindFilter, query, statusFilter, threads],
+    () => filterThreadsForProcessHub(threads, { status: statusFilter, kind: kindFilter, clientRef: clientFilter, query, includeArchived, scope: scopeFilter, currentUserId }),
+    [clientFilter, currentUserId, includeArchived, kindFilter, query, scopeFilter, statusFilter, threads],
   );
 
   const toggleStatusFilter = (status: OperationalStatus) => setStatusFilter((curr) => (curr === status ? 'all' : status));
@@ -62,21 +76,11 @@ export function ProcessHubView({ threads, onOpenProcess, onArchiveProcess, onNew
         </div>
         <div className="flex items-center gap-2">
           <div className="inline-flex rounded-full border border-border-subtle bg-surface-muted/60 p-0.5">
-            <button
-              type="button"
-              aria-pressed={viewMode === 'table'}
-              onClick={() => setViewMode('table')}
-              className={`inline-flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${viewMode === 'table' ? 'bg-surface-panel text-ink-primary shadow-2xs' : 'text-ink-muted hover:text-ink-primary'}`}
-            >
+            <button type="button" aria-pressed={viewMode === 'table'} onClick={() => setViewMode('table')} className={`inline-flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${viewMode === 'table' ? 'bg-surface-panel text-ink-primary shadow-2xs' : 'text-ink-muted hover:text-ink-primary'}`}>
               <List className="h-3.5 w-3.5" aria-hidden="true" />
               Tabla
             </button>
-            <button
-              type="button"
-              aria-pressed={viewMode === 'board'}
-              onClick={() => setViewMode('board')}
-              className={`inline-flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${viewMode === 'board' ? 'bg-surface-panel text-ink-primary shadow-2xs' : 'text-ink-muted hover:text-ink-primary'}`}
-            >
+            <button type="button" aria-pressed={viewMode === 'board'} onClick={() => setViewMode('board')} className={`inline-flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${viewMode === 'board' ? 'bg-surface-panel text-ink-primary shadow-2xs' : 'text-ink-muted hover:text-ink-primary'}`}>
               <Columns3 className="h-3.5 w-3.5" aria-hidden="true" />
               Tablero
             </button>
@@ -94,37 +98,12 @@ export function ProcessHubView({ threads, onOpenProcess, onArchiveProcess, onNew
 
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
         <ProcessKpiStrip counts={counts} activeStatus={statusFilter} onToggleStatus={toggleStatusFilter} />
-
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative min-w-52 flex-1">
-            <Search className="pointer-events-none absolute top-2.5 left-3 h-3.5 w-3.5 text-ink-subtle" aria-hidden="true" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar por producto, HS o cliente…"
-              aria-label="Filtrar procesos"
-              className="h-8 w-full rounded-full border border-border-subtle bg-surface-panel pr-3 pl-8 text-xs text-ink-primary placeholder:text-ink-subtle focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
-            />
-          </div>
-          <select aria-label="Filtrar por tipo de proceso" value={kindFilter} onChange={(e) => setKindFilter(e.target.value as ProcessKind | 'all')} className="h-8 rounded-full border border-border-subtle bg-surface-panel px-3 text-xs text-ink-secondary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none">
-            <option value="all">Todos los tipos</option>
-            <option value="single_ruling">Dictámenes</option>
-            <option value="invoice_batch">Lotes</option>
-            <option value="oga_escalation">OGA / Revisión</option>
-            <option value="cif_simulation">Cálculo CIF</option>
-          </select>
-          {clientRefs.length > 0 ? (
-            <select aria-label="Filtrar por cliente o referencia" value={clientFilter} onChange={(e) => setClientFilter(e.target.value)} className="h-8 rounded-full border border-border-subtle bg-surface-panel px-3 text-xs text-ink-secondary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none">
-              <option value="all">Todos los clientes</option>
-              {clientRefs.map((ref) => <option key={ref} value={ref}>{ref}</option>)}
-            </select>
-          ) : null}
-          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle bg-surface-panel px-3 py-1.5 text-xs text-ink-secondary">
-            <input type="checkbox" checked={includeArchived} onChange={(e) => setIncludeArchived(e.target.checked)} className="accent-accent-brand" />
-            Ver archivados
-          </label>
-        </div>
+        <ProcessHubToolbar
+          scopeFilter={scopeFilter} onChangeScope={setScopeFilter} query={query} onChangeQuery={setQuery}
+          kindFilter={kindFilter} onChangeKind={setKindFilter} clientRefs={clientRefs} clientFilter={clientFilter}
+          onChangeClient={setClientFilter} includeArchived={includeArchived} onChangeArchived={setIncludeArchived}
+          showScopeBar={teamMembers.length > 0 || agencyRole === 'ANALYST'}
+        />
 
         {filtered.length === 0 ? (
           <div className="rounded-card border border-dashed border-border-subtle bg-surface-panel p-8 text-center">
@@ -132,7 +111,13 @@ export function ProcessHubView({ threads, onOpenProcess, onArchiveProcess, onNew
           </div>
         ) : viewMode === 'table' ? (
           <div className="space-y-2">
-            {filtered.map((thread) => <ProcessRowCard key={thread.id} thread={thread} onOpen={onOpenProcess} onArchive={onArchiveProcess} />)}
+            {filtered.map((thread) => (
+              <ProcessRowCard
+                key={thread.id} thread={thread}
+                assigneeName={thread.assignedToUserId ? memberNameById.get(thread.assignedToUserId) ?? null : null}
+                onOpen={onOpenProcess} onArchive={onArchiveProcess}
+              />
+            ))}
           </div>
         ) : (
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -147,7 +132,13 @@ export function ProcessHubView({ threads, onOpenProcess, onArchiveProcess, onNew
                   {items.length === 0 ? (
                     <p className="py-4 text-center text-[11px] text-ink-subtle">Sin procesos</p>
                   ) : (
-                    items.map((thread) => <ProcessRowCard key={thread.id} compact thread={thread} onOpen={onOpenProcess} onArchive={onArchiveProcess} />)
+                    items.map((thread) => (
+                      <ProcessRowCard
+                        key={thread.id} compact thread={thread}
+                        assigneeName={thread.assignedToUserId ? memberNameById.get(thread.assignedToUserId) ?? null : null}
+                        onOpen={onOpenProcess} onArchive={onArchiveProcess}
+                      />
+                    ))
                   )}
                 </section>
               );

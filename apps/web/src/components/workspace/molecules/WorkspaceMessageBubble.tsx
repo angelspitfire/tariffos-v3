@@ -36,6 +36,9 @@ export function WorkspaceMessageBubble({
     return (
       <div className="mx-auto flex w-full max-w-2xl justify-end">
         <div className="max-w-[85%] space-y-2 rounded-[22px] rounded-br-md bg-surface-inverted px-4 py-3 text-ink-on-inverted shadow-sm dark:border dark:border-border-subtle">
+          {message.authorName ? (
+            <div className="text-[10px] font-semibold tracking-wide text-ink-on-inverted/75">{message.authorName}</div>
+          ) : null}
           {displayText ? (
             <p className="whitespace-pre-wrap text-xs leading-relaxed sm:text-sm">{displayText}</p>
           ) : null}

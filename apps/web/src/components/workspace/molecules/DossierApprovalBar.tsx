@@ -2,10 +2,13 @@
 
 import { useId, useState } from 'react';
 import { AlertCircle, CheckCircle2, ClipboardCheck, ShieldCheck } from 'lucide-react';
-import type {
-  A2UIDossierComponent,
-  ApprovalWorkflowMode,
-  DossierReviewStatus,
+import {
+  canSealDossier,
+  type A2UIDossierComponent,
+  type AgencyMemberSummary,
+  type AgencyRole,
+  type ApprovalWorkflowMode,
+  type DossierReviewStatus,
 } from '@tariffos/shared-types';
 import { resolveInitialDossierReview } from '@/lib/workspace/dossier-approval-policy';
 import { StatusPill } from '../atoms/StatusPill';
@@ -13,8 +16,11 @@ import { StatusPill } from '../atoms/StatusPill';
 export interface DossierApprovalBarProps {
   dossier: A2UIDossierComponent;
   workflowMode: ApprovalWorkflowMode;
+  agencyRole?: AgencyRole;
+  teamMembers?: readonly AgencyMemberSummary[];
+  assignedToUserId?: string | null;
   onApprove?: () => void;
-  onRequestReview?: (note: string) => void;
+  onRequestReview?: (note: string, assignedToUserId?: string | null, targetName?: string) => void;
   onChangeStatus?: (status: DossierReviewStatus, complianceNote?: string) => void;
   onChangeWorkflowMode?: (mode: ApprovalWorkflowMode) => void;
   embedded?: boolean;
@@ -33,21 +39,18 @@ const MODE_LABELS: Record<ApprovalWorkflowMode, string> = {
 };
 
 export function DossierApprovalBar({
-  dossier,
-  workflowMode,
-  onApprove,
-  onRequestReview,
-  onChangeStatus,
-  onChangeWorkflowMode,
-  embedded = false,
+  dossier, workflowMode, agencyRole = 'OWNER', teamMembers = [], assignedToUserId = null,
+  onApprove, onRequestReview, onChangeStatus, onChangeWorkflowMode, embedded = false,
 }: DossierApprovalBarProps) {
   const noteInputId = useId();
   const resolved = resolveInitialDossierReview(dossier, workflowMode);
   const status = resolved.reviewStatus ?? 'draft_ai';
   const trigger = resolved.agentReviewTrigger;
+  const canSeal = canSealDossier(agencyRole, workflowMode);
 
   const [reviewFormOpen, setReviewFormOpen] = useState(false);
   const [note, setNote] = useState(resolved.approvalMeta?.complianceNotes ?? '');
+  const [reviewerId, setReviewerId] = useState<string>(assignedToUserId ?? '');
 
   const handleApprove = () => {
     onApprove?.();
@@ -57,7 +60,13 @@ export function DossierApprovalBar({
   const handleReviewSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanNote = note.trim() || 'Pendiente de revisión documental.';
-    onRequestReview?.(cleanNote);
+    const nextAssignee = reviewerId.trim() ? reviewerId.trim() : null;
+    const targetName = nextAssignee ? teamMembers.find((m) => m.userId === nextAssignee)?.fullName : undefined;
+    if (nextAssignee) {
+      onRequestReview?.(cleanNote, nextAssignee, targetName);
+    } else {
+      onRequestReview?.(cleanNote);
+    }
     onChangeStatus?.('in_review', cleanNote);
     setReviewFormOpen(false);
   };
@@ -84,13 +93,7 @@ export function DossierApprovalBar({
               className="cursor-pointer rounded-full border border-border-subtle bg-surface-panel px-2.5 py-0.5 text-[11px] font-medium text-ink-secondary transition-colors hover:border-accent-brand hover:text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
             >
               {MODE_OPTIONS.map((opt) => (
-                <option
-                  key={opt.value}
-                  value={opt.value}
-                  className="bg-surface-panel text-ink-primary"
-                >
-                  {opt.label}
-                </option>
+                <option key={opt.value} value={opt.value} className="bg-surface-panel text-ink-primary">{opt.label}</option>
               ))}
             </select>
           ) : (
@@ -98,8 +101,7 @@ export function DossierApprovalBar({
           )}
           {resolved.approvalMeta?.approvedBy && status === 'approved' ? (
             <span className="text-[11px] text-emerald-700 dark:text-emerald-300">
-              · {resolved.approvalMeta.approvedBy}
-              {resolved.approvalMeta.brokerLicense ? ` (${resolved.approvalMeta.brokerLicense})` : ''}
+              · {resolved.approvalMeta.approvedBy}{resolved.approvalMeta.brokerLicense ? ` (${resolved.approvalMeta.brokerLicense})` : ''}
             </span>
           ) : null}
         </div>
@@ -111,9 +113,9 @@ export function DossierApprovalBar({
             className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-subtle bg-surface-panel px-3 py-1.5 text-xs font-medium text-ink-primary transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           >
             <ClipboardCheck className="h-3.5 w-3.5" aria-hidden="true" />
-            Dejar en revisión
+            {canSeal ? 'Dejar en revisión' : 'Enviar a revisión'}
           </button>
-          {status !== 'approved' ? (
+          {status !== 'approved' && canSeal ? (
             <button
               type="button"
               onClick={handleApprove}
@@ -136,12 +138,7 @@ export function DossierApprovalBar({
           {trigger.missingFields && trigger.missingFields.length > 0 ? (
             <div className="mt-1.5 flex flex-wrap gap-1">
               {trigger.missingFields.map((field) => (
-                <span
-                  key={field}
-                  className="rounded-md bg-surface-muted px-2 py-0.5 text-[11px] font-medium text-amber-800 ring-1 ring-amber-500/25 dark:text-amber-300"
-                >
-                  {field}
-                </span>
+                <span key={field} className="rounded-md bg-surface-muted px-2 py-0.5 text-[11px] font-medium text-amber-800 ring-1 ring-amber-500/25 dark:text-amber-300">{field}</span>
               ))}
             </div>
           ) : null}
@@ -163,13 +160,21 @@ export function DossierApprovalBar({
       ) : null}
 
       {reviewFormOpen ? (
-        <form
-          onSubmit={handleReviewSubmit}
-          className="mt-2.5 flex flex-wrap items-center gap-2 border-t border-border-hairline pt-2.5"
-        >
-          <label htmlFor={noteInputId} className="sr-only">
-            Nota de cumplimiento
-          </label>
+        <form onSubmit={handleReviewSubmit} className="mt-2.5 flex flex-wrap items-center gap-2 border-t border-border-hairline pt-2.5">
+          {teamMembers.length > 0 ? (
+            <select
+              aria-label="Asignar revisor"
+              value={reviewerId}
+              onChange={(e) => setReviewerId(e.target.value)}
+              className="rounded-lg border border-border-subtle bg-surface-panel px-2.5 py-1.5 text-xs text-ink-primary focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
+            >
+              <option value="">Cola técnica de la agencia</option>
+              {teamMembers.filter((m) => m.role !== 'ANALYST' || m.userId === assignedToUserId).map((m) => (
+                <option key={m.userId} value={m.userId}>{m.fullName}</option>
+              ))}
+            </select>
+          ) : null}
+          <label htmlFor={noteInputId} className="sr-only">Nota de cumplimiento</label>
           <input
             id={noteInputId}
             name="complianceNote"
@@ -179,10 +184,7 @@ export function DossierApprovalBar({
             placeholder="Nota de cumplimiento o requisito faltante…"
             className="min-w-48 flex-1 rounded-lg border border-border-subtle bg-surface-input px-2.5 py-1.5 text-xs text-ink-primary focus:border-accent-brand focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
           />
-          <button
-            type="submit"
-            className="cursor-pointer rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-amber-700 focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none"
-          >
+          <button type="submit" className="cursor-pointer rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-amber-700 focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none">
             Confirmar revisión
           </button>
         </form>

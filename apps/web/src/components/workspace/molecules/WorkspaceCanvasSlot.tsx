@@ -3,9 +3,12 @@
 import type { KeyboardEvent, PointerEvent } from 'react';
 import type {
   A2UICanvasComponent,
+  AgencyMemberSummary,
+  AgencyRole,
   ApprovalWorkflowMode,
   CanvasTabType,
   JurisdictionConfig,
+  ProcessActivityEvent,
   UserProfileSettings,
 } from '@tariffos/shared-types';
 import type { ThreadArtifactSummary } from '@/lib/workspace/artifact-versions';
@@ -19,6 +22,10 @@ export interface WorkspaceCanvasSlotProps {
   activeTab: CanvasTabType;
   jurisdiction: JurisdictionConfig;
   profile: UserProfileSettings;
+  agencyRole?: AgencyRole;
+  teamMembers?: readonly AgencyMemberSummary[];
+  assignedToUserId?: string | null;
+  processEvents?: readonly ProcessActivityEvent[];
   artifacts: readonly ThreadArtifactSummary[];
   activeArtifactId: string | null;
   canvasFullscreen: boolean;
@@ -28,7 +35,7 @@ export interface WorkspaceCanvasSlotProps {
   onResizeKeyDown?: (event: KeyboardEvent<HTMLElement>) => void;
   onSelectTab: (tab: CanvasTabType) => void;
   onApproveDossier: () => void;
-  onRequestDossierReview: (note: string) => void;
+  onRequestDossierReview: (note: string, assignedToUserId?: string | null, targetName?: string) => void;
   onChangeWorkflowMode: (mode: ApprovalWorkflowMode) => void;
   onReevaluateSpecs: (specs: TechnicalSpecItem[]) => void;
   onSaveSku: () => void;
