@@ -16,6 +16,7 @@ import {
   type MapPayloadToA2UIOptions,
 } from './a2ui-mapper-helpers.js';
 import { applyApprovalPolicyToEnvelope } from './dossier-approval-policy.js';
+import { INSUFFICIENT_SPEC_SOURCE } from './insufficient-spec-guard.js';
 
 export type { MapPayloadToA2UIOptions } from './a2ui-mapper-helpers.js';
 
@@ -72,6 +73,7 @@ export function mapPayloadToA2UIEnvelope(
         options.customsFeePercent ??
         payload.duties.customsFeeRate ??
         DEFAULT_CUSTOMS_FEE_PERCENT,
+      statisticalUnit: payload.duties.unit,
       legalRegimeCode: options.legalRegimeCode ?? (permits[0]?.code ?? 'General'),
       legalRegimeSummary:
         options.legalRegimeSummary ??
@@ -98,10 +100,14 @@ export function mapPayloadToA2UIEnvelope(
     canvasComponents.push(buildCalculatorComponent(payload, options));
   }
 
+  const needsDetails =
+    isBlocked ||
+    payload.unresolved.some((u) => !u.resolved && u.source === INSUFFICIENT_SPEC_SOURCE);
+
   const envelope: A2UIEnvelope = {
     assistantMessage: buildAssistantMessage(payload, formattedHsCode, isBlocked),
-    classificationStatus: isBlocked ? 'needs_details' : 'classified',
-    workflowState: isBlocked ? 'proposed_review' : 'classified',
+    classificationStatus: needsDetails ? 'needs_details' : 'classified',
+    workflowState: needsDetails ? 'proposed_review' : 'classified',
     inlineComponents,
     canvasComponents,
     ...(options.merceologicalSheet ? { merceologicalSheet: options.merceologicalSheet } : {}),

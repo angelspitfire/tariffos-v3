@@ -1,13 +1,15 @@
 import { formatHsCode, type ClassificationLinePayload, type ComplianceFlag, type UnresolvedItem } from '@tariffos/shared-types';
 import { calculateDeterministicDuties } from './duties.js';
+import { mergeTariffFlags } from './tariff-flags.js';
 import type { TariffAuditResult } from './tariff-validator.js';
-import { evaluateTradeRemedies } from './trade-remedies.js';
 import {
   SHORT_DESCRIPTION_WORD_THRESHOLD,
   type InvoiceItemInput,
   type SkuPrecedentRecord,
   type TariffCandidateRecord,
 } from './types.js';
+
+export { mergeTariffFlags } from './tariff-flags.js';
 
 const TIER1_SCORE_GAP_THRESHOLD = 0.25;
 const TIER1_MIN_TOP_SCORE = 0.85;
@@ -60,61 +62,6 @@ export function buildProhibitedPayload(
     verifiedAgainstDb: false,
     modelUsed: 'system-one-pregate',
   };
-}
-
-export function mergeTariffFlags(
-  baseFlags: ComplianceFlag[],
-  verified: TariffCandidateRecord,
-  audit?: TariffAuditResult,
-  tradeContext?: { countryCode?: string; originCountry?: string },
-): ComplianceFlag[] {
-  const formattedCode = formatHsCode(verified.hsCode);
-  const flags = [...baseFlags];
-  if (verified.prohibited) {
-    flags.unshift({
-      type: 'blocking',
-      title: 'Prohibited Tariff Code',
-      text: `Official tariff marks ${formattedCode} as prohibited/restricted.`,
-    });
-  }
-  for (const permit of verified.permits ?? []) {
-    flags.push({
-      type: 'warn',
-      title: `OGA Permit: ${permit}`,
-      text: `Required regulatory clearance (${permit}) for ${formattedCode}.`,
-    });
-  }
-  if (verified.isBK) {
-    flags.push({
-      type: 'info',
-      title: 'Bien de Capital (BK)',
-      text: 'Subpartida marcada como Bien de Capital (BK) en el Arancel de Aduanas (posible beneficio arancelario según Decreto vigente).',
-    });
-  }
-  if (verified.isBIT) {
-    flags.push({
-      type: 'info',
-      title: 'Bien de Informática y Telecomunicaciones (BIT)',
-      text: 'Subpartida marcada como BIT en el Arancel de Aduanas.',
-    });
-  }
-  if (tradeContext?.originCountry) {
-    const jurisdictionId =
-      tradeContext.countryCode === 'VE' || !tradeContext.countryCode
-        ? 've-seniat'
-        : tradeContext.countryCode.toLowerCase();
-    for (const remedy of evaluateTradeRemedies({
-      jurisdictionId,
-      originCode: tradeContext.originCountry,
-      hsCode: formattedCode,
-    })) {
-      flags.push({ type: 'warn', title: remedy.title, text: remedy.description });
-    }
-  }
-  if (audit && !audit.matched) {
-    flags.push({ type: 'warn', title: 'Auditoría Arancel Oficial', text: audit.summary });
-  }
-  return flags;
 }
 
 export function buildTier0Payload(
@@ -199,7 +146,15 @@ export function projectToLine(
   member: InvoiceItemInput,
   verifiedTariff: Pick<
     TariffCandidateRecord,
-    'adValoremRate' | 'ivaRate' | 'unit' | 'customsFeeRate' | 'isBK' | 'isBIT'
+    | 'adValoremRate'
+    | 'baseAdValoremRate'
+    | 'tariffExceptionCode'
+    | 'ivaRate'
+    | 'unit'
+    | 'customsFeeRate'
+    | 'isBK'
+    | 'isBIT'
+    | 'activeExemption'
   >,
 ): ClassificationLinePayload {
   if (member.lineId === template.lineId) return template;

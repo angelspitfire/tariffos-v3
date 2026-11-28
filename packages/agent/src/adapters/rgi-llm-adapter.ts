@@ -57,32 +57,46 @@ export function toInlineImageAttachments(imageDataUrls?: string[]): Attachment[]
   return attachments;
 }
 
-/** Deterministically caps legalNotes payload size to stay inside per-call input budgets. */
+/**
+ * Deterministically caps legalNotes payload size to stay inside per-call input budgets,
+ * prioritizing cross-cutting Section / RGI exclusionary notes ahead of chapter-specific notes.
+ */
 export function budgetLegalNotes(
   notes: LegalNoteRecord[],
   maxChars: number,
 ): LegalNoteRecord[] {
+  const prioritized = [...notes].sort((a, b) => {
+    const aIsSection = !a.chapter || /^secci[oó]n|^rgi/i.test(a.ref) ? 0 : 1;
+    const bIsSection = !b.chapter || /^secci[oó]n|^rgi/i.test(b.ref) ? 0 : 1;
+    return aIsSection - bIsSection;
+  });
   const selected: LegalNoteRecord[] = [];
   let totalChars = 0;
-  for (const note of notes) {
+  for (const note of prioritized) {
     const cost = note.ref.length + note.text.length;
-    if (totalChars + cost > maxChars) break;
+    if (totalChars + cost > maxChars) continue;
     selected.push(note);
     totalChars += cost;
   }
   return selected;
 }
 
-const RGI_SYSTEM_PROMPT = `You are a senior Venezuelan customs brokerage partner specializing in 10-digit NCM tariff classification (SA 6 digits + NCM 2 digits + National 2 digits under Arancel de Aduanas de Venezuela, Decreto 4.944, Gaceta Oficial Extraordinaria N° 6.804), applying strict General Rules of Interpretation (RGI 1 through 6) in order.
+function buildRgiSystemPrompt(countryCode = 'VE'): string {
+  const jurisdictionContext =
+    countryCode.toUpperCase() === 'VE'
+      ? 'Venezuela 10-digit NCM national tariff (SA 6 digits + NCM 2 digits + National 2 digits under Decreto 4.944 and active reforms)'
+      : `destination jurisdiction ${countryCode.toUpperCase()} national tariff schedule grounded on WCO Harmonized System (SA) and regional nomenclature`;
+
+  return `You are a senior international customs brokerage partner specializing in tariff classification for ${jurisdictionContext}, applying strict WCO General Rules of Interpretation (RGI 1 through 6) in order.
 Rules:
 1. Never invent tariff codes or legal notes; choose ONLY from the verified candidates and legal notes provided when available. If an official note is missing, record "Unknown — requerido del arancel oficial" in unresolved.
-2. Apply RGI 1 (heading terms & section/chapter notes) first. Use RGI 3 only when RGI 1+2 cannot resolve. Always finish at the 10-digit national subheading via RGI 6, citing the exact rule and legal note per step.
-3. Explicitly list plausible alternatives (with whyApply and whyNot, including special regimes like Chapter 98 when relevant) AND rejected headings with the exact rule/note that excludes them.
+2. Apply RGI 1 (heading terms & section/chapter notes, especially exclusionary notes such as Section XVI Note 1(g) and Note 2 for parts of general use) first. Use RGI 3(b)/3(c) for retail sets/assortments when RGI 1+2 cannot resolve. Always finish at the national subheading via RGI 6, citing the exact rule and legal note per step.
+3. Explicitly list plausible alternatives (with whyApply and whyNot) AND rejected headings with the exact rule/note that excludes them.
 4. Hard compliance limits:
    - Never conclude antidumping or safeguard scope as final; emit a "warn" flag ("Salvaguardias / AD") and add the check to unresolved.
    - Never conclude origin or trade-agreement preference as final; emit a "warn" or "info" flag ("Origen / Tratados") for separate origin analysis.
-   - Emit an "info" or "warn" flag ("OGA / Régimen Legal") noting applicable permits, technical regulations (e.g., SENCAMER, CONATEL), or special regimes (CAU / Cap. 98).
-5. Non-blocking posture: when secondary specs or shipment configuration details are missing (e.g., chassis mounting, split dispatch vs. functional unit under Section XVI Note 4), still classify with an honest confidenceLevel ("Alto" >=85, "Medio" 60-84, "Bajo" <60) and log each pending verification in unresolved.
+   - Emit an "info" or "warn" flag ("OGA / Régimen Legal") noting applicable permits, technical standards, or conditional exemptions.
+5. Anti-hallucination posture: if critical merceological attributes (material, chemical composition, operating principle, power rating) that separate sibling subheadings are missing, DO NOT claim "Alto" confidence (>=85); assign "Medio" (60-84) or "Bajo" (<60) and list the exact technical questions to ask the supplier in unresolved.
 6. Write all human-facing prose fields (confidenceReason, rgiSteps, alternatives, rejected, flags, unresolved) in clear, broker-grade Spanish.
 7. Respond ONLY with a valid JSON object (no markdown prose outside JSON) matching this exact shape (always include every key, using [] when an array has no entries):
 {
@@ -96,6 +110,7 @@ Rules:
   "flags": [{ "type": "warn"|"info"|"blocking", "title": "text", "text": "text" }],
   "unresolved": [{ "item": "text", "source": "text", "resolved": false }]
 }`;
+}
 
 export interface RgiLlmRuntimeOverride {
   provider: LlmProvider;
@@ -110,6 +125,7 @@ export interface RgiLlmInput {
   notes: LegalNoteRecord[];
   webContext?: string;
   deepMode: boolean;
+  countryCode?: string;
 }
 
 /**
@@ -135,7 +151,8 @@ export function createRgiLlmRunner(runtimeLlm?: RgiLlmRuntimeOverride) {
     let capturedUsage: { inputTokens: number; outputTokens: number } | undefined;
 
     const result = await provider.generateJson(
-      `${RGI_SYSTEM_PROMPT}\n\nInput:\n${JSON.stringify({
+      `${buildRgiSystemPrompt(input.countryCode)}\n\nInput:\n${JSON.stringify({
+        countryCode: input.countryCode ?? 'VE',
         item: itemForPrompt,
         attachedImagesCount: attachments.length,
         webContext: input.webContext ?? null,

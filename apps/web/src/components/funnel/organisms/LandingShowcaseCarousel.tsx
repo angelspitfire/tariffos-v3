@@ -37,10 +37,10 @@ export function LandingShowcaseCarousel() {
                   key={card.id}
                   type="button"
                   onClick={() => setActiveIndex(idx)}
-                  className={`text-left rounded-[24px] p-6 sm:p-7 border transition-colors cursor-pointer flex flex-col justify-between gap-6 ${
+                  className={`group text-left rounded-[24px] p-6 sm:p-7 border cursor-pointer flex flex-col justify-between gap-6 tos-card-lift ${
                     isFocused
-                      ? 'bg-surface-panel border-accent-brand/60 shadow-card'
-                      : 'bg-surface-panel border-border-subtle hover:border-border-strong'
+                      ? 'bg-surface-panel border-accent-brand/60 ring-1 ring-accent-brand/20 tos-comet-border'
+                      : 'bg-surface-panel border-border-subtle'
                   }`}
                 >
                   <div className="space-y-4">

@@ -1,0 +1,101 @@
+[
+  {
+    "id": "rompe-01-reforma-reciente",
+    "category": "reform_currency",
+    "query": "Abono mineral con microelementos (hierro, zinc y boro quelatados), libre de nitrógeno, fósforo y potasio, sacos de 25 kg",
+    "expectedHs4": "3824",
+    "expectedHs6": "3824.99",
+    "expectedHs10": "3824.99.79.91",
+    "expectedAdValoremPct": 0,
+    "expectedUnit": "kg",
+    "auditAssertion": "9na Reforma Dec. 5.198 apertura 3824.99.79.91 con Ex.AEC 0E y unidad kg"
+  },
+  {
+    "id": "rompe-02-nombre-enganoso-msds",
+    "category": "chemical_nature_over_marketing",
+    "query": "Pintura Impermeabilizante Acrílica — Hoja MSDS: dispersión de polímeros acrílicos puros en medio acuoso para recubrimiento exterior, cuñete 18 L",
+    "expectedHs4": "3209",
+    "expectedHs6": "3209.10",
+    "expectedHs10": "3209.10.10.00",
+    "auditAssertion": "Clasifica por naturaleza química (dispersión acuosa de polímeros acrílicos Cap. 32) y no por eslogan comercial"
+  },
+  {
+    "id": "rompe-03-factura-insuficiente",
+    "category": "insufficient_specs_gate",
+    "query": "10 pcs - Industrial Control Valve Mod. VX-90 - USD 4,500",
+    "expectedHs4": "8481",
+    "mustNotClaimHighConfidence": true,
+    "expectedStatus": "needs_details",
+    "auditAssertion": "Estrecha a partida 84.81 sin fingir 99% de certeza a 10 dígitos y solicita material/accionamiento al proveedor"
+  },
+  {
+    "id": "rompe-04-notas-excluyentes-seccion-xvi",
+    "category": "section_exclusionary_notes",
+    "query": "Juntas y empacaduras anulares de caucho vulcanizado sin endurecer diseñadas exclusivamente para bomba centrífuga modelo CPX-200",
+    "expectedHs4": "4016",
+    "expectedHs6": "4016.93",
+    "expectedHs10": "4016.93.00.00",
+    "forbiddenHs4": "8413",
+    "auditAssertion": "Aplica Nota 1(a) de Sección XVI excluyendo juntas de caucho vulcanizado de 8413.91 hacia 4016.93"
+  },
+  {
+    "id": "rompe-05-surtido-rgi-3b",
+    "category": "retail_set_rgi_3b",
+    "query": "Kit de mantenimiento mecánico acondicionado para la venta al por menor en estuche moldeado: llave dinamométrica de acero (USD 85), tubo de grasa lubricante 50g (USD 4) y 2 paños textiles de limpieza (USD 2)",
+    "expectedHs4": "8204",
+    "expectedRgiRule": "RGI 3",
+    "auditAssertion": "Identifica juego/surtido RGI 3(b) por carácter esencial de la herramienta y advierte controles OGA de componentes secundarios"
+  },
+  {
+    "id": "rompe-06-exoneracion-comex-rl9",
+    "category": "conditional_exemption_expiry",
+    "query": "Azúcar de caña refinada blanca acondicionada para la venta al por menor en paquetes de 1 kg",
+    "expectedHs4": "1701",
+    "expectedHs6": "1701.99",
+    "expectedHs10": "1701.99.00.91",
+    "expectedAdValoremPct": 98,
+    "expectedPermitCode": "RL-9",
+    "expectedUnit": "kg",
+    "auditAssertion": "Muestra tarifa efectiva 98% (Ex.AEC 98E), alerta requisito obligatorio Permiso COMEX (RL-9) y vencimiento 31/12/2026"
+  },
+  {
+    "id": "rompe-07-pdf-escaneado-potencia",
+    "category": "multilingual_magnitude_jump",
+    "query": "Three-phase AC Induction Squirrel-Cage Electric Motor, Output Power: 37 kW (50 HP), 380V / 60Hz, IP55 cast iron frame",
+    "expectedHs4": "8501",
+    "expectedHs6": "8501.52",
+    "expectedHs10": "8501.52.10.00",
+    "expectedUnit": "u",
+    "auditAssertion": "Extrae magnitud física 37 kW (> 750 W pero <= 75 kW) ubicando subpartida 8501.52"
+  },
+  {
+    "id": "rompe-08-determinismo-temperatura-cero",
+    "category": "determinism",
+    "query": "Inversor solar híbrido 5 kW 48 VDC entrada fotovoltaica MPPT salida 220 VAC",
+    "expectedHs4": "8504",
+    "expectedHs6": "8504.40",
+    "expectedHs10": "8504.40.90.00",
+    "runs": 3,
+    "auditAssertion": "Tres ejecuciones consecutivas con temperature=0 y Zod schema producen el mismo código y sustento"
+  },
+  {
+    "id": "rompe-09-unidad-fisica-sidunea",
+    "category": "official_statistical_unit",
+    "query": "Calzado deportivo para entrenamiento con suela de caucho y parte superior de materia textil",
+    "expectedHs4": "6404",
+    "expectedHs6": "6404.11",
+    "expectedHs10": "6404.11.00.10",
+    "expectedUnit": "2u",
+    "auditAssertion": "Reporta Unidad Física exacta del Artículo 37 (2u = pares) evitando rechazo en declaración aduanera"
+  },
+  {
+    "id": "rompe-10-expediente-pdf-completo",
+    "category": "dossier_pdf_completeness",
+    "query": "Electrobomba centrífuga sumergible 2 HP acero inoxidable AISI 304 caudal 120 L/min",
+    "expectedHs4": "8413",
+    "expectedHs6": "8413.70",
+    "expectedHs10": "8413.70.10.00",
+    "expectedUnit": "u",
+    "auditAssertion": "El PDF exportado incluye descripción comercial vs oficial, código NCM, tributos, RL, RGI, Unidad Física, versión normativa y SHA-256"
+  }
+]

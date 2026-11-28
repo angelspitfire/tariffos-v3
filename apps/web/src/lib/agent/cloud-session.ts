@@ -4,9 +4,13 @@ import {
   provisionInternalAdminWorkspace,
   type ProvisionInternalWorkspaceClient,
 } from '@tariffos/database';
-import type { ClassificationLinePayload } from '@tariffos/shared-types';
-import { estimateTokenCostUsd } from '../admin/llm-pricing';
 import { isSuperAdminUser } from '../admin/super-admin';
+
+export {
+  computeSourceSha256,
+  persistClassificationOutcome,
+  type PersistClassificationAuditOptions,
+} from './decision-artifact-audit';
 
 export interface CloudTenantContext {
   userId: string;
@@ -118,69 +122,7 @@ export function formatQuotaErrorResponse(
               ? 'No pudimos verificar tu cuota en este momento. Intenta nuevamente.'
               : 'No pudimos validar tu cuota de servicio. Intenta nuevamente.'
             : options?.isBatch
-              ? 'El tamaño del lote excede tu cuota disponible.'
+               ? 'El tamaño del lote excede tu cuota disponible.'
               : 'Classification quota reached';
   return { status, error, reason };
-}
-
-export async function persistClassificationOutcome(
-  tenantId: string,
-  line: ClassificationLinePayload,
-  query: string,
-  provider?: string,
-): Promise<void> {
-  const classificationId = `cls_${Date.now()}_${line.lineId}`;
-
-  try {
-    await prisma.decisionArtifact.create({
-      data: {
-        classificationId,
-        tenantId,
-        lineId: line.lineId,
-        retrievalTrace: { query, tierUsed: line.tierUsed },
-        promptSnapshot: { query },
-        modelMetadata: {
-          modelUsed: line.modelUsed,
-          provider: provider ?? 'env',
-          verifiedAgainstDb: line.verifiedAgainstDb,
-          tokenUsage: line.tokenUsage ?? null,
-          estimatedCostUsd: line.tokenUsage
-            ? estimateTokenCostUsd(
-                line.modelUsed,
-                line.tokenUsage.inputTokens,
-                line.tokenUsage.outputTokens,
-              )
-            : 0,
-        },
-        rerankingScores: { confidencePct: line.confidencePct, confidenceLevel: line.confidenceLevel },
-        sustento: { rgiSteps: line.rgiSteps, flags: line.flags },
-        finalDecision: {
-          hsCode: line.hsCode,
-          officialDescription: line.officialDescription,
-          duties: line.duties,
-        },
-      },
-    });
-  } catch (err) {
-    console.warn('[classify-stream] Skipping DecisionArtifact persistence:', err);
-  }
-
-  const inputTokens = line.tokenUsage?.inputTokens ?? 0;
-  const outputTokens = line.tokenUsage?.outputTokens ?? 0;
-  if (typeof billingService.recordUsageDelta === 'function') {
-    await billingService.recordUsageDelta(tenantId, {
-      count: 1,
-      inputTokens,
-      outputTokens,
-    });
-    return;
-  }
-
-  await billingService.incrementUsage(tenantId, 'classification', 1);
-  if (
-    (inputTokens > 0 || outputTokens > 0) &&
-    typeof billingService.incrementTokenUsage === 'function'
-  ) {
-    await billingService.incrementTokenUsage(tenantId, inputTokens, outputTokens);
-  }
 }

@@ -4,7 +4,12 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, FileDown } from 'lucide-react';
 import { isCloudModeEnabled } from '@/lib/runtime-config';
+import {
+  GLOBAL_LANDING_CONFIG,
+  type LandingEditionConfig,
+} from '@/lib/funnel/country-landings';
 import { readMockSession, savePendingQuery } from '@/lib/funnel/funnel-storage';
+import { FunnelBadge } from '../atoms/FunnelBadge';
 import { LandingHeroPreview } from '../molecules/LandingHeroPreview';
 import { SELECT_LEAD_INTENT_EVENT } from './LandingLeadCaptureSection';
 import { LandingLoopHero } from './LandingLoopHero';
@@ -12,9 +17,14 @@ import { LandingLoopHero } from './LandingLoopHero';
 export interface LandingHeroProps {
   hasSession?: boolean;
   requiresAuth?: boolean;
+  config?: LandingEditionConfig;
 }
 
-export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
+export function LandingHero({
+  hasSession,
+  requiresAuth,
+  config = GLOBAL_LANDING_CONFIG,
+}: LandingHeroProps) {
   const router = useRouter();
   const [heroPrompt, setHeroPrompt] = useState('');
   const [hasClientSession, setHasClientSession] = useState(false);
@@ -37,7 +47,7 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
         : isCloudModeEnabled() && !(hasSession ?? Boolean(readMockSession()));
 
     if (needsAuth) {
-      router.push('/onboarding?plan=pilot&cycle=monthly');
+      router.push(config.onboardingHref);
       return;
     }
     router.push('/app');
@@ -65,27 +75,39 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
       navigateTarget();
       return;
     }
-    router.push('/onboarding?plan=pilot&cycle=monthly');
+    router.push(config.onboardingHref);
   };
 
   return (
     <>
-      <section className="pt-10 sm:pt-14 pb-12 sm:pb-20 overflow-x-clip">
+      <section className="relative pt-10 sm:pt-14 pb-12 sm:pb-20 overflow-x-clip tos-hero-aura">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-8 text-center space-y-6">
-          <h1 className="text-[clamp(2.4rem,4.8vw+0.8rem,4.35rem)] font-medium tracking-[-0.035em] text-ink-primary leading-[1.04] max-w-[20ch] mx-auto [text-wrap:balance]">
-            Clasificación arancelaria auditable con respaldo RGI
+          {config.normativeBadge ? (
+            <div className="flex justify-center tos-rise tos-stagger-1">
+              <FunnelBadge variant="neutral">
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-1.5 w-1.5 rounded-full bg-accent-brand tos-live-dot"
+                />
+                <span>{config.normativeBadge}</span>
+              </FunnelBadge>
+            </div>
+          ) : null}
+
+          <h1 className="tos-rise tos-stagger-2 text-[clamp(2.4rem,4.8vw+0.8rem,4.35rem)] font-medium tracking-[-0.035em] text-ink-primary leading-[1.04] max-w-[20ch] mx-auto [text-wrap:balance]">
+            {config.heroHeading}
           </h1>
 
-          <p className="text-base sm:text-lg text-ink-secondary max-w-[48ch] mx-auto leading-relaxed">
-            Valida fichas merceológicas, clasifica lotes Excel y emite dictámenes PDF firmables.
+          <p className="tos-rise tos-stagger-3 text-base sm:text-lg text-ink-secondary max-w-[54ch] mx-auto leading-relaxed">
+            {config.heroSubtitle}
           </p>
 
-          <div className="pt-1 flex flex-col items-center justify-center gap-4">
+          <div className="tos-rise tos-stagger-4 pt-1 flex flex-col items-center justify-center gap-4">
             <div className="flex flex-wrap items-center justify-center gap-4">
               <button
                 type="button"
                 onClick={handlePrimaryCta}
-                className="group inline-flex items-center gap-2.5 px-7 min-h-[50px] rounded-full text-sm font-semibold text-white bg-accent-brand hover:bg-accent-brand-hover transition-colors cursor-pointer active:translate-y-px"
+                className="group inline-flex items-center gap-2.5 px-7 min-h-[50px] rounded-full text-sm font-semibold text-white bg-accent-brand hover:bg-accent-brand-hover cursor-pointer active:translate-y-px tos-btn-glow"
               >
                 <span>{isAuthenticated ? 'Ir al workspace' : 'Activar Piloto Operativo'}</span>
                 <ArrowRight
@@ -120,14 +142,14 @@ export function LandingHero({ hasSession, requiresAuth }: LandingHeroProps) {
         </div>
       </section>
 
-      <section id="demo" className="py-16 sm:py-24">
+      <section id="demo" className="relative py-16 sm:py-24 tos-ambient-glow">
         <div className="max-w-[1160px] mx-auto px-4 sm:px-8 space-y-10">
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <h2 className="text-[clamp(2rem,3vw+0.8rem,3.25rem)] font-medium tracking-[-0.03em] text-ink-primary leading-[1.08] [text-wrap:balance] mx-auto">
-              Conoce tu dictamen en segundos
+              {config.demoHeading}
             </h2>
             <p className="font-mono text-xs sm:text-sm text-ink-secondary">
-              Diseñado para agentes de aduanas cansados de sistemas lentos y opacos
+              {config.demoSubheading}
             </p>
           </div>
 

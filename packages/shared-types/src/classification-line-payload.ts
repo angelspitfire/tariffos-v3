@@ -34,9 +34,31 @@ export const UnresolvedItemSchema = z.object({
   resolved: z.boolean(),
 });
 
+export const ActiveExemptionSchema = z.object({
+  programCode: z.string(),
+  title: z.string(),
+  decreeRef: z.string(),
+  gazetteRef: z.string().optional(),
+  exemptAdValoremPct: z.number().nonnegative().optional(),
+  exemptVatPct: z.number().nonnegative().optional(),
+  requiredPermitCode: z.string().optional(),
+  conditionsSummary: z.string().optional(),
+  validToDate: z.string().optional(),
+  expiringSoon: z.boolean().optional(),
+});
+
+export const AuditArtifactMetaSchema = z.object({
+  artifactId: z.string().optional(),
+  version: z.number().int().positive().optional(),
+  datasetVersion: z.string().optional(),
+  sourceSha256: z.string().optional(),
+});
+
 export const DeterministicDutiesSchema = z.object({
   cif: z.number().nonnegative(),
   adValoremRate: z.number().nonnegative(),
+  baseAdValoremRate: z.number().nonnegative().optional(),
+  tariffExceptionCode: z.string().optional(),
   arancelAmount: z.number().nonnegative(),
   ivaRate: z.number().nonnegative(),
   ivaAmount: z.number().nonnegative(),
@@ -47,6 +69,7 @@ export const DeterministicDutiesSchema = z.object({
   landedCost: z.number().nonnegative().optional(),
   isBK: z.boolean().optional(),
   isBIT: z.boolean().optional(),
+  activeExemption: ActiveExemptionSchema.optional(),
 });
 
 export const ClassificationLinePayloadSchema = z.object({
@@ -67,6 +90,7 @@ export const ClassificationLinePayloadSchema = z.object({
   tierUsed: z.enum(['pre_gate_blocked', 'tier0_sku', 'tier1_fast', 'tier2_rgi']),
   verifiedAgainstDb: z.boolean(),
   modelUsed: z.string(),
+  auditMeta: AuditArtifactMetaSchema.optional(),
   tokenUsage: z
     .object({
       inputTokens: z.number().int().nonnegative(),
@@ -74,6 +98,9 @@ export const ClassificationLinePayloadSchema = z.object({
     })
     .optional(),
 });
+
+export type ActiveExemption = z.infer<typeof ActiveExemptionSchema>;
+export type AuditArtifactMeta = z.infer<typeof AuditArtifactMetaSchema>;
 
 export type RgiStep = z.infer<typeof RgiStepSchema>;
 export type ClassificationAlternative = z.infer<typeof ClassificationAlternativeSchema>;

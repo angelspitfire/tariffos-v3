@@ -30,7 +30,15 @@ export function calculateDeterministicDuties(
   cifValue: number,
   tariff: Pick<
     TariffCandidateRecord,
-    'adValoremRate' | 'ivaRate' | 'unit' | 'customsFeeRate' | 'isBK' | 'isBIT'
+    | 'adValoremRate'
+    | 'baseAdValoremRate'
+    | 'tariffExceptionCode'
+    | 'ivaRate'
+    | 'unit'
+    | 'customsFeeRate'
+    | 'isBK'
+    | 'isBIT'
+    | 'activeExemption'
   >,
 ): DeterministicDuties {
   const safeCif = clampNonNegative(cifValue);
@@ -61,8 +69,13 @@ export function calculateDeterministicDuties(
           landedCost,
         }
       : {}),
+    ...(typeof tariff.baseAdValoremRate === 'number'
+      ? { baseAdValoremRate: tariff.baseAdValoremRate }
+      : {}),
+    ...(tariff.tariffExceptionCode ? { tariffExceptionCode: tariff.tariffExceptionCode } : {}),
     ...(typeof tariff.isBK === 'boolean' ? { isBK: tariff.isBK } : {}),
-    ...(typeof tariff.isBIT === 'boolean' ? { isBIT: tariff.isBIT } : {}),
+    ...(typeof tariff.isBIT === 'boolean' ? { isBK: tariff.isBK, isBIT: tariff.isBIT } : {}),
+    ...(tariff.activeExemption ? { activeExemption: tariff.activeExemption } : {}),
   };
 }
 

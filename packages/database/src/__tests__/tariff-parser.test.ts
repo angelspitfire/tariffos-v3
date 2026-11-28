@@ -76,4 +76,44 @@ describe('tariff-parser', () => {
     expect(invalidResult.errors.length).toBeGreaterThanOrEqual(1);
     expect(invalidResult.rows).toHaveLength(0);
   });
+
+  it('resolves Ex.AEC immediate rate ("E") and statisticalUnit from JSON schedule rows', () => {
+    const json = JSON.stringify({
+      rows: [
+        {
+          code: '1701.99.00.91',
+          digits: '1701990091',
+          description: 'Acondicionado para la venta al por menor',
+          aec: '16',
+          exAec: '98E',
+          unidad: 'kg',
+        },
+        {
+          code: '3824.99.79.91',
+          digits: '3824997991',
+          description: 'Abonos con microelementos',
+          aec: '14',
+          exAec: '0E',
+          unidad: 'kg',
+        },
+      ],
+    });
+
+    const parsed = parseTariffSchedule(json, 'tariff_json', VE_COUNTRY);
+    expect(parsed.errors).toEqual([]);
+    expect(parsed.rows[0]).toMatchObject({
+      hsCode: '1701990091',
+      adValorem: 98,
+      baseAdValorem: 16,
+      tariffExceptionCode: '98E',
+      statisticalUnit: 'kg',
+    });
+    expect(parsed.rows[1]).toMatchObject({
+      hsCode: '3824997991',
+      adValorem: 0,
+      baseAdValorem: 14,
+      tariffExceptionCode: '0E',
+      statisticalUnit: 'kg',
+    });
+  });
 });

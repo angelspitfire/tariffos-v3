@@ -1,42 +1,77 @@
 %PDF-1.4
-1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
-2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
-3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >> endobj
-4 0 obj << /Length 1584 >> stream
-BT
-/F2 16 Tf 50 760 Td (TariffOS - Dictamen Tecnico de Clasificacion Arancelaria) Tj
-/F1 10 Tf 0 -22 Td (Expediente: EXP-2026-0842  |  Jurisdiccion: VE-SENIAT  |  Decreto 4.944 vigente) Tj
-0 -24 Td (------------------------------------------------------------------------------------) Tj
-/F2 11 Tf 0 -20 Td (1. MERCANCIA EVALUADA) Tj
-/F1 10 Tf 0 -16 Td (Bomba centrifuga sumergible de 2 HP, cuerpo de acero inoxidable, motor electrico trifasico) Tj
-0 -14 Td (Uso: bombeo de agua limpia en pozo profundo. Valor CIF referencial: USD 1,250.00) Tj
-/F2 11 Tf 0 -24 Td (2. CLASIFICACION ARANCELARIA SUGERIDA) Tj
-/F2 13 Tf 0 -18 Td (Subpartida NCM VE (10 digitos): 8413.70.10.00) Tj
-/F1 10 Tf 0 -16 Td (Descripcion legal: Las demas bombas centrifugas - Sumergibles, de potencia <= 15 kW) Tj
-/F2 11 Tf 0 -24 Td (3. FUNDAMENTACION JURIDICA (RGI 1 - 6)) Tj
-/F1 10 Tf 0 -16 Td (- RGI 1: Texto de partida 84.13 (Bombas para liquidos) y Nota 2 de la Seccion XVI.) Tj
-0 -14 Td (- RGI 6: Subpartida 8413.70 (Las demas bombas centrifugas) y desdoblamiento nacional .10.00.) Tj
-/F2 11 Tf 0 -24 Td (4. LIQUIDACION TRIBUTARIA ESTIMADA (BASE CIF)) Tj
-/F1 10 Tf 0 -16 Td (- Ad Valorem: 12%   |   IVA: 16%   |   Tasa por Servicio Aduanal: 1%) Tj
-0 -14 Td (- Regimenes legales: Sin restriccion sanitaria/SENCAMER para uso industrial estandar.) Tj
-/F2 11 Tf 0 -24 Td (5. VALIDACION PERICIAL Y FIRMA) Tj
-/F1 10 Tf 0 -16 Td (Documento de soporte tecnico. El Agente de Aduanas valida y suscribe con su patente.) Tj
-0 -28 Td (Agente de Aduanas: __________________________   Patente SENIAT: ______________) Tj
-ET
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [6 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 4314 >>
+stream
+0.059 0.090 0.165 rg 0 724 612 68 re f
+BT /F2 13 Tf 1 1 1 rg 48 762 Td (TARIFFOS - DICTAMEN TECNICO ARANCELARIO) Tj ET
+BT /F1 9 Tf 0.796 0.835 0.882 rg 48 744 Td (Venezuela \(SENIAT - Decreto 4.944 Consolidado 2026\) | Emitido: 2026-11-28) Tj ET
+BT /F3 13 Tf 0.059 0.090 0.165 rg 48 702 Td (Código Arancelario: 8413.70.10.00) Tj ET
+BT /F2 9.5 Tf 0.28 0.33 0.41 rg 48 684 Td (Confianza: Alto \(96%\) | Estado: Aprobado por agente aduanal | Unidad Fisica / Estadistica: u) Tj ET
+BT /F1 9.2 Tf 0.22 0.27 0.35 rg 48 667.5 Td (Mercancia declarada \(comercial\): Electrobomba centrifuga sumergible 2 HP acero inoxidable AISI 304 Mod.) Tj ET
+BT /F1 9.2 Tf 0.22 0.27 0.35 rg 48 654.3 Td (SP-200) Tj ET
+BT /F1 10 Tf 0.15 0.19 0.25 rg 48 638.0999999999999 Td (Las demas bombas centrifugas: electrobombas sumergibles) Tj ET
+BT /F1 9 Tf 0.35 0.40 0.48 rg 48 624.0999999999999 Td (Sustento: Clasificacion merceologica determinada por RGI 1 \(texto partida 84.13\) y RGI 6.) Tj ET
+0.82 0.85 0.89 RG 0.6 w 48 605.0999999999999 m 564 605.0999999999999 l S
+BT /F2 10.5 Tf 0.059 0.090 0.165 rg 48 589.0999999999999 Td (Liquidación Referencial de Derechos) Tj ET
+BT /F1 9.5 Tf 0.15 0.19 0.25 rg 48 574.0999999999999 Td (Ad Valorem: 14% | IVA: 16% | Tasa Aduanera: 1% | Incoterm: CIF | Origen: IT) Tj ET
+BT /F1 9.2 Tf 0.22 0.27 0.35 rg 48 560.5999999999999 Td (Regimen Arancelario: Bien de Capital \(BK\)) Tj ET
+BT /F2 10.5 Tf 0.059 0.090 0.165 rg 48 537.3999999999999 Td (Recorrido RGI \(Reglas Generales de Interpretación\)) Tj ET
+BT /F1 9.2 Tf 0.15 0.19 0.25 rg 56 522.3999999999999 Td (RGI 1: Texto de la partida 84.13 comprende las bombas para liquidos, incluso con dispositivo medidor.) Tj ET
+BT /F1 9.2 Tf 0.15 0.19 0.25 rg 56 509.1999999999999 Td (Nota 2 Seccion XVI: Equipo completo funcional, excluido del regimen de partes de uso general.) Tj ET
+BT /F1 9.2 Tf 0.15 0.19 0.25 rg 56 495.9999999999999 Td (RGI 6: Subpartida 8413.70 \(las demas bombas centrifugas\) y apertura nacional 8413.70.10.00 para) Tj ET
+BT /F1 9.2 Tf 0.15 0.19 0.25 rg 56 482.7999999999999 Td (electrobombas sumergibles.) Tj ET
+BT /F2 10.5 Tf 0.059 0.090 0.165 rg 48 459.5999999999999 Td (Especificaciones Merceológicas) Tj ET
+BT /F1 9.2 Tf 0.15 0.19 0.25 rg 56 444.5999999999999 Td (- Principio de funcionamiento: Centrifuga sumergible trifasica) Tj ET
+BT /F1 9.2 Tf 0.15 0.19 0.25 rg 56 431.3999999999999 Td (- Material del cuerpo: Acero inoxidable AISI 304) Tj ET
+BT /F1 9.2 Tf 0.15 0.19 0.25 rg 56 418.19999999999993 Td (- Potencia nominal: 2 HP \(1.5 kW\) - 220V / 60Hz) Tj ET
+BT /F1 9.2 Tf 0.15 0.19 0.25 rg 56 404.99999999999994 Td (- Caudal nominal: 120 L/min) Tj ET
+BT /F2 10.5 Tf 0.059 0.090 0.165 rg 48 381.79999999999995 Td (Permisos y Controles OGA \(1\)) Tj ET
+BT /F1 9.2 Tf 0.15 0.19 0.25 rg 56 366.79999999999995 Td (- [RL-20] Constancia de Registro de Norma Venezolana COVENIN Obligatoria \(SENCAMER\)) Tj ET
+BT /F2 10.5 Tf 0.059 0.090 0.165 rg 48 343.59999999999997 Td (Notas Legales y Sustento Normativo) Tj ET
+BT /F1 9.2 Tf 0.15 0.19 0.25 rg 56 328.59999999999997 Td (• Seccion XVI Nota 2: Regimen de partes de maquinas.) Tj ET
+BT /F1 9.2 Tf 0.15 0.19 0.25 rg 56 315.4 Td (• Articulo 37 Decreto N 4.944 \(Consolidado 2026\): Columna 3 AEC 14% BK, Columna 7 Unidad Fisica u.) Tj ET
+BT /F2 10.5 Tf 0.059 0.090 0.165 rg 48 292.2 Td (Alternativas Evaluadas y Descartadas) Tj ET
+BT /F1 9.2 Tf 0.15 0.19 0.25 rg 56 277.2 Td (- 8413.81.00.00: Excluida por RGI 6 al tratarse especificamente de bomba centrifuga y no de otro principio) Tj ET
+BT /F1 9.2 Tf 0.15 0.19 0.25 rg 56 264 Td (hidraulico.) Tj ET
+0.82 0.85 0.89 RG 0.6 w 48 244.8 m 564 244.8 l S
+BT /F2 10.5 Tf 0.059 0.090 0.165 rg 48 228.8 Td (Firma y Trazabilidad Documental Versionada) Tj ET
+BT /F1 9.5 Tf 0.15 0.19 0.25 rg 48 213.8 Td (Agente / Clasificador: Agencia Aduanal Demo - Revisión Pericial) Tj ET
+BT /F1 9.5 Tf 0.15 0.19 0.25 rg 48 200.3 Td (Credencial / Registro: SENIAT-AA-1042) Tj ET
+BT /F1 8.5 Tf 0.35 0.40 0.48 rg 48 186.8 Td (Expediente: EXP-2026-0842 | Version: v1 | Base normativa: consolidado-arancel-2026) Tj ET
+BT /F3 8 Tf 0.35 0.40 0.48 rg 48 174.3 Td (Hash SHA-256 fuente: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08) Tj ET
+BT /F1 8 Tf 0.45 0.50 0.56 rg 48 28 Td (TariffOS - Documento de clasificacion arancelaria | Pagina 1 de 1) Tj ET
 endstream
 endobj
-5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj
-6 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> endobj
 xref
-0 7
+0 8
 0000000000 65535 f 
 0000000009 00000 n 
 0000000058 00000 n 
 0000000115 00000 n 
-0000000251 00000 n 
-0000001886 00000 n 
-0000001956 00000 n 
-trailer << /Size 7 /Root 1 0 R >>
+0000000212 00000 n 
+0000000314 00000 n 
+0000000414 00000 n 
+0000000560 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
 startxref
-2031
+4926
 %%EOF

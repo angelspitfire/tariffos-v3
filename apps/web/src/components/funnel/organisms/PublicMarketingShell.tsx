@@ -6,15 +6,18 @@ import Link from 'next/link';
 import { ArrowRight, Moon, Sun } from 'lucide-react';
 import { readMockSession } from '@/lib/funnel/funnel-storage';
 import { BrandMark } from '../atoms/BrandMark';
+import { CountryEditionSwitcher } from '../molecules/CountryEditionSwitcher';
 
 export interface PublicMarketingShellProps {
   children: ReactNode;
   hideFooter?: boolean;
+  activeEditionSlug?: 'global' | 've';
 }
 
 export function PublicMarketingShell({
   children,
   hideFooter = false,
+  activeEditionSlug = 'global',
 }: PublicMarketingShellProps) {
   const [isDark, setIsDark] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -55,7 +58,7 @@ export function PublicMarketingShell({
               : 'max-w-[1280px] bg-surface-panel border border-border-subtle'
           }`}
         >
-          <BrandMark />
+          <BrandMark badgeText={activeEditionSlug === 've' ? 'RGI 1–6 · VE' : 'RGI 1–6'} />
 
           <nav
             aria-label="Navegación principal"
@@ -79,6 +82,9 @@ export function PublicMarketingShell({
           </nav>
 
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            <div className="hidden md:block">
+              <CountryEditionSwitcher activeSlug={activeEditionSlug} compact />
+            </div>
             <button
               type="button"
               onClick={toggleTheme}
@@ -132,6 +138,9 @@ export function PublicMarketingShell({
               <span>· Inteligencia Arancelaria y Comercio Exterior</span>
             </div>
             <div className="flex items-center gap-4">
+              <Link href="/privacidad" className="hover:text-ink-primary transition-colors">
+                Privacidad y Seguridad
+              </Link>
               <Link href="/activate-plan" className="hover:text-ink-primary transition-colors">
                 Activar plan
               </Link>

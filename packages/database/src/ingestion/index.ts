@@ -1,5 +1,6 @@
 export * from './pdf-extractor';
 export * from './legal-chunker';
+export * from './effective-duty';
 export * from './tariff-parser';
 export * from './diff-engine';
 export * from './embeddings';

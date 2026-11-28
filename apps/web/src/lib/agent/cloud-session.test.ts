@@ -3,6 +3,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   getAuthenticatedUser: vi.fn(),
   membershipFindFirst: vi.fn(),
+  decisionArtifactCount: vi.fn(),
+  decisionArtifactCreate: vi.fn(),
+  countryFindUnique: vi.fn(),
   isSuperAdminUser: vi.fn(),
   checkBillingLimit: vi.fn(),
   provisionInternalAdminWorkspace: vi.fn(),
@@ -19,6 +22,11 @@ vi.mock('@/lib/admin/super-admin', () => ({
 vi.mock('@tariffos/database', () => ({
   prisma: {
     membership: { findFirst: mocks.membershipFindFirst },
+    decisionArtifact: {
+      count: mocks.decisionArtifactCount,
+      create: mocks.decisionArtifactCreate,
+    },
+    country: { findUnique: mocks.countryFindUnique },
   },
   billingService: {
     checkBillingLimit: mocks.checkBillingLimit,
@@ -26,7 +34,12 @@ vi.mock('@tariffos/database', () => ({
   provisionInternalAdminWorkspace: mocks.provisionInternalAdminWorkspace,
 }));
 
-import { checkTenantQuota, resolveCloudTenantContext } from './cloud-session';
+import {
+  checkTenantQuota,
+  computeSourceSha256,
+  persistClassificationOutcome,
+  resolveCloudTenantContext,
+} from './cloud-session';
 
 describe('cloud-session super_admin bypass & auto-provisioning', () => {
   afterEach(() => {
@@ -83,5 +96,63 @@ describe('cloud-session super_admin bypass & auto-provisioning', () => {
       status: 403,
       error: 'No tenant membership found for user',
     });
+  });
+
+  it('persists append-only DecisionArtifact with incremented version, userId, sourceSha256, and datasetVersion', async () => {
+    mocks.decisionArtifactCount.mockResolvedValueOnce(1);
+    mocks.countryFindUnique.mockResolvedValueOnce({ datasetVersion: 'arancel-2026' });
+    mocks.decisionArtifactCreate.mockResolvedValueOnce({ id: 'art-v2' });
+
+    const sha = computeSourceSha256('PDF-SOURCE-CONTENT');
+    expect(sha).toMatch(/^[a-f0-9]{64}$/);
+
+    const meta = await persistClassificationOutcome(
+      'ten-1',
+      {
+        lineId: 'L1',
+        product: 'Azúcar',
+        hsCode: '1701.99.00.91',
+        officialDescription: 'Azúcar refinada',
+        originCountry: 'BR',
+        confidenceLevel: 'Alto',
+        confidencePct: 96,
+        confidenceReason: 'RGI 1',
+        rgiSteps: [],
+        alternatives: [],
+        rejected: [],
+        flags: [],
+        unresolved: [],
+        duties: { cif: 1000, adValoremRate: 98, arancelAmount: 980, ivaRate: 16, ivaAmount: 316.8, unit: 'kg' },
+        tierUsed: 'tier2_rgi',
+        verifiedAgainstDb: true,
+        modelUsed: 'test-model',
+      },
+      'Azúcar 1kg',
+      'openai',
+      {
+        classificationId: 'cls_fixed_1',
+        userId: 'usr-99',
+        countryCode: 'VE',
+        sourceSha256: sha,
+      },
+    );
+
+    expect(meta).toEqual({
+      artifactId: 'art-v2',
+      version: 2,
+      datasetVersion: 'arancel-2026',
+      sourceSha256: sha,
+    });
+    expect(mocks.decisionArtifactCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          classificationId: 'cls_fixed_1',
+          userId: 'usr-99',
+          sourceSha256: sha,
+          datasetVersion: 'arancel-2026',
+          version: 2,
+        }),
+      }),
+    );
   });
 });

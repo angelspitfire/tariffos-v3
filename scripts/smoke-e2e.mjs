@@ -57,6 +57,28 @@ await runCheck('GET / (Landing & B2B pricing)', async () => {
   return { detail: 'HTTP 200, pricing rendered' };
 });
 
+await runCheck('GET /ve (Venezuela country landing)', async () => {
+  const res = await fetchTimed('/ve');
+  if (res.status === 404 && !strictMode) {
+    return { warn: true, detail: 'HTTP 404 (pending deploy of /ve landing)' };
+  }
+  if (res.status !== 200) throw new Error(`HTTP ${res.status}`);
+  const html = await res.text();
+  if (!html.includes('4.944')) throw new Error('Missing Decreto 4.944 reference on /ve');
+  return { detail: 'HTTP 200, localized VE landing rendered' };
+});
+
+await runCheck('GET /privacidad (Security & Privacy page)', async () => {
+  const res = await fetchTimed('/privacidad');
+  if (res.status === 404 && !strictMode) {
+    return { warn: true, detail: 'HTTP 404 (pending deploy of /privacidad)' };
+  }
+  if (res.status !== 200) throw new Error(`HTTP ${res.status}`);
+  const html = await res.text();
+  if (!html.includes('Seguridad y Privacidad')) throw new Error('Missing privacy heading');
+  return { detail: 'HTTP 200' };
+});
+
 await runCheck('GET /login (Auth surface)', async () => {
   const res = await fetchTimed('/login');
   if (res.status !== 200) throw new Error(`HTTP ${res.status}`);

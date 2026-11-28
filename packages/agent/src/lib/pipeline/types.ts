@@ -1,4 +1,5 @@
 import type {
+  ActiveExemption,
   ClassificationLinePayload,
   ComplianceFlag,
   RgiStep,
@@ -36,8 +37,11 @@ export interface TariffCandidateRecord {
   permits?: string[];
   score?: number;
   customsFeeRate?: number;
+  baseAdValoremRate?: number;
+  tariffExceptionCode?: string;
   isBK?: boolean;
   isBIT?: boolean;
+  activeExemption?: ActiveExemption;
 }
 
 export interface LegalNoteRecord {
@@ -88,6 +92,7 @@ export interface PipelinePorts {
     notes: LegalNoteRecord[];
     webContext?: string;
     deepMode: boolean;
+    countryCode?: string;
   }) => Promise<RgiModelOutput>;
   fetchWebSpecs?: (query: string) => Promise<string | null>;
 }

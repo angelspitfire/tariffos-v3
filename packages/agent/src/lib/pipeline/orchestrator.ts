@@ -2,6 +2,7 @@ import { formatHsCode, type ClassificationLinePayload } from '@tariffos/shared-t
 import { calculateDeterministicDuties } from './duties.js';
 import { deduplicateInvoiceItems } from './dedup.js';
 import { expandSiblingsForRgi, filterLegalNotesByChapter, retrieveHybridCandidates } from './hybrid-retrieval.js';
+import { applyInsufficientSpecGuard } from './insufficient-spec-guard.js';
 import {
   appendAuditUnresolved, buildProhibitedPayload, buildTier0Payload, buildTier1Payload,
   canUseTier1FastPath, hasRichAttachedSpecs, isShortDescription, mergeTariffFlags, projectToLine,
@@ -85,13 +86,15 @@ async function classifyUniqueItem(
     topCandidates.map((c) => c.hsCode),
   );
 
-  const rgi = await ports.runRgiReasoning({
+  const rawRgi = await ports.runRgiReasoning({
     item,
     candidates: rgiCandidates,
     notes,
     webContext,
     deepMode: Boolean(options.deepMode),
+    countryCode: options.countryCode,
   });
+  const rgi = applyInsufficientSpecGuard(item, rawRgi, rgiCandidates, webContext);
 
   options.onProgress?.({ stage: 'verifying_tariff', label: 'Verificando código en Arancel Oficial y tributos', progressPct: 90 });
   const verified = await ports.verifyHsCode(options.countryCode, rgi.hsCode);

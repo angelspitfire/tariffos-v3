@@ -56,6 +56,11 @@ export function VerdictCard({
               {rgi}
             </span>
           ))}
+          {verdict.statisticalUnit ? (
+            <span className="rounded-full border border-border-subtle bg-surface-muted px-2 py-0.5 font-mono text-[10px] font-medium text-ink-secondary">
+              UF: {verdict.statisticalUnit}
+            </span>
+          ) : null}
         </div>
       </div>
 

@@ -38,35 +38,47 @@ export function LandingWorkflowSection() {
           </p>
         </div>
 
-        <ol className="space-y-4">
+        <ol className="relative space-y-5">
+          <div
+            aria-hidden="true"
+            className="hidden sm:block absolute left-6 top-10 bottom-10 w-[2px] rounded-full bg-border-subtle/80 tos-flow-track"
+          />
           {WORKFLOW_PANELS.map((panel) => (
             <li
               key={panel.step}
-              className="rounded-[24px] border border-border-subtle bg-surface-panel p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+              className="group relative sm:pl-14"
             >
-              <div className="space-y-2 max-w-xl">
-                <div className="flex items-center gap-2 text-xs font-medium text-accent-ink">
-                  <span className="font-mono tabular-nums">{panel.step}</span>
-                  <span aria-hidden="true">/</span>
-                  <span>{panel.category}</span>
+              <span
+                aria-hidden="true"
+                className="hidden sm:flex absolute left-[17px] top-9 h-4 w-4 items-center justify-center rounded-full border border-border-strong bg-surface-panel transition-all duration-200 group-hover:border-accent-brand group-hover:shadow-[0_0_14px_rgba(56,189,248,0.55)]"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-ink-muted transition-colors duration-200 group-hover:bg-accent-brand" />
+              </span>
+              <div className="rounded-[24px] border border-border-subtle bg-surface-panel p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 tos-card-lift">
+                <div className="space-y-2 max-w-xl">
+                  <div className="flex items-center gap-2 text-xs font-medium text-accent-ink">
+                    <span className="font-mono tabular-nums">{panel.step}</span>
+                    <span aria-hidden="true">/</span>
+                    <span>{panel.category}</span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-semibold tracking-tight text-ink-primary">
+                    {panel.title}
+                  </h3>
+                  <p className="text-sm sm:text-base text-ink-secondary leading-relaxed">
+                    {panel.detail}
+                  </p>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-semibold tracking-tight text-ink-primary">
-                  {panel.title}
-                </h3>
-                <p className="text-sm sm:text-base text-ink-secondary leading-relaxed">
-                  {panel.detail}
-                </p>
-              </div>
 
-              <div className="flex flex-wrap gap-2 lg:max-w-xs lg:justify-end">
-                {panel.items.map((item) => (
-                  <span
-                    key={item}
-                    className="px-3.5 py-2 rounded-full text-xs font-medium bg-surface-muted border border-border-subtle text-ink-primary"
-                  >
-                    {item}
-                  </span>
-                ))}
+                <div className="flex flex-wrap gap-2 lg:max-w-xs lg:justify-end">
+                  {panel.items.map((item) => (
+                    <span
+                      key={item}
+                      className="px-3.5 py-2 rounded-full text-xs font-medium bg-surface-muted border border-border-subtle text-ink-primary transition-colors group-hover:border-accent-border/50"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
               </div>
             </li>
           ))}

@@ -1,34 +1,18 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import {
+  GLOBAL_LANDING_CONFIG,
+  type LandingEditionConfig,
+} from '@/lib/funnel/country-landings';
+import { CountryEditionSwitcher } from '../molecules/CountryEditionSwitcher';
 
-const FAQ_ITEMS = [
-  {
-    q: '¿Quién asume la responsabilidad legal de la clasificación sugerida?',
-    a: 'TariffOS es una herramienta de soporte técnico y documental. El sistema fundamenta cada sugerencia con RGI 1 a 6 y Notas Legales, pero el Agente de Aduanas revisa, valida y suscribe el dictamen final con su patente.',
-  },
-  {
-    q: '¿Con qué frecuencia actualizan el Decreto 4.944, reformas y exoneraciones?',
-    a: 'Mantenemos indexado el arancel nacional vigente (VE-SENIAT) y actualizamos modificaciones arancelarias, alícuotas y regímenes legales conforme se publican en Gaceta Oficial.',
-  },
-  {
-    q: '¿Qué pasa con la confidencialidad de las facturas y clientes de mi agencia?',
-    a: 'Tus facturas, precios CIF y catálogos SKU están aislados por espacio de trabajo con cifrado en tránsito y en reposo. Nunca usamos los documentos de nuestros clientes para entrenar modelos públicos.',
-  },
-  {
-    q: '¿En qué se diferencia TariffOS de un chat genérico con IA?',
-    a: 'Un chat genérico improvisa códigos sin verificar. TariffOS exige validación pericial de atributos merceológicos, aplica RGI 1 a 6 contra el arancel real, calcula impuestos CIF y genera un dictamen PDF firmable.',
-  },
-  {
-    q: '¿Cómo funciona el Piloto Operativo de $150 y la activación de planes?',
-    a: 'El Piloto Operativo ($150 pago único) te da 250 clasificaciones con lotes Excel y dictámenes PDF por 30 días, y se acredita al 100% a tu primer mes del Plan Agencia ($300/mes). Pagas por Zelle, Transferencia USD/EUR, Binance Pay o Pago Móvil y activamos tu cuenta en menos de 24 horas hábiles.',
-  },
-  {
-    q: '¿Puedo trabajar con lotes grandes y múltiples jurisdicciones?',
-    a: 'Sí. Tanto el Piloto Operativo como el Plan Agencia incluyen carga masiva de archivos Excel/CSV; para operaciones multi-sucursal o multi-jurisdicción cotizamos el plan Enterprise a medida.',
-  },
-] as const;
+export function LandingFaqFooter({
+  config = GLOBAL_LANDING_CONFIG,
+}: {
+  config?: LandingEditionConfig;
+}) {
+  const faqItems = config.faqItems;
 
-export function LandingFaqFooter() {
   return (
     <>
       <section id="faq" className="py-20 sm:py-28">
@@ -40,10 +24,10 @@ export function LandingFaqFooter() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {FAQ_ITEMS.map((item) => (
+            {faqItems.map((item) => (
               <div
                 key={item.q}
-                className="rounded-[24px] border border-border-subtle bg-surface-panel p-6 space-y-2.5"
+                className="rounded-[24px] border border-border-subtle bg-surface-panel p-6 space-y-2.5 tos-card-lift"
               >
                 <h3 className="text-base font-semibold text-ink-primary leading-snug">
                   {item.q}
@@ -55,7 +39,7 @@ export function LandingFaqFooter() {
         </div>
       </section>
 
-      <footer className="relative overflow-hidden pt-20 pb-12 border-t border-border-subtle bg-surface-panel">
+      <footer className="relative overflow-hidden pt-20 pb-12 border-t border-border-subtle bg-surface-panel tos-ambient-glow">
         <div className="relative z-10 max-w-[1280px] mx-auto px-4 sm:px-8 space-y-16">
           <div className="text-center max-w-2xl mx-auto space-y-5">
             <h2 className="text-[clamp(2rem,3.4vw+0.8rem,3.5rem)] font-medium tracking-[-0.03em] text-ink-primary leading-[1.06] [text-wrap:balance] mx-auto">
@@ -66,8 +50,8 @@ export function LandingFaqFooter() {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <Link
-                href="/onboarding?plan=pilot&cycle=monthly"
-                className="inline-flex items-center gap-2 min-h-[50px] rounded-full px-7 bg-accent-brand hover:bg-accent-brand-hover text-white text-sm font-semibold transition-colors whitespace-nowrap"
+                href={config.onboardingHref}
+                className="inline-flex items-center gap-2 min-h-[50px] rounded-full px-7 bg-accent-brand hover:bg-accent-brand-hover text-white text-sm font-semibold whitespace-nowrap tos-btn-glow"
               >
                 <span>Activar Piloto Operativo</span>
                 <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -82,7 +66,7 @@ export function LandingFaqFooter() {
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 pt-8 border-t border-border-hairline">
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="inline-flex items-center gap-3">
                 <span className="h-9 px-3 rounded-full bg-ink-primary text-ink-on-inverted inline-flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-current" />
@@ -92,15 +76,18 @@ export function LandingFaqFooter() {
                   TariffOS
                 </span>
                 <span className="px-2.5 py-1 rounded-md border border-border-subtle font-mono text-xs text-ink-muted whitespace-nowrap shrink-0">
-                  RGI 1 a 6 · VE
+                  {config.footerTag}
                 </span>
               </div>
-              <p className="text-xs text-ink-secondary">
-                Inteligencia Arancelaria y Comercio Exterior
-              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="text-xs text-ink-secondary">
+                  Inteligencia Arancelaria y Comercio Exterior
+                </p>
+                <CountryEditionSwitcher activeSlug={config.slug} />
+              </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-6 font-mono text-xs text-ink-secondary">
+            <div className="flex flex-wrap items-center gap-5 font-mono text-xs text-ink-secondary">
               <a href="#demo" className="hover:text-ink-primary transition-colors">
                 Demo
               </a>
@@ -116,6 +103,9 @@ export function LandingFaqFooter() {
               <a href="#contacto" className="hover:text-ink-primary transition-colors">
                 Contacto
               </a>
+              <Link href="/privacidad" className="hover:text-ink-primary transition-colors">
+                Privacidad y Seguridad
+              </Link>
               <Link href="/activate-plan" className="hover:text-ink-primary transition-colors">
                 Activar plan
               </Link>

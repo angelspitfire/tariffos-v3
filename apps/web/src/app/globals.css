@@ -53,7 +53,7 @@
 @keyframes tos-rise {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -61,15 +61,160 @@
   }
 }
 
+@keyframes tos-comet-sweep {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(220%);
+    opacity: 0;
+  }
+}
+
+@keyframes tos-flow-drop {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(280%);
+    opacity: 0;
+  }
+}
+
+@keyframes tos-node-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent-brand) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in oklab, var(--accent-brand) 0%, transparent);
+  }
+}
+
 @layer utilities {
   .tos-rise {
-    animation: tos-rise 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: tos-rise 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .tos-stagger-1 { animation-delay: 40ms; }
+  .tos-stagger-2 { animation-delay: 110ms; }
+  .tos-stagger-3 { animation-delay: 180ms; }
+  .tos-stagger-4 { animation-delay: 250ms; }
+
+  .tos-hero-aura {
+    background-image:
+      radial-gradient(ellipse 68% 46% at 50% -6%, color-mix(in oklab, var(--accent-brand) 13%, transparent), transparent 72%),
+      radial-gradient(ellipse 40% 30% at 82% 14%, color-mix(in oklab, var(--accent-brand) 7%, transparent), transparent 70%);
+  }
+
+  .dark .tos-hero-aura {
+    background-image:
+      radial-gradient(ellipse 68% 46% at 50% -6%, color-mix(in oklab, var(--accent-brand) 22%, transparent), transparent 72%),
+      radial-gradient(ellipse 40% 30% at 82% 14%, color-mix(in oklab, var(--accent-brand) 11%, transparent), transparent 70%);
+  }
+
+  .tos-ambient-glow {
+    background-image: radial-gradient(ellipse 62% 52% at 50% 0%, color-mix(in oklab, var(--accent-brand) 9%, transparent), transparent 74%);
+  }
+
+  .dark .tos-ambient-glow {
+    background-image: radial-gradient(ellipse 62% 52% at 50% 0%, color-mix(in oklab, var(--accent-brand) 16%, transparent), transparent 74%);
+  }
+
+  .tos-card-lift {
+    box-shadow: var(--shadow-elev-1);
+    transition:
+      transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 220ms ease;
+  }
+
+  .tos-card-lift:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in oklab, var(--accent-brand) 36%, var(--border-subtle));
+    box-shadow:
+      var(--shadow-elev-2),
+      0 0 0 1px color-mix(in oklab, var(--accent-brand) 12%, transparent);
+  }
+
+  .tos-btn-glow {
+    box-shadow: 0 10px 26px -10px color-mix(in oklab, var(--accent-brand) 58%, transparent);
+    transition:
+      transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 220ms ease,
+      background-color 180ms ease;
+  }
+
+  .tos-btn-glow:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 32px -10px color-mix(in oklab, var(--accent-brand) 72%, transparent);
+  }
+
+  .tos-comet-border {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tos-comet-border::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 45%;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, transparent, #38bdf8 55%, var(--accent-brand));
+    animation: tos-comet-sweep 4.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    pointer-events: none;
+  }
+
+  .tos-flow-track {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tos-flow-track::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 36%;
+    border-radius: 999px;
+    background: linear-gradient(180deg, transparent, #38bdf8 60%, var(--accent-brand));
+    animation: tos-flow-drop 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  .tos-live-dot {
+    animation: tos-node-pulse 2.6s ease-in-out infinite;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tos-rise {
+  .tos-rise,
+  .tos-live-dot {
     animation: none;
+  }
+  .tos-comet-border::before,
+  .tos-flow-track::after {
+    animation: none;
+    display: none;
+  }
+  .tos-card-lift:hover,
+  .tos-btn-glow:hover {
+    transform: none;
   }
 }
 

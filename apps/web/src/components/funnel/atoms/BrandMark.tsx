@@ -3,6 +3,7 @@ import Link from 'next/link';
 export interface BrandMarkProps {
   href?: string;
   showBadge?: boolean;
+  badgeText?: string;
   size?: 'sm' | 'md';
 }
 
@@ -17,7 +18,12 @@ const WORDMARK_SIZE = {
 } as const;
 
 /** TariffOS logo: dark pill with a white and a brand-blue dot, plus the wordmark. */
-export function BrandMark({ href = '/', showBadge = true, size = 'md' }: BrandMarkProps) {
+export function BrandMark({
+  href = '/',
+  showBadge = true,
+  badgeText = 'RGI 1–6',
+  size = 'md',
+}: BrandMarkProps) {
   return (
     <Link
       href={href}
@@ -35,7 +41,7 @@ export function BrandMark({ href = '/', showBadge = true, size = 'md' }: BrandMa
       </span>
       {showBadge ? (
         <span className="hidden xl:inline-flex items-center px-2 py-0.5 rounded-md border border-border-subtle font-mono text-[10px] text-ink-muted">
-          RGI 1–6 · VE
+          {badgeText}
         </span>
       ) : null}
     </Link>

@@ -4,6 +4,7 @@ import type { TariffCandidateRecord } from '@tariffos/agent';
 const mocks = vi.hoisted(() => ({
   nationalTariffFindFirst: vi.fn(),
   hsPermitRequirementFindMany: vi.fn(),
+  tariffExemptionRuleFindFirst: vi.fn(),
   legalKnowledgeChunkFindMany: vi.fn(),
   ftsSearch: vi.fn<() => Promise<TariffCandidateRecord[]>>(),
   vectorSearch: vi.fn<() => Promise<TariffCandidateRecord[]>>(),
@@ -15,6 +16,7 @@ vi.mock('@tariffos/database', () => ({
     nationalTariff: { findMany: vi.fn(), findFirst: mocks.nationalTariffFindFirst },
     legalKnowledgeChunk: { findMany: mocks.legalKnowledgeChunkFindMany },
     hsPermitRequirement: { findMany: mocks.hsPermitRequirementFindMany },
+    tariffExemptionRule: { findFirst: mocks.tariffExemptionRuleFindFirst },
   },
 }));
 
@@ -196,5 +198,50 @@ describe('createPrismaPipelinePorts', () => {
     const verified = await ports.verifyHsCode('VE', '8414.80.12.00');
     expect(verified?.hsCode).toBe('8414801200');
     expect(ranConcurrently).toBe(true);
+  });
+
+  it('maps statisticalUnit, Ex.AEC metadata, and activeExemption with expiringSoon in verifyHsCode', async () => {
+    mocks.nationalTariffFindFirst.mockResolvedValue({
+      hsCode: '1701990091',
+      description: 'Azúcar refinada',
+      adValorem: 98,
+      baseAdValorem: 16,
+      tariffExceptionCode: '98E',
+      statisticalUnit: 'kg',
+      iva: 16,
+      customsFee: 1,
+      isBK: false,
+      isBIT: false,
+      legalNotes: null,
+    });
+    mocks.hsPermitRequirementFindMany.mockResolvedValue([]);
+    mocks.tariffExemptionRuleFindFirst.mockResolvedValue({
+      programCode: 'DEC-5197-COMEX',
+      title: 'Exoneración Apéndice I',
+      decreeRef: 'Decreto N° 5.197',
+      gazetteRef: 'GOE N° 6.952',
+      exemptAdValoremPct: 90,
+      exemptVatPct: 90,
+      requiredPermitCode: 'RL-9',
+      conditionsSummary: 'Sujeto a permiso COMEX.',
+      validToDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
+    });
+
+    const ports = createPrismaPipelinePorts();
+    const verified = await ports.verifyHsCode('VE', '1701.99.00.91');
+
+    expect(verified).toMatchObject({
+      hsCode: '1701990091',
+      adValoremRate: 98,
+      baseAdValoremRate: 16,
+      tariffExceptionCode: '98E',
+      unit: 'kg',
+      activeExemption: {
+        programCode: 'DEC-5197-COMEX',
+        decreeRef: 'Decreto N° 5.197',
+        requiredPermitCode: 'RL-9',
+        expiringSoon: true,
+      },
+    });
   });
 });

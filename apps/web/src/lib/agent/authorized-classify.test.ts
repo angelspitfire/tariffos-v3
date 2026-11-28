@@ -158,6 +158,10 @@ describe('runAuthorizedClassificationLine & Eve classify_item cloud enforcement'
       SAMPLE_LINE,
       'Inversor solar híbrido 5kW',
       'google',
+      {
+        countryCode: 'VE',
+        userId: undefined,
+      },
     );
     expect(out.line.hsCode).toBe('8504.40.90.00');
   });

@@ -87,12 +87,19 @@ export async function runAuthorizedClassificationLine(
     );
   }
 
-  await persistClassificationOutcome(
+  const auditMeta = await persistClassificationOutcome(
     params.tenantId,
     line,
     params.queryForAudit,
     runtimeLlm.provider,
+    {
+      userId: params.userId,
+      countryCode: params.countryCode,
+    },
   );
 
-  return { line, provider: runtimeLlm.provider };
+  return {
+    line: auditMeta ? { ...line, auditMeta } : line,
+    provider: runtimeLlm.provider,
+  };
 }

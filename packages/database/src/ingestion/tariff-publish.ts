@@ -26,6 +26,9 @@ async function upsertRowsBulkSql(
     const hsCodes = chunk.map((r) => r.hsCode);
     const descriptions = chunk.map((r) => r.description);
     const adValorems = chunk.map((r) => r.adValorem);
+    const baseAdValorems = chunk.map((r) => r.baseAdValorem ?? null);
+    const exceptionCodes = chunk.map((r) => r.tariffExceptionCode ?? null);
+    const statisticalUnits = chunk.map((r) => r.statisticalUnit ?? null);
     const ivas = chunk.map((r) => r.iva);
     const customsFees = chunk.map((r) => r.customsFee);
     const legalNotesList = chunk.map((r) => r.legalNotes);
@@ -35,31 +38,30 @@ async function upsertRowsBulkSql(
 
     await tx.$executeRaw(Prisma.sql`
       INSERT INTO "NationalTariff" (
-        "id", "countryCode", "hsCode", "description", "adValorem", "iva", "customsFee",
+        "id", "countryCode", "hsCode", "description", "adValorem", "baseAdValorem",
+        "tariffExceptionCode", "statisticalUnit", "iva", "customsFee",
         "legalNotes", "isBK", "isBIT", "isActive", "isDerogated", "validFromDate", "validToDate", "updatedAt"
       )
       SELECT
-        u.id, u.country_code, u.hs_code, u.description, u.ad_valorem, u.iva, u.customs_fee,
+        u.id, u.country_code, u.hs_code, u.description, u.ad_valorem, u.base_ad_valorem,
+        u.exception_code, u.statistical_unit, u.iva, u.customs_fee,
         u.legal_notes, u.is_bk, u.is_bit, true, false, u.valid_from, NULL, now()
       FROM UNNEST(
-        ${ids}::text[],
-        ${countryCodes}::text[],
-        ${hsCodes}::text[],
-        ${descriptions}::text[],
-        ${adValorems}::double precision[],
-        ${ivas}::double precision[],
-        ${customsFees}::double precision[],
-        ${legalNotesList}::text[],
-        ${isBKs}::boolean[],
-        ${isBITs}::boolean[],
-        ${validFroms}::timestamp(3)[]
+        ${ids}::text[], ${countryCodes}::text[], ${hsCodes}::text[], ${descriptions}::text[],
+        ${adValorems}::double precision[], ${baseAdValorems}::double precision[],
+        ${exceptionCodes}::text[], ${statisticalUnits}::text[],
+        ${ivas}::double precision[], ${customsFees}::double precision[],
+        ${legalNotesList}::text[], ${isBKs}::boolean[], ${isBITs}::boolean[], ${validFroms}::timestamp(3)[]
       ) AS u(
-        id, country_code, hs_code, description, ad_valorem, iva, customs_fee,
-        legal_notes, is_bk, is_bit, valid_from
+        id, country_code, hs_code, description, ad_valorem, base_ad_valorem,
+        exception_code, statistical_unit, iva, customs_fee, legal_notes, is_bk, is_bit, valid_from
       )
       ON CONFLICT ("countryCode", "hsCode") DO UPDATE SET
         "description" = EXCLUDED."description",
         "adValorem" = EXCLUDED."adValorem",
+        "baseAdValorem" = EXCLUDED."baseAdValorem",
+        "tariffExceptionCode" = EXCLUDED."tariffExceptionCode",
+        "statisticalUnit" = EXCLUDED."statisticalUnit",
         "iva" = EXCLUDED."iva",
         "customsFee" = EXCLUDED."customsFee",
         "legalNotes" = EXCLUDED."legalNotes",
@@ -74,11 +76,6 @@ async function upsertRowsBulkSql(
   }
 }
 
-/**
- * Applies a staged TARIFF_SCHEDULE into `NationalTariff` atomically:
- * bulk-upserts incoming rows via `UNNEST`, marks omitted active codes as derogated,
- * updates `Country.datasetVersion`, and clears the in-memory country cache.
- */
 export async function publishTariffScheduleRows(
   tx: PrismaTx,
   input: PublishTariffScheduleInput,
@@ -127,6 +124,9 @@ export async function publishTariffScheduleRows(
             hsCode: row.hsCode,
             description: row.description,
             adValorem: row.adValorem,
+            baseAdValorem: row.baseAdValorem ?? null,
+            tariffExceptionCode: row.tariffExceptionCode ?? null,
+            statisticalUnit: row.statisticalUnit ?? null,
             iva: row.iva,
             customsFee: row.customsFee,
             legalNotes: row.legalNotes,
@@ -140,6 +140,9 @@ export async function publishTariffScheduleRows(
           update: {
             description: row.description,
             adValorem: row.adValorem,
+            baseAdValorem: row.baseAdValorem ?? null,
+            tariffExceptionCode: row.tariffExceptionCode ?? null,
+            statisticalUnit: row.statisticalUnit ?? null,
             iva: row.iva,
             customsFee: row.customsFee,
             legalNotes: row.legalNotes,

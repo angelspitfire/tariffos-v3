@@ -1,7 +1,7 @@
 # TariffOS v3 — Backlog Vivo de Pendientes
 
-- **Última actualización:** 2026-11-27
-- **Commit base verificado:** `P0-1 + P1-1/2/3 + P3-2 + P2-3` (rama `main` al 2026-11-27; `pnpm check` y `pnpm check:deploy` en verde)
+- **Última actualización:** 2026-11-28
+- **Commit base verificado:** Auditoría Pre-Lanzamiento + Landings `/` / `/ve` / `/privacidad` + `P0-3` (`NEXT_PUBLIC_SITE_URL` en Vercel Production; `pnpm check`, `pnpm check:db` y `pnpm check:deploy` en verde)
 - **Proyecto Supabase:** `avlmnfillieppgqjmawk`
 
 > [!IMPORTANT]
@@ -20,6 +20,7 @@
 | `NationalTariff` (`VE`) | **17,584** activas (**12,046** hojas 10 dígitos) | Arancel Consolidado 2026 |
 | `TariffNodeEmbedding` (`VE`) | **12,046 / 12,046** (`768d`, NVIDIA Build) | Índice **HNSW** activo |
 | `PermitType` / `HsPermitRequirement` | **21** tipos / **6,541** requisitos | Régimen legal de importación VE |
+| `TariffExemptionRule` (`VE`) | **363** reglas (`RL-9` COMEX, `Ex.AEC`) | Decreto N° 5.197 (venc. `31/12/2026`) |
 | `LegalKnowledgeParent` (`VE`) | `12` `SECTION` · `92` `CHAPTER` · `1,464` `EXEMPTION` | **`0` `LEGAL_NOTE`** |
 | `LegalKnowledgeChunk` | **609** chunks con vector FTS `spanish` | Base de notas de sección/capítulo |
 | `ProductMaster` | **0** filas | Listo para importar precedentes |
@@ -30,24 +31,22 @@
 
 ## P0 — Crítico para Producción, Auth y Despliegue
 
-- [ ] **P0-1 · Ejecutar `git push origin main` desde terminal local y confirmar deploy en Vercel** *(build local `100%` validado el 2026-11-27)*
-  - **Estado:** `pnpm check` y `pnpm check:deploy` (limpieza + `packages/*` + `eve build` + `next build --webpack`) pasaron en verde. Falta únicamente ejecutar `git push origin main` con tu passphrase SSH local y confirmar el deploy en Vercel.
+- [ ] **P0-1 · Ejecutar `git push origin main` desde terminal local y confirmar deploy en Vercel** *(gates locales 100% en verde el 2026-11-28)*
+  - **Estado:** `pnpm check` (`145` archivos/`508` tests en `apps/web` + `46`/`212` en `packages/agent`), `pnpm check:db` (`44/44` RLS, `0` políticas inseguras) y `pnpm check:deploy` (`packages/*` + `eve build` + `next build --webpack` incluyendo `/[country]` y `/privacidad`) pasaron en verde. Falta únicamente ejecutar `git push origin main` con tu passphrase SSH local y verificar `pnpm smoke:e2e -- --url https://tariffos.app --strict` tras el despliegue.
 
-- [ ] **P0-2 · Corregir Supabase Auth en Dashboard (HTTP 400 en Password Reset y Google OAuth)** *(acción manual en Supabase Dashboard)*
-  - **Referencia:** `docs/Test Results/REPORTE_PRUEBAS_EXPLORATORIAS_TARIFFOS_APP.md`.
-  - **Acciones:**
-    1. Agregar `https://tariffos.app/auth/callback` y `https://tariffos.app/**` en *Authentication → URL Configuration → Redirect URLs* en Supabase.
-    2. Verificar configuración SMTP en Supabase Auth para recuperación de contraseña.
-    3. Configurar Client ID y Client Secret de Google OAuth en Supabase (o confirmar `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` desactivado en Vercel para mantener oculto el botón hasta habilitarlo).
-    4. Activar *Leaked Password Protection* en Supabase Auth (reportado como `WARN` por los security advisors de Supabase).
-  - **Criterio de cierre:** Flujo de recuperación de contraseña (y Google OAuth si se habilita) sin errores HTTP 400 en `https://tariffos.app/login` y advisor Auth en verde.
+- [ ] **P0-2 · Completar seguridad restante en Supabase Auth Dashboard (`avlmnfillieppgqjmawk`)** *(Google OAuth ya verificado activo el 2026-11-28)*
+  - **Ya verificado en vivo (`/auth/v1/settings`):** `"google": true` y `"email": true` activos.
+  - **Pendiente (Dashboard de Supabase):**
+    1. Activar *Leaked Password Protection* en Supabase Auth (actualmente reportado como `WARN` por `get_advisors`).
+    2. Confirmar en *Authentication → URL Configuration / SMTP* que `https://tariffos.app/auth/callback` y el envío de correos de recuperación funcionen sin HTTP 400.
+  - **Criterio de cierre:** Advisor `auth_leaked_password_protection` limpio y recuperación de contraseña operativa en `https://tariffos.app/login`.
 
-- [ ] **P0-3 · Confirmar variables de entorno en Vercel y sincronizar Inngest Cloud** *(acción manual en Vercel / Inngest)*
-  - **Referencia:** `.env.example` y `docs/EVE_RUNTIME.md`.
-  - **Acciones:**
-    1. Verificar en Vercel: `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY`, `RESEND_API_KEY`, `EMAIL_FROM` (entrega de credenciales en `/admin/onboarding`), `LEADS_WEBHOOK_URL` (opcional alertas de leads) y `NEXT_PUBLIC_AGENT_RUNTIME` (`sse` vs `eve`).
-    2. Sincronizar el endpoint `/api/inngest` en Inngest Cloud para garantizar ejecución de `bcv-sync` (cada 2h), `classifyInvoiceBatchFn`, `ingestLegalDocumentFn` y `indexPublishedLegalFn`.
-  - **Criterio de cierre:** Apps registradas y saludables en Inngest Cloud y variables validadas en entorno productivo de Vercel.
+- [ ] **P0-3 · Completar variables opcionales / clave productiva en Vercel (`Production`)** *(core AI/Supabase/Inngest y `NEXT_PUBLIC_SITE_URL` ya verificados el 2026-11-28)*
+  - **Ya verificado en Vercel Production (`vercel env ls production`):** `DATABASE_URL`, `DIRECT_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY` (con `/api/inngest` firmado respondiendo `x-inngest-sdk-handled: true`), `LLM_PROVIDER`, `DECISION_PROVIDER`, `NVIDIA_API_KEY`, `OPENROUTER_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY`, `RGI_MODEL`, `RGI_DEEP_MODEL`, `EVE_MODEL`, `EMBEDDING_MODEL`, `EMBEDDING_DIMS`, `MAX_WEB_GROUNDING_STANDARD` y **`NEXT_PUBLIC_SITE_URL=https://tariffos.app`**.
+  - **Pendiente según necesidad operativa:**
+    1. `TYPESAFE_API_KEY` real (si `DECISION_PROVIDER=typesafe`; en `.env.local` solo hay valor placeholder).
+    2. `RESEND_API_KEY` + `EMAIL_FROM` (para entrega automática de credenciales desde `/admin/onboarding`).
+    3. Opcionales: `LEADS_WEBHOOK_URL` (alertas externas de leads) y `NEXT_PUBLIC_AGENT_RUNTIME` (`eve` si quieres activarlo en producción en lugar del default `sse`).
 
 ---
 
@@ -103,6 +102,8 @@
 
 ## Completado Recientemente (Referencia — No Repetir)
 
+- [x] **Auditoría P0 de Producción y Config Vercel (`2026-11-28`):** verificados Google OAuth (`"google": true` en Supabase Auth), firma Inngest activa en `https://tariffos.app/api/inngest` (`INNGEST_EVENT_KEY` / `INNGEST_SIGNING_KEY` en Vercel) y alta de `NEXT_PUBLIC_SITE_URL=https://tariffos.app` en Vercel Production (`vercel env ls production`); gates `pnpm check`, `pnpm check:db` y `pnpm check:deploy` en verde.
+- [x] **Auditoría Pre-Lanzamiento + Landings Global (`/`) y Venezuela (`/ve`) + `/privacidad` (2026-11-28):** migración RLS `TariffExemptionRule` + columnas `baseAdValorem`/`tariffExceptionCode`/`statisticalUnit` en `NationalTariff` y trazabilidad *append-only* (`version`, `sourceSha256`, `datasetVersion`, `userId`) en `DecisionArtifact`; re-seed en vivo de `17,584` filas VE con tasas efectivas `Ex.AEC` (`98E`, `0E`), `statisticalUnit` saneado y `363` reglas `Decreto N° 5.197` (`RL-9` COMEX, vencimiento `31/12/2026`); gate anti-alucinación en facturas insuficientes (`insufficient-spec-guard.ts`), prioridad de Notas Excluyentes de Sección, dictamen PDF enriquecido (`dossier-pdf-sections.ts` + muestra real de `5.1 KB`), arquitectura `CountryLandingConfig` (`/` Global OMA + `/ve` localizada con sugerencia GeoIP Modo B + `hreflang`), ruta `/privacidad` y protocolo `scripts/eval/rompe-ia-suite.json`.
 - [x] **Overhaul UI/UX del Workspace (Planes 1–3) + Estabilización Runtime E2E en Vivo (Plan 4, 2026-11-27 · `88425cb`, `ae71e48`, `237f3e2`, `2078a8c`):** tipografía `Plus Jakarta Sans` + `JetBrains Mono`, modales unificados en `WorkspaceDialogShell`, pestañas móviles siempre visibles, toast portaled con `Deshacer` 5s sobre Radix, `VerdictCard` sobria, `DossierView` editorial continuo, calculadora CIF bajo demanda con `DecimalField`, triaje masivo por teclado, corrección del bucle `307` de `super_admin` en `server-account-gate.ts` y preservación multi-herramienta en `eve-message-mapper.ts` (verificado en navegador real con `0 console.error`, `0 pageerror` y `0 HTTP >= 400`).
 - [x] **Sincronización cloud de firma manuscrita (`P1-1`, 2026-11-27):** bucket privado `broker-signatures`, helper `apps/web/src/lib/workspace/signature-storage.ts` y cableado en `GET`/`PUT /api/workspace/profile` usando `UserProfile.signatureStorageKey` (tests TDD en verde).
 - [x] **Subida firmada para facturas pesadas en lotes (`P1-2`, 2026-11-27):** bucket privado `batch-invoices`, helper `batch-storage.ts`, endpoint `POST /api/batch/upload-url`, refactor de `batch-request-parser.ts` y soporte de flujo en 3 pasos (`> 3.5 MB`, hasta `25 MB`) en `submitBatchFile` con verificación de propiedad por `tenantId` (HTTP 403 ante cross-tenant).

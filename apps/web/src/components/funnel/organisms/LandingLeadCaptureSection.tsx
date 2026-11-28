@@ -38,8 +38,17 @@ function fieldInputClass(hasError?: string): string {
   }`;
 }
 
-export function LandingLeadCaptureSection() {
-  const [values, setValues] = useState<LeadFormValues>(INITIAL_VALUES);
+export function LandingLeadCaptureSection({
+  defaultCountry = 'VE',
+  landingPath = '/',
+}: {
+  defaultCountry?: string;
+  landingPath?: string;
+} = {}) {
+  const [values, setValues] = useState<LeadFormValues>(() => ({
+    ...INITIAL_VALUES,
+    country: defaultCountry,
+  }));
   const [fieldErrors, setFieldErrors] = useState<LeadFieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
@@ -119,7 +128,9 @@ export function LandingLeadCaptureSection() {
           name: values.name.trim(),
           company: values.company.trim(),
           phone: values.phone.trim() || undefined,
-          country: showEnterpriseFields ? values.country.trim().toUpperCase() || 'VE' : 'VE',
+          country: showEnterpriseFields
+            ? values.country.trim().toUpperCase() || defaultCountry
+            : defaultCountry,
           volume: showEnterpriseFields ? values.volume : undefined,
           notes: formatLeadNotesPayload({
             intents: values.intents,
@@ -128,7 +139,7 @@ export function LandingLeadCaptureSection() {
             notes: showEnterpriseFields ? values.notes : '',
           }),
           source: 'landing_contact_form',
-          landingPath: '/',
+          landingPath,
         }),
       });
       const json = (await res.json()) as { error?: string };

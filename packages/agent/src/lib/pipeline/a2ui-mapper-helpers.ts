@@ -34,6 +34,8 @@ export interface MapPayloadToA2UIOptions {
   merceologicalSheet?: A2UIMerceologicalSheet;
   webSources?: GroundingSource[];
   reasoningDepth?: 'standard' | 'deep';
+  datasetVersion?: string;
+  sourceSha256?: string;
 }
 
 export function extractPermitsFromFlags(payload: ClassificationLinePayload): A2UIPermitItem[] {
@@ -120,23 +122,31 @@ export function buildDossierComponent(
     text: f.text,
   }));
 
+  const ex = payload.duties.activeExemption;
+  const datasetVersion = options.datasetVersion ?? payload.auditMeta?.datasetVersion;
+  const sourceSha256 = options.sourceSha256 ?? payload.auditMeta?.sourceSha256;
+
   return {
     type: 'dossier',
     id: `dossier-${payload.lineId}`,
     title: `Dictamen · ${payload.product}`,
     hsCode: formatHsCode(payload.hsCode),
+    commercialDescription: payload.product,
     officialDescription: payload.officialDescription,
     jurisdictionName: options.jurisdictionName ?? 'Venezuela (SENIAT · Decreto 4.944)',
+    statisticalUnit: payload.duties.unit,
+    ...(payload.duties.baseAdValoremRate !== undefined ? { baseAdValoremPercent: payload.duties.baseAdValoremRate } : {}),
+    ...(payload.duties.tariffExceptionCode ? { tariffExceptionCode: payload.duties.tariffExceptionCode } : {}),
+    ...(payload.duties.isBK !== undefined ? { isBK: payload.duties.isBK } : {}),
+    ...(payload.duties.isBIT !== undefined ? { isBIT: payload.duties.isBIT } : {}),
+    ...(ex ? { activeExemptionSummary: `${ex.decreeRef}: ${ex.title}${ex.requiredPermitCode ? ` (Requiere ${ex.requiredPermitCode})` : ''}`, ...(ex.validToDate ? { activeExemptionValidTo: ex.validToDate } : {}) } : {}),
+    ...(datasetVersion ? { datasetVersion } : {}),
+    ...(sourceSha256 ? { sourceSha256 } : {}),
+    ...(payload.auditMeta?.version ? { artifactVersion: payload.auditMeta.version } : {}),
     confidenceLevel: payload.confidenceLevel,
     confidencePct: payload.confidencePct,
     confidenceReason: payload.confidenceReason,
-    rgiSteps: payload.rgiSteps.map((s) => ({
-      rule: s.rule,
-      note: s.note,
-      items: s.items,
-      application: s.items.join(' · ') || s.note,
-      conclusion: s.conclusion,
-    })),
+    rgiSteps: payload.rgiSteps.map((s) => ({ rule: s.rule, note: s.note, items: s.items, application: s.items.join(' · ') || s.note, conclusion: s.conclusion })),
     legalNotes: options.legalNotes ?? payload.rgiSteps.map((s) => s.note).filter(Boolean),
     technicalSpecs: options.technicalSpecs ?? [],
     permits: permits.map((p) => ({ code: p.code, name: p.name, organism: p.organism })),
@@ -158,6 +168,14 @@ export function buildCalculatorComponent(
   options: MapPayloadToA2UIOptions,
 ): A2UICalculatorComponent {
   const formattedHsCode = formatHsCode(payload.hsCode);
+  const ex = payload.duties.activeExemption;
+  const hasBkBit = Boolean(payload.duties.isBK || payload.duties.isBIT);
+  const exemptionNote = ex
+    ? `${ex.decreeRef}: ${ex.title}${ex.requiredPermitCode ? ` · Sujeto a ${ex.requiredPermitCode}` : ''}${ex.validToDate ? ` · Vigente hasta ${ex.validToDate}` : ''}`
+    : hasBkBit
+      ? `Régimen ${payload.duties.isBK ? 'BK' : 'BIT'} sujeto a Certificado de Exoneración.`
+      : undefined;
+
   return {
     type: 'calculator',
     id: `calc-${payload.lineId}`,
@@ -172,7 +190,8 @@ export function buildCalculatorComponent(
     currencyCode: options.currencyCode ?? 'USD',
     localCurrencyCode: options.localCurrencyCode ?? 'VES',
     suggestedExchangeRate: options.suggestedExchangeRate ?? DEFAULT_EXCHANGE_RATE,
-    exemptionAvailable: false,
+    exemptionAvailable: Boolean(ex || hasBkBit),
+    ...(exemptionNote ? { exemptionNote } : {}),
     originCountry: payload.originCountry,
     ...(options.incoterm ? { incoterm: options.incoterm } : {}),
   };

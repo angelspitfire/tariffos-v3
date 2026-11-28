@@ -71,6 +71,11 @@ export function DossierView({
             <div className="flex flex-wrap items-center gap-2">
               <CopyHsButton hsCode={dossier.hsCode} size="lg" />
               <ConfidenceBadge label={dossier.confidenceLevel} pct={dossier.confidencePct} />
+              {dossier.statisticalUnit ? (
+                <span className="rounded-md border border-border-subtle bg-surface-muted px-2 py-0.5 font-mono text-xs text-ink-secondary">
+                  UF: {dossier.statisticalUnit}
+                </span>
+              ) : null}
             </div>
             <p className="max-w-[72ch] text-sm font-medium leading-relaxed text-ink-primary">
               {dossier.officialDescription}
@@ -154,14 +159,8 @@ export function DossierView({
             </h3>
             <ul className="mt-2 space-y-1.5">
               {dossier.permits.map((permit) => (
-                <li
-                  key={`${permit.code}-${permit.organism}`}
-                  className="flex items-center justify-between gap-2 rounded-lg bg-surface-muted/60 px-3 py-2 text-xs ring-1 ring-border-subtle"
-                >
-                  <span>
-                    <span className="font-mono font-semibold text-ink-primary">{permit.code}</span>{' '}
-                    <span className="text-ink-secondary">{permit.name}</span>
-                  </span>
+                <li key={`${permit.code}-${permit.organism}`} className="flex items-center justify-between gap-2 rounded-lg bg-surface-muted/60 px-3 py-2 text-xs ring-1 ring-border-subtle">
+                  <span><span className="font-mono font-semibold text-ink-primary">{permit.code}</span> <span className="text-ink-secondary">{permit.name}</span></span>
                   <span className="text-[11px] font-medium text-ink-muted">{permit.organism}</span>
                 </li>
               ))}

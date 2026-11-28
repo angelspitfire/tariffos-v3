@@ -145,4 +145,33 @@ describe('dossier-pdf', () => {
     printSpy.mockRestore();
     vi.unstubAllGlobals();
   });
+
+  it('prints commercial vs official description, statisticalUnit, BK/Ex.AEC, conditional exemption expiry, and SHA-256 audit stamp (Test 9 & 10)', () => {
+    const richDossier: A2UIDossierComponent = {
+      ...sampleDossier,
+      commercialDescription: 'Inversor híbrido marca Growatt Mod. SPF-5000ES en caja retail',
+      statisticalUnit: 'u',
+      baseAdValoremPercent: 14,
+      tariffExceptionCode: '0E',
+      isBK: true,
+      activeExemptionSummary: 'Decreto N° 5.197: Exoneración Apéndice I (Requiere RL-9)',
+      activeExemptionValidTo: '2026-12-31',
+      datasetVersion: 'arancel-2026',
+      artifactVersion: 2,
+      sourceSha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    };
+
+    const bytes = buildDossierPdfBytes(richDossier, sampleProfile, sampleCalculator);
+    const text = decodeLatin1(bytes);
+
+    expect(text).toContain('Growatt Mod. SPF-5000ES');
+    expect(text).toContain('Unidad Fisica / Estadistica: u');
+    expect(text).toContain('Ex.AEC: 0E');
+    expect(text).toContain('Bien de Capital');
+    expect(text).toContain('Decreto N');
+    expect(text).toContain('2026-12-31');
+    expect(text).toContain('arancel-2026');
+    expect(text).toContain('v2');
+    expect(text).toContain('e3b0c44298fc1c14');
+  });
 });

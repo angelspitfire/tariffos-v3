@@ -12,14 +12,12 @@ import {
   type TariffCandidateRecord,
 } from '@tariffos/agent';
 import { createQueryEmbeddingCache } from './query-embedding';
+import { verifyHsCodeAgainstPrisma } from './prisma-tariff-verify';
 import { searchTariffCandidatesFts } from './tariff-fts';
 import { fetchSiblingSubheadings } from './tariff-siblings';
 import { searchTariffCandidatesVector } from './tariff-vector';
 import { findTenantSkuPrecedent } from './tier0-lookup';
 
-const DEFAULT_AD_VALOREM_FALLBACK = 0;
-const DEFAULT_IVA_FALLBACK = 16;
-const DEFAULT_UNIT = 'u';
 const MAX_SEARCH_CANDIDATES = 12;
 const MAX_LEGAL_NOTES = 12;
 
@@ -149,42 +147,7 @@ export function createPrismaPipelinePorts(runtimeLlm?: RgiLlmRuntimeOverride): P
       countryCode: string,
       hsCode: string,
     ): Promise<TariffCandidateRecord | null> {
-      const variants = buildHsCodeLookupVariants(hsCode);
-      const [row, permits] = await Promise.all([
-        prisma.nationalTariff.findFirst({
-          where: {
-            countryCode,
-            hsCode: { in: variants },
-            isActive: true,
-            isDerogated: false,
-          },
-        }),
-        prisma.hsPermitRequirement.findMany({
-          where: { hsCode: { in: variants }, permitType: { countryCode } },
-          include: { permitType: true },
-        }),
-      ]);
-      if (!row) return null;
-
-      return {
-        hsCode: row.hsCode,
-        description: row.description,
-        adValoremRate: row.adValorem ?? DEFAULT_AD_VALOREM_FALLBACK,
-        ivaRate: row.iva ?? DEFAULT_IVA_FALLBACK,
-        unit: DEFAULT_UNIT,
-        legalRegime: row.legalNotes ?? undefined,
-        prohibited: permits.some(
-          (p: { permitType: { code: string } }) =>
-            p.permitType.code === 'RL-1' || p.permitType.code === 'RL-2',
-        ),
-        permits: permits.map(
-          (p: { permitType: { code: string; agency: string; name: string } }) =>
-            `${p.permitType.code} (${p.permitType.agency}): ${p.permitType.name}`,
-        ),
-        customsFeeRate: row.customsFee ?? undefined,
-        isBK: row.isBK,
-        isBIT: row.isBIT,
-      };
+      return verifyHsCodeAgainstPrisma(countryCode, buildHsCodeLookupVariants(hsCode));
     },
 
     runRgiReasoning: runtimeLlm ? createRgiLlmRunner(runtimeLlm) : runRgiWithLlm,

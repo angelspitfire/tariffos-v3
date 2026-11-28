@@ -78,6 +78,7 @@ model Country {
   updatedAt              DateTime @updatedAt
   tenants                Tenant[]
   legalKnowledgeParents  LegalKnowledgeParent[]
+  exemptionRules         TariffExemptionRule[]
 
   @@schema("public")
 }
@@ -287,6 +288,10 @@ model DecisionArtifact {
   rerankingScores  Json     @map("reranking_scores")
   sustento         Json?    @map("sustento")
   finalDecision    Json     @map("final_decision")
+  userId           String?  @map("user_id")
+  sourceSha256     String?  @map("source_sha256")
+  datasetVersion   String?  @map("dataset_version")
+  version          Int      @default(1)
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
@@ -457,6 +462,9 @@ model NationalTariff {
   hsCode                String
   description           String
   adValorem             Float
+  baseAdValorem         Float?
+  tariffExceptionCode   String?
+  statisticalUnit       String?
   iva                   Float
   customsFee            Float?                 @default(1.0)
   legalNotes            String?
@@ -471,6 +479,32 @@ model NationalTariff {
   updatedAt             DateTime               @updatedAt
   @@unique([countryCode, hsCode])
   @@index([hsCode])
+  @@schema("public")
+}
+
+model TariffExemptionRule {
+  id                  String    @id @default(cuid())
+  countryCode         String
+  hsCode              String
+  programCode         String
+  title               String
+  decreeRef           String
+  gazetteRef          String?
+  exemptAdValoremPct  Float?
+  exemptVatPct        Float?
+  requiredPermitCode  String?
+  conditionsSummary   String?
+  validFromDate       DateTime
+  validToDate         DateTime?
+  isActive            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  country Country @relation(fields: [countryCode], references: [code])
+
+  @@unique([countryCode, hsCode, programCode])
+  @@index([countryCode, hsCode, isActive])
+  @@index([validToDate])
   @@schema("public")
 }
 

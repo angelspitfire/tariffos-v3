@@ -26,6 +26,7 @@ export const A2UIVerdictComponentSchema = z.object({
   adValoremPercent: z.number(),
   vatPercent: z.number(),
   customsFeePercent: z.number(),
+  statisticalUnit: z.string().optional(),
   legalRegimeCode: z.string(),
   legalRegimeSummary: z.string(),
   confidenceLabel: z.string(),

@@ -1,5 +1,6 @@
 import { ancestryOf, composeDocument } from '../arancel-tree';
 import { formatNationalCode, nationalDigits, type CountryRecord } from '../country';
+import { resolveEffectiveTariffDuty, sanitizeStatisticalUnit } from './effective-duty';
 
 export interface NormalizedTariffRow {
   hsCode: string;
@@ -7,6 +8,9 @@ export interface NormalizedTariffRow {
   description: string;
   composedDocument: string;
   adValorem: number;
+  baseAdValorem?: number | null;
+  tariffExceptionCode?: string | null;
+  statisticalUnit?: string | null;
   iva: number;
   customsFee: number;
   legalNotes: string | null;
@@ -49,15 +53,6 @@ function parseCsvLine(line: string): string[] {
   }
   cells.push(current.trim());
   return cells;
-}
-
-function parseAecFlags(raw: unknown, rateFallback: number): { rate: number; isBK: boolean; isBIT: boolean } {
-  const text = typeof raw === 'string' ? raw.trim() : '';
-  const isBIT = /\bBIT\b|BIT$/i.test(text);
-  const isBK = !isBIT && /\bBK\b|BK$/i.test(text);
-  const match = text.match(/(\d+(?:\.\d+)?)/);
-  const parsedRate = match?.[1] ? Number.parseFloat(match[1]) : rateFallback;
-  return { rate: Number.isFinite(parsedRate) ? parsedRate : rateFallback, isBK, isBIT };
 }
 
 function parseRawRecords(raw: string, format: 'tariff_csv' | 'tariff_json'): Array<Record<string, unknown>> {
@@ -130,18 +125,28 @@ export function parseTariffSchedule(
       return;
     }
 
-    const baseRate = toFiniteNumber(rec.adValorem, 0);
-    const aec = parseAecFlags(rec.aec, baseRate);
+    const explicitAdValorem =
+      rec.adValorem !== undefined && toTextCell(rec.adValorem).trim() !== ''
+        ? toFiniteNumber(rec.adValorem, 0)
+        : undefined;
+    const duty = resolveEffectiveTariffDuty({
+      aec: rec.aec,
+      exAec: rec.exAec ?? rec.tariffExAec,
+      fallbackRate: explicitAdValorem,
+    });
+    const statisticalUnit = sanitizeStatisticalUnit(
+      rec.statisticalUnit ?? rec.unidadFisica ?? rec.unidad ?? rec.unit,
+    );
     const iva = toFiniteNumber(rec.iva, DEFAULT_IVA_RATE);
     const customsFee = toFiniteNumber(rec.customsFee, DEFAULT_CUSTOMS_FEE);
 
-    if (aec.rate < 0 || iva < 0 || customsFee < 0) {
+    if (duty.effectiveRate < 0 || iva < 0 || customsFee < 0) {
       errors.push(`Fila ${index + 1} (${digits}): alícuota negativa no permitida`);
       return;
     }
 
-    const isBK = Boolean(rec.isBK) || aec.isBK;
-    const isBIT = Boolean(rec.isBIT) || aec.isBIT;
+    const isBK = Boolean(rec.isBK) || duty.isBK;
+    const isBIT = Boolean(rec.isBIT) || duty.isBIT;
     const legalNotes = toTextCell(rec.legalNotes).trim() || null;
     const isLeaf = digits.length === country.nomenclatureDigits;
     const formattedCode = isLeaf ? formatNationalCode(digits, country.codeGrouping) : rawCode || digits;
@@ -150,7 +155,10 @@ export function parseTariffSchedule(
       hsCode: digits,
       formattedCode,
       description,
-      adValorem: aec.rate,
+      adValorem: duty.effectiveRate,
+      baseAdValorem: duty.baseRate,
+      tariffExceptionCode: duty.exceptionCode,
+      statisticalUnit,
       iva,
       customsFee,
       legalNotes,

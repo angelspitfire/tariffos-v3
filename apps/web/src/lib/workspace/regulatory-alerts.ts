@@ -26,6 +26,17 @@ const STORAGE_KEY = 'tariffos_regulatory_prefs_v1';
 
 export const SEED_REGULATORY_ALERTS: readonly RegulatoryAlertItem[] = [
   {
+    id: 'alert-ve-dec-5197-expiry',
+    jurisdictionId: 've-seniat',
+    title: 'Alerta de Vencimiento 31/12/2026: Exoneraciones Decreto N° 5.197 (COMEX / RL 9)',
+    summary:
+      'Los beneficios de exoneración del Apéndice I sujetos a Certificado COMEX (Régimen Legal 9) vencen el 31/12/2026 según fecha de registro de la declaración de aduanas (DUA).',
+    gazetteRef: 'Decreto N° 5.197 (GOE N° 6.952)',
+    effectiveDate: '2026-12-31',
+    severity: 'high',
+    read: false,
+  },
+  {
     id: 'alert-ve-consolidado-2026',
     jurisdictionId: 've-seniat',
     title: 'Arancel Consolidado 2026 activo (Decretos 4.944, 5.103, 5.122, 5.147 y 5.198)',

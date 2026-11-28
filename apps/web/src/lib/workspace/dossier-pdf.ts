@@ -4,6 +4,11 @@ import type {
   A2UIDossierComponent,
   UserProfileSettings,
 } from '@tariffos/shared-types';
+import {
+  drawDossierAuditAndSignatureFooter,
+  drawDossierHeaderMeta,
+  drawDossierTariffAndExemptionSection,
+} from './dossier-pdf-sections';
 import { PdfDocumentBuilder } from './pdf-writer';
 import type { WorkspaceToast } from './types';
 
@@ -38,41 +43,13 @@ export function buildDossierPdfBytes(
     lineHeight: 18,
   });
 
-  const confidenceText = dossier.confidencePct !== undefined
-    ? `${dossier.confidenceLevel ?? 'Estimado'} (${dossier.confidencePct}%)`
-    : (dossier.confidenceLevel ?? 'No especificado');
   const statusText = dossier.reviewStatus ? REVIEW_STATUS_LABELS[dossier.reviewStatus] : 'Borrador';
-  doc.drawTextLines(`Confianza: ${confidenceText} | Estado: ${statusText}`, {
-    font: 'F2',
-    size: 9.5,
-    color: '0.28 0.33 0.41',
-  });
-
-  doc.addGap(4);
-  doc.drawTextLines(dossier.officialDescription, { font: 'F1', size: 10, lineHeight: 14 });
-  if (dossier.confidenceReason) {
-    doc.drawTextLines(`Sustento: ${dossier.confidenceReason}`, {
-      font: 'F1',
-      size: 9,
-      color: '0.35 0.40 0.48',
-    });
-  }
+  drawDossierHeaderMeta(doc, dossier, statusText);
 
   doc.addGap(6);
   doc.drawRule();
 
-  if (calculator) {
-    doc.drawSectionTitle('Liquidación Referencial de Derechos');
-    const summary = [
-      `Ad Valorem: ${calculator.adValoremPercent}%`,
-      `IVA: ${calculator.vatPercent}%`,
-      `Tasa Aduanera: ${calculator.customsServiceFeePercent}%`,
-      `Incoterm: ${calculator.incoterm}`,
-      `Origen: ${calculator.originCountry}`,
-    ].join(' | ');
-    doc.drawTextLines(summary, { font: 'F1', size: 9.5 });
-    doc.addGap(6);
-  }
+  drawDossierTariffAndExemptionSection(doc, dossier, calculator);
 
   if (dossier.rgiSteps.length > 0) {
     doc.drawSectionTitle('Recorrido RGI (Reglas Generales de Interpretación)');
@@ -117,12 +94,7 @@ export function buildDossierPdfBytes(
     doc.addGap(6);
   }
 
-  doc.drawRule();
-  doc.drawSectionTitle('Firma y Validación Profesional');
-  doc.drawTextLines(`Agente / Clasificador: ${profile.fullName || 'No especificado'}`, { size: 9.5 });
-  doc.drawTextLines(`Credencial / Registro: ${profile.brokerLicense || 'Pendiente de registro'}`, {
-    size: 9.5,
-  });
+  drawDossierAuditAndSignatureFooter(doc, dossier, profile);
 
   return doc.toBytes();
 }

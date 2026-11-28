@@ -45,11 +45,11 @@ export function PlanCard({
 
   return (
     <div
-      className={`p-6 rounded-[24px] border flex flex-col justify-between gap-6 transition-colors ${
+      className={`p-6 rounded-[24px] border flex flex-col justify-between gap-6 tos-card-lift ${
         isRecommended
-          ? 'border-accent-brand bg-surface-panel ring-2 ring-accent-brand'
+          ? 'border-accent-brand bg-surface-panel ring-2 ring-accent-brand/75 tos-comet-border'
           : isPopular
-            ? 'border-accent-brand/60 bg-surface-panel shadow-card'
+            ? 'border-accent-brand/60 bg-surface-panel ring-1 ring-accent-brand/20 tos-comet-border'
             : 'border-border-subtle bg-surface-panel'
       }`}
     >
