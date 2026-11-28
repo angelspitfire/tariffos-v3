@@ -28,7 +28,7 @@ const WORKFLOW_PANELS = [
 export function LandingWorkflowSection() {
   return (
     <section id="como-funciona" className="py-20 sm:py-28">
-      <div className="max-w-[1040px] mx-auto px-4 sm:px-8 space-y-12">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="text-center max-w-2xl mx-auto space-y-3">
           <h2 className="text-[clamp(2rem,3vw+0.8rem,3.25rem)] font-medium tracking-[-0.03em] text-ink-primary leading-[1.08] [text-wrap:balance] mx-auto">
             De la factura al dictamen firmado en 3 pasos
@@ -55,7 +55,7 @@ export function LandingWorkflowSection() {
                 <span className="h-1.5 w-1.5 rounded-full bg-ink-muted transition-colors duration-200 group-hover:bg-accent-brand" />
               </span>
               <div className="rounded-[24px] border border-border-subtle bg-surface-panel p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 tos-card-lift">
-                <div className="space-y-2 max-w-xl">
+                <div className="space-y-2 max-w-2xl">
                   <div className="flex items-center gap-2 text-xs font-medium text-accent-ink">
                     <span className="font-mono tabular-nums">{panel.step}</span>
                     <span aria-hidden="true">/</span>
@@ -69,7 +69,7 @@ export function LandingWorkflowSection() {
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-2 lg:max-w-xs lg:justify-end">
+                <div className="flex flex-wrap gap-2 lg:max-w-md lg:justify-end">
                   {panel.items.map((item) => (
                     <span
                       key={item}

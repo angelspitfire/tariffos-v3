@@ -58,8 +58,8 @@ export function PublicMarketingShell({
         <div
           className={`pointer-events-auto mx-auto flex items-center justify-between gap-2 sm:gap-4 rounded-full px-3 sm:px-5 min-h-14 py-1.5 transition-colors duration-200 ${
             isScrolled
-              ? 'max-w-5xl bg-surface-panel border border-border-strong shadow-card'
-              : 'max-w-[1280px] bg-surface-panel border border-border-subtle'
+              ? 'max-w-[1200px] bg-surface-panel border border-border-strong shadow-card'
+              : 'max-w-[1380px] bg-surface-panel border border-border-subtle'
           }`}
         >
           <BrandMark badgeText={activeEditionSlug === 've' ? 'RGI 1–6 · VE' : 'RGI 1–6'} />
@@ -138,7 +138,7 @@ export function PublicMarketingShell({
 
       {!hideFooter ? (
         <footer className="border-t border-border-subtle bg-surface-panel py-6">
-          <div className="max-w-[1280px] mx-auto px-4 sm:px-8 flex flex-wrap items-center justify-between gap-3 text-xs text-ink-muted">
+          <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-3 text-xs text-ink-muted">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-ink-primary">TariffOS</span>
               <span>· Inteligencia Arancelaria y Comercio Exterior</span>

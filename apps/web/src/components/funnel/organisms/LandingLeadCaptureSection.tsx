@@ -170,7 +170,7 @@ export function LandingLeadCaptureSection({
 
   return (
     <section id="contacto" className="py-20 sm:py-24">
-      <div className="max-w-[1040px] mx-auto px-4 sm:px-8 space-y-10">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         <div className="text-center max-w-2xl mx-auto space-y-3">
           <h2 className="text-[clamp(2rem,3vw+0.8rem,3.25rem)] font-medium tracking-[-0.03em] text-ink-primary leading-[1.08] [text-wrap:balance] mx-auto">
             ¿Necesitas una demo guiada o un plan a medida para tu agencia?
@@ -180,7 +180,7 @@ export function LandingLeadCaptureSection({
           </p>
         </div>
 
-        <div className="max-w-[680px] mx-auto rounded-[24px] border border-border-subtle bg-surface-panel p-6 sm:p-8 shadow-card">
+        <div className="max-w-[820px] mx-auto rounded-[24px] border border-border-subtle bg-surface-panel p-6 sm:p-8 shadow-card">
           {submittedEmail ? (
             <LeadCaptureSuccessCard submittedEmail={submittedEmail} intents={values.intents} onReset={resetForm} />
           ) : (

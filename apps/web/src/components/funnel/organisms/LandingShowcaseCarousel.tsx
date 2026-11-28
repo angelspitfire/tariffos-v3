@@ -17,7 +17,7 @@ export function LandingShowcaseCarousel() {
 
   return (
     <section id="capacidades" className="py-20 sm:py-28">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-8 space-y-12">
+      <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="text-center max-w-2xl mx-auto space-y-3">
           <h2 className="text-[clamp(2rem,3vw+0.8rem,3.25rem)] font-medium tracking-[-0.03em] text-ink-primary leading-[1.08] [text-wrap:balance] mx-auto">
             Más rigor técnico que cualquier clasificador genérico

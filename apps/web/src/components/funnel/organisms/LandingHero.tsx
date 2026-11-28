@@ -81,7 +81,7 @@ export function LandingHero({
   return (
     <>
       <section className="relative pt-10 sm:pt-14 pb-12 sm:pb-20 overflow-x-clip tos-hero-aura">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-8 text-center space-y-6">
+        <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
           {config.normativeBadge ? (
             <div className="flex justify-center tos-rise tos-stagger-1">
               <FunnelBadge variant="neutral">
@@ -143,7 +143,7 @@ export function LandingHero({
       </section>
 
       <section id="demo" className="relative py-16 sm:py-24 tos-ambient-glow">
-        <div className="max-w-[1160px] mx-auto px-4 sm:px-8 space-y-10">
+        <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <h2 className="text-[clamp(2rem,3vw+0.8rem,3.25rem)] font-medium tracking-[-0.03em] text-ink-primary leading-[1.08] [text-wrap:balance] mx-auto">
               {config.demoHeading}

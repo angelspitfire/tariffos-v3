@@ -15,6 +15,13 @@
       "skillPath": "skills/eve/SKILL.md",
       "computedHash": "9c1eaa91f1aa5a1733b90937ee5186bc14f43e88ef6524a956750e535b0e2a60"
     },
+    "feature-flags": {
+      "source": "vercel-labs/react",
+      "commit": "c57ec66eb971560d684f8f00125c2a979f7a5a66",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/feature-flags/SKILL.md",
+      "computedHash": "4d718ff846e942b9d9a74789f2958fbd0cf995f4b7876bea1d65cdf384e2740b"
+    },
     "find-skills": {
       "source": "vercel-labs/skills",
       "commit": "57217cf86ba38148a57af9e90d14a4c049558330",
