@@ -42,19 +42,25 @@ export function getEveBaseUrl(): string {
 }
 
 /**
- * Optional country slug pinned to the root landing `/` (e.g. `"ve"` during pilot rollout).
- * Empty or `"global"` keeps the international root landing.
+ * Country slug pinned to the root landing `/` (defaults to `"ve"` during Venezuela rollout).
+ * Set to `"global"` (or override via Vercel Flags `default-landing-country`) to serve the international landing at `/`.
  */
 export function getDefaultLandingCountry(): string {
-  return process.env.NEXT_PUBLIC_DEFAULT_LANDING_COUNTRY?.trim().toLowerCase() || 'global';
+  const raw =
+    process.env.DEFAULT_LANDING_COUNTRY?.trim() ||
+    process.env.NEXT_PUBLIC_DEFAULT_LANDING_COUNTRY?.trim();
+  return raw?.toLowerCase() || 've';
 }
 
 /**
  * Controls visibility of the country edition switcher and GeoIP suggestion banner.
- * Automatically hidden when `/` is pinned to a single country unless explicitly set to `"true"`.
+ * Automatically hidden while `/` is pinned to a single country (`"ve"`) unless explicitly set to `"true"`.
  */
 export function isCountrySwitcherEnabled(): boolean {
-  const explicit = process.env.NEXT_PUBLIC_SHOW_COUNTRY_SWITCHER?.trim().toLowerCase();
+  const explicit = (
+    process.env.SHOW_COUNTRY_SWITCHER?.trim() ||
+    process.env.NEXT_PUBLIC_SHOW_COUNTRY_SWITCHER?.trim()
+  )?.toLowerCase();
   if (explicit === 'true') return true;
   if (explicit === 'false') return false;
   return getDefaultLandingCountry() === 'global';

@@ -50,11 +50,16 @@ export const identifyFlagEntities = dedupe(
  * To migrate away from Vercel Flags in the future, replace `vercelAdapter` here only.
  */
 export function createPortableFlag<T extends JsonValue>(spec: PortableFlagSpec<T>) {
+  const remoteOrigin = isVercelFlagsConfigured()
+    ? (vercelAdapter<T, FlagEntities>().origin as string | undefined)
+    : undefined;
+
   return flag<T, FlagEntities>({
     key: spec.key,
     description: spec.description,
     defaultValue: spec.defaultValue,
     options: spec.options,
+    ...(remoteOrigin ? { origin: remoteOrigin } : {}),
     identify: identifyFlagEntities,
     async decide({ headers, cookies, entities }) {
       if (!isVercelFlagsConfigured()) {
@@ -69,7 +74,10 @@ export function createPortableFlag<T extends JsonValue>(spec: PortableFlagSpec<T
           cookies,
         });
         return evaluated === undefined ? spec.fallback(entities) : evaluated;
-      } catch {
+      } catch (err) {
+        if (process.env.VERCEL === '1') {
+          console.warn(`[flags] Falling back for "${spec.key}":`, err instanceof Error ? err.message : String(err));
+        }
         return spec.fallback(entities);
       }
     },

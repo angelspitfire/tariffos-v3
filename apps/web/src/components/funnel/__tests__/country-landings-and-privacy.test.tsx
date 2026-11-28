@@ -38,19 +38,21 @@ describe('Global (/) + Venezuela (/ve) Landings & Privacy Page', () => {
     vi.unstubAllEnvs();
   });
 
-  it('switches root landing to VE and hides country switcher automatically when NEXT_PUBLIC_DEFAULT_LANDING_COUNTRY=ve', () => {
-    expect(resolveRootLandingConfig().slug).toBe('global');
-    expect(isCountrySwitcherEnabled()).toBe(true);
-
-    vi.stubEnv('NEXT_PUBLIC_DEFAULT_LANDING_COUNTRY', 've');
+  it('defaults root landing to VE with switcher hidden and supports switching to global via env', () => {
     expect(resolveRootLandingConfig().slug).toBe('ve');
     expect(isCountrySwitcherEnabled()).toBe(false);
 
-    vi.stubEnv('NEXT_PUBLIC_SHOW_COUNTRY_SWITCHER', 'true');
+    vi.stubEnv('NEXT_PUBLIC_DEFAULT_LANDING_COUNTRY', 'global');
+    expect(resolveRootLandingConfig().slug).toBe('global');
     expect(isCountrySwitcherEnabled()).toBe(true);
 
     vi.stubEnv('NEXT_PUBLIC_SHOW_COUNTRY_SWITCHER', 'false');
     expect(isCountrySwitcherEnabled()).toBe(false);
+
+    vi.stubEnv('NEXT_PUBLIC_DEFAULT_LANDING_COUNTRY', 've');
+    vi.stubEnv('NEXT_PUBLIC_SHOW_COUNTRY_SWITCHER', 'true');
+    expect(resolveRootLandingConfig().slug).toBe('ve');
+    expect(isCountrySwitcherEnabled()).toBe(true);
   });
 
   it('hides the edition switcher in header and footer when showCountrySwitcher is false', () => {
@@ -66,8 +68,9 @@ describe('Global (/) + Venezuela (/ve) Landings & Privacy Page', () => {
     expect(screen.queryByRole('region', { name: /Edición local sugerida/i })).not.toBeInTheDocument();
     expect(screen.getAllByText(/Decreto 4\.944/i).length).toBeGreaterThanOrEqual(1);
   });
-  it('keeps Global landing international (OMA + RGI 1-6) without local SIDUNEA/Pago Móvil lock-in', () => {
-    render(<LandingPageTemplate config={GLOBAL_LANDING_CONFIG} />);
+
+  it('keeps Global landing international (OMA + RGI 1-6) when switcher is enabled', () => {
+    render(<LandingPageTemplate config={GLOBAL_LANDING_CONFIG} showCountrySwitcher />);
 
     expect(
       screen.getByRole('heading', {

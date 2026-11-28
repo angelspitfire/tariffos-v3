@@ -56,21 +56,23 @@ describe('portable feature flags', () => {
     expect(isVercelFlagsConfigured()).toBe(true);
   });
 
-  it('falls back to env vars for landing country and country switcher when Vercel Flags is unconfigured', async () => {
+  it('defaults to VE landing with switcher hidden and supports switching to global via env fallback', async () => {
     vi.stubEnv('FLAGS', '');
     vi.stubEnv('VERCEL_OIDC_TOKEN', '');
+    vi.stubEnv('DEFAULT_LANDING_COUNTRY', '');
     vi.stubEnv('NEXT_PUBLIC_DEFAULT_LANDING_COUNTRY', '');
+    vi.stubEnv('SHOW_COUNTRY_SWITCHER', '');
     vi.stubEnv('NEXT_PUBLIC_SHOW_COUNTRY_SWITCHER', '');
 
-    expect(await getDefaultLandingCountryFlag()).toBe('global');
-    expect(await isCountrySwitcherFlagEnabled()).toBe(true);
-
-    vi.stubEnv('NEXT_PUBLIC_DEFAULT_LANDING_COUNTRY', 've');
     expect(await getDefaultLandingCountryFlag()).toBe('ve');
     expect(await isCountrySwitcherFlagEnabled()).toBe(false);
 
-    vi.stubEnv('NEXT_PUBLIC_SHOW_COUNTRY_SWITCHER', 'true');
+    vi.stubEnv('NEXT_PUBLIC_DEFAULT_LANDING_COUNTRY', 'global');
+    expect(await getDefaultLandingCountryFlag()).toBe('global');
     expect(await isCountrySwitcherFlagEnabled()).toBe(true);
+
+    vi.stubEnv('NEXT_PUBLIC_SHOW_COUNTRY_SWITCHER', 'false');
+    expect(await isCountrySwitcherFlagEnabled()).toBe(false);
   });
 
   it('respects offline mode and NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED fallback', async () => {

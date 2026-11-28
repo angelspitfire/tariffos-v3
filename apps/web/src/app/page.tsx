@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { LandingPageTemplate } from '@/components/funnel/templates/LandingPageTemplate';
 import {
   getDefaultLandingCountryFlag,
@@ -7,6 +8,7 @@ import {
 } from '@/lib/flags';
 import {
   buildLandingAlternates,
+  getCountryLandingBySlug,
   resolveRootLandingConfig,
 } from '@/lib/funnel/country-landings';
 import { loadPublicPlans } from '@/lib/funnel/public-plans';
@@ -19,15 +21,21 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: config.seoTitle,
     description: config.seoDescription,
-    alternates: buildLandingAlternates('/'),
+    alternates: buildLandingAlternates(config.canonicalPath),
   };
 }
 
 export default async function HomePage() {
-  const [plans, reqHeaders, defaultCountry, showCountrySwitcher] = await Promise.all([
+  const defaultCountry = await getDefaultLandingCountryFlag();
+  const pinnedCountry =
+    defaultCountry !== 'global' ? getCountryLandingBySlug(defaultCountry) : null;
+  if (pinnedCountry) {
+    redirect(pinnedCountry.canonicalPath);
+  }
+
+  const [plans, reqHeaders, showCountrySwitcher] = await Promise.all([
     loadPublicPlans(),
     headers(),
-    getDefaultLandingCountryFlag(),
     isCountrySwitcherFlagEnabled(),
   ]);
   const config = resolveRootLandingConfig(defaultCountry);

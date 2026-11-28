@@ -26,11 +26,11 @@ function readBatchModeEnvFallback(): BatchExecutionFlagValue {
 
 export const defaultLandingCountryFlag = createPortableFlag<string>({
   key: 'default-landing-country',
-  description: 'Country edition pinned to root "/" landing ("global" or "ve").',
-  defaultValue: 'global',
+  description: 'Country edition pinned to root "/" landing ("ve" or "global").',
+  defaultValue: 've',
   options: [
-    { label: 'Global (international)', value: 'global' },
     { label: 'Venezuela (VE pilot)', value: 've' },
+    { label: 'Global (international)', value: 'global' },
   ],
   fallback: () => getDefaultLandingCountry(),
 });
@@ -38,10 +38,10 @@ export const defaultLandingCountryFlag = createPortableFlag<string>({
 export const showCountrySwitcherFlag = createPortableFlag<boolean>({
   key: 'show-country-switcher',
   description: 'Show the country edition switcher and GeoIP banner on marketing pages.',
-  defaultValue: true,
+  defaultValue: false,
   options: [
-    { label: 'Visible', value: true },
     { label: 'Hidden', value: false },
+    { label: 'Visible', value: true },
   ],
   fallback: () => isCountrySwitcherEnabled(),
 });
@@ -78,7 +78,7 @@ export const APP_FLAGS = {
 
 export async function getDefaultLandingCountryFlag(): Promise<string> {
   const raw = await evaluateFlagSafe(defaultLandingCountryFlag, () => getDefaultLandingCountry());
-  return raw.trim().toLowerCase() || 'global';
+  return raw.trim().toLowerCase() || 've';
 }
 
 export async function isCountrySwitcherFlagEnabled(): Promise<boolean> {
