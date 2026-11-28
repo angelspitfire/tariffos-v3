@@ -12,9 +12,9 @@ concurrency:
 
 jobs:
   verify:
-    name: Typecheck, Lint, Test & Clean Deploy Build
+    name: Typecheck, Lint, Test, Build & Playwright UI
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
@@ -35,5 +35,19 @@ jobs:
       - name: Simulate clean Vercel deploy build (packages + eve + web)
         run: pnpm check:deploy
 
-      - name: Run quality harness (typecheck, lint, tests, workspace builds)
+      - name: Run quality harness (typecheck, lint, UI guardrails, DB static, tests)
         run: pnpm check
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter web exec playwright install chromium --with-deps
+
+      - name: Run deterministic Playwright UI suite
+        run: pnpm test:e2e
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-ci
+          path: apps/web/playwright-report
+          retention-days: 7

@@ -1,0 +1,78 @@
+name: Preview E2E Gate
+
+on:
+  deployment_status:
+
+jobs:
+  preview-e2e:
+    name: Preview Smoke, Auth & Live Eve Gate
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment_status.environment == 'Preview' &&
+      github.event.deployment_status.target_url != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    env:
+      PREVIEW_URL: ${{ github.event.deployment_status.target_url }}
+      RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace packages
+        run: pnpm bootstrap
+
+      - name: Verify Preview HTTP smoke contracts
+        run: pnpm smoke:e2e -- --url "$PREVIEW_URL" --strict
+
+      - name: Verify Preview environment secrets
+        run: |
+          if [ -z "${NEXT_PUBLIC_SUPABASE_URL:-}" ] || [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ] || [ -z "${DATABASE_URL:-}" ]; then
+            echo "Missing NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, or DATABASE_URL secret for Preview E2E."
+            exit 1
+          fi
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter web exec playwright install chromium --with-deps
+
+      - name: Provision ephemeral @tariffos.internal E2E account
+        run: pnpm e2e:accounts setup --run-id "$RUN_ID" --emit-github-env
+
+      - name: Run Preview Auth SSR & Live Eve E2E
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ env.PREVIEW_URL }}
+        run: |
+          pnpm --filter web exec playwright test e2e/auth-routing.spec.ts --project=desktop-chromium
+          pnpm test:e2e:live
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-preview
+          path: apps/web/playwright-report
+          retention-days: 7
+
+      - name: Teardown ephemeral E2E account and tenant data
+        if: always()
+        run: pnpm e2e:accounts teardown --run-id "$RUN_ID"

@@ -16,6 +16,7 @@ const rawBase =
   process.env.SMOKE_BASE_URL ||
   'http://localhost:3003';
 const baseUrl = rawBase.replace(/\/+$/, '');
+const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim();
 
 console.log(`TariffOS HTTP Smoke E2E -> ${baseUrl} (strict=${strictMode})\n`);
 
@@ -42,9 +43,14 @@ async function runCheck(name, fn) {
 }
 
 async function fetchTimed(path, init = {}) {
+  const headers = new Headers(init.headers ?? {});
+  if (bypassSecret) {
+    headers.set('x-vercel-protection-bypass', bypassSecret);
+  }
   return fetch(`${baseUrl}${path}`, {
     signal: AbortSignal.timeout(12000),
     ...init,
+    headers,
   });
 }
 
@@ -105,6 +111,15 @@ await runCheck('GET /admin/billing (Admin RBAC redirect)', async () => {
   return { detail: `HTTP ${res.status} -> ${loc}` };
 });
 
+await runCheck('GET /app (Workspace session redirect)', async () => {
+  const res = await fetchTimed('/app', { redirect: 'manual' });
+  const loc = res.headers.get('location') ?? '';
+  if (![302, 303, 307, 308].includes(res.status) || !loc.includes('/login')) {
+    throw new Error(`Expected redirect to /login, got HTTP ${res.status} (${loc || 'no location'})`);
+  }
+  return { detail: `HTTP ${res.status} -> ${loc}` };
+});
+
 await runCheck('GET /samples/dictamen-ejemplo-tariffos.pdf', async () => {
   const res = await fetchTimed('/samples/dictamen-ejemplo-tariffos.pdf');
   if (res.status !== 200) throw new Error(`HTTP ${res.status}`);
@@ -154,6 +169,14 @@ await runCheck('POST /api/batch/upload-url (Auth guard)', async () => {
   if (res.status === 404 && !strictMode) {
     return { warn: true, detail: 'HTTP 404 (pending deploy of latest commit)' };
   }
+  if (res.status !== 401 && res.status !== 403) {
+    throw new Error(`Expected 401/403 without auth, got HTTP ${res.status}`);
+  }
+  return { detail: `HTTP ${res.status} unauthenticated rejected` };
+});
+
+await runCheck('GET /api/workspace/threads (Auth guard)', async () => {
+  const res = await fetchTimed('/api/workspace/threads');
   if (res.status !== 401 && res.status !== 403) {
     throw new Error(`Expected 401/403 without auth, got HTTP ${res.status}`);
   }

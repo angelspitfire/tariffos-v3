@@ -52,13 +52,19 @@
 
 ## P1 — Brechas Funcionales, Calidad Automatizada y CI/CD Preview
 
-- [ ] **P1-4 · Endurecer Harness Estático y montar Suite UI Determinista con Playwright (`docs/QUALITY_HARNESS_AND_PLAYWRIGHT_PLAN.md`)**
-  - **Archivos implicados:** `.oxlintrc.jsonc`, `scripts/lib/repo-guardrails.mjs`, `scripts/check-deploy.mjs`, `apps/web/playwright.config.ts` y `apps/web/e2e/*.spec.ts`.
-  - **Criterio de cierre:** `rules-of-hooks` y `jsx-a11y` en `"error"`, prohibición de `role="dialog"` fuera de `WorkspaceDialogShell`, validador de tokens CSS duplicados, test cartesiano de invariantes en `server-account-gate.test.ts`, `NEXT_DIST_DIR=.next-check` en `check-deploy.mjs` y 6 specs de Playwright (`1440×900` + `390×844`) corriendo con `0 console.error` y `0 pageerror`.
+- [x] **P1-4 · Harness Estático endurecido y Suite UI Determinista con Playwright (`2026-11-28 · pendiente commit`):** ver **Completado Recientemente**.
 
-- [ ] **P1-5 · Activar Pipeline CI/CD con Verificación en Ambiente Preview antes de Producción (`docs/PREVIEW_CICD_AND_RELEASE_GATE_PLAN.md`)**
-  - **Archivos implicados:** `.github/workflows/ci.yml`, `.github/workflows/preview-e2e.yml`, `.github/workflows/prod-smoke.yml`, `scripts/smoke-e2e.mjs` y `scripts/e2e-accounts.ts`.
-  - **Criterio de cierre:** Todo PR despliega `web` + `eve` en Vercel Preview, corre `smoke:e2e --strict` + matriz Auth SSR + 1 smoke vivo de Eve con cuentas efímeras `@tariffos.internal` (y teardown garantizado), bloquea merge a `main` si falla y ejecuta smoke read-only post-deploy sobre `https://tariffos.app`.
+- [ ] **P1-5 · Configuración externa en Dashboards para activar `preview-e2e.yml` y Branch Protection** *(workflows y scripts del repo listos el `2026-11-28`)*
+  - **Ya implementado en el repo:** `.github/workflows/ci.yml` (+ Playwright determinista), `.github/workflows/preview-e2e.yml`, `.github/workflows/prod-smoke.yml`, `scripts/smoke-e2e.mjs` (con `x-vercel-protection-bypass`, `/app` y `/api/workspace/threads`), `scripts/e2e-accounts.ts` + `scripts/lib/e2e-account-helpers.mjs` (cuentas efímeras `@tariffos.internal` y teardown cascada).
+  - **Pendiente en Dashboards externos (~15 min manuales):**
+    1. Crear `VERCEL_AUTOMATION_BYPASS_SECRET` en Vercel (*Deployment Protection → Protection Bypass for Automation*).
+    2. Cargar en *GitHub Repository Secrets*: `VERCEL_AUTOMATION_BYPASS_SECRET`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`.
+    3. Añadir wildcard `https://*-*.vercel.app/**` en *Supabase Auth → URL Configuration → Redirect URLs*.
+    4. Activar Branch Protection en `main` requiriendo PR + checks `verify` y `preview-e2e` antes de mergear.
+
+- [ ] **P1-6 · Centro de Procesos Operativos, Auto-Triage System 1 (Jev) y Colaboración Multi-Rol (`docs/PROCESS_HUB_AND_COLLABORATION_PLAN.md`)**
+  - **Fase A (prioritaria):** reemplazar `AnalyticsWorkspaceView` por `ProcessHubView` (tabla/tablero por estado + KPIs vivos + etiqueta rápida `clientRef`), clasificar hilos automáticamente con `DecisionProvider` (`quick_lookup`, `single_ruling`, `invoice_batch`, `oga_escalation`, `cif_simulation`), limpiar sidebar (`En curso` + cajón `Consultas rápidas` 48h) y paginar `GET /api/workspace/threads` sin tope de 25.
+  - **Fase B (equipos de agencia):** roles `OWNER / REVIEWER / ANALYST` en `Membership`, asignación de revisor en 1 clic, atribución por autor en hilos Eve compartidos, presencia Realtime y pestaña `Equipo` sobre `Invitation`.
 
 ---
 
@@ -102,6 +108,7 @@
 
 ## Completado Recientemente (Referencia — No Repetir)
 
+- [x] **Harness Estático P1-4 + Suite Playwright + Pipeline CI/CD P1-5 (`2026-11-28 · pendiente commit`):** endurecido `.oxlintrc.jsonc` (`rules-of-hooks` y `jsx-a11y/*` en `error`), añadidos guardrails `checkForbiddenRawDialogs` y `checkDuplicateCssTokens` en `scripts/lib/repo-guardrails.mjs` (cableados en `scripts/check.mjs`), aislamiento `NEXT_DIST_DIR=.next-check` en `scripts/check-deploy.mjs` con limpieza/restauración de `tsconfig.json`, matriz cartesiana de 432 estados en `server-account-gate.test.ts` (corrigiendo bug real de redirección de 2 saltos), transcript dorado multi-herramienta en `eve-message-mapper.test.ts`, suite Playwright (`10 passed` en Desktop `1440×900` + Mobile `390×844` sobre `next start` en `.next-e2e` con mocks Eve v27 NDJSON, `0 console.error` y `0 pageerror`), extensión de `scripts/smoke-e2e.mjs`, CLI `scripts/e2e-accounts.ts` con guardia `@tariffos.internal` (`e2e-accounts-guard.test.ts`) y workflows `.github/workflows/ci.yml`, `preview-e2e.yml` y `prod-smoke.yml`.
 - [x] **Auditoría P0 de Producción y Config Vercel (`2026-11-28`):** verificados Google OAuth (`"google": true` en Supabase Auth), firma Inngest activa en `https://tariffos.app/api/inngest` (`INNGEST_EVENT_KEY` / `INNGEST_SIGNING_KEY` en Vercel) y alta de `NEXT_PUBLIC_SITE_URL=https://tariffos.app` en Vercel Production (`vercel env ls production`); gates `pnpm check`, `pnpm check:db` y `pnpm check:deploy` en verde.
 - [x] **Auditoría Pre-Lanzamiento + Landings Global (`/`) y Venezuela (`/ve`) + `/privacidad` (2026-11-28):** migración RLS `TariffExemptionRule` + columnas `baseAdValorem`/`tariffExceptionCode`/`statisticalUnit` en `NationalTariff` y trazabilidad *append-only* (`version`, `sourceSha256`, `datasetVersion`, `userId`) en `DecisionArtifact`; re-seed en vivo de `17,584` filas VE con tasas efectivas `Ex.AEC` (`98E`, `0E`), `statisticalUnit` saneado y `363` reglas `Decreto N° 5.197` (`RL-9` COMEX, vencimiento `31/12/2026`); gate anti-alucinación en facturas insuficientes (`insufficient-spec-guard.ts`), prioridad de Notas Excluyentes de Sección, dictamen PDF enriquecido (`dossier-pdf-sections.ts` + muestra real de `5.1 KB`), arquitectura `CountryLandingConfig` (`/` Global OMA + `/ve` localizada con sugerencia GeoIP Modo B + `hreflang`), ruta `/privacidad` y protocolo `scripts/eval/rompe-ia-suite.json`.
 - [x] **Overhaul UI/UX del Workspace (Planes 1–3) + Estabilización Runtime E2E en Vivo (Plan 4, 2026-11-27 · `88425cb`, `ae71e48`, `237f3e2`, `2078a8c`):** tipografía `Plus Jakarta Sans` + `JetBrains Mono`, modales unificados en `WorkspaceDialogShell`, pestañas móviles siempre visibles, toast portaled con `Deshacer` 5s sobre Radix, `VerdictCard` sobria, `DossierView` editorial continuo, calculadora CIF bajo demanda con `DecimalField`, triaje masivo por teclado, corrección del bucle `307` de `super_admin` en `server-account-gate.ts` y preservación multi-herramienta en `eve-message-mapper.ts` (verificado en navegador real con `0 console.error`, `0 pageerror` y `0 HTTP >= 400`).

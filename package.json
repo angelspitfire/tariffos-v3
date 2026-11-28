@@ -19,6 +19,9 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "lint": "oxlint apps packages",
     "test": "pnpm -r --if-present test",
+    "test:e2e": "pnpm --filter web test:e2e",
+    "test:e2e:live": "pnpm --filter web test:e2e:live",
+    "test:e2e:prod": "pnpm --filter web test:e2e:prod",
     "check": "node scripts/check.mjs",
     "check:quick": "node scripts/check.mjs --quick",
     "check:deploy": "node scripts/check-deploy.mjs",
@@ -28,6 +31,7 @@
     "smoke:e2e": "node scripts/smoke-e2e.mjs",
     "llm:models": "node scripts/llm-models.mjs",
     "eval:classify": "tsx scripts/eval-classify.ts",
+    "e2e:accounts": "tsx scripts/e2e-accounts.ts",
     "admin:users": "pnpm --filter @tariffos/database exec tsx src/scripts/platform-admin.ts"
   },
   "dependencies": {
