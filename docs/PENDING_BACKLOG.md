@@ -63,8 +63,8 @@
     4. Activar Branch Protection en `main` requiriendo PR + checks `verify` y `preview-e2e` antes de mergear.
 
 - [ ] **P1-6 · Centro de Procesos Operativos, Auto-Triage System 1 (Jev) y Colaboración Multi-Rol (`docs/PROCESS_HUB_AND_COLLABORATION_PLAN.md`)**
-  - **Fase A (prioritaria):** reemplazar `AnalyticsWorkspaceView` por `ProcessHubView` (tabla/tablero por estado + KPIs vivos + etiqueta rápida `clientRef`), clasificar hilos automáticamente con `DecisionProvider` (`quick_lookup`, `single_ruling`, `invoice_batch`, `oga_escalation`, `cif_simulation`), limpiar sidebar (`En curso` + cajón `Consultas rápidas` 48h) y paginar `GET /api/workspace/threads` sin tope de 25.
-  - **Fase B (equipos de agencia):** roles `OWNER / REVIEWER / ANALYST` en `Membership`, asignación de revisor en 1 clic, atribución por autor en hilos Eve compartidos, presencia Realtime y pestaña `Equipo` sobre `Invitation`.
+  - [x] **Fase A (`2026-11-28`):** `ProcessKind`/`OperationalStatus` en `@tariffos/shared-types`, motor híbrido `classifyThreadIntent` en `@tariffos/agent`, migración aditiva RLS en `ClassificationSession`, API paginada/detalle/patch (`/api/workspace/threads` + `/[id]`), preservación de caché en `DualWritePersistence`, `ProcessHubView` (`Tabla` ↔ `Tablero` + KPIs + `ClientRefInlineChip`) reemplazando a `AnalyticsWorkspaceView` y sidebar Inbox-Zero (`En curso` + `Consultas rápidas` 48h).
+  - [ ] **Fase B (equipos de agencia):** roles `OWNER / REVIEWER / ANALYST` en `Membership`, asignación de revisor en 1 clic, atribución por autor en hilos Eve compartidos, presencia Realtime y pestaña `Equipo` sobre `Invitation`.
 
 ---
 

@@ -1,10 +1,12 @@
 'use client';
 
-import { BookmarkCheck, LayoutDashboard, PanelLeftClose, Plus, X } from 'lucide-react';
+import { useMemo } from 'react';
+import { BookmarkCheck, Layers, PanelLeftClose, Plus, X } from 'lucide-react';
 import type { ApprovalWorkflowMode, UserProfileSettings } from '@tariffos/shared-types';
 import { BrandMark } from '@/components/funnel/atoms/BrandMark';
 import type { WorkspacePlanStatus } from '@/lib/workspace/plan-status';
 import { getInitials } from '@/lib/workspace/thread-meta';
+import { groupThreadsForSidebar } from '@/lib/workspace/thread-process-meta';
 import type { WorkspaceThread } from '@/lib/workspace/types';
 import { SidebarAccountFooter } from '../molecules/SidebarAccountFooter';
 import { SidebarRail } from '../molecules/SidebarRail';
@@ -30,34 +32,23 @@ export interface ThreadSidebarProps {
   onOpenSkuCatalog: () => void;
   onOpenSettings?: () => void;
   onChangeApprovalMode: (mode: ApprovalWorkflowMode) => void;
+  onSearchRemote?: (query: string) => void;
 }
 
 const NAV_BTN =
   'flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl px-3 py-1.5 text-left text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent-brand focus-visible:outline-none';
 
 export function ThreadSidebar({
-  open,
-  drawer = false,
-  threads,
-  threadsLoading = false,
-  activeThreadId,
-  profile,
-  plan,
-  skuCount,
-  dashboardActive,
-  onToggle,
-  onNewThread,
-  onSelectThread,
-  onDeleteThread,
-  onOpenDashboard,
-  onOpenSkuCatalog,
-  onOpenSettings,
-  onChangeApprovalMode,
+  open, drawer = false, threads, threadsLoading = false, activeThreadId, profile, plan, skuCount,
+  dashboardActive, onToggle, onNewThread, onSelectThread, onDeleteThread, onOpenDashboard,
+  onOpenSkuCatalog, onOpenSettings, onChangeApprovalMode, onSearchRemote,
 }: ThreadSidebarProps) {
+  const sidebarGroups = useMemo(() => groupThreadsForSidebar(threads), [threads]);
+
   if (!open && !drawer) {
     return (
       <SidebarRail
-        threadCount={threads.length}
+        threadCount={sidebarGroups.activeCount}
         skuCount={skuCount}
         dashboardActive={dashboardActive}
         initials={getInitials(profile.fullName)}
@@ -108,9 +99,14 @@ export function ThreadSidebar({
           }`}
         >
           <span className="inline-flex items-center gap-2.5">
-            <LayoutDashboard className="h-3.5 w-3.5" aria-hidden="true" />
-            Dashboard
+            <Layers className="h-3.5 w-3.5" aria-hidden="true" />
+            Procesos
           </span>
+          {sidebarGroups.activeCount > 0 ? (
+            <span className="rounded-full bg-surface-subtle px-2 py-0.5 font-mono text-[10px] text-ink-muted tabular-nums">
+              {sidebarGroups.activeCount}
+            </span>
+          ) : null}
         </button>
         <button
           type="button"
@@ -136,6 +132,8 @@ export function ThreadSidebar({
           activeThreadId={activeThreadId}
           onSelectThread={onSelectThread}
           onDeleteThread={onDeleteThread}
+          onOpenProcessHub={onOpenDashboard}
+          onSearchRemote={onSearchRemote}
         />
       </div>
 

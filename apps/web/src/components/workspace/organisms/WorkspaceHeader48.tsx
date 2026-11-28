@@ -6,6 +6,7 @@ import type { JurisdictionConfig } from '@tariffos/shared-types';
 import { JURISDICTIONS } from '@/lib/workspace/jurisdictions';
 import { useCloudUsageSnapshot } from '@/lib/workspace/use-cloud-usage';
 import { WorkspaceAccountStatusBanner } from '../molecules/WorkspaceAccountStatusBanner';
+import { ClientRefInlineChip } from '../molecules/ClientRefInlineChip';
 
 export interface WorkspaceHeader48Props {
   jurisdiction: JurisdictionConfig;
@@ -13,6 +14,8 @@ export interface WorkspaceHeader48Props {
   canvasAvailable: boolean;
   canvasVisible: boolean;
   filesCount?: number;
+  clientRef?: string | null;
+  onChangeClientRef?: (nextValue: string | null) => void;
   onOpenMobileSidebar: () => void;
   onChangeJurisdiction: (jurisdictionId: string) => void;
   onToggleTheme: () => void;
@@ -31,6 +34,8 @@ export function WorkspaceHeader48({
   canvasAvailable,
   canvasVisible,
   filesCount = 0,
+  clientRef,
+  onChangeClientRef,
   onOpenMobileSidebar,
   onChangeJurisdiction,
   onToggleTheme,
@@ -121,6 +126,9 @@ export function WorkspaceHeader48({
               </div>
             ) : null}
           </div>
+          {onChangeClientRef ? (
+            <ClientRefInlineChip value={clientRef} onSave={onChangeClientRef} />
+          ) : null}
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5">

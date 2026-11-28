@@ -24,6 +24,7 @@ export interface WorkspaceSidebarSlotProps {
   onOpenSkuCatalog: () => void;
   onOpenSettings?: () => void;
   onChangeApprovalMode: (mode: ApprovalWorkflowMode) => void;
+  onSearchRemote?: (query: string) => void;
 }
 
 /** Renders the persistent desktop sidebar (expanded or rail) and the mobile slide-over drawer. */

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { BookmarkCheck, CreditCard, LayoutDashboard, MessageSquare, PanelLeftOpen, Plus } from 'lucide-react';
+import { BookmarkCheck, CreditCard, Layers, MessageSquare, PanelLeftOpen, Plus } from 'lucide-react';
 import type { WorkspacePlanStatus } from '@/lib/workspace/plan-status';
 import { RailTooltip } from '../atoms/RailTooltip';
 
@@ -62,15 +62,15 @@ export function SidebarRail({
           </button>
         </RailTooltip>
 
-        <RailTooltip label="Dashboard">
+        <RailTooltip label="Procesos">
           <button
             type="button"
             onClick={onOpenDashboard}
-            aria-label="Dashboard"
+            aria-label="Procesos"
             aria-current={dashboardActive ? 'page' : undefined}
-            className={`${RAIL_ICON_BTN} ${dashboardActive ? 'bg-accent-soft text-accent-ink' : ''}`}
+            className={`${RAIL_ICON_BTN} relative ${dashboardActive ? 'bg-accent-soft text-accent-ink' : ''}`}
           >
-            <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
+            <Layers className="h-4 w-4" aria-hidden="true" />
           </button>
         </RailTooltip>
 
@@ -82,8 +82,8 @@ export function SidebarRail({
 
         <div className="my-1 w-6 border-t border-border-hairline" />
 
-        <RailTooltip label={`Historial de chats (${threadCount})`}>
-          <button type="button" onClick={onExpand} aria-label={`Historial de chats (${threadCount})`} className={`${RAIL_ICON_BTN} flex-col gap-0.5`}>
+        <RailTooltip label={`En curso (${threadCount})`}>
+          <button type="button" onClick={onExpand} aria-label={`En curso (${threadCount})`} className={`${RAIL_ICON_BTN} flex-col gap-0.5`}>
             <MessageSquare className="h-4 w-4" aria-hidden="true" />
             {threadCount > 0 ? (
               <span className="font-mono text-[10px] leading-none font-semibold text-ink-muted tabular-nums">{threadCount}</span>

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { DEFAULT_USER_PROFILE } from '@/lib/workspace/types';
+import { DEFAULT_USER_PROFILE, type WorkspaceThread } from '@/lib/workspace/types';
 import { computePlanStatus } from '@/lib/workspace/plan-status';
 import { ThreadSidebar, type ThreadSidebarProps } from './ThreadSidebar';
 
@@ -41,14 +41,14 @@ function renderSidebar(overrides: Partial<ThreadSidebarProps> = {}) {
   return props;
 }
 
-describe('ThreadSidebar (mockup shell)', () => {
-  it('shows brand, dark "Nuevo chat", Dashboard and Catálogo SKU navigation', async () => {
+describe('ThreadSidebar (Process Hub & Inbox-Zero shell)', () => {
+  it('shows brand, dark "Nuevo chat", Procesos and Catálogo SKU navigation', async () => {
     const user = userEvent.setup();
     const props = renderSidebar();
 
     expect(screen.getByText('TariffOS')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Nuevo chat/i }));
-    await user.click(screen.getByRole('button', { name: /Dashboard/i }));
+    await user.click(screen.getByRole('button', { name: /Procesos/i }));
     await user.click(screen.getByRole('button', { name: /Catálogo SKU/i }));
     expect(props.onNewThread).toHaveBeenCalledTimes(1);
     expect(props.onOpenDashboard).toHaveBeenCalledTimes(1);
@@ -90,7 +90,7 @@ describe('ThreadSidebar (mockup shell)', () => {
     await user.click(screen.getByRole('button', { name: /Expandir barra lateral/i }));
     expect(props.onToggle).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('button', { name: /Nuevo chat/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Procesos/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Catálogo SKU \(2\)/i })).toBeInTheDocument();
   });
 
@@ -106,5 +106,54 @@ describe('ThreadSidebar (mockup shell)', () => {
     await user.click(screen.getByRole('button', { name: /Cuenta y ajustes/i }));
     expect(onOpenSettings).toHaveBeenCalledTimes(1);
     expect(onToggle).not.toHaveBeenCalled();
+  });
+
+  it('separates active En curso processes from 48h Consultas rápidas and clears sealed items from En curso', async () => {
+    const user = userEvent.setup();
+    const nowIso = new Date().toISOString();
+    const threads: WorkspaceThread[] = [
+      {
+        id: 't-active',
+        title: 'Bomba hidráulica',
+        jurisdictionId: 've-seniat',
+        status: 'regular',
+        processKind: 'single_ruling',
+        operationalStatus: 'processing',
+        messages: [],
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      },
+      {
+        id: 't-sealed',
+        title: 'Monitor LED sellado',
+        jurisdictionId: 've-seniat',
+        status: 'regular',
+        processKind: 'single_ruling',
+        operationalStatus: 'approved',
+        messages: [],
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      },
+      {
+        id: 't-quick',
+        title: '¿Qué exige el Régimen 12?',
+        jurisdictionId: 've-seniat',
+        status: 'regular',
+        processKind: 'quick_lookup',
+        operationalStatus: 'processing',
+        messages: [],
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      },
+    ];
+
+    renderSidebar({ threads });
+    expect(screen.getByText('Bomba hidráulica')).toBeInTheDocument();
+    expect(screen.queryByText('Monitor LED sellado')).not.toBeInTheDocument();
+    expect(screen.queryByText('¿Qué exige el Régimen 12?')).not.toBeInTheDocument();
+    expect(screen.getByText(/Ver 1 sellado en Procesos/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Consultas rápidas/i }));
+    expect(screen.getByText('¿Qué exige el Régimen 12?')).toBeInTheDocument();
   });
 });

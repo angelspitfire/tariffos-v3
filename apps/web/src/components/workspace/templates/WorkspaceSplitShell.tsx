@@ -17,7 +17,7 @@ import { useWorkspaceShortcuts } from '@/lib/workspace/use-workspace-shortcuts';
 import { useWorkspaceShellLayout } from '@/lib/workspace/use-split-layout';
 import { useWorkspaceState } from '@/lib/workspace/use-workspace-state';
 import { useWorkspaceUrlSync } from '@/lib/workspace/use-workspace-url-sync';
-import { AnalyticsWorkspaceView } from '../organisms/AnalyticsWorkspaceView';
+import { ProcessHubView } from '../organisms/ProcessHubView';
 import { WorkspaceHeader48 } from '../organisms/WorkspaceHeader48';
 import { WorkspaceToastBanner } from '../atoms/WorkspaceToastBanner';
 import { BatchProgressBanner } from '../molecules/BatchProgressBanner';
@@ -42,8 +42,7 @@ export function WorkspaceSplitShell() {
   const visibleActiveThread = showDemoFallback ? demoThread : ws.activeThread;
   const visibleCanvasComponents = showDemoFallback ? (demoThread.messages[1]?.envelope?.canvasComponents ?? []) : ws.canvasComponents;
 
-  // Remount EveThreadSurface when switching to an externally loaded or selected thread,
-  // but NEVER remount mid-stream when a fresh surface binds its own newly created thread.
+  // Remount EveThreadSurface on thread switch, never mid-stream on new bind.
   useEffect(() => {
     const targetId = visibleActiveThread?.id ?? null;
     if (targetId === ownedThreadIdRef.current) return;
@@ -102,7 +101,7 @@ export function WorkspaceSplitShell() {
     canvasOpen: layout.showCanvas, hasOpenModal: layout.skuModalOpen || layout.settingsModalOpen || layout.filesPanelOpen,
     onFocusComposer: focusComposer, onNewThread, onCloseCanvas: closeCanvas,
   });
-  const onSelectThread = (id: string) => { ownedThreadIdRef.current = id; ws.setActiveThreadId(id); ws.setSelectedCanvasMsgId(null); setSurfaceKey(`eve-thread-${id}`); goToChat(); };
+  const onSelectThread = (id: string) => { ownedThreadIdRef.current = id; void ws.selectThread(id); setSurfaceKey(`eve-thread-${id}`); goToChat(); };
   const onTriggerBatch = () => (readOnlyReason ? ws.pushToast(readOnlyReason, 'info') : batchInputRef.current?.click());
   const handleRegisterAgentSend = useCallback((fn: ((text: string) => void) | null) => { agentSendRef.current = fn; }, []);
   const { bindEveSessionId, syncChatMessages } = ws;
@@ -121,6 +120,7 @@ export function WorkspaceSplitShell() {
           onNewThread={onNewThread} onSelectThread={onSelectThread} onDeleteThread={ws.deleteThread}
           onOpenDashboard={() => layout.setAnalyticsOpen((p) => !p)} onOpenSkuCatalog={() => layout.setSkuModalOpen(true)}
           onOpenSettings={() => layout.setSettingsModalOpen(true)} onChangeApprovalMode={ws.setApprovalWorkflowMode}
+          onSearchRemote={(q) => void ws.searchCloudThreads(q)}
         />
       ) : null}
 
@@ -132,7 +132,7 @@ export function WorkspaceSplitShell() {
             onToggleTheme={layout.handleToggleTheme} onToggleCanvas={() => undefined} onOpenFilesPanel={() => layout.setFilesPanelOpen(true)} onNewThread={onNewThread}
           />
           <main id="workspace-main" className="min-h-0 min-w-0 flex-1">
-            <AnalyticsWorkspaceView threads={ws.threads} skuPrecedents={ws.skuPrecedents} onClose={() => layout.setAnalyticsOpen(false)} />
+            <ProcessHubView threads={ws.threads} onOpenProcess={onSelectThread} onArchiveProcess={ws.archiveThread} onNewThread={onNewThread} onClose={() => layout.setAnalyticsOpen(false)} />
           </main>
         </div>
       ) : (
@@ -144,6 +144,7 @@ export function WorkspaceSplitShell() {
             >
               <WorkspaceHeader48
                 jurisdiction={ws.jurisdiction} isDark={layout.isDark} canvasAvailable={hasCanvas} canvasVisible={layout.showCanvas} filesCount={filesCount}
+                clientRef={visibleActiveThread?.clientRef ?? null} onChangeClientRef={visibleActiveThread && !showDemoFallback ? (val) => ws.updateThreadClientRef(visibleActiveThread.id, val) : undefined}
                 onOpenMobileSidebar={() => layout.setMobileDrawerOpen(true)} onChangeJurisdiction={ws.setJurisdictionId}
                 onToggleTheme={layout.handleToggleTheme} onToggleCanvas={() => layout.setCanvasDismissed((p) => !p)}
                 onOpenFilesPanel={() => layout.setFilesPanelOpen(true)} onNewThread={onNewThread}
@@ -184,14 +185,7 @@ export function WorkspaceSplitShell() {
         </main>
       )}
 
-      <WorkspaceModalsSlot
-        skuModalOpen={layout.skuModalOpen} filesPanelOpen={layout.filesPanelOpen} settingsModalOpen={layout.settingsModalOpen}
-        skuPrecedents={ws.skuPrecedents} jurisdictionId={ws.jurisdiction.id} jurisdictions={JURISDICTIONS}
-        messages={visibleActiveThread?.messages ?? []} pendingAttachments={ws.pendingAttachments} profile={ws.profile} plan={plan} threads={ws.threads}
-        onCloseSku={() => layout.setSkuModalOpen(false)} onSaveSku={ws.saveSku} onDeleteSku={ws.deleteSku}
-        onCloseFiles={() => layout.setFilesPanelOpen(false)} onCloseSettings={() => layout.setSettingsModalOpen(false)}
-        onSaveSettings={ws.updateProfile} onClassify={(prompt) => void sendToAgent(prompt)} onClearLocalData={() => void ws.clearLocalData()} onToast={ws.pushToast}
-      />
+      <WorkspaceModalsSlot skuModalOpen={layout.skuModalOpen} filesPanelOpen={layout.filesPanelOpen} settingsModalOpen={layout.settingsModalOpen} skuPrecedents={ws.skuPrecedents} jurisdictionId={ws.jurisdiction.id} jurisdictions={JURISDICTIONS} messages={visibleActiveThread?.messages ?? []} pendingAttachments={ws.pendingAttachments} profile={ws.profile} plan={plan} threads={ws.threads} onCloseSku={() => layout.setSkuModalOpen(false)} onSaveSku={ws.saveSku} onDeleteSku={ws.deleteSku} onCloseFiles={() => layout.setFilesPanelOpen(false)} onCloseSettings={() => layout.setSettingsModalOpen(false)} onSaveSettings={ws.updateProfile} onClassify={(prompt) => void sendToAgent(prompt)} onClearLocalData={() => void ws.clearLocalData()} onToast={ws.pushToast} />
 
       <WorkspaceToastBanner toast={ws.toast} />
     </div>
