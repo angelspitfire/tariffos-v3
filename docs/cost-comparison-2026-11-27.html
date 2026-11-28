@@ -248,15 +248,48 @@
     </div>
 
     <section class="card">
-      <h2><span class="dot"></span>5. Arquitectura Híbrida Recomendada</h2>
+      <h2><span class="dot"></span>5. Web Grounding (Descripciones cortas / Deep Mode)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Proveedor de Grounding</th>
+            <th>Capa Gratuita / Promo</th>
+            <th>Tarifa Post-Gratis</th>
+            <th>Impacto Escala (20k clasif. · ~25% = 5k búsquedas)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Vercel AI Gateway · Parallel Search (<code>fast</code>)</strong><span class="tag tag-green">Actual</span></td>
+            <td class="num" style="color:var(--green)">$0 hasta 31 ene 2027</td>
+            <td class="num">$5.00 / 1,000 búsquedas</td>
+            <td class="num">$0 hoy → +$25 / mes (feb 2027+)</td>
+          </tr>
+          <tr>
+            <td><strong>Google Search Grounding (Gemini 4)</strong></td>
+            <td class="num">5,000 búsquedas / mes gratis</td>
+            <td class="num">$14.00 / 1,000 búsquedas</td>
+            <td class="num">$0 hasta 5k · +$14 por cada 1k extra</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        <strong>Activación acotada:</strong> En <code>orchestrator.ts</code> solo se dispara cuando <code>deepMode = true</code> o la descripción es corta y sin ficha técnica (~20–30% de Tier 2). En Arranque (1k/mes) y Tracción (5k/mes) el costo es prácticamente <strong>$0/mes</strong> en ambos proveedores.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span class="dot"></span>6. Arquitectura Híbrida Recomendada</h2>
       <div class="flow">
         <div class="node"><strong>1. Pre-Gate</strong><span>Google Decisions API (~$0.02 / 1k)</span></div>
         <span class="arrow">→</span>
         <div class="node"><strong>2. Caché Tier 0/1</strong><span>SKU + Fast-Path ($0.00 · 15–40%)</span></div>
         <span class="arrow">→</span>
-        <div class="node"><strong>3. Vercel AI Gateway</strong><span>Nemotron Super VL (80%) + Ultra (20%)</span></div>
+        <div class="node"><strong>3. Web Grounding</strong><span>Parallel Search fast (~25% casos)</span></div>
         <span class="arrow">→</span>
-        <div class="node"><strong>4. Fallback</strong><span>Gemini 4 Hydrogen (thinking low/med)</span></div>
+        <div class="node"><strong>4. Vercel AI Gateway</strong><span>Nemotron Super VL (80%) + Ultra (20%)</span></div>
+        <span class="arrow">→</span>
+        <div class="node"><strong>5. Fallback</strong><span>Gemini 4 Hydrogen (thinking low/med)</span></div>
       </div>
     </section>
   </div>

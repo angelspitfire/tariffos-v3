@@ -55,6 +55,12 @@ Construir un archivo de referencia (ej. `packages/agent/evals/golden-set.json`) 
 | **Google Gemini 4** | `gemini-4-hydrogen` *(thinking low/med)* | `gemini-4-hydrogen` *(high)* o `gemini-4-neon` | Google AI / Vertex |
 | **Baseline Google 2.5** | `gemini-2.5-flash` | `gemini-2.5-pro` | Google AI / OpenRouter |
 
+### Web Grounding ([parallel-web-search.ts](file:///Users/afernandez/projects/tariffos-v3/packages/agent/src/adapters/parallel-web-search.ts) + [orchestrator.ts](file:///Users/afernandez/projects/tariffos-v3/packages/agent/src/lib/pipeline/orchestrator.ts))
+| Candidato | Activación | Costo | Estado |
+| :--- | :--- | :--- | :--- |
+| **Vercel Parallel Search (`fast`)** | `needsGrounding` (~20–30% de Tier 2) | \$0 hasta 31 ene 2027 · luego \$5 / 1,000 búsquedas | **Implementado** |
+| **Google Search Grounding (Gemini 4)** | Nativo en llamadas Gemini 4 | 5,000/mes gratis · luego \$14 / 1,000 búsquedas | **Por evaluar** |
+
 ---
 
 ## 4. Métricas y Criterios de Aceptación
