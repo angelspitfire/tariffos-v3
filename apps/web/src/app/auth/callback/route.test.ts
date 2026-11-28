@@ -3,6 +3,7 @@ import { GET } from './route';
 
 const mockExchangeCodeForSession = vi.fn();
 const mockVerifyOtp = vi.fn();
+const mockResolvePostAuthCallbackRedirect = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   createSupabaseServerClient: async () => ({
@@ -13,10 +14,16 @@ vi.mock('@/lib/supabase/server', () => ({
   }),
 }));
 
+vi.mock('@/lib/funnel/server-account-gate', () => ({
+  resolvePostAuthCallbackRedirect: (...args: unknown[]) =>
+    mockResolvePostAuthCallbackRedirect(...args),
+}));
+
 describe('GET /auth/callback', () => {
   beforeEach(() => {
     mockExchangeCodeForSession.mockReset();
     mockVerifyOtp.mockReset();
+    mockResolvePostAuthCallbackRedirect.mockReset();
   });
 
   afterEach(() => {
@@ -55,5 +62,31 @@ describe('GET /auth/callback', () => {
       type: 'signup',
     });
     expect(res.headers.get('location')).toBe('https://tariffos.app/onboarding');
+  });
+
+  it('passes exchanged Google OAuth userId and userEmail into resolvePostAuthCallbackRedirect so super_admin skips /onboarding', async () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://tariffos.app');
+    mockExchangeCodeForSession.mockResolvedValue({
+      data: {
+        user: {
+          id: 'd8620a44-5739-4ced-b1d0-3dd06313fb28',
+          email: 'angel.alberto.fernandez@gmail.com',
+        },
+      },
+      error: null,
+    });
+    mockResolvePostAuthCallbackRedirect.mockResolvedValue('/app');
+
+    const req = new Request(
+      'http://localhost:3000/auth/callback?code=google-pkce-code&next=%2Fonboarding%3Fplan%3Dpilot%26cycle%3Dmonthly',
+    );
+
+    const res = await GET(req);
+    expect(mockResolvePostAuthCallbackRedirect).toHaveBeenCalledWith({
+      userId: 'd8620a44-5739-4ced-b1d0-3dd06313fb28',
+      userEmail: 'angel.alberto.fernandez@gmail.com',
+      nextPath: '/onboarding?plan=pilot&cycle=monthly',
+    });
+    expect(res.headers.get('location')).toBe('https://tariffos.app/app');
   });
 });

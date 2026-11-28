@@ -18,6 +18,12 @@ function isEmailOtpType(raw: string | null): raw is EmailOtpType {
   return raw !== null && VALID_EMAIL_OTP_TYPES.has(raw as EmailOtpType);
 }
 
+function buildUncachedRedirect(url: string): NextResponse {
+  const res = NextResponse.redirect(url);
+  res.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate, max-age=0');
+  return res;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const publicOrigin = resolveServerAuthOrigin(request);
@@ -31,9 +37,13 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       const target = data.user?.id
-        ? await resolvePostAuthCallbackRedirect({ userId: data.user.id, nextPath: next })
+        ? await resolvePostAuthCallbackRedirect({
+            userId: data.user.id,
+            userEmail: data.user.email ?? null,
+            nextPath: next,
+          })
         : next;
-      return NextResponse.redirect(`${publicOrigin}${target}`);
+      return buildUncachedRedirect(`${publicOrigin}${target}`);
     }
   } else if (tokenHash && isEmailOtpType(otpType)) {
     const supabase = await createSupabaseServerClient();
@@ -43,11 +53,15 @@ export async function GET(request: Request) {
     });
     if (!error) {
       const target = data.user?.id
-        ? await resolvePostAuthCallbackRedirect({ userId: data.user.id, nextPath: next })
+        ? await resolvePostAuthCallbackRedirect({
+            userId: data.user.id,
+            userEmail: data.user.email ?? null,
+            nextPath: next,
+          })
         : next;
-      return NextResponse.redirect(`${publicOrigin}${target}`);
+      return buildUncachedRedirect(`${publicOrigin}${target}`);
     }
   }
 
-  return NextResponse.redirect(`${publicOrigin}/login?error=auth_callback_failed`);
+  return buildUncachedRedirect(`${publicOrigin}/login?error=auth_callback_failed`);
 }

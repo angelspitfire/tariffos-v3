@@ -15,8 +15,13 @@ export type PlatformAdminAuthResult =
   | { ok: true; context: PlatformAdminContext }
   | { ok: false; status: 401 | 403; error: string };
 
+export interface ResolvePlatformAdminOptions {
+  authenticatedUser?: { id: string; email?: string | null } | null;
+}
+
 export async function resolvePlatformAdminContext(
   requiredPermission: AdminPermission = 'admin:read',
+  options?: ResolvePlatformAdminOptions,
 ): Promise<PlatformAdminAuthResult> {
   if (!isCloudModeEnabled()) {
     return {
@@ -29,7 +34,10 @@ export async function resolvePlatformAdminContext(
     };
   }
 
-  const user = await getAuthenticatedUser();
+  const user =
+    options?.authenticatedUser !== undefined
+      ? options.authenticatedUser
+      : await getAuthenticatedUser();
   if (!user) {
     return { ok: false, status: 401, error: 'Authentication required' };
   }

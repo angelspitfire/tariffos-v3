@@ -16,14 +16,17 @@ interface ActivatePlanPageProps {
   searchParams: Promise<{
     plan?: string;
     cycle?: string;
+    preview?: string;
   }>;
 }
 
 async function ActivatePlanContent({ searchParams }: ActivatePlanPageProps) {
   const params = await searchParams;
+  const allowPreview = params.preview === '1' || params.preview === 'true';
   const redirectTarget = await resolveCloudFunnelGateRedirect({
     route: 'activate-plan',
     hasFunnelPlanParam: Boolean(params.plan),
+    allowPreview,
     plan: params.plan,
     cycle: params.cycle,
   });

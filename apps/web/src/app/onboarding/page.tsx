@@ -16,14 +16,17 @@ interface OnboardingPageProps {
   searchParams: Promise<{
     plan?: string;
     cycle?: string;
+    preview?: string;
   }>;
 }
 
 async function OnboardingContent({ searchParams }: OnboardingPageProps) {
   const params = await searchParams;
+  const allowPreview = params.preview === '1' || params.preview === 'true';
   const redirectTarget = await resolveCloudFunnelGateRedirect({
     route: 'onboarding',
     hasFunnelPlanParam: Boolean(params.plan),
+    allowPreview,
     plan: params.plan,
     cycle: params.cycle,
   });

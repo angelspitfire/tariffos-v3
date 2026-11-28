@@ -60,7 +60,7 @@ describe('server-account-gate (payment & onboarding bypass)', () => {
     ).toBe('/login?next=%2Factivate-plan');
   });
 
-  it('grants super_admin unrestricted access to /app, /onboarding, and /activate-plan regardless of membership', async () => {
+  it('redirects super_admin away from /onboarding and funnel /activate-plan?plan=... to /app unless preview mode is explicitly enabled', async () => {
     mocks.getAuthenticatedUser.mockResolvedValue({
       id: 'usr-admin',
       email: 'angel.alberto.fernandez@gmail.com',
@@ -83,6 +83,13 @@ describe('server-account-gate (payment & onboarding bypass)', () => {
         route: 'activate-plan',
         hasFunnelPlanParam: true,
       }),
+    ).toBe('/app');
+    expect(
+      await resolveCloudFunnelGateRedirect({
+        route: 'activate-plan',
+        hasFunnelPlanParam: true,
+        allowPreview: true,
+      }),
     ).toBeNull();
     expect(
       await resolveCloudFunnelGateRedirect({
@@ -94,6 +101,13 @@ describe('server-account-gate (payment & onboarding bypass)', () => {
       await resolveCloudFunnelGateRedirect({
         route: 'onboarding',
         hasFunnelPlanParam: false,
+      }),
+    ).toBe('/app');
+    expect(
+      await resolveCloudFunnelGateRedirect({
+        route: 'onboarding',
+        hasFunnelPlanParam: false,
+        allowPreview: true,
       }),
     ).toBeNull();
     expect(
@@ -310,7 +324,43 @@ describe('server-account-gate (payment & onboarding bypass)', () => {
     expect(
       await resolvePostAuthCallbackRedirect({
         userId: 'usr-super',
-        nextPath: '',
+        userEmail: 'erickampg25@gmail.com',
+        nextPath: '/onboarding?plan=pilot&cycle=monthly',
+      }),
+    ).toBe('/app');
+    expect(mocks.resolvePlatformAdminContext).toHaveBeenLastCalledWith('admin:read', {
+      authenticatedUser: { id: 'usr-super', email: 'erickampg25@gmail.com' },
+    });
+
+    mocks.resolvePlatformAdminContext.mockResolvedValueOnce({
+      ok: true,
+      context: { userId: 'usr-super', userEmail: 'angel.alberto.fernandez@gmail.com', role: 'super_admin' },
+    });
+    mocks.membershipFindFirst.mockResolvedValueOnce({
+      tenantId: 'ten-internal',
+      tenant: { isOnboarded: true, billingStatus: 'ACTIVE' },
+    });
+    expect(
+      await resolvePostAuthCallbackRedirect({
+        userId: 'usr-super',
+        userEmail: 'angel.alberto.fernandez@gmail.com',
+        nextPath: '/admin/tenants',
+      }),
+    ).toBe('/admin/tenants');
+
+    // Email-registered account signing in with Google under a new userId matches existing Membership by email
+    mocks.resolvePlatformAdminContext.mockResolvedValueOnce({ ok: false });
+    mocks.membershipFindFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        tenantId: 'ten-email',
+        tenant: { isOnboarded: true, billingStatus: 'ACTIVE' },
+      });
+    expect(
+      await resolvePostAuthCallbackRedirect({
+        userId: 'usr-google-linked',
+        userEmail: 'angel.alberto.fernandez@gmail.com',
+        nextPath: '/onboarding?plan=pilot&cycle=monthly',
       }),
     ).toBe('/app');
   });

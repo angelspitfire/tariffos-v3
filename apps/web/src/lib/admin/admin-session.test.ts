@@ -133,4 +133,30 @@ describe('resolvePlatformAdminContext', () => {
     expect(res.ok).toBe(true);
     if (res.ok) expect(res.context.role).toBe('super_admin');
   });
+
+  it('resolves super_admin from explicit authenticatedUser override without reading request cookies', async () => {
+    process.env.NEXT_PUBLIC_CLOUD_MODE = 'true';
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    mocks.getAuthenticatedUser.mockResolvedValue(null);
+    mocks.platformAdminFindUnique.mockResolvedValue({ role: 'super_admin', isActive: true });
+
+    const res = await resolvePlatformAdminContext('admin:read', {
+      authenticatedUser: { id: 'u-google-cb', email: 'Angel.Alberto.Fernandez@gmail.com' },
+    });
+
+    expect(mocks.getAuthenticatedUser).not.toHaveBeenCalled();
+    expect(mocks.platformAdminFindUnique).toHaveBeenCalledWith({
+      where: { email: 'angel.alberto.fernandez@gmail.com' },
+      select: { role: true, isActive: true },
+    });
+    expect(res).toEqual({
+      ok: true,
+      context: {
+        userId: 'u-google-cb',
+        userEmail: 'Angel.Alberto.Fernandez@gmail.com',
+        role: 'super_admin',
+      },
+    });
+  });
 });

@@ -17,6 +17,7 @@ export interface DecideFunnelGateParams {
   isAuthenticated: boolean;
   isPlatformAdmin: boolean;
   isSuperAdmin?: boolean;
+  allowPreview?: boolean;
   membership: FunnelMembershipSnapshot | null;
   hasFunnelPlanParam: boolean;
   plan?: string | null;
@@ -32,31 +33,43 @@ function buildPlanQuery(plan?: string | null, cycle?: string | null): string {
   return `?plan=${encodeURIComponent(plan)}${cycleSuffix}`;
 }
 
+function normalizeOnboardedNextPath(nextPath: string): string {
+  const trimmed = nextPath.trim();
+  if (!trimmed || trimmed === '/') return '/app';
+  if (trimmed === '/onboarding' || trimmed.startsWith('/onboarding?') || trimmed.startsWith('/onboarding/')) return '/app';
+  if (trimmed.startsWith('/activate-plan?')) return '/app';
+  return trimmed;
+}
+
+async function findMembershipSnapshot(userId: string, userEmail?: string | null): Promise<FunnelMembershipSnapshot | null> {
+  const select = { tenantId: true, tenant: { select: { isOnboarded: true, billingStatus: true } } } as const;
+  let row = await prisma.membership.findFirst({ where: { userId }, select });
+  const normalizedEmail = userEmail?.trim().toLowerCase();
+  if (!row && normalizedEmail) {
+    row = await prisma.membership.findFirst({
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
+      select,
+    });
+  }
+  return row?.tenant
+    ? { tenantId: row.tenantId, isOnboarded: row.tenant.isOnboarded, billingStatus: row.tenant.billingStatus }
+    : null;
+}
+
 export function decideFunnelGateRedirect(params: DecideFunnelGateParams): string | null {
-  const {
-    route,
-    isAuthenticated,
-    isPlatformAdmin,
-    isSuperAdmin,
-    membership,
-    hasFunnelPlanParam,
-    plan,
-    cycle,
-  } = params;
+  const { route, isAuthenticated, isPlatformAdmin, isSuperAdmin, allowPreview, membership, hasFunnelPlanParam, plan, cycle } = params;
   const planQuery = buildPlanQuery(plan, cycle);
 
-  if (!isAuthenticated) {
-    return `/login?next=${encodeURIComponent(`/${route}${planQuery}`)}`;
-  }
+  if (!isAuthenticated) return `/login?next=${encodeURIComponent(`/${route}${planQuery}`)}`;
 
   if (isSuperAdmin) {
-    return null;
+    if (route === 'app') return null;
+    if (route === 'onboarding') return allowPreview ? null : '/app';
+    return hasFunnelPlanParam && !allowPreview ? '/app' : null;
   }
 
   if (isPlatformAdmin) {
-    if (membership?.isOnboarded) {
-      return route === 'app' ? null : '/app';
-    }
+    if (membership?.isOnboarded) return route === 'app' ? null : '/app';
     return route === 'onboarding' ? null : '/onboarding';
   }
 
@@ -73,7 +86,6 @@ export function decideFunnelGateRedirect(params: DecideFunnelGateParams): string
     return '/app';
   }
 
-  // route === 'activate-plan'
   if (
     hasFunnelPlanParam &&
     membership &&
@@ -88,6 +100,7 @@ export function decideFunnelGateRedirect(params: DecideFunnelGateParams): string
 export async function resolveCloudFunnelGateRedirect(params: {
   route: FunnelGateRoute;
   hasFunnelPlanParam: boolean;
+  allowPreview?: boolean;
   plan?: string | null;
   cycle?: string | null;
 }): Promise<string | null> {
@@ -108,30 +121,19 @@ export async function resolveCloudFunnelGateRedirect(params: {
     });
   }
 
-  const [adminAuth, membershipRow] = await Promise.all([
-    resolvePlatformAdminContext('admin:read'),
-    prisma.membership.findFirst({
-      where: { userId: user.id },
-      select: {
-        tenantId: true,
-        tenant: { select: { isOnboarded: true, billingStatus: true } },
-      },
+  const [adminAuth, membership] = await Promise.all([
+    resolvePlatformAdminContext('admin:read', {
+      authenticatedUser: { id: user.id, email: user.email ?? null },
     }),
+    findMembershipSnapshot(user.id, user.email),
   ]);
-
-  const membership: FunnelMembershipSnapshot | null = membershipRow?.tenant
-    ? {
-        tenantId: membershipRow.tenantId,
-        isOnboarded: membershipRow.tenant.isOnboarded,
-        billingStatus: membershipRow.tenant.billingStatus,
-      }
-    : null;
 
   return decideFunnelGateRedirect({
     route: params.route,
     isAuthenticated: true,
     isPlatformAdmin: adminAuth.ok,
     isSuperAdmin: adminAuth.ok && adminAuth.context.role === 'super_admin',
+    allowPreview: params.allowPreview,
     membership,
     hasFunnelPlanParam: params.hasFunnelPlanParam,
     plan: params.plan,
@@ -151,33 +153,23 @@ function buildPlanQuerySuffix(nextPath: string): string {
 
 export async function resolvePostAuthCallbackRedirect(params: {
   userId: string;
+  userEmail?: string | null;
   nextPath: string;
 }): Promise<string> {
-  const [adminAuth, membershipRow] = await Promise.all([
-    resolvePlatformAdminContext('admin:read'),
-    prisma.membership.findFirst({
-      where: { userId: params.userId },
-      select: {
-        tenantId: true,
-        tenant: { select: { isOnboarded: true, billingStatus: true } },
-      },
+  const [adminAuth, membership] = await Promise.all([
+    resolvePlatformAdminContext('admin:read', {
+      authenticatedUser: { id: params.userId, email: params.userEmail ?? null },
     }),
+    findMembershipSnapshot(params.userId, params.userEmail),
   ]);
 
-  const membership = membershipRow?.tenant
-    ? {
-        tenantId: membershipRow.tenantId,
-        isOnboarded: membershipRow.tenant.isOnboarded,
-        billingStatus: membershipRow.tenant.billingStatus,
-      }
-    : null;
-
   const planQuery = buildPlanQuerySuffix(params.nextPath);
+  const readyTarget = normalizeOnboardedNextPath(params.nextPath);
   if (adminAuth.ok) {
     if (adminAuth.context.role === 'super_admin') {
-      return params.nextPath || '/app';
+      return readyTarget;
     }
-    return membership?.isOnboarded ? (params.nextPath || '/app') : `/onboarding${planQuery}`;
+    return membership?.isOnboarded ? readyTarget : `/onboarding${planQuery}`;
   }
 
   if (!membership?.isOnboarded) {
@@ -186,5 +178,5 @@ export async function resolvePostAuthCallbackRedirect(params: {
   if (membership.billingStatus === 'PAST_DUE') {
     return `/activate-plan${planQuery}`;
   }
-  return params.nextPath || '/app';
+  return readyTarget;
 }
